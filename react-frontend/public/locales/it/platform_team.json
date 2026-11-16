@@ -268,5 +268,61 @@
       "local_advertising": "Pubblicità locale",
       "maps": "Mappe"
     }
+  },
+  "notices": {
+    "title": "Avvisi",
+    "intro": "Scrivi un breve avviso una sola volta e gli amministratori di ogni comunità lo vedranno in cima al pannello di amministrazione. I membri e gli intermediari non lo vedono mai.",
+    "new": "Scrivi un avviso",
+    "loading": "Caricamento degli avvisi",
+    "load_error_title": "Non siamo riusciti a caricare gli avvisi in questo momento",
+    "empty_title": "Ancora nessun avviso",
+    "empty_text": "Non è stato scritto nulla, quindi gli amministratori non vedono nulla in più.",
+    "state": {
+      "live": "Visibile ora",
+      "scheduled": "Non ancora iniziato",
+      "expired": "Terminato",
+      "ended": "Chiuso in anticipo"
+    },
+    "kind": {
+      "info": "Informazione",
+      "planned_work": "Lavori programmati",
+      "important": "Importante"
+    },
+    "from": "Visibile dal:",
+    "until": "Visibile fino al:",
+    "written_by": "Scritto da:",
+    "closed_count": "Persone che lo hanno chiuso:",
+    "cannot_close": "Non può essere chiuso",
+    "change": "Modifica",
+    "end": "Termina ora",
+    "end_title": "Terminare questo avviso adesso?",
+    "end_message": "Tutti gli amministratori smettono subito di vederlo. Non può essere riavviato; scrivine invece uno nuovo.",
+    "end_confirm": "Terminalo",
+    "keep": "Tienilo",
+    "ended_toast": "L’avviso è terminato.",
+    "saved": "L’avviso è stato salvato.",
+    "save_failed": "Non ha funzionato. Non è stato modificato nulla.",
+    "form": {
+      "title_new": "Scrivi un avviso",
+      "title_edit": "Modifica l’avviso",
+      "preview": "Che cosa vedranno gli amministratori",
+      "preview_placeholder": "Il tuo avviso apparirà qui.",
+      "language_note": "L’avviso viene mostrato così come lo scrivi. Non viene tradotto.",
+      "message": "Avviso",
+      "message_hint": "Testo semplice, su una riga.",
+      "message_required": "Scrivi l’avviso in 280 caratteri o meno.",
+      "kind": "Tipo",
+      "link": "Link (facoltativo)",
+      "link_hint": "Un indirizzo completo che inizia con https://",
+      "link_label": "Testo del link",
+      "link_label_required": "Aggiungi il testo da mostrare per il link oppure lascia vuoto il link.",
+      "from": "Mostra dal (facoltativo)",
+      "until": "Mostra fino al (facoltativo)",
+      "until_before_from": "La fine deve essere successiva all’inizio.",
+      "can_close": "Gli amministratori possono chiuderlo",
+      "can_close_hint": "Se è disattivato, l’avviso resta finché non termina o non lo chiudi tu.",
+      "save": "Salva",
+      "cancel": "Annulla"
+    }
   }
 }

@@ -2939,6 +2939,9 @@ Route::put('/v2/admin/community-setup/founded', [\App\Http\Controllers\Api\Admin
 // ...and the community's one shared goal, set, changed and ended there alone (warmth phase 6, D1).
 Route::put('/v2/admin/community-setup/goal', [\App\Http\Controllers\Api\Admin\CommunitySetupController::class, 'updateGoal']);
 Route::delete('/v2/admin/community-setup/goal', [\App\Http\Controllers\Api\Admin\CommunitySetupController::class, 'endGoal']);
+// Platform-wide notices — written by the platform team, read here by every community's admins (not members, not brokers).
+Route::get('/v2/admin/platform-notices', [\App\Http\Controllers\Api\Admin\PlatformNoticeController::class, 'current']);
+Route::post('/v2/admin/platform-notices/{id}/dismiss', [\App\Http\Controllers\Api\Admin\PlatformNoticeController::class, 'dismiss'])->whereNumber('id');
 // Community announcement banner — one-line notices shown across the top of the member website.
 Route::get('/v2/admin/announcements', [\App\Http\Controllers\Api\Admin\SiteAnnouncementAdminController::class, 'index']);
 Route::post('/v2/admin/announcements', [\App\Http\Controllers\Api\Admin\SiteAnnouncementAdminController::class, 'store']);
@@ -4514,6 +4517,11 @@ Route::middleware(['auth:sanctum', 'platform-team'])->group(function () {
     Route::get('/v2/platform-team/security', [\App\Http\Controllers\Api\PlatformTeam\SecurityOverviewController::class, 'index']);
     // Communities at a glance: every community against every feature and core part. Read-only; no member data.
     Route::get('/v2/platform-team/communities', [\App\Http\Controllers\Api\PlatformTeam\CommunitiesAtAGlanceController::class, 'index']);
+    // Platform-wide notices: written here once, shown to every community's admins (see /v2/admin/platform-notices).
+    Route::get('/v2/platform-team/notices', [\App\Http\Controllers\Api\PlatformTeam\PlatformNoticesController::class, 'index']);
+    Route::post('/v2/platform-team/notices', [\App\Http\Controllers\Api\PlatformTeam\PlatformNoticesController::class, 'store']);
+    Route::put('/v2/platform-team/notices/{id}', [\App\Http\Controllers\Api\PlatformTeam\PlatformNoticesController::class, 'update'])->whereNumber('id');
+    Route::post('/v2/platform-team/notices/{id}/end', [\App\Http\Controllers\Api\PlatformTeam\PlatformNoticesController::class, 'end'])->whereNumber('id');
 });
 
 // AG71 — Pilot Region Inquiry & Qualification Funnel

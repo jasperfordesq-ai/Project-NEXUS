@@ -268,5 +268,61 @@
       "local_advertising": "Publicidad local",
       "maps": "Mapas"
     }
+  },
+  "notices": {
+    "title": "Avisos",
+    "intro": "Escribe un aviso breve una sola vez y los administradores de todas las comunidades lo verán en la parte superior del panel de administración. Los miembros y los intermediarios nunca lo ven.",
+    "new": "Escribir un aviso",
+    "loading": "Cargando los avisos",
+    "load_error_title": "No hemos podido cargar los avisos ahora mismo",
+    "empty_title": "Todavía no hay avisos",
+    "empty_text": "No se ha escrito nada, así que los administradores no ven nada adicional.",
+    "state": {
+      "live": "Se muestra ahora",
+      "scheduled": "Aún no ha empezado",
+      "expired": "Terminado",
+      "ended": "Finalizado antes de tiempo"
+    },
+    "kind": {
+      "info": "Información",
+      "planned_work": "Trabajos programados",
+      "important": "Importante"
+    },
+    "from": "Se muestra desde:",
+    "until": "Se muestra hasta:",
+    "written_by": "Escrito por:",
+    "closed_count": "Personas que lo cerraron:",
+    "cannot_close": "No se puede cerrar",
+    "change": "Cambiar",
+    "end": "Finalizar ahora",
+    "end_title": "¿Finalizar este aviso ahora?",
+    "end_message": "Todos los administradores dejan de verlo de inmediato. No se puede volver a iniciar; escribe uno nuevo en su lugar.",
+    "end_confirm": "Finalizarlo",
+    "keep": "Mantenerlo",
+    "ended_toast": "El aviso ha finalizado.",
+    "saved": "El aviso se ha guardado.",
+    "save_failed": "No ha funcionado. No se ha cambiado nada.",
+    "form": {
+      "title_new": "Escribir un aviso",
+      "title_edit": "Cambiar el aviso",
+      "preview": "Lo que verán los administradores",
+      "preview_placeholder": "Tu aviso aparecerá aquí.",
+      "language_note": "El aviso se muestra tal como lo escribes. No se traduce.",
+      "message": "Aviso",
+      "message_hint": "Texto sin formato, en una línea.",
+      "message_required": "Escribe el aviso en 280 caracteres o menos.",
+      "kind": "Tipo",
+      "link": "Enlace (opcional)",
+      "link_hint": "Una dirección completa que empiece por https://",
+      "link_label": "Texto del enlace",
+      "link_label_required": "Añade el texto que se mostrará para el enlace o deja el enlace vacío.",
+      "from": "Mostrar desde (opcional)",
+      "until": "Mostrar hasta (opcional)",
+      "until_before_from": "El final debe ser posterior al inicio.",
+      "can_close": "Los administradores pueden cerrarlo",
+      "can_close_hint": "Si está desactivado, el aviso permanece hasta que termine o lo finalices.",
+      "save": "Guardar",
+      "cancel": "Cancelar"
+    }
   }
 }

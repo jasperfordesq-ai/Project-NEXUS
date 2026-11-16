@@ -22908,6 +22908,16 @@ export default interface Resources {
     "permissions_list": "Permissions list",
     "plans_pricing": "Plans & Pricing",
     "platform_capabilities": "Platform switches",
+    "platform_notice": {
+      "close": "Close this notice",
+      "kind": {
+        "important": "Important:",
+        "info": "Information:",
+        "planned_work": "Planned work:"
+      },
+      "new_tab": "(opens in a new tab)",
+      "region_label": "Notices from the platform team"
+    },
     "platform_operations": "Platform Operations",
     "platform_team_panel": "Platform team",
     "podcasts": "Podcasts",
@@ -57374,6 +57384,62 @@ export default interface Resources {
       "brand": "Platform team",
       "regional_analytics_subscriptions": "Analytics subscriptions",
       "tests": "Tests"
+    },
+    "notices": {
+      "cannot_close": "Cannot be closed",
+      "change": "Change",
+      "closed_count": "People who closed it:",
+      "empty_text": "Nothing has been written, so admins see nothing extra.",
+      "empty_title": "No notices yet",
+      "end": "End now",
+      "end_confirm": "End it",
+      "end_message": "Every admin stops seeing it straight away. It cannot be started again; write a new one instead.",
+      "end_title": "End this notice now?",
+      "ended_toast": "The notice has ended.",
+      "form": {
+        "can_close": "Admins can close it",
+        "can_close_hint": "If this is off, the notice stays until it finishes or you end it.",
+        "cancel": "Cancel",
+        "from": "Show from (optional)",
+        "kind": "Kind",
+        "language_note": "The notice is shown as you write it. It is not translated.",
+        "link": "Link (optional)",
+        "link_hint": "A full address that starts with https://",
+        "link_label": "Words for the link",
+        "link_label_required": "Add the words to show for the link, or leave the link empty.",
+        "message": "Notice",
+        "message_hint": "Plain text, one line.",
+        "message_required": "Write the notice, in 280 characters or fewer.",
+        "preview": "What admins will see",
+        "preview_placeholder": "Your notice will appear here.",
+        "save": "Save",
+        "title_edit": "Change the notice",
+        "title_new": "Write a notice",
+        "until": "Show until (optional)",
+        "until_before_from": "The end must be later than the start."
+      },
+      "from": "Shows from:",
+      "intro": "Write a short notice once and every community's admins see it at the top of the admin panel. Members and brokers never see it.",
+      "keep": "Keep it",
+      "kind": {
+        "important": "Important",
+        "info": "Information",
+        "planned_work": "Planned work"
+      },
+      "load_error_title": "We couldn't load the notices just now",
+      "loading": "Loading the notices",
+      "new": "Write a notice",
+      "save_failed": "That didn't work. Nothing was changed.",
+      "saved": "The notice is saved.",
+      "state": {
+        "ended": "Ended early",
+        "expired": "Finished",
+        "live": "Showing now",
+        "scheduled": "Not started yet"
+      },
+      "title": "Notices",
+      "until": "Shows until:",
+      "written_by": "Written by:"
     },
     "phone_app": {
       "intro": "Who has the phone app, in every community on the platform. Members are named; their email addresses are not shown.",

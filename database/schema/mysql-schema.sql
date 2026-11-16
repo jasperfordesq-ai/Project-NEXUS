@@ -16600,6 +16600,50 @@ CREATE TABLE `platform_capability_overrides` (
   UNIQUE KEY `platform_capability_overrides_capability_unique` (`capability`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `platform_notice_dismissals`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `platform_notice_dismissals` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `notice_id` bigint(20) unsigned NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `dismissed_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_platform_notice_dismissals` (`notice_id`,`user_id`),
+  KEY `idx_platform_notice_dismissals_user` (`user_id`),
+  CONSTRAINT `fk_platform_notice_dismissals_notice` FOREIGN KEY (`notice_id`) REFERENCES `platform_notices` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_platform_notice_dismissals_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `platform_notices`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `platform_notices` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `message` varchar(280) NOT NULL,
+  `kind` varchar(20) NOT NULL DEFAULT 'info',
+  `link_url` varchar(500) DEFAULT NULL,
+  `link_label` varchar(60) DEFAULT NULL,
+  `starts_at` datetime DEFAULT NULL,
+  `ends_at` datetime DEFAULT NULL,
+  `is_dismissible` tinyint(1) NOT NULL DEFAULT 1,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_by` int(11) DEFAULT NULL,
+  `updated_by` int(11) DEFAULT NULL,
+  `ended_by` int(11) DEFAULT NULL,
+  `ended_at` datetime DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_platform_notices_current` (`is_active`,`starts_at`,`ends_at`),
+  KEY `fk_platform_notices_created_by` (`created_by`),
+  KEY `fk_platform_notices_updated_by` (`updated_by`),
+  KEY `fk_platform_notices_ended_by` (`ended_by`),
+  CONSTRAINT `fk_platform_notices_created_by` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_platform_notices_ended_by` FOREIGN KEY (`ended_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_platform_notices_updated_by` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `platform_secrets`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;

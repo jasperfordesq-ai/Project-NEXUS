@@ -840,5 +840,15 @@
   "subscriptions": "サブスクリプション",
   "stripe_account": "Stripe アカウント",
   "listings_digest": "メールダイジェスト",
-  "email_preview": "メンバーに届くメール"
+  "email_preview": "メンバーに届くメール",
+  "platform_notice": {
+    "region_label": "プラットフォームチームからのお知らせ",
+    "close": "このお知らせを閉じる",
+    "new_tab": "（新しいタブで開きます）",
+    "kind": {
+      "info": "お知らせ：",
+      "planned_work": "作業の予定：",
+      "important": "重要："
+    }
+  }
 }

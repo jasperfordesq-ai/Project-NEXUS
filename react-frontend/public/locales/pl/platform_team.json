@@ -268,5 +268,61 @@
       "local_advertising": "Reklama lokalna",
       "maps": "Mapy"
     }
+  },
+  "notices": {
+    "title": "Komunikaty",
+    "intro": "Napisz krótki komunikat raz, a administratorzy każdej społeczności zobaczą go na górze panelu administracyjnego. Członkowie i brokerzy nigdy go nie widzą.",
+    "new": "Napisz komunikat",
+    "loading": "Wczytywanie komunikatów",
+    "load_error_title": "Nie udało się teraz wczytać komunikatów",
+    "empty_title": "Nie ma jeszcze komunikatów",
+    "empty_text": "Nic nie napisano, więc administratorzy nie widzą nic dodatkowego.",
+    "state": {
+      "live": "Wyświetlany teraz",
+      "scheduled": "Jeszcze się nie zaczął",
+      "expired": "Zakończony",
+      "ended": "Zakończony wcześniej"
+    },
+    "kind": {
+      "info": "Informacja",
+      "planned_work": "Planowane prace",
+      "important": "Ważne"
+    },
+    "from": "Widoczny od:",
+    "until": "Widoczny do:",
+    "written_by": "Napisał(a):",
+    "closed_count": "Osoby, które go zamknęły:",
+    "cannot_close": "Nie można go zamknąć",
+    "change": "Zmień",
+    "end": "Zakończ teraz",
+    "end_title": "Zakończyć ten komunikat teraz?",
+    "end_message": "Wszyscy administratorzy od razu przestaną go widzieć. Nie można go uruchomić ponownie; zamiast tego napisz nowy.",
+    "end_confirm": "Zakończ",
+    "keep": "Zostaw",
+    "ended_toast": "Komunikat został zakończony.",
+    "saved": "Komunikat został zapisany.",
+    "save_failed": "To się nie udało. Nic nie zostało zmienione.",
+    "form": {
+      "title_new": "Napisz komunikat",
+      "title_edit": "Zmień komunikat",
+      "preview": "Co zobaczą administratorzy",
+      "preview_placeholder": "Tutaj pojawi się Twój komunikat.",
+      "language_note": "Komunikat jest pokazywany tak, jak go napiszesz. Nie jest tłumaczony.",
+      "message": "Komunikat",
+      "message_hint": "Zwykły tekst, jedna linia.",
+      "message_required": "Napisz komunikat, najwyżej 280 znaków.",
+      "kind": "Rodzaj",
+      "link": "Link (opcjonalnie)",
+      "link_hint": "Pełny adres zaczynający się od https://",
+      "link_label": "Tekst linku",
+      "link_label_required": "Dodaj tekst, który ma być pokazany dla linku, albo zostaw link pusty.",
+      "from": "Pokazuj od (opcjonalnie)",
+      "until": "Pokazuj do (opcjonalnie)",
+      "until_before_from": "Koniec musi być późniejszy niż początek.",
+      "can_close": "Administratorzy mogą go zamknąć",
+      "can_close_hint": "Gdy to jest wyłączone, komunikat zostaje, dopóki się nie skończy albo go nie zakończysz.",
+      "save": "Zapisz",
+      "cancel": "Anuluj"
+    }
   }
 }

@@ -67,6 +67,7 @@ import ShieldCheck from 'lucide-react/icons/shield-check';
 import SlidersHorizontal from 'lucide-react/icons/sliders-horizontal';
 import Grid3x3 from 'lucide-react/icons/grid-3x3';
 import Lock from 'lucide-react/icons/lock';
+import Megaphone from 'lucide-react/icons/megaphone';
 import Smartphone from 'lucide-react/icons/smartphone';
 import UserCog from 'lucide-react/icons/user-cog';
 import Stethoscope from 'lucide-react/icons/stethoscope';
@@ -148,6 +149,7 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
           title: t('sidebar.group_communities'),
           items: [
             { label: t('glance.nav'), icon: Grid3x3, path: `${P}/communities` },
+            { label: t('notices.title'), icon: Megaphone, path: `${P}/notices` },
             { label: tSuper('nav.provisioning_queue'), icon: Building2, path: `${P}/provisioning-requests` },
             { label: tSuper('nav.pilot_inquiries'), icon: FileSearch, path: `${P}/platform/pilot-inquiries` },
             { label: tNav('platform_capabilities'), icon: SlidersHorizontal, path: `${P}/platform-capabilities` },

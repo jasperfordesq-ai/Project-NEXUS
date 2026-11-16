@@ -268,5 +268,61 @@
       "local_advertising": "Local advertising",
       "maps": "Maps"
     }
+  },
+  "notices": {
+    "title": "Notices",
+    "intro": "Write a short notice once and every community's admins see it at the top of the admin panel. Members and brokers never see it.",
+    "new": "Write a notice",
+    "loading": "Loading the notices",
+    "load_error_title": "We couldn't load the notices just now",
+    "empty_title": "No notices yet",
+    "empty_text": "Nothing has been written, so admins see nothing extra.",
+    "state": {
+      "live": "Showing now",
+      "scheduled": "Not started yet",
+      "expired": "Finished",
+      "ended": "Ended early"
+    },
+    "kind": {
+      "info": "Information",
+      "planned_work": "Planned work",
+      "important": "Important"
+    },
+    "from": "Shows from:",
+    "until": "Shows until:",
+    "written_by": "Written by:",
+    "closed_count": "People who closed it:",
+    "cannot_close": "Cannot be closed",
+    "change": "Change",
+    "end": "End now",
+    "end_title": "End this notice now?",
+    "end_message": "Every admin stops seeing it straight away. It cannot be started again; write a new one instead.",
+    "end_confirm": "End it",
+    "keep": "Keep it",
+    "ended_toast": "The notice has ended.",
+    "saved": "The notice is saved.",
+    "save_failed": "That didn't work. Nothing was changed.",
+    "form": {
+      "title_new": "Write a notice",
+      "title_edit": "Change the notice",
+      "preview": "What admins will see",
+      "preview_placeholder": "Your notice will appear here.",
+      "language_note": "The notice is shown as you write it. It is not translated.",
+      "message": "Notice",
+      "message_hint": "Plain text, one line.",
+      "message_required": "Write the notice, in 280 characters or fewer.",
+      "kind": "Kind",
+      "link": "Link (optional)",
+      "link_hint": "A full address that starts with https://",
+      "link_label": "Words for the link",
+      "link_label_required": "Add the words to show for the link, or leave the link empty.",
+      "from": "Show from (optional)",
+      "until": "Show until (optional)",
+      "until_before_from": "The end must be later than the start.",
+      "can_close": "Admins can close it",
+      "can_close_hint": "If this is off, the notice stays until it finishes or you end it.",
+      "save": "Save",
+      "cancel": "Cancel"
+    }
   }
 }

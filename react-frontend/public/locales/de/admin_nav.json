@@ -840,5 +840,15 @@
   "subscriptions": "Abonnements",
   "stripe_account": "Stripe-Konto",
   "listings_digest": "E-Mail-Übersicht",
-  "email_preview": "Was Ihre Mitglieder erhalten"
+  "email_preview": "Was Ihre Mitglieder erhalten",
+  "platform_notice": {
+    "region_label": "Hinweise vom Plattform-Team",
+    "close": "Diesen Hinweis schließen",
+    "new_tab": "(öffnet in einem neuen Tab)",
+    "kind": {
+      "info": "Information:",
+      "planned_work": "Geplante Arbeiten:",
+      "important": "Wichtig:"
+    }
+  }
 }

@@ -844,5 +844,15 @@
   "subscriptions": "Abbonamenti",
   "stripe_account": "Account Stripe",
   "listings_digest": "Riepilogo email",
-  "email_preview": "Cosa ricevono i tuoi membri"
+  "email_preview": "Cosa ricevono i tuoi membri",
+  "platform_notice": {
+    "region_label": "Avvisi dal team della piattaforma",
+    "close": "Chiudi questo avviso",
+    "new_tab": "(si apre in una nuova scheda)",
+    "kind": {
+      "info": "Informazione:",
+      "planned_work": "Lavori programmati:",
+      "important": "Importante:"
+    }
+  }
 }

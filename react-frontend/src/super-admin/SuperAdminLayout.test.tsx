@@ -47,11 +47,22 @@ vi.mock(import('@/lib/helpers'), async (importOriginal) => ({
   cn: (...classes: (string | undefined | null | false)[]) => classes.filter(Boolean).join(' '),
 }));
 
+// The band has its own tests; here only that every super admin page carries it.
+vi.mock('@/admin/components/PlatformNoticeBand', () => ({
+  PlatformNoticeBand: () => <div data-testid="platform-notice-band" />,
+}));
+
 import { SuperAdminLayout } from './SuperAdminLayout';
 
 describe('SuperAdminLayout', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it('shows the platform team\'s notices above the page, inside the main area', () => {
+    render(<SuperAdminLayout />);
+
+    expect(screen.getByTestId('platform-notice-band').closest('main')).not.toBeNull();
   });
 
   it('renders without crashing', () => {

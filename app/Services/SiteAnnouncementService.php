@@ -73,7 +73,7 @@ class SiteAnnouncementService
      */
     public function create(int $tenantId, int $userId, array $data): array
     {
-        [$values, $errors] = self::validate($data, null);
+        [$values, $errors] = self::validateFields($data, null);
         if ($errors !== []) {
             return ['errors' => $errors];
         }
@@ -112,7 +112,7 @@ class SiteAnnouncementService
             return ['error' => 'not_found'];
         }
 
-        [$values, $errors] = self::validate($data, $existing);
+        [$values, $errors] = self::validateFields($data, $existing);
         if ($errors !== []) {
             return ['errors' => $errors];
         }
@@ -290,10 +290,15 @@ class SiteAnnouncementService
      * everything else falls back to its default. With one it is an update: only
      * the keys present in $data are checked and returned.
      *
+     * Public and static because the platform-wide notice
+     * (App\Services\PlatformTeam\PlatformNoticeService) is held to the same
+     * text, link and date rules; it passes its own list of styles.
+     *
      * @param  array<string, mixed>  $data
+     * @param  list<string>  $allowedStyles
      * @return array{0: array<string, mixed>, 1: list<array{code: string, message: string, field: string}>}
      */
-    private static function validate(array $data, ?object $existing): array
+    public static function validateFields(array $data, ?object $existing, array $allowedStyles = SiteAnnouncementStyle::ALLOWED): array
     {
         $values = [];
         $errors = [];
@@ -317,8 +322,8 @@ class SiteAnnouncementService
 
         // Style — one of the allow-list. Null means "not sent".
         if (array_key_exists('style', $data) && $data['style'] !== null) {
-            $style = SiteAnnouncementStyle::normalise($data['style']);
-            if ($style === null) {
+            $style = is_string($data['style']) ? strtolower(trim($data['style'])) : null;
+            if ($style === null || !in_array($style, $allowedStyles, true)) {
                 $errors[] = self::error(ApiErrorCodes::VALIDATION_INVALID_VALUE, 'style', __('api.site_announcement_style_invalid'));
             } else {
                 $values['style'] = $style;

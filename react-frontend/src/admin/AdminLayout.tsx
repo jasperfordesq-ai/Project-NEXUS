@@ -14,6 +14,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AdminSidebar } from './components/AdminSidebar';
 import { AdminHeader } from './components/AdminHeader';
+import { PlatformNoticeBand } from './components/PlatformNoticeBand';
 import { AdminBreadcrumbs } from './components/AdminBreadcrumbs';
 import { AdminMetaProvider, AdminMetaTags } from './AdminMetaContext';
 import { adminVetting } from './api/adminApi';
@@ -168,6 +169,8 @@ function AdminLayoutShell() {
         }`}
       >
         <div className="mx-auto w-full max-w-[1600px] p-3 sm:p-4 md:p-6">
+          {/* A notice from the platform team to every community's admins. */}
+          <PlatformNoticeBand />
           <AdminBreadcrumbs />
           {jurisdictionConfigured === false && <JurisdictionNotice canSet={isAdminTierUser(user)} />}
           <Outlet />

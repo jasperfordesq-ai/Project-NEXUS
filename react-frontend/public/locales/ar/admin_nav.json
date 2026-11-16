@@ -856,5 +856,15 @@
   "subscriptions": "الاشتراكات",
   "stripe_account": "حساب Stripe",
   "listings_digest": "ملخص البريد",
-  "email_preview": "ما يصل إلى أعضائك"
+  "email_preview": "ما يصل إلى أعضائك",
+  "platform_notice": {
+    "region_label": "إشعارات من فريق المنصة",
+    "close": "إغلاق هذا الإشعار",
+    "new_tab": "(يفتح في تبويب جديد)",
+    "kind": {
+      "info": "معلومة:",
+      "planned_work": "أعمال مخططة:",
+      "important": "مهم:"
+    }
+  }
 }

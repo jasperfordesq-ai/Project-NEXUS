@@ -268,5 +268,61 @@
       "local_advertising": "Lokale Werbung",
       "maps": "Karten"
     }
+  },
+  "notices": {
+    "title": "Hinweise",
+    "intro": "Schreiben Sie einen kurzen Hinweis einmal, und die Admins jeder Gemeinschaft sehen ihn oben im Admin-Bereich. Mitglieder und Vermittler sehen ihn nie.",
+    "new": "Hinweis schreiben",
+    "loading": "Hinweise werden geladen",
+    "load_error_title": "Wir konnten die Hinweise gerade nicht laden",
+    "empty_title": "Noch keine Hinweise",
+    "empty_text": "Es wurde nichts geschrieben, also sehen Admins nichts Zusätzliches.",
+    "state": {
+      "live": "Wird jetzt angezeigt",
+      "scheduled": "Noch nicht gestartet",
+      "expired": "Abgelaufen",
+      "ended": "Vorzeitig beendet"
+    },
+    "kind": {
+      "info": "Information",
+      "planned_work": "Geplante Arbeiten",
+      "important": "Wichtig"
+    },
+    "from": "Anzeige ab:",
+    "until": "Anzeige bis:",
+    "written_by": "Geschrieben von:",
+    "closed_count": "Personen, die ihn geschlossen haben:",
+    "cannot_close": "Kann nicht geschlossen werden",
+    "change": "Ändern",
+    "end": "Jetzt beenden",
+    "end_title": "Diesen Hinweis jetzt beenden?",
+    "end_message": "Alle Admins sehen ihn sofort nicht mehr. Er kann nicht wieder gestartet werden; schreiben Sie stattdessen einen neuen.",
+    "end_confirm": "Beenden",
+    "keep": "Behalten",
+    "ended_toast": "Der Hinweis wurde beendet.",
+    "saved": "Der Hinweis ist gespeichert.",
+    "save_failed": "Das hat nicht geklappt. Es wurde nichts geändert.",
+    "form": {
+      "title_new": "Hinweis schreiben",
+      "title_edit": "Hinweis ändern",
+      "preview": "Was Admins sehen werden",
+      "preview_placeholder": "Ihr Hinweis erscheint hier.",
+      "language_note": "Der Hinweis wird so angezeigt, wie Sie ihn schreiben. Er wird nicht übersetzt.",
+      "message": "Hinweis",
+      "message_hint": "Einfacher Text, eine Zeile.",
+      "message_required": "Schreiben Sie den Hinweis mit höchstens 280 Zeichen.",
+      "kind": "Art",
+      "link": "Link (optional)",
+      "link_hint": "Eine vollständige Adresse, die mit https:// beginnt",
+      "link_label": "Text für den Link",
+      "link_label_required": "Geben Sie den Text für den Link ein oder lassen Sie den Link leer.",
+      "from": "Anzeigen ab (optional)",
+      "until": "Anzeigen bis (optional)",
+      "until_before_from": "Das Ende muss nach dem Beginn liegen.",
+      "can_close": "Admins können ihn schließen",
+      "can_close_hint": "Wenn das aus ist, bleibt der Hinweis, bis er abläuft oder Sie ihn beenden.",
+      "save": "Speichern",
+      "cancel": "Abbrechen"
+    }
   }
 }

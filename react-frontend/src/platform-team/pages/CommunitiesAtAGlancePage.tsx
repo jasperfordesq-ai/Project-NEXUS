@@ -130,8 +130,8 @@ export function CommunitiesAtAGlancePage() {
       <table className="w-full border-collapse text-sm" data-testid={`glance-${kind}`}>
         <caption className="sr-only">{caption}</caption>
         <thead>
-          <tr className="bg-default-100 text-left text-xs text-muted">
-            <th scope="col" className="sticky left-0 z-10 min-w-48 bg-default-100 px-3 py-2 font-medium">
+          <tr className="bg-surface-secondary text-left text-xs text-muted">
+            <th scope="col" className="sticky left-0 z-10 min-w-48 bg-surface-secondary px-3 py-2 font-medium">
               {t('glance.switch_column')}
             </th>
             <th scope="col" className="min-w-28 px-3 py-2 font-medium">

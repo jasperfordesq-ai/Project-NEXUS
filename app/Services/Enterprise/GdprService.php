@@ -1566,6 +1566,27 @@ class GdprService
                 ]);
             }
 
+            // 3c (continued). Delete the record of which platform-wide notices
+            // this account closed in the admin panel (Nov 2026). Same trap as
+            // the sign-in activity above: the table cascades from `users`, but
+            // erasure keeps that row. The table has no tenant_id (a platform
+            // notice is the same in every community), so the tenant is taken
+            // from the account itself: never another community's account.
+            try {
+                $this->query(
+                    "DELETE d FROM platform_notice_dismissals d
+                     INNER JOIN users u ON u.id = d.user_id
+                     WHERE d.user_id = ? AND u.tenant_id = ?",
+                    [$userId, $this->tenantId]
+                );
+            } catch (\Throwable $e) {
+                $criticalErasureFailed = true;
+                $this->logger->error('GDPR CRITICAL erasure step failed (closed platform notices)', [
+                    'user_id' => $userId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
             // 3d. Delete cookie consent records
             try {
                 $this->query(

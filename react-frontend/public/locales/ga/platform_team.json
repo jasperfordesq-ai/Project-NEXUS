@@ -268,5 +268,61 @@
       "local_advertising": "Fógraíocht áitiúil",
       "maps": "Léarscáileanna"
     }
+  },
+  "notices": {
+    "title": "Fógraí",
+    "intro": "Scríobh fógra gearr uair amháin agus feicfidh riarthóirí gach pobail é ag barr an phainéil riaracháin. Ní fheiceann baill ná bróicéirí riamh é.",
+    "new": "Scríobh fógra",
+    "loading": "Na fógraí á lódáil",
+    "load_error_title": "Níorbh fhéidir linn na fógraí a lódáil faoi láthair",
+    "empty_title": "Níl aon fhógra ann fós",
+    "empty_text": "Níor scríobhadh aon rud, mar sin ní fheiceann riarthóirí aon rud breise.",
+    "state": {
+      "live": "Á thaispeáint anois",
+      "scheduled": "Gan tosú fós",
+      "expired": "Críochnaithe",
+      "ended": "Curtha i gcrích go luath"
+    },
+    "kind": {
+      "info": "Eolas",
+      "planned_work": "Obair phleanáilte",
+      "important": "Tábhachtach"
+    },
+    "from": "Le feiceáil ó:",
+    "until": "Le feiceáil go dtí:",
+    "written_by": "Scríofa ag:",
+    "closed_count": "Daoine a dhún é:",
+    "cannot_close": "Ní féidir é a dhúnadh",
+    "change": "Athraigh",
+    "end": "Cuir deireadh leis anois",
+    "end_title": "Deireadh a chur leis an bhfógra seo anois?",
+    "end_message": "Stopann gach riarthóir á fheiceáil láithreach. Ní féidir é a thosú arís; scríobh ceann nua ina ionad.",
+    "end_confirm": "Cuir deireadh leis",
+    "keep": "Coinnigh é",
+    "ended_toast": "Tá deireadh leis an bhfógra.",
+    "saved": "Tá an fógra sábháilte.",
+    "save_failed": "Níor oibrigh sé sin. Níor athraíodh aon rud.",
+    "form": {
+      "title_new": "Scríobh fógra",
+      "title_edit": "Athraigh an fógra",
+      "preview": "An rud a fheicfidh riarthóirí",
+      "preview_placeholder": "Beidh d’fhógra le feiceáil anseo.",
+      "language_note": "Taispeántar an fógra mar a scríobhann tú é. Ní aistrítear é.",
+      "message": "Fógra",
+      "message_hint": "Gnáth-théacs, líne amháin.",
+      "message_required": "Scríobh an fógra i 280 carachtar nó níos lú.",
+      "kind": "Cineál",
+      "link": "Nasc (roghnach)",
+      "link_hint": "Seoladh iomlán a thosaíonn le https://",
+      "link_label": "Focail an naisc",
+      "link_label_required": "Cuir isteach na focail atá le taispeáint don nasc, nó fág an nasc folamh.",
+      "from": "Taispeáin ó (roghnach)",
+      "until": "Taispeáin go dtí (roghnach)",
+      "until_before_from": "Caithfidh an deireadh a bheith níos déanaí ná an tús.",
+      "can_close": "Is féidir le riarthóirí é a dhúnadh",
+      "can_close_hint": "Má tá sé seo múchta, fanann an fógra go dtí go gcríochnaíonn sé nó go gcuireann tú deireadh leis.",
+      "save": "Sábháil",
+      "cancel": "Cealaigh"
+    }
   }
 }

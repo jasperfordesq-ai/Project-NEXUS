@@ -840,5 +840,15 @@
   "stripe_account": "Stripe account",
   "listings_digest": "Email Digest",
   "email_preview": "What your members receive",
-  "platform_team_panel": "Platform team"
+  "platform_team_panel": "Platform team",
+  "platform_notice": {
+    "region_label": "Notices from the platform team",
+    "close": "Close this notice",
+    "new_tab": "(opens in a new tab)",
+    "kind": {
+      "info": "Information:",
+      "planned_work": "Planned work:",
+      "important": "Important:"
+    }
+  }
 }

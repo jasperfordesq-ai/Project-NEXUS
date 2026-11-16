@@ -268,5 +268,61 @@
       "local_advertising": "Publicité locale",
       "maps": "Cartes"
     }
+  },
+  "notices": {
+    "title": "Avis",
+    "intro": "Rédigez un court avis une seule fois et les administrateurs de chaque communauté le voient en haut de l'espace d'administration. Les membres et les intermédiaires ne le voient jamais.",
+    "new": "Rédiger un avis",
+    "loading": "Chargement des avis",
+    "load_error_title": "Nous n'avons pas pu charger les avis pour le moment",
+    "empty_title": "Pas encore d'avis",
+    "empty_text": "Rien n'a été rédigé : les administrateurs ne voient donc rien de plus.",
+    "state": {
+      "live": "Affiché en ce moment",
+      "scheduled": "Pas encore commencé",
+      "expired": "Terminé",
+      "ended": "Arrêté plus tôt"
+    },
+    "kind": {
+      "info": "Information",
+      "planned_work": "Travaux prévus",
+      "important": "Important"
+    },
+    "from": "Affiché à partir du :",
+    "until": "Affiché jusqu'au :",
+    "written_by": "Rédigé par :",
+    "closed_count": "Personnes qui l'ont fermé :",
+    "cannot_close": "Ne peut pas être fermé",
+    "change": "Modifier",
+    "end": "Arrêter maintenant",
+    "end_title": "Arrêter cet avis maintenant ?",
+    "end_message": "Tous les administrateurs cessent de le voir immédiatement. Il ne peut pas être relancé ; rédigez-en plutôt un nouveau.",
+    "end_confirm": "L'arrêter",
+    "keep": "Le garder",
+    "ended_toast": "L'avis est arrêté.",
+    "saved": "L'avis est enregistré.",
+    "save_failed": "Cela n'a pas fonctionné. Rien n'a été modifié.",
+    "form": {
+      "title_new": "Rédiger un avis",
+      "title_edit": "Modifier l'avis",
+      "preview": "Ce que verront les administrateurs",
+      "preview_placeholder": "Votre avis apparaîtra ici.",
+      "language_note": "L'avis est affiché tel que vous le rédigez. Il n'est pas traduit.",
+      "message": "Avis",
+      "message_hint": "Texte simple, sur une ligne.",
+      "message_required": "Rédigez l'avis en 280 caractères au maximum.",
+      "kind": "Type",
+      "link": "Lien (facultatif)",
+      "link_hint": "Une adresse complète qui commence par https://",
+      "link_label": "Texte du lien",
+      "link_label_required": "Ajoutez le texte à afficher pour le lien, ou laissez le lien vide.",
+      "from": "Afficher à partir de (facultatif)",
+      "until": "Afficher jusqu'à (facultatif)",
+      "until_before_from": "La fin doit être postérieure au début.",
+      "can_close": "Les administrateurs peuvent le fermer",
+      "can_close_hint": "Si c'est désactivé, l'avis reste jusqu'à sa fin ou jusqu'à ce que vous l'arrêtiez.",
+      "save": "Enregistrer",
+      "cancel": "Annuler"
+    }
   }
 }

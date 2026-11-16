@@ -102,11 +102,27 @@ vi.mock('./components/AdminBreadcrumbs', () => ({
   AdminBreadcrumbs: () => <nav data-testid="admin-breadcrumbs" aria-label="breadcrumb" />,
 }));
 
+// The band has its own tests; here only that every admin page carries it.
+vi.mock('./components/PlatformNoticeBand', () => ({
+  PlatformNoticeBand: () => <div data-testid="platform-notice-band" />,
+}));
+
 // ─────────────────────────────────────────────────────────────────────────────
 describe('AdminLayout', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mockApi.get.mockResolvedValue({ success: true, data: [] });
+  });
+
+  it('shows the platform team\'s notices above the page, inside the main area', async () => {
+    const { AdminLayout } = await import('./AdminLayout');
+    render(<AdminLayout />);
+
+    const band = await screen.findByTestId('platform-notice-band');
+    expect(band.closest('main')).not.toBeNull();
+    // Above the breadcrumbs, so it is the first thing an admin reads.
+    const breadcrumbs = screen.getByTestId('admin-breadcrumbs');
+    expect(band.compareDocumentPosition(breadcrumbs) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it('renders the admin header', async () => {

@@ -852,5 +852,15 @@
   "subscriptions": "Síntiúis",
   "stripe_account": "Cuntas Stripe",
   "listings_digest": "Achoimre ríomhphoist",
-  "email_preview": "A bhfaigheann do bhaill"
+  "email_preview": "A bhfaigheann do bhaill",
+  "platform_notice": {
+    "region_label": "Fógraí ó fhoireann an ardáin",
+    "close": "Dún an fógra seo",
+    "new_tab": "(osclaítear i gcluaisín nua)",
+    "kind": {
+      "info": "Eolas:",
+      "planned_work": "Obair phleanáilte:",
+      "important": "Tábhachtach:"
+    }
+  }
 }

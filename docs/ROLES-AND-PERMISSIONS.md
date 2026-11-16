@@ -402,7 +402,18 @@ read-only: every community against every optional feature and core module, on
 or off, computed as `TenantContext::hasFeature()` / `hasModule()` compute it,
 plus the features a platform-wide switch is currently holding off. It reads
 no member data. Switches are still changed in each community's own admin
-panel.
+panel. The seventh is Notices (`GET`/`POST /v2/platform-team/notices`,
+`PUT …/{id}`, `POST …/{id}/end`; `PlatformNoticeService`): the platform team
+writes a short notice once and every community's admins see it as a band in
+the admin panel and the super admin panel. The read side is deliberately a
+different controller behind a different check:
+`GET /v2/admin/platform-notices` and
+`POST /v2/admin/platform-notices/{id}/dismiss` answer anyone who passes
+`requireAdmin()`. 🔴 Not brokers or coordinators, and never members (owner,
+16 November 2026). 🔴 `platform_notices` and `platform_notice_dismissals` are
+platform-global: they have no `tenant_id`, on purpose, because a notice is
+the same in every community. An admin is sent only what the band shows; who
+wrote a notice goes to the platform team's list alone.
 
 **Left open on purpose.** An endpoint that a screen outside the panel still
 calls keeps its previous check, and a test pins that a community admin still

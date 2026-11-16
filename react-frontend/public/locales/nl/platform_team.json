@@ -268,5 +268,61 @@
       "local_advertising": "Lokale advertenties",
       "maps": "Kaarten"
     }
+  },
+  "notices": {
+    "title": "Mededelingen",
+    "intro": "Schrijf een korte mededeling één keer en de beheerders van elke gemeenschap zien haar bovenaan het beheerpaneel. Leden en bemiddelaars zien haar nooit.",
+    "new": "Mededeling schrijven",
+    "loading": "De mededelingen worden geladen",
+    "load_error_title": "We konden de mededelingen nu niet laden",
+    "empty_title": "Nog geen mededelingen",
+    "empty_text": "Er is niets geschreven, dus beheerders zien niets extra.",
+    "state": {
+      "live": "Wordt nu getoond",
+      "scheduled": "Nog niet begonnen",
+      "expired": "Afgelopen",
+      "ended": "Vroegtijdig beëindigd"
+    },
+    "kind": {
+      "info": "Informatie",
+      "planned_work": "Gepland werk",
+      "important": "Belangrijk"
+    },
+    "from": "Te zien vanaf:",
+    "until": "Te zien tot:",
+    "written_by": "Geschreven door:",
+    "closed_count": "Mensen die haar sloten:",
+    "cannot_close": "Kan niet worden gesloten",
+    "change": "Wijzigen",
+    "end": "Nu beëindigen",
+    "end_title": "Deze mededeling nu beëindigen?",
+    "end_message": "Alle beheerders zien haar meteen niet meer. Ze kan niet opnieuw worden gestart; schrijf in plaats daarvan een nieuwe.",
+    "end_confirm": "Beëindigen",
+    "keep": "Laten staan",
+    "ended_toast": "De mededeling is beëindigd.",
+    "saved": "De mededeling is opgeslagen.",
+    "save_failed": "Dat is niet gelukt. Er is niets gewijzigd.",
+    "form": {
+      "title_new": "Mededeling schrijven",
+      "title_edit": "Mededeling wijzigen",
+      "preview": "Wat beheerders zullen zien",
+      "preview_placeholder": "Je mededeling verschijnt hier.",
+      "language_note": "De mededeling wordt getoond zoals je haar schrijft. Ze wordt niet vertaald.",
+      "message": "Mededeling",
+      "message_hint": "Platte tekst, één regel.",
+      "message_required": "Schrijf de mededeling in 280 tekens of minder.",
+      "kind": "Soort",
+      "link": "Link (optioneel)",
+      "link_hint": "Een volledig adres dat begint met https://",
+      "link_label": "Tekst voor de link",
+      "link_label_required": "Voeg de tekst voor de link toe, of laat de link leeg.",
+      "from": "Tonen vanaf (optioneel)",
+      "until": "Tonen tot (optioneel)",
+      "until_before_from": "Het einde moet later zijn dan het begin.",
+      "can_close": "Beheerders kunnen haar sluiten",
+      "can_close_hint": "Als dit uit staat, blijft de mededeling staan tot ze afloopt of tot jij haar beëindigt.",
+      "save": "Opslaan",
+      "cancel": "Annuleren"
+    }
   }
 }

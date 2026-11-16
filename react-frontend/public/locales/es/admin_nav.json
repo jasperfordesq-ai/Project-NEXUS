@@ -844,5 +844,15 @@
   "subscriptions": "Suscripciones",
   "stripe_account": "Cuenta de Stripe",
   "listings_digest": "Resumen por correo",
-  "email_preview": "Lo que reciben tus miembros"
+  "email_preview": "Lo que reciben tus miembros",
+  "platform_notice": {
+    "region_label": "Avisos del equipo de la plataforma",
+    "close": "Cerrar este aviso",
+    "new_tab": "(se abre en una pestaña nueva)",
+    "kind": {
+      "info": "Información:",
+      "planned_work": "Trabajos programados:",
+      "important": "Importante:"
+    }
+  }
 }

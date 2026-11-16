@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { SuperAdminHeader } from './components/SuperAdminHeader';
 import { SuperAdminSidebar } from './components/SuperAdminSidebar';
 import { SuperAdminBreadcrumbs } from './components/SuperAdminBreadcrumbs';
+import { PlatformNoticeBand } from '@/admin/components/PlatformNoticeBand';
 
 export function SuperAdminLayout() {
   const { t } = useTranslation('super_admin');
@@ -140,6 +141,8 @@ export function SuperAdminLayout() {
         }`}
       >
         <div className="mx-auto w-full max-w-[1600px] p-3 sm:p-4 md:p-6">
+          {/* A notice from the platform team to every community's admins. */}
+          <PlatformNoticeBand />
           <SuperAdminBreadcrumbs />
           <Outlet />
         </div>

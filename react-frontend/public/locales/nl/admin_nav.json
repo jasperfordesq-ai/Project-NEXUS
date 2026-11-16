@@ -840,5 +840,15 @@
   "subscriptions": "Abonnementen",
   "stripe_account": "Stripe-account",
   "listings_digest": "E-mailoverzicht",
-  "email_preview": "Wat je leden ontvangen"
+  "email_preview": "Wat je leden ontvangen",
+  "platform_notice": {
+    "region_label": "Mededelingen van het platformteam",
+    "close": "Deze mededeling sluiten",
+    "new_tab": "(opent in een nieuw tabblad)",
+    "kind": {
+      "info": "Informatie:",
+      "planned_work": "Gepland werk:",
+      "important": "Belangrijk:"
+    }
+  }
 }
