@@ -42,7 +42,7 @@ const PLATFORM_ZONE = [
   'enterprise', 'enterprise/permissions',
   // Moved in from the super admin panel's platform-wide half (phase 2).
   'billing', 'billing/revenue',
-  'provisioning-requests', 'platform/pilot-inquiries', 'platform-capabilities',
+  'provisioning-requests', 'platform/pilot-inquiries', 'platform-capabilities', 'phone-app',
   'federation', 'federation/whitelist', 'federation/partnerships', 'federation/audit',
   'regional-analytics/subscriptions', 'national/kiss',
   'platform/translation',

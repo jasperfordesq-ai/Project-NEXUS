@@ -16,7 +16,15 @@ const { mockAdminSettings } = vi.hoisted(() => ({
   },
 }));
 
-vi.mock('@/contexts', () => createMockContexts({}));
+const authState = vi.hoisted(() => ({ user: null as Record<string, unknown> | null }));
+
+vi.mock('@/contexts', () =>
+  createMockContexts({
+    // Cast: only `user` matters here (the test-type ratchet is shrink-only).
+    useAuth: () => ({ user: authState.user } as never),
+    useTenant: () => ({ tenantPath: (p: string) => `/test${p}` } as never),
+  }),
+);
 
 vi.mock('../../api/adminApi', () => ({
   adminSettings: mockAdminSettings,
@@ -87,6 +95,7 @@ const reply = (platform: typeof platformBlock | null) => ({
 describe('NativeAppInstallStats', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    authState.user = null;
     mockAdminSettings.getNativeAppMembers.mockResolvedValue({ success: true, data: [], meta: { total: 0 } });
   });
 
@@ -115,7 +124,9 @@ describe('NativeAppInstallStats', () => {
   });
 
   it('uses no insider words', async () => {
-    mockAdminSettings.getNativeAppInstallStats.mockResolvedValue(reply(platformBlock));
+    // As the platform team, so the link to their own page is on screen too.
+    authState.user = { id: 1, role: 'super_admin', is_god: true, is_super_admin: true };
+    mockAdminSettings.getNativeAppInstallStats.mockResolvedValue(reply(null));
     const { container } = render(<NativeAppInstallStats />);
     await waitFor(() => expect(screen.getByText('All communities')).toBeInTheDocument());
 
@@ -139,15 +150,37 @@ describe('NativeAppInstallStats', () => {
     expect(screen.queryByText('Sam Carter')).not.toBeInTheDocument();
   });
 
-  it('shows the all-communities block to a platform owner', async () => {
+  // The all-communities figures moved to the Platform team panel on 16 Nov 2026.
+  it('never shows the all-communities block here, even if an old server still sends one', async () => {
+    authState.user = { id: 1, role: 'super_admin', is_god: true, is_super_admin: true };
     mockAdminSettings.getNativeAppInstallStats.mockResolvedValue(reply(platformBlock));
     render(<NativeAppInstallStats />);
 
-    await waitFor(() => expect(screen.getByText('All communities')).toBeInTheDocument());
-    expect(screen.getAllByText('Minehead and Coast').length).toBeGreaterThan(0);
-    expect(screen.getByText('Sam Carter')).toBeInTheDocument();
-    expect(screen.getByText('hour-timebank')).toBeInTheDocument();
-    expect(screen.getByText('57')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText('42')).toBeInTheDocument());
+    expect(screen.queryByText('Minehead and Coast')).not.toBeInTheDocument();
+    expect(screen.queryByText('Sam Carter')).not.toBeInTheDocument();
+    expect(screen.queryByText('57')).not.toBeInTheDocument();
+  });
+
+  it('gives the platform team a way to the all-communities page in their panel', async () => {
+    authState.user = { id: 1, role: 'super_admin', is_god: true, is_super_admin: true };
+    mockAdminSettings.getNativeAppInstallStats.mockResolvedValue(reply(null));
+    render(<NativeAppInstallStats />);
+
+    const link = await screen.findByRole('link', { name: 'All communities' });
+    expect(link).toHaveAttribute('href', '/test/platform-team/phone-app');
+  });
+
+  it.each([
+    ['a community admin', { id: 2, role: 'admin' }],
+    ['a global super admin who is not on the platform team', { id: 3, role: 'super_admin', is_super_admin: true }],
+  ])('does not mention the all-communities page to %s', async (_who, user) => {
+    authState.user = user;
+    mockAdminSettings.getNativeAppInstallStats.mockResolvedValue(reply(null));
+    render(<NativeAppInstallStats />);
+
+    await waitFor(() => expect(screen.getByText('42')).toBeInTheDocument());
+    expect(screen.queryByRole('link', { name: 'All communities' })).not.toBeInTheDocument();
   });
 
   it('says "Nobody yet" for the newest member when no one has the app', async () => {

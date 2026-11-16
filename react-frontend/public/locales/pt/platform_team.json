@@ -143,5 +143,12 @@
     "previous_page": "Anterior",
     "next_page": "Próxima",
     "page_of": "Página {{page}} de {{pages}}"
+  },
+  "phone_app": {
+    "title": "Aplicativo para celular",
+    "intro": "Quem tem o aplicativo para celular, em cada comunidade da plataforma. Os membros aparecem pelo nome; os endereços de e-mail não são mostrados.",
+    "not_downloads": "São membros conectados no aplicativo, não downloads das lojas de aplicativos.",
+    "loading": "Carregando os números do aplicativo",
+    "load_error_title": "Não conseguimos carregar os números do aplicativo agora"
   }
 }

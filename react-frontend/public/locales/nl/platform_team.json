@@ -143,5 +143,12 @@
     "previous_page": "Vorige",
     "next_page": "Volgende",
     "page_of": "Pagina {{page}} van {{pages}}"
+  },
+  "phone_app": {
+    "title": "Telefoon-app",
+    "intro": "Wie de telefoon-app heeft, in elke gemeenschap op het platform. Leden worden bij naam genoemd; hun e-mailadressen worden niet getoond.",
+    "not_downloads": "Dit zijn leden die in de app zijn ingelogd, geen downloads uit de appwinkels.",
+    "loading": "De cijfers van de telefoon-app worden geladen",
+    "load_error_title": "We konden de cijfers van de telefoon-app nu niet laden"
   }
 }

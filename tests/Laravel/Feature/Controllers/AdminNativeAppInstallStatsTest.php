@@ -32,17 +32,27 @@ class AdminNativeAppInstallStatsTest extends TestCase
 
     private const ENDPOINT = '/v2/admin/config/native-app/install-stats';
 
+    /**
+     * The all-communities figures have their own request since 16 Nov 2026, in
+     * the Platform team panel (platform team only: is_god AND super admin).
+     * The tests below that are about those figures ask for them there.
+     */
+    private const ALL_COMMUNITIES = '/v2/platform-team/phone-app';
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->clearPhoneAppRecords();
     }
 
-    private function makeGod(User $user): void
+    /**
+     * The platform team: is_god AND super admin, as the panel requires. Written
+     * straight to the columns: is_god is a flag, never a role string, and the
+     * check reads the columns rather than the model instance.
+     */
+    private function makePlatformTeam(User $user): void
     {
-        // Written straight to the column: is_god is a flag, never a role string,
-        // and User::isGod() reads the column rather than the model instance.
-        DB::table('users')->where('id', $user->id)->update(['is_god' => 1]);
+        DB::table('users')->where('id', $user->id)->update(['is_god' => 1, 'is_super_admin' => 1]);
     }
 
     // ================================================================
@@ -180,7 +190,7 @@ class AdminNativeAppInstallStatsTest extends TestCase
     public function test_god_gets_cross_tenant_platform_block(): void
     {
         $god = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        $this->makeGod($god);
+        $this->makePlatformTeam($god);
 
         $ourMember = User::factory()->forTenant($this->testTenantId)->create();
         $theirMember = User::factory()->forTenant(self::OTHER_TENANT_ID)->create([
@@ -193,30 +203,31 @@ class AdminNativeAppInstallStatsTest extends TestCase
         $this->signIn($theirAppOnly->id, self::OTHER_TENANT_ID);
 
         Sanctum::actingAs($god);
-        $response = $this->apiGet(self::ENDPOINT)->assertOk();
-
-        $response->assertJsonPath('data.is_god', true);
-        $response->assertJsonPath('data.scope', 'platform');
+        $response = $this->apiGet(self::ALL_COMMUNITIES)->assertOk();
 
         // Other communities may hold rows from elsewhere in the test database,
         // so these are floors, not exact figures.
-        $this->assertGreaterThanOrEqual(3, $response->json('data.platform.members_with_app'));
-        $this->assertGreaterThanOrEqual(2, $response->json('data.platform.native_devices'));
-        $this->assertGreaterThanOrEqual(2, $response->json('data.platform.tenants_with_app'));
+        $this->assertGreaterThanOrEqual(3, $response->json('data.members_with_app'));
+        $this->assertGreaterThanOrEqual(2, $response->json('data.native_devices'));
+        $this->assertGreaterThanOrEqual(2, $response->json('data.tenants_with_app'));
 
-        // The god view names members from other communities — that is the point.
-        $names = array_column($response->json('data.platform.recent_members'), 'display_name');
+        // The platform team's view names members from other communities — that is the point.
+        $names = array_column($response->json('data.recent_members'), 'display_name');
         $this->assertContains('Ghost Ofanothertenant', $names);
 
-        // Its own tenant block stays scoped even for a god operator.
-        $response->assertJsonPath('data.tenant.native_devices', 1);
-        $response->assertJsonPath('data.tenant.members_with_app', 1);
+        // The community admin's own request stays scoped to this community even
+        // for the platform team, and no longer carries the all-communities block.
+        $own = $this->apiGet(self::ENDPOINT)->assertOk();
+        $own->assertJsonPath('data.scope', 'tenant');
+        $this->assertNull($own->json('data.platform'));
+        $own->assertJsonPath('data.tenant.native_devices', 1);
+        $own->assertJsonPath('data.tenant.members_with_app', 1);
     }
 
     public function test_god_by_tenant_breakdown_lists_each_community(): void
     {
         $god = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        $this->makeGod($god);
+        $this->makePlatformTeam($god);
 
         $ourMember = User::factory()->forTenant($this->testTenantId)->create();
         $theirMember = User::factory()->forTenant(self::OTHER_TENANT_ID)->create();
@@ -227,7 +238,7 @@ class AdminNativeAppInstallStatsTest extends TestCase
         $this->signIn($theirAppOnly->id, self::OTHER_TENANT_ID);
 
         Sanctum::actingAs($god);
-        $byTenant = $this->apiGet(self::ENDPOINT)->assertOk()->json('data.platform.by_tenant');
+        $byTenant = $this->apiGet(self::ALL_COMMUNITIES)->assertOk()->json('data.by_tenant');
 
         $rows = collect($byTenant)->keyBy('tenant_id');
         $this->assertSame(2, $rows[self::OTHER_TENANT_ID]['native_devices']);
@@ -243,13 +254,13 @@ class AdminNativeAppInstallStatsTest extends TestCase
         // not to accumulate contact details across communities they do not
         // administer. Email stays in the own-community list only.
         $god = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        $this->makeGod($god);
+        $this->makePlatformTeam($god);
 
         $theirMember = User::factory()->forTenant(self::OTHER_TENANT_ID)->create();
         $this->registerDevice($theirMember->id, self::OTHER_TENANT_ID);
 
         Sanctum::actingAs($god);
-        $recent = $this->apiGet(self::ENDPOINT)->assertOk()->json('data.platform.recent_members');
+        $recent = $this->apiGet(self::ALL_COMMUNITIES)->assertOk()->json('data.recent_members');
 
         $this->assertNotEmpty($recent);
         foreach ($recent as $row) {

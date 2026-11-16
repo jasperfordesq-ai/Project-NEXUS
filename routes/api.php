@@ -4506,6 +4506,8 @@ Route::middleware(['auth:sanctum', 'platform-team'])->group(function () {
     Route::get('/v2/platform-team/failed-jobs', [\App\Http\Controllers\Api\PlatformTeam\FailedJobsController::class, 'index']);
     Route::post('/v2/platform-team/failed-jobs/{uuid}/retry', [\App\Http\Controllers\Api\PlatformTeam\FailedJobsController::class, 'retry'])->whereUuid('uuid');
     Route::delete('/v2/platform-team/failed-jobs/{uuid}', [\App\Http\Controllers\Api\PlatformTeam\FailedJobsController::class, 'destroy'])->whereUuid('uuid');
+    // Phone app: who has the app across every community (moved out of the community admin's request).
+    Route::get('/v2/platform-team/phone-app', [\App\Http\Controllers\Api\PlatformTeam\PhoneAppController::class, 'index']);
 });
 
 // AG71 — Pilot Region Inquiry & Qualification Funnel

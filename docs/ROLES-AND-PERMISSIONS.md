@@ -373,7 +373,13 @@ sends counts and times, never the contents of a failed job. The second is
 Failed background jobs (`GET /v2/platform-team/failed-jobs`, `POST …/{uuid}/retry`,
 `DELETE …/{uuid}`; `FailedJobsService`): it lists each failed job by name, queue,
 time and one line of the reason with email addresses masked, and never returns
-the job's payload or stack trace, which can hold members' details.
+the job's payload or stack trace, which can hold members' details. The third is
+Phone app (`GET /v2/platform-team/phone-app`): who has the phone app in every
+community, with the newest members named by display name and username and no
+email addresses. Those figures used to be sent to any `is_god` account inside
+the community admin's own request
+(`GET /v2/admin/config/native-app/install-stats`); since 16 November 2026 that
+request answers for the one community only, whoever asks.
 
 **Left open on purpose.** An endpoint that a screen outside the panel still
 calls keeps its previous check, and a test pins that a community admin still

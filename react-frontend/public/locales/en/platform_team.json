@@ -143,5 +143,12 @@
     "previous_page": "Previous",
     "next_page": "Next",
     "page_of": "Page {{page}} of {{pages}}"
+  },
+  "phone_app": {
+    "title": "Phone app",
+    "intro": "Who has the phone app, in every community on the platform. Members are named; their email addresses are not shown.",
+    "not_downloads": "These are members signed in on the app, not downloads from the app stores.",
+    "loading": "Loading the phone app figures",
+    "load_error_title": "We couldn't load the phone app figures just now"
   }
 }

@@ -143,5 +143,12 @@
     "previous_page": "Anterior",
     "next_page": "Siguiente",
     "page_of": "Página {{page}} de {{pages}}"
+  },
+  "phone_app": {
+    "title": "App para el móvil",
+    "intro": "Quién tiene la app para el móvil, en cada comunidad de la plataforma. Se muestran los nombres de los miembros; sus direcciones de correo no.",
+    "not_downloads": "Son miembros que han iniciado sesión en la app, no descargas de las tiendas de aplicaciones.",
+    "loading": "Cargando las cifras de la app para el móvil",
+    "load_error_title": "No hemos podido cargar las cifras de la app ahora mismo"
   }
 }

@@ -143,5 +143,12 @@
     "previous_page": "Precedente",
     "next_page": "Successiva",
     "page_of": "Pagina {{page}} di {{pages}}"
+  },
+  "phone_app": {
+    "title": "App per il telefono",
+    "intro": "Chi ha l’app per il telefono, in ogni comunità della piattaforma. I membri sono indicati per nome; i loro indirizzi email non vengono mostrati.",
+    "not_downloads": "Sono membri che hanno effettuato l’accesso nell’app, non download dagli app store.",
+    "loading": "Caricamento dei dati dell’app per il telefono",
+    "load_error_title": "Non siamo riusciti a caricare i dati dell’app in questo momento"
   }
 }

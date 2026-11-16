@@ -65,6 +65,7 @@ import Settings from 'lucide-react/icons/settings';
 import Shield from 'lucide-react/icons/shield';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import SlidersHorizontal from 'lucide-react/icons/sliders-horizontal';
+import Smartphone from 'lucide-react/icons/smartphone';
 import Stethoscope from 'lucide-react/icons/stethoscope';
 import Target from 'lucide-react/icons/target';
 import Timer from 'lucide-react/icons/timer';
@@ -146,6 +147,7 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
             { label: tSuper('nav.provisioning_queue'), icon: Building2, path: `${P}/provisioning-requests` },
             { label: tSuper('nav.pilot_inquiries'), icon: FileSearch, path: `${P}/platform/pilot-inquiries` },
             { label: tNav('platform_capabilities'), icon: SlidersHorizontal, path: `${P}/platform-capabilities` },
+            { label: t('phone_app.title'), icon: Smartphone, path: `${P}/phone-app` },
           ],
         },
         {

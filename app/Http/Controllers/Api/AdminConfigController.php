@@ -2489,13 +2489,18 @@ class AdminConfigController extends BaseApiController
         $isGod = \App\Models\User::isGod($userId);
         $stats = new NativeAppInstallStatsService();
 
+        // 🔴 This community only, for everyone, since 16 Nov 2026. The
+        // all-communities figures that used to be sent here to is_god accounts
+        // have their own request in the Platform team panel
+        // (PlatformTeam\PhoneAppController). `platform` stays in the shape as
+        // null and `scope` as 'tenant' so an older browser tab still reads it.
         return $this->respondWithData([
             'tenant_id' => $tenantId,
             'is_god' => $isGod,
-            'scope' => $isGod ? 'platform' : 'tenant',
+            'scope' => 'tenant',
             'disclaimer_key' => 'app_members_not_store_installs',
             'tenant' => $stats->tenantStats($tenantId),
-            'platform' => $isGod ? $stats->platformStats() : null,
+            'platform' => null,
         ]);
     }
 

@@ -143,5 +143,12 @@
     "previous_page": "Poprzednia",
     "next_page": "Następna",
     "page_of": "Strona {{page}} z {{pages}}"
+  },
+  "phone_app": {
+    "title": "Aplikacja na telefon",
+    "intro": "Kto ma aplikację na telefon, w każdej społeczności na platformie. Członkowie są wymienieni z imienia i nazwiska; ich adresy e-mail nie są pokazywane.",
+    "not_downloads": "To członkowie zalogowani w aplikacji, a nie pobrania ze sklepów z aplikacjami.",
+    "loading": "Wczytywanie danych o aplikacji na telefon",
+    "load_error_title": "Nie udało się teraz wczytać danych o aplikacji na telefon"
   }
 }

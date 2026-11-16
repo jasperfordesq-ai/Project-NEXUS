@@ -143,5 +143,12 @@
     "previous_page": "Précédent",
     "next_page": "Suivant",
     "page_of": "Page {{page}} sur {{pages}}"
+  },
+  "phone_app": {
+    "title": "Application mobile",
+    "intro": "Qui a l'application mobile, dans chaque communauté de la plateforme. Les membres sont nommés ; leurs adresses e-mail ne sont pas affichées.",
+    "not_downloads": "Il s'agit des membres connectés dans l'application, pas des téléchargements depuis les boutiques d'applications.",
+    "loading": "Chargement des chiffres de l'application mobile",
+    "load_error_title": "Nous n'avons pas pu charger les chiffres de l'application pour le moment"
   }
 }

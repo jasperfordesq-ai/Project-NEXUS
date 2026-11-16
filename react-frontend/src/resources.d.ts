@@ -57346,6 +57346,13 @@ export default interface Resources {
       "regional_analytics_subscriptions": "Analytics subscriptions",
       "tests": "Tests"
     },
+    "phone_app": {
+      "intro": "Who has the phone app, in every community on the platform. Members are named; their email addresses are not shown.",
+      "load_error_title": "We couldn't load the phone app figures just now",
+      "loading": "Loading the phone app figures",
+      "not_downloads": "These are members signed in on the app, not downloads from the app stores.",
+      "title": "Phone app"
+    },
     "sidebar": {
       "collapse": "Hide the menu",
       "expand": "Show the menu",

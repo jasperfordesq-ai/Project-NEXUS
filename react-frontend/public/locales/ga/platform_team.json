@@ -143,5 +143,12 @@
     "previous_page": "Roimhe",
     "next_page": "Ar aghaidh",
     "page_of": "Leathanach {{page}} de {{pages}}"
+  },
+  "phone_app": {
+    "title": "Aip fóin",
+    "intro": "Cé aige a bhfuil an aip fóin, i ngach pobal ar an ardán. Ainmnítear na baill; ní thaispeántar a seoltaí ríomhphoist.",
+    "not_downloads": "Is baill iad seo atá sínithe isteach san aip, ní íoslódálacha ó na siopaí aipeanna.",
+    "loading": "Figiúirí na haipe fóin á lódáil",
+    "load_error_title": "Níorbh fhéidir linn figiúirí na haipe fóin a lódáil faoi láthair"
   }
 }

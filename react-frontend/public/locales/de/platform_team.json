@@ -143,5 +143,12 @@
     "previous_page": "Zurück",
     "next_page": "Weiter",
     "page_of": "Seite {{page}} von {{pages}}"
+  },
+  "phone_app": {
+    "title": "Handy-App",
+    "intro": "Wer die Handy-App hat, in jeder Gemeinschaft auf der Plattform. Mitglieder werden mit Namen genannt; ihre E-Mail-Adressen werden nicht angezeigt.",
+    "not_downloads": "Das sind Mitglieder, die in der App angemeldet sind, keine Downloads aus den App-Stores.",
+    "loading": "Zahlen zur Handy-App werden geladen",
+    "load_error_title": "Wir konnten die Zahlen zur Handy-App gerade nicht laden"
   }
 }
