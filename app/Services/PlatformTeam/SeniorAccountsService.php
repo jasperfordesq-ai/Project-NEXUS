@@ -8,6 +8,8 @@ declare(strict_types=1);
 
 namespace App\Services\PlatformTeam;
 
+use App\Support\Names\NameReason;
+use App\Support\UserDisplayName;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -75,7 +77,11 @@ final class SeniorAccountsService
             ->orderBy('u.id')
             ->limit(self::LIMIT + 1)
             ->get([
-                'u.id', 'u.name', 'u.first_name', 'u.last_name', 'u.email', 'u.role', 'u.status',
+                'u.id', 'u.name',
+                // The platform's one display-name rule. Full, because only the
+                // platform team can reach this (the strictest admin gate).
+                DB::raw(UserDisplayName::sqlFull('u', 'display_name', NameReason::ADMIN_ROUTE)),
+                'u.email', 'u.role', 'u.status',
                 'u.is_god', 'u.is_super_admin', 'u.is_tenant_super_admin',
                 'u.totp_enabled', 'u.last_login_at', 'u.tenant_id', 't.name as tenant_name',
             ]);
@@ -103,9 +109,9 @@ final class SeniorAccountsService
             };
             $counts[$level]++;
 
-            $name = trim((string) ($row->name ?? ''));
+            $name = trim((string) ($row->display_name ?? ''));
             if ($name === '') {
-                $name = trim(($row->first_name ?? '') . ' ' . ($row->last_name ?? ''));
+                $name = trim((string) ($row->name ?? ''));
             }
 
             $accounts[] = [

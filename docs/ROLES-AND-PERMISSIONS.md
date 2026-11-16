@@ -386,7 +386,17 @@ every account that can administer more than one community, with its level
 without super admin, which is not platform team membership), home community,
 last sign-in date, two-step on or off and whether it has a passkey. 🔴 It is
 read-only and must stay so: no request grants or removes platform team
-membership, which is set in the database on purpose.
+membership, which is set in the database on purpose. The fifth is Security
+(`GET /v2/platform-team/security`; `SecurityOverviewService`), also read-only:
+senior access given and removed (`super_admin_audit_log`, and `org_audit_log`
+rows `grant_tenant_super_admin` / `revoke_tenant_super_admin`), admins signing
+in as another member (`org_audit_log` rows `admin_user_impersonated`), counts
+of failed sign-ins (`login_attempts`) and how many senior accounts have
+two-step off. 🔴 It sends names and counts only: email addresses, IP
+addresses, user agents and stored descriptions are never selected into the
+response, and a section that cannot be read answers `available: false`
+instead of an empty list. 🔴 Changes to `users.is_god` are not recorded
+anywhere, so no page can show them.
 
 **Left open on purpose.** An endpoint that a screen outside the panel still
 calls keeps its previous check, and a test pins that a community admin still

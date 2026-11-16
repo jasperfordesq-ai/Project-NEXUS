@@ -191,5 +191,53 @@
       "rejected": "Rejeitada",
       "other": "Não ativa"
     }
+  },
+  "security": {
+    "title": "Segurança",
+    "intro": "Quem tem acesso de alto nível, quem o recebeu ou perdeu, quem entrou como outro membro e onde as entradas estão falhando. Em todas as comunidades.",
+    "privacy_note": "Pessoas e comunidades aparecem pelo nome. Endereços de e-mail e endereços de internet nunca são mostrados aqui.",
+    "loading": "Carregando a página de segurança",
+    "load_error_title": "Não conseguimos carregar a página de segurança agora",
+    "unavailable": "Não foi possível verificar isto agora.",
+    "not_recorded": "Não registrado",
+    "by": "Por:",
+    "when": "Quando:",
+    "truncated": "Apenas os {{count}} mais recentes são mostrados.",
+    "two_step": {
+      "title": "Entrada em duas etapas nas contas de alto nível",
+      "off": "A entrada em duas etapas está desativada em {{count}} de {{total}} contas de alto nível.",
+      "all_on": "A entrada em duas etapas está ativada em todas as {{total}} contas de alto nível.",
+      "link": "Ver as contas de alto nível"
+    },
+    "failed": {
+      "title": "Entradas que falharam nas últimas 24 horas",
+      "note": "As tentativas que falharam em uma conta são apagadas quando ela volta a entrar com sucesso; por isso não são contadas aqui.",
+      "last_hour": "Na última hora",
+      "last_24h": "Nas últimas 24 horas",
+      "addresses": "Endereços de internet diferentes",
+      "most_from_one": "O maior número de um só endereço",
+      "empty": "Nenhuma entrada falhou nas últimas 24 horas.",
+      "col_failed": "Tentativas que falharam:",
+      "col_accounts": "Contas tentadas:",
+      "col_most": "O maior número em uma só conta:",
+      "col_last": "A mais recente:"
+    },
+    "access": {
+      "title": "Acesso de alto nível concedido e retirado",
+      "note": "A participação na equipe da plataforma é definida no banco de dados. As mudanças nela não são registradas e, por isso, não podem ser mostradas aqui.",
+      "empty": "Nenhum acesso de alto nível foi concedido ou retirado nos últimos {{days}} dias.",
+      "change": {
+        "tenant_super_admin_granted": "Superadministrador de comunidade concedido",
+        "tenant_super_admin_removed": "Superadministrador de comunidade retirado",
+        "global_super_admin_granted": "Superadministrador global concedido",
+        "global_super_admin_removed": "Superadministrador global retirado"
+      }
+    },
+    "impersonation": {
+      "title": "Entrada como outro membro",
+      "note": "Um administrador pode entrar como um membro para ajudá-lo. Cada vez que isso aconteceu está listada aqui.",
+      "empty": "Ninguém entrou como outro membro nos últimos {{days}} dias.",
+      "member": "Entrou como:"
+    }
   }
 }

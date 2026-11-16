@@ -191,5 +191,53 @@
       "rejected": "Afgewezen",
       "other": "Niet actief"
     }
+  },
+  "security": {
+    "title": "Beveiliging",
+    "intro": "Wie toegang op hoog niveau heeft, wie die kreeg of kwijtraakte, wie inlogde als een ander lid en waar inloggen mislukt. In alle gemeenschappen.",
+    "privacy_note": "Personen en gemeenschappen worden bij naam getoond. E-mailadressen en internetadressen worden hier nooit getoond.",
+    "loading": "De beveiligingspagina wordt geladen",
+    "load_error_title": "We konden de beveiligingspagina nu niet laden",
+    "unavailable": "Dit kon nu niet worden gecontroleerd.",
+    "not_recorded": "Niet vastgelegd",
+    "by": "Door:",
+    "when": "Wanneer:",
+    "truncated": "Alleen de nieuwste {{count}} worden getoond.",
+    "two_step": {
+      "title": "Inloggen in twee stappen bij accounts op hoog niveau",
+      "off": "Inloggen in twee stappen staat uit bij {{count}} van de {{total}} accounts op hoog niveau.",
+      "all_on": "Inloggen in twee stappen staat aan bij alle {{total}} accounts op hoog niveau.",
+      "link": "Bekijk de accounts op hoog niveau"
+    },
+    "failed": {
+      "title": "Mislukte inlogpogingen in de afgelopen 24 uur",
+      "note": "De mislukte pogingen van een account worden gewist zodra het weer met succes inlogt. Die worden hier dus niet meegeteld.",
+      "last_hour": "In het afgelopen uur",
+      "last_24h": "In de afgelopen 24 uur",
+      "addresses": "Verschillende internetadressen",
+      "most_from_one": "De meeste vanaf één adres",
+      "empty": "Geen mislukte inlogpogingen in de afgelopen 24 uur.",
+      "col_failed": "Mislukte pogingen:",
+      "col_accounts": "Geprobeerde accounts:",
+      "col_most": "De meeste op één account:",
+      "col_last": "Laatste:"
+    },
+    "access": {
+      "title": "Toegang op hoog niveau gegeven en ingetrokken",
+      "note": "Lidmaatschap van het platformteam wordt in de database ingesteld. Wijzigingen daarin worden niet vastgelegd en kunnen hier dus niet worden getoond.",
+      "empty": "In de afgelopen {{days}} dagen is geen toegang op hoog niveau gegeven of ingetrokken.",
+      "change": {
+        "tenant_super_admin_granted": "Superbeheerder van een gemeenschap gegeven",
+        "tenant_super_admin_removed": "Superbeheerder van een gemeenschap ingetrokken",
+        "global_super_admin_granted": "Globale superbeheerder gegeven",
+        "global_super_admin_removed": "Globale superbeheerder ingetrokken"
+      }
+    },
+    "impersonation": {
+      "title": "Ingelogd als een ander lid",
+      "note": "Een beheerder kan inloggen als een lid om dat lid te helpen. Elke keer dat dit gebeurde, staat hier.",
+      "empty": "In de afgelopen {{days}} dagen heeft niemand ingelogd als een ander lid.",
+      "member": "Ingelogd als:"
+    }
   }
 }

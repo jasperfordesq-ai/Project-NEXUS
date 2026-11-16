@@ -191,5 +191,53 @@
       "rejected": "Rifiutato",
       "other": "Non attivo"
     }
+  },
+  "security": {
+    "title": "Sicurezza",
+    "intro": "Chi ha un accesso di alto livello, a chi è stato dato o tolto, chi ha effettuato l’accesso come un altro membro e dove gli accessi non riescono. In tutte le comunità.",
+    "privacy_note": "Persone e comunità sono mostrate per nome. Qui non vengono mai mostrati indirizzi email né indirizzi internet.",
+    "loading": "Caricamento della pagina di sicurezza",
+    "load_error_title": "Non siamo riusciti a caricare la pagina di sicurezza in questo momento",
+    "unavailable": "Non è stato possibile verificarlo in questo momento.",
+    "not_recorded": "Non registrato",
+    "by": "Da:",
+    "when": "Quando:",
+    "truncated": "Sono mostrati solo i {{count}} più recenti.",
+    "two_step": {
+      "title": "Accesso in due passaggi per gli account di alto livello",
+      "off": "L’accesso in due passaggi è disattivato per {{count}} di {{total}} account di alto livello.",
+      "all_on": "L’accesso in due passaggi è attivo per tutti i {{total}} account di alto livello.",
+      "link": "Vedi gli account di alto livello"
+    },
+    "failed": {
+      "title": "Accessi non riusciti nelle ultime 24 ore",
+      "note": "I tentativi non riusciti di un account vengono cancellati quando accede di nuovo correttamente, quindi qui non sono contati.",
+      "last_hour": "Nell’ultima ora",
+      "last_24h": "Nelle ultime 24 ore",
+      "addresses": "Indirizzi internet diversi",
+      "most_from_one": "Il numero più alto da un solo indirizzo",
+      "empty": "Nessun accesso non riuscito nelle ultime 24 ore.",
+      "col_failed": "Tentativi non riusciti:",
+      "col_accounts": "Account provati:",
+      "col_most": "Il numero più alto su un solo account:",
+      "col_last": "L’ultimo:"
+    },
+    "access": {
+      "title": "Accessi di alto livello concessi e tolti",
+      "note": "L’appartenenza al team della piattaforma si imposta nel database. Le sue modifiche non vengono registrate, quindi non possono essere mostrate qui.",
+      "empty": "Negli ultimi {{days}} giorni non è stato concesso né tolto alcun accesso di alto livello.",
+      "change": {
+        "tenant_super_admin_granted": "Super amministratore di comunità concesso",
+        "tenant_super_admin_removed": "Super amministratore di comunità tolto",
+        "global_super_admin_granted": "Super amministratore globale concesso",
+        "global_super_admin_removed": "Super amministratore globale tolto"
+      }
+    },
+    "impersonation": {
+      "title": "Accesso come un altro membro",
+      "note": "Un amministratore può accedere come un membro per aiutarlo. Qui è elencata ogni volta che è successo.",
+      "empty": "Negli ultimi {{days}} giorni nessuno ha effettuato l’accesso come un altro membro.",
+      "member": "Accesso effettuato come:"
+    }
   }
 }

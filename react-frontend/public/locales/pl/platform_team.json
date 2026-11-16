@@ -191,5 +191,53 @@
       "rejected": "Odrzucone",
       "other": "Nieaktywne"
     }
+  },
+  "security": {
+    "title": "Bezpieczeństwo",
+    "intro": "Kto ma dostęp wysokiego szczebla, komu go nadano lub odebrano, kto zalogował się jako inny członek i gdzie logowania się nie udają. We wszystkich społecznościach.",
+    "privacy_note": "Osoby i społeczności są pokazywane z nazwy. Adresy e-mail i adresy internetowe nigdy nie są tu pokazywane.",
+    "loading": "Wczytywanie strony bezpieczeństwa",
+    "load_error_title": "Nie udało się teraz wczytać strony bezpieczeństwa",
+    "unavailable": "Nie udało się tego teraz sprawdzić.",
+    "not_recorded": "Nie zapisano",
+    "by": "Przez:",
+    "when": "Kiedy:",
+    "truncated": "Pokazano tylko najnowsze wpisy: {{count}}.",
+    "two_step": {
+      "title": "Logowanie dwuetapowe na kontach wysokiego szczebla",
+      "off": "Logowanie dwuetapowe jest wyłączone na {{count}} z {{total}} kont wysokiego szczebla.",
+      "all_on": "Logowanie dwuetapowe jest włączone na wszystkich kontach wysokiego szczebla ({{total}}).",
+      "link": "Zobacz konta wysokiego szczebla"
+    },
+    "failed": {
+      "title": "Nieudane logowania w ciągu ostatnich 24 godzin",
+      "note": "Nieudane próby danego konta są usuwane, gdy konto ponownie zaloguje się poprawnie, więc nie są tu liczone.",
+      "last_hour": "W ciągu ostatniej godziny",
+      "last_24h": "W ciągu ostatnich 24 godzin",
+      "addresses": "Różne adresy internetowe",
+      "most_from_one": "Najwięcej z jednego adresu",
+      "empty": "Brak nieudanych logowań w ciągu ostatnich 24 godzin.",
+      "col_failed": "Nieudane próby:",
+      "col_accounts": "Konta, na które próbowano:",
+      "col_most": "Najwięcej na jednym koncie:",
+      "col_last": "Ostatnia:"
+    },
+    "access": {
+      "title": "Nadany i odebrany dostęp wysokiego szczebla",
+      "note": "Przynależność do zespołu platformy ustawia się w bazie danych. Jej zmiany nie są zapisywane, więc nie można ich tu pokazać.",
+      "empty": "W ciągu ostatnich {{days}} dni nie nadano ani nie odebrano dostępu wysokiego szczebla.",
+      "change": {
+        "tenant_super_admin_granted": "Nadano superadministratora społeczności",
+        "tenant_super_admin_removed": "Odebrano superadministratora społeczności",
+        "global_super_admin_granted": "Nadano globalnego superadministratora",
+        "global_super_admin_removed": "Odebrano globalnego superadministratora"
+      }
+    },
+    "impersonation": {
+      "title": "Logowanie jako inny członek",
+      "note": "Administrator może zalogować się jako członek, żeby mu pomóc. Każdy taki przypadek jest tu wymieniony.",
+      "empty": "W ciągu ostatnich {{days}} dni nikt nie zalogował się jako inny członek.",
+      "member": "Zalogowano jako:"
+    }
   }
 }

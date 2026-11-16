@@ -52,6 +52,7 @@ vi.mock('./pages/PlatformTeamHome', () => ({ default: () => <div>page:PlatformTe
 vi.mock('./pages/FailedJobsPage', () => ({ default: () => <div>page:FailedJobsPage</div> }));
 vi.mock('./pages/PhoneAppPage', () => ({ default: () => <div>page:PhoneAppPage</div> }));
 vi.mock('./pages/SeniorAccountsPage', () => ({ default: () => <div>page:SeniorAccountsPage</div> }));
+vi.mock('./pages/SecurityPage', () => ({ default: () => <div>page:SecurityPage</div> }));
 vi.mock('@/admin/modules/content/MenusAdmin', () => ({ default: () => <div>page:MenusAdmin</div> }));
 vi.mock('@/admin/modules/content/MenuBuilder', () => ({ default: () => <div>page:MenuBuilder</div> }));
 vi.mock('@/admin/modules/advanced/EmailSettings', () => ({ default: () => <div>page:EmailSettings</div> }));
@@ -229,6 +230,11 @@ describe('the Platform team panel mounts every moved page', () => {
   it('opens Failed background jobs, a page of the panel\'s own', async () => {
     renderAt('/test/platform-team/failed-jobs');
     expect(await screen.findByText('page:FailedJobsPage')).toBeInTheDocument();
+  });
+
+  it('opens the Security page', async () => {
+    renderAt('/test/platform-team/security');
+    expect(await screen.findByText('page:SecurityPage')).toBeInTheDocument();
   });
 
   it('opens the Senior accounts page', async () => {

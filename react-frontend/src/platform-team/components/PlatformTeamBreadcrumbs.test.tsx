@@ -130,6 +130,7 @@ describe('PlatformTeamBreadcrumbs', () => {
     ['/platform-team/failed-jobs', 'home.card.failed_jobs'],
     ['/platform-team/phone-app', 'phone_app.title'],
     ['/platform-team/senior-accounts', 'senior_accounts.title'],
+    ['/platform-team/security', 'security.title'],
   ])('names the last step of %s', (pathname, label) => {
     state.pathname = pathname;
     render(<PlatformTeamBreadcrumbs />);

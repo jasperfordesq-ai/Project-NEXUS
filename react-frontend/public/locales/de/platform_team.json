@@ -191,5 +191,53 @@
       "rejected": "Abgelehnt",
       "other": "Nicht aktiv"
     }
+  },
+  "security": {
+    "title": "Sicherheit",
+    "intro": "Wer leitenden Zugriff hat, wer ihn bekommen oder verloren hat, wer sich als ein anderes Mitglied angemeldet hat und wo Anmeldungen scheitern. Über alle Gemeinschaften hinweg.",
+    "privacy_note": "Personen und Gemeinschaften werden mit Namen angezeigt. E-Mail-Adressen und Internetadressen werden hier nie angezeigt.",
+    "loading": "Die Sicherheitsseite wird geladen",
+    "load_error_title": "Wir konnten die Sicherheitsseite gerade nicht laden",
+    "unavailable": "Das konnte gerade nicht geprüft werden.",
+    "not_recorded": "Nicht erfasst",
+    "by": "Von:",
+    "when": "Wann:",
+    "truncated": "Es werden nur die neuesten {{count}} angezeigt.",
+    "two_step": {
+      "title": "Anmeldung in zwei Schritten bei leitenden Konten",
+      "off": "Bei {{count}} von {{total}} leitenden Konten ist die Anmeldung in zwei Schritten ausgeschaltet.",
+      "all_on": "Bei allen {{total}} leitenden Konten ist die Anmeldung in zwei Schritten eingeschaltet.",
+      "link": "Leitende Konten ansehen"
+    },
+    "failed": {
+      "title": "Fehlgeschlagene Anmeldungen in den letzten 24 Stunden",
+      "note": "Die fehlgeschlagenen Versuche eines Kontos werden gelöscht, sobald es sich wieder erfolgreich anmeldet. Sie werden hier deshalb nicht mitgezählt.",
+      "last_hour": "In der letzten Stunde",
+      "last_24h": "In den letzten 24 Stunden",
+      "addresses": "Verschiedene Internetadressen",
+      "most_from_one": "Die meisten von einer Adresse",
+      "empty": "Keine fehlgeschlagenen Anmeldungen in den letzten 24 Stunden.",
+      "col_failed": "Fehlversuche:",
+      "col_accounts": "Betroffene Konten:",
+      "col_most": "Die meisten bei einem Konto:",
+      "col_last": "Zuletzt:"
+    },
+    "access": {
+      "title": "Leitender Zugriff: vergeben und entzogen",
+      "note": "Die Mitgliedschaft im Plattform-Team wird in der Datenbank gesetzt. Änderungen daran werden nicht aufgezeichnet und können hier deshalb nicht angezeigt werden.",
+      "empty": "In den letzten {{days}} Tagen wurde kein leitender Zugriff vergeben oder entzogen.",
+      "change": {
+        "tenant_super_admin_granted": "Super-Admin einer Gemeinschaft vergeben",
+        "tenant_super_admin_removed": "Super-Admin einer Gemeinschaft entzogen",
+        "global_super_admin_granted": "Globaler Super-Admin vergeben",
+        "global_super_admin_removed": "Globaler Super-Admin entzogen"
+      }
+    },
+    "impersonation": {
+      "title": "Als anderes Mitglied angemeldet",
+      "note": "Ein Admin kann sich als Mitglied anmelden, um ihm zu helfen. Jedes Mal, wenn das geschehen ist, steht hier.",
+      "empty": "In den letzten {{days}} Tagen hat sich niemand als ein anderes Mitglied angemeldet.",
+      "member": "Angemeldet als:"
+    }
   }
 }

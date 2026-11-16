@@ -191,5 +191,53 @@
       "rejected": "Rechazada",
       "other": "No activa"
     }
+  },
+  "security": {
+    "title": "Seguridad",
+    "intro": "Quién tiene acceso de alto nivel, a quién se le dio o se le quitó, quién inició sesión como otro miembro y dónde fallan los inicios de sesión. En todas las comunidades.",
+    "privacy_note": "Las personas y las comunidades se muestran por su nombre. Aquí nunca se muestran direcciones de correo ni direcciones de internet.",
+    "loading": "Cargando la página de seguridad",
+    "load_error_title": "No hemos podido cargar la página de seguridad ahora mismo",
+    "unavailable": "Esto no se ha podido comprobar ahora mismo.",
+    "not_recorded": "No registrado",
+    "by": "Por:",
+    "when": "Cuándo:",
+    "truncated": "Solo se muestran los {{count}} más recientes.",
+    "two_step": {
+      "title": "Inicio de sesión en dos pasos en las cuentas de alto nivel",
+      "off": "El inicio de sesión en dos pasos está desactivado en {{count}} de {{total}} cuentas de alto nivel.",
+      "all_on": "El inicio de sesión en dos pasos está activado en las {{total}} cuentas de alto nivel.",
+      "link": "Ver las cuentas de alto nivel"
+    },
+    "failed": {
+      "title": "Inicios de sesión fallidos en las últimas 24 horas",
+      "note": "Los intentos fallidos de una cuenta se borran cuando vuelve a iniciar sesión correctamente, así que esos no se cuentan aquí.",
+      "last_hour": "En la última hora",
+      "last_24h": "En las últimas 24 horas",
+      "addresses": "Direcciones de internet distintas",
+      "most_from_one": "Más desde una sola dirección",
+      "empty": "No hay inicios de sesión fallidos en las últimas 24 horas.",
+      "col_failed": "Intentos fallidos:",
+      "col_accounts": "Cuentas probadas:",
+      "col_most": "Más en una sola cuenta:",
+      "col_last": "El último:"
+    },
+    "access": {
+      "title": "Acceso de alto nivel concedido y retirado",
+      "note": "La pertenencia al equipo de la plataforma se establece en la base de datos. Sus cambios no se registran, así que no pueden mostrarse aquí.",
+      "empty": "No se ha concedido ni retirado ningún acceso de alto nivel en los últimos {{days}} días.",
+      "change": {
+        "tenant_super_admin_granted": "Superadministrador de comunidad concedido",
+        "tenant_super_admin_removed": "Superadministrador de comunidad retirado",
+        "global_super_admin_granted": "Superadministrador global concedido",
+        "global_super_admin_removed": "Superadministrador global retirado"
+      }
+    },
+    "impersonation": {
+      "title": "Inicio de sesión como otro miembro",
+      "note": "Un administrador puede iniciar sesión como un miembro para ayudarle. Aquí aparece cada vez que ocurrió.",
+      "empty": "Nadie ha iniciado sesión como otro miembro en los últimos {{days}} días.",
+      "member": "Inició sesión como:"
+    }
   }
 }

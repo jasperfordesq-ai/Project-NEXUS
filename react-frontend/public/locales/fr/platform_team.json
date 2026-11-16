@@ -191,5 +191,53 @@
       "rejected": "Refusé",
       "other": "Non actif"
     }
+  },
+  "security": {
+    "title": "Sécurité",
+    "intro": "Qui détient un accès à haut niveau, qui l'a reçu ou perdu, qui s'est connecté à la place d'un autre membre, et où les connexions échouent. Dans toutes les communautés.",
+    "privacy_note": "Les personnes et les communautés sont affichées par leur nom. Les adresses e-mail et les adresses internet ne sont jamais affichées ici.",
+    "loading": "Chargement de la page de sécurité",
+    "load_error_title": "Nous n'avons pas pu charger la page de sécurité pour le moment",
+    "unavailable": "Cela n'a pas pu être vérifié pour le moment.",
+    "not_recorded": "Non enregistré",
+    "by": "Par :",
+    "when": "Quand :",
+    "truncated": "Seuls les {{count}} plus récents sont affichés.",
+    "two_step": {
+      "title": "Connexion en deux étapes des comptes à haut niveau",
+      "off": "La connexion en deux étapes est désactivée pour {{count}} des {{total}} comptes à haut niveau.",
+      "all_on": "La connexion en deux étapes est activée pour les {{total}} comptes à haut niveau.",
+      "link": "Voir les comptes à haut niveau"
+    },
+    "failed": {
+      "title": "Connexions échouées au cours des dernières 24 heures",
+      "note": "Les tentatives échouées d'un compte sont effacées dès qu'il se connecte à nouveau avec succès ; elles ne sont donc pas comptées ici.",
+      "last_hour": "Durant la dernière heure",
+      "last_24h": "Durant les dernières 24 heures",
+      "addresses": "Adresses internet différentes",
+      "most_from_one": "Le plus depuis une seule adresse",
+      "empty": "Aucune connexion échouée au cours des dernières 24 heures.",
+      "col_failed": "Tentatives échouées :",
+      "col_accounts": "Comptes essayés :",
+      "col_most": "Le plus sur un seul compte :",
+      "col_last": "La plus récente :"
+    },
+    "access": {
+      "title": "Accès à haut niveau accordés et retirés",
+      "note": "L'appartenance à l'équipe de la plateforme se règle dans la base de données. Ses changements ne sont pas enregistrés et ne peuvent donc pas être affichés ici.",
+      "empty": "Aucun accès à haut niveau n'a été accordé ou retiré au cours des {{days}} derniers jours.",
+      "change": {
+        "tenant_super_admin_granted": "Super-administrateur de communauté accordé",
+        "tenant_super_admin_removed": "Super-administrateur de communauté retiré",
+        "global_super_admin_granted": "Super-administrateur global accordé",
+        "global_super_admin_removed": "Super-administrateur global retiré"
+      }
+    },
+    "impersonation": {
+      "title": "Connexion à la place d'un autre membre",
+      "note": "Un administrateur peut se connecter à la place d'un membre pour l'aider. Chaque fois que cela s'est produit figure ici.",
+      "empty": "Personne ne s'est connecté à la place d'un autre membre au cours des {{days}} derniers jours.",
+      "member": "Connecté en tant que :"
+    }
   }
 }

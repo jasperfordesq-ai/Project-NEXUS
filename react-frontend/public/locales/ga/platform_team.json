@@ -191,5 +191,53 @@
       "rejected": "Diúltaithe",
       "other": "Gan a bheith gníomhach"
     }
+  },
+  "security": {
+    "title": "Slándáil",
+    "intro": "Cé aige a bhfuil rochtain shinsearach, cé dó ar tugadh í nó cé uaidh ar baineadh í, cé a shínigh isteach mar bhall eile, agus cá bhfuil sínithe isteach ag teip. I ngach pobal.",
+    "privacy_note": "Taispeántar daoine agus pobail de réir ainm. Ní thaispeántar seoltaí ríomhphoist ná seoltaí idirlín anseo riamh.",
+    "loading": "An leathanach slándála á lódáil",
+    "load_error_title": "Níorbh fhéidir linn an leathanach slándála a lódáil faoi láthair",
+    "unavailable": "Níorbh fhéidir é seo a sheiceáil faoi láthair.",
+    "not_recorded": "Gan taifead",
+    "by": "Ag:",
+    "when": "Cathain:",
+    "truncated": "Ní thaispeántar ach an {{count}} is déanaí.",
+    "two_step": {
+      "title": "Síniú isteach dhá chéim ar chuntais shinsearacha",
+      "off": "Tá síniú isteach dhá chéim múchta i gcás {{count}} as {{total}} cuntas sinsearach.",
+      "all_on": "Tá síniú isteach dhá chéim ar siúl i gcás gach ceann de na {{total}} cuntas sinsearach.",
+      "link": "Féach na cuntais shinsearacha"
+    },
+    "failed": {
+      "title": "Sínithe isteach ar theip orthu le 24 uair an chloig anuas",
+      "note": "Glantar iarrachtaí teipthe cuntais nuair a shíníonn sé isteach go rathúil arís, mar sin ní áirítear anseo iad.",
+      "last_hour": "San uair an chloig dheireanach",
+      "last_24h": "Le 24 uair an chloig anuas",
+      "addresses": "Seoltaí idirlín éagsúla",
+      "most_from_one": "An líon is mó ó sheoladh amháin",
+      "empty": "Níor theip ar aon síniú isteach le 24 uair an chloig anuas.",
+      "col_failed": "Iarrachtaí teipthe:",
+      "col_accounts": "Cuntais a triaileadh:",
+      "col_most": "An líon is mó ar chuntas amháin:",
+      "col_last": "An ceann is déanaí:"
+    },
+    "access": {
+      "title": "Rochtain shinsearach a tugadh agus a baineadh",
+      "note": "Socraítear ballraíocht fhoireann an ardáin sa bhunachar sonraí. Ní thaifeadtar athruithe uirthi, mar sin ní féidir iad a thaispeáint anseo.",
+      "empty": "Níor tugadh ná níor baineadh aon rochtain shinsearach le {{days}} lá anuas.",
+      "change": {
+        "tenant_super_admin_granted": "Sár-riarthóir pobail tugtha",
+        "tenant_super_admin_removed": "Sár-riarthóir pobail bainte",
+        "global_super_admin_granted": "Sár-riarthóir domhanda tugtha",
+        "global_super_admin_removed": "Sár-riarthóir domhanda bainte"
+      }
+    },
+    "impersonation": {
+      "title": "Sínithe isteach mar bhall eile",
+      "note": "Is féidir le riarthóir síniú isteach mar bhall chun cabhrú leis. Tá gach uair a tharla sé sin liostaithe anseo.",
+      "empty": "Níor shínigh aon duine isteach mar bhall eile le {{days}} lá anuas.",
+      "member": "Sínithe isteach mar:"
+    }
   }
 }

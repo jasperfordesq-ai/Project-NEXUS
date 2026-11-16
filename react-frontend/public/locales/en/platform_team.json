@@ -191,5 +191,53 @@
       "rejected": "Rejected",
       "other": "Not active"
     }
+  },
+  "security": {
+    "title": "Security",
+    "intro": "Who holds senior access, who was given it or lost it, who signed in as another member, and where sign-ins are failing. Across every community.",
+    "privacy_note": "People and communities are shown by name. Email addresses and internet addresses are never shown here.",
+    "loading": "Loading the security page",
+    "load_error_title": "We couldn't load the security page just now",
+    "unavailable": "This could not be checked just now.",
+    "not_recorded": "Not recorded",
+    "by": "By:",
+    "when": "When:",
+    "truncated": "Only the newest {{count}} are shown.",
+    "two_step": {
+      "title": "Two-step sign-in on senior accounts",
+      "off": "Two-step sign-in is off for {{count}} of {{total}} senior accounts.",
+      "all_on": "Two-step sign-in is on for all {{total}} senior accounts.",
+      "link": "See the senior accounts"
+    },
+    "failed": {
+      "title": "Failed sign-ins in the last 24 hours",
+      "note": "An account's failed attempts are cleared when it next signs in successfully, so those are not counted here.",
+      "last_hour": "In the last hour",
+      "last_24h": "In the last 24 hours",
+      "addresses": "Different internet addresses",
+      "most_from_one": "Most from one address",
+      "empty": "No failed sign-ins in the last 24 hours.",
+      "col_failed": "Failed attempts:",
+      "col_accounts": "Accounts tried:",
+      "col_most": "Most on one account:",
+      "col_last": "Latest:"
+    },
+    "access": {
+      "title": "Senior access given and removed",
+      "note": "Platform team membership is set in the database. Changes to it are not recorded, so they cannot be shown here.",
+      "empty": "No senior access was given or removed in the last {{days}} days.",
+      "change": {
+        "tenant_super_admin_granted": "Tenant super admin given",
+        "tenant_super_admin_removed": "Tenant super admin removed",
+        "global_super_admin_granted": "Global super admin given",
+        "global_super_admin_removed": "Global super admin removed"
+      }
+    },
+    "impersonation": {
+      "title": "Signed in as another member",
+      "note": "An admin can sign in as a member to help them. Every time that happened is listed here.",
+      "empty": "Nobody signed in as another member in the last {{days}} days.",
+      "member": "Signed in as:"
+    }
   }
 }

@@ -57353,6 +57353,54 @@ export default interface Resources {
       "not_downloads": "These are members signed in on the app, not downloads from the app stores.",
       "title": "Phone app"
     },
+    "security": {
+      "access": {
+        "change": {
+          "global_super_admin_granted": "Global super admin given",
+          "global_super_admin_removed": "Global super admin removed",
+          "tenant_super_admin_granted": "Tenant super admin given",
+          "tenant_super_admin_removed": "Tenant super admin removed"
+        },
+        "empty": "No senior access was given or removed in the last {{days}} days.",
+        "note": "Platform team membership is set in the database. Changes to it are not recorded, so they cannot be shown here.",
+        "title": "Senior access given and removed"
+      },
+      "by": "By:",
+      "failed": {
+        "addresses": "Different internet addresses",
+        "col_accounts": "Accounts tried:",
+        "col_failed": "Failed attempts:",
+        "col_last": "Latest:",
+        "col_most": "Most on one account:",
+        "empty": "No failed sign-ins in the last 24 hours.",
+        "last_24h": "In the last 24 hours",
+        "last_hour": "In the last hour",
+        "most_from_one": "Most from one address",
+        "note": "An account's failed attempts are cleared when it next signs in successfully, so those are not counted here.",
+        "title": "Failed sign-ins in the last 24 hours"
+      },
+      "impersonation": {
+        "empty": "Nobody signed in as another member in the last {{days}} days.",
+        "member": "Signed in as:",
+        "note": "An admin can sign in as a member to help them. Every time that happened is listed here.",
+        "title": "Signed in as another member"
+      },
+      "intro": "Who holds senior access, who was given it or lost it, who signed in as another member, and where sign-ins are failing. Across every community.",
+      "load_error_title": "We couldn't load the security page just now",
+      "loading": "Loading the security page",
+      "not_recorded": "Not recorded",
+      "privacy_note": "People and communities are shown by name. Email addresses and internet addresses are never shown here.",
+      "title": "Security",
+      "truncated": "Only the newest {{count}} are shown.",
+      "two_step": {
+        "all_on": "Two-step sign-in is on for all {{total}} senior accounts.",
+        "link": "See the senior accounts",
+        "off": "Two-step sign-in is off for {{count}} of {{total}} senior accounts.",
+        "title": "Two-step sign-in on senior accounts"
+      },
+      "unavailable": "This could not be checked just now.",
+      "when": "When:"
+    },
     "senior_accounts": {
       "all_have_two_step": "Two-step sign-in is on for all {{total}} of these accounts.",
       "community": "Community:",
