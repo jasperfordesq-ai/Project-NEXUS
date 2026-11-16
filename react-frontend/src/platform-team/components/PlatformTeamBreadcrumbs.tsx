@@ -36,6 +36,7 @@ const SEGMENT_LABEL_KEYS: Record<string, string> = {
   notices: 'notices.title',
   usage: 'usage.title',
   'unfinished-features': 'unfinished_features.title',
+  'data-requests': 'data_requests.title',
   // Pages that came from the super admin panel, or whose admin breadcrumb
   // wording would mislead: named with the wording their own menu entry uses.
   translation: 'super_admin:breadcrumbs.translation',

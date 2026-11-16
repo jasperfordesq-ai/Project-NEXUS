@@ -57356,6 +57356,46 @@ export default interface Resources {
       "unavailable_note": "Some steps could not be read just now. They say \"Not available\". That does not mean they are not done.",
       "yes_no_only": "Done or not done only. No person is named on this page."
     },
+    "data_requests": {
+      "column": {
+        "community": "Community",
+        "completed_last_90_days": "Completed in the last {{days}} days",
+        "nearly_due": "Nearly due",
+        "oldest_open_days": "Oldest open request, in days",
+        "open": "Open",
+        "open_by_type": "Open, by kind",
+        "overdue": "Overdue"
+      },
+      "community_count": "Communities: {{count}}",
+      "counts_only": "Counts only. No member and no request is named on this page.",
+      "empty": "There are no communities yet.",
+      "intro": "Requests members have made about their own data, in every community: how many are waiting, and for how long.",
+      "load_error_title": "We couldn't load data requests just now",
+      "loading": "Loading data requests",
+      "nav": "Data requests",
+      "nearly_due_rule": "Nearly due means open for {{from}} to {{to}} days.",
+      "no_oldest": "None open",
+      "none_overdue": "No community has an overdue request.",
+      "not_active": "Not active",
+      "not_available": "Not available",
+      "nothing_open": "Nothing open",
+      "overdue_count": "Communities with an overdue request: {{count}}",
+      "overdue_names": "Overdue: {{names}}",
+      "overdue_rule": "A request is overdue when it has been open for more than {{days}} days. The clock starts when the request was made. Open means waiting, or being worked on.",
+      "overdue_unknown": "We can't tell just now whether any request is overdue.",
+      "title": "Data requests",
+      "totals_row": "All communities",
+      "type": {
+        "access": "A copy of their data",
+        "erasure": "Erasure",
+        "objection": "An objection",
+        "portability": "A transfer",
+        "rectification": "A correction",
+        "restriction": "A limit on use"
+      },
+      "unavailable_note": "Some figures could not be read just now. They say \"Not available\". They are not zero.",
+      "where_answered": "Each community answers its own requests in its own admin panel. Nothing can be changed from this page."
+    },
     "failed_jobs": {
       "action_failed": "That didn't work. Nothing was changed.",
       "cancel": "Keep it",

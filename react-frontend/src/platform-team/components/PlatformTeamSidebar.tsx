@@ -53,6 +53,7 @@ import Globe from 'lucide-react/icons/globe';
 import Handshake from 'lucide-react/icons/handshake';
 import Heart from 'lucide-react/icons/heart';
 import HeartPulse from 'lucide-react/icons/heart-pulse';
+import Inbox from 'lucide-react/icons/inbox';
 import KeyIcon from 'lucide-react/icons/key';
 import Landmark from 'lucide-react/icons/landmark';
 import Languages from 'lucide-react/icons/languages';
@@ -169,7 +170,9 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
           // across every community. A group with no entries is not drawn.
           key: 'data',
           title: t('sidebar.group_data'),
-          items: [],
+          items: [
+            { label: t('data_requests.nav'), icon: Inbox, path: `${P}/data-requests` },
+          ],
         },
         {
           // Links with other installations and other platforms. The name and

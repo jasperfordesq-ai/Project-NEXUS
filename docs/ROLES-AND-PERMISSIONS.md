@@ -507,6 +507,20 @@ note `not_for_use` and nothing that links to it. 🔴 No switch and no link that
 switches anything: a feature is changed in that community's own admin panel.
 Community names and switches only; no member data is read.
 
+Data requests (`GET /v2/platform-team/data-requests`;
+`DataRequestsService`, 16 November 2026) is read-only: per community (every
+community, including those with nothing open), the `gdpr_requests` that are
+open (`pending` or `processing`) in total and by `request_type`, overdue (open
+and `COALESCE(requested_at, created_at)` more than 30 days ago, the rule and
+clock of `GdprService::complianceScore()`), nearly due (25 to 30 days, the
+`gdpr:check-overdue-requests` warning), the age in days of the oldest open
+one, and those completed in the last 90 days (`processed_at`, falling back to
+`updated_at`). It does not call `GdprService`, which is bound to one community.
+🔴 Counts only: no request id, member id, `verification_token`,
+`export_file_path`, `metadata`, `notes` or `rejection_reason` is selected.
+A figure that cannot be read is null and named in `unavailable`, never zero.
+Requests are still answered in each community's own admin panel.
+
 **Left open on purpose.** An endpoint that a screen outside the panel still
 calls keeps its previous check, and a test pins that a community admin still
 gets an answer:

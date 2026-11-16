@@ -138,6 +138,7 @@ describe('PlatformTeamBreadcrumbs', () => {
     ['/platform-team/notices', 'notices.title'],
     ['/platform-team/usage', 'usage.title'],
     ['/platform-team/unfinished-features', 'unfinished_features.title'],
+    ['/platform-team/data-requests', 'data_requests.title'],
   ])('names the last step of %s', (pathname, label) => {
     state.pathname = pathname;
     render(<PlatformTeamBreadcrumbs />);

@@ -514,5 +514,45 @@
     "on_in": "Communautés où elle est activée : {{count}}",
     "on_names": "Activée dans : {{names}}",
     "on_nowhere": "Activée dans aucune communauté"
+  },
+  "data_requests": {
+    "title": "Demandes sur les données",
+    "nav": "Demandes sur les données",
+    "intro": "Les demandes faites par les membres au sujet de leurs propres données, dans toutes les communautés : combien attendent, et depuis combien de temps.",
+    "where_answered": "Chaque communauté répond à ses propres demandes, dans son propre panneau d’administration. Rien ne peut être modifié depuis cette page.",
+    "counts_only": "Des chiffres seulement. Aucun membre ni aucune demande n’est nommé sur cette page.",
+    "loading": "Chargement des demandes sur les données",
+    "load_error_title": "Nous n’avons pas pu charger les demandes sur les données pour le moment",
+    "empty": "Il n'y a pas encore de communauté.",
+    "community_count": "Communautés : {{count}}",
+    "overdue_count": "Communautés avec une demande en retard : {{count}}",
+    "overdue_names": "En retard : {{names}}",
+    "none_overdue": "Aucune communauté n’a de demande en retard.",
+    "overdue_unknown": "Nous ne pouvons pas dire pour le moment si une demande est en retard.",
+    "overdue_rule": "Une demande est en retard lorsqu’elle est ouverte depuis plus de {{days}} jours. Le délai court à partir du moment où la demande a été faite. Ouverte veut dire en attente ou en cours de traitement.",
+    "nearly_due_rule": "Bientôt dues veut dire ouvertes depuis {{from}} à {{to}} jours.",
+    "unavailable_note": "Certains chiffres n'ont pas pu être lus pour le moment. Ils indiquent \"Non disponible\". Ce ne sont pas des zéros.",
+    "not_available": "Non disponible",
+    "nothing_open": "Rien d’ouvert",
+    "no_oldest": "Aucune ouverte",
+    "not_active": "Non active",
+    "totals_row": "Toutes les communautés",
+    "column": {
+      "community": "Communauté",
+      "open": "Ouvertes",
+      "overdue": "En retard",
+      "nearly_due": "Bientôt dues",
+      "oldest_open_days": "Plus ancienne demande ouverte, en jours",
+      "completed_last_90_days": "Traitées ces {{days}} derniers jours",
+      "open_by_type": "Ouvertes, par type"
+    },
+    "type": {
+      "access": "Une copie de leurs données",
+      "erasure": "Effacement",
+      "rectification": "Une rectification",
+      "restriction": "Une limitation de l’utilisation",
+      "portability": "Un transfert",
+      "objection": "Une opposition"
+    }
   }
 }

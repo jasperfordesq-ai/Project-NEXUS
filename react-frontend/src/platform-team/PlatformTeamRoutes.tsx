@@ -43,6 +43,7 @@ const CommunitySetupPage = lazy(() => import('./pages/CommunitySetupPage'));
 const PlatformNoticesPage = lazy(() => import('./pages/PlatformNoticesPage'));
 const UsagePage = lazy(() => import('./pages/UsagePage'));
 const UnfinishedFeaturesPage = lazy(() => import('./pages/UnfinishedFeaturesPage'));
+const DataRequestsPage = lazy(() => import('./pages/DataRequestsPage'));
 
 const MenusAdmin = lazy(() => import('@/admin/modules/content/MenusAdmin'));
 const MenuBuilder = lazy(() => import('@/admin/modules/content/MenuBuilder'));
@@ -117,6 +118,7 @@ export function PlatformTeamRoutes() {
       <Route path="notices" element={<Lazy><PlatformNoticesPage /></Lazy>} />
       <Route path="usage" element={<Lazy><UsagePage /></Lazy>} />
       <Route path="unfinished-features" element={<Lazy><UnfinishedFeaturesPage /></Lazy>} />
+      <Route path="data-requests" element={<Lazy><DataRequestsPage /></Lazy>} />
 
       <Route path="menus" element={<Lazy><MenusAdmin /></Lazy>} />
       <Route path="menus/builder/:id" element={<Lazy><MenuBuilder /></Lazy>} />

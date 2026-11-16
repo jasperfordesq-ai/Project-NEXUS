@@ -514,5 +514,45 @@
     "on_in": "Społeczności, w których jest włączona: {{count}}",
     "on_names": "Włączona w: {{names}}",
     "on_nowhere": "Nie jest włączona w żadnej społeczności"
+  },
+  "data_requests": {
+    "title": "Wnioski dotyczące danych",
+    "nav": "Wnioski dotyczące danych",
+    "intro": "Wnioski złożone przez członków w sprawie ich własnych danych, we wszystkich społecznościach: ile czeka i od jak dawna.",
+    "where_answered": "Każda społeczność odpowiada na swoje wnioski we własnym panelu administracyjnym. Na tej stronie nie można niczego zmienić.",
+    "counts_only": "Tylko liczby. Na tej stronie nie pada imię żadnego członka ani opis żadnego wniosku.",
+    "loading": "Wczytywanie wniosków dotyczących danych",
+    "load_error_title": "Nie udało się teraz wczytać wniosków dotyczących danych",
+    "empty": "Nie ma jeszcze żadnych społeczności.",
+    "community_count": "Społeczności: {{count}}",
+    "overdue_count": "Społeczności z przeterminowanym wnioskiem: {{count}}",
+    "overdue_names": "Przeterminowane: {{names}}",
+    "none_overdue": "Żadna społeczność nie ma przeterminowanego wniosku.",
+    "overdue_unknown": "Nie możemy teraz stwierdzić, czy któryś wniosek jest przeterminowany.",
+    "overdue_rule": "Wniosek jest przeterminowany, gdy pozostaje otwarty dłużej niż {{days}} dni. Czas liczy się od chwili złożenia wniosku. Otwarty oznacza oczekujący albo w trakcie realizacji.",
+    "nearly_due_rule": "Bliski terminu oznacza otwarty od {{from}} do {{to}} dni.",
+    "unavailable_note": "Niektórych liczb nie udało się teraz odczytać. Widnieje przy nich \"Niedostępne\". To nie są zera.",
+    "not_available": "Niedostępne",
+    "nothing_open": "Nic otwartego",
+    "no_oldest": "Brak otwartych",
+    "not_active": "Nieaktywna",
+    "totals_row": "Wszystkie społeczności",
+    "column": {
+      "community": "Społeczność",
+      "open": "Otwarte",
+      "overdue": "Przeterminowane",
+      "nearly_due": "Bliskie terminu",
+      "oldest_open_days": "Najstarszy otwarty wniosek, w dniach",
+      "completed_last_90_days": "Zrealizowane w ostatnich {{days}} dniach",
+      "open_by_type": "Otwarte, według rodzaju"
+    },
+    "type": {
+      "access": "Kopia ich danych",
+      "erasure": "Usunięcie",
+      "rectification": "Sprostowanie",
+      "restriction": "Ograniczenie wykorzystania",
+      "portability": "Przeniesienie",
+      "objection": "Sprzeciw"
+    }
   }
 }

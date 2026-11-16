@@ -514,5 +514,45 @@
     "on_in": "Gemeinschaften, in denen sie eingeschaltet ist: {{count}}",
     "on_names": "Eingeschaltet in: {{names}}",
     "on_nowhere": "In keiner Gemeinschaft eingeschaltet"
+  },
+  "data_requests": {
+    "title": "Datenanfragen",
+    "nav": "Datenanfragen",
+    "intro": "Anfragen von Mitgliedern zu ihren eigenen Daten, in allen Gemeinschaften: wie viele warten und wie lange schon.",
+    "where_answered": "Jede Gemeinschaft beantwortet ihre Anfragen selbst, in ihrem eigenen Verwaltungsbereich. Auf dieser Seite lässt sich nichts ändern.",
+    "counts_only": "Nur Zahlen. Auf dieser Seite wird kein Mitglied und keine Anfrage genannt.",
+    "loading": "Datenanfragen werden geladen",
+    "load_error_title": "Wir konnten die Datenanfragen gerade nicht laden",
+    "empty": "Es gibt noch keine Gemeinschaften.",
+    "community_count": "Gemeinschaften: {{count}}",
+    "overdue_count": "Gemeinschaften mit einer überfälligen Anfrage: {{count}}",
+    "overdue_names": "Überfällig: {{names}}",
+    "none_overdue": "Keine Gemeinschaft hat eine überfällige Anfrage.",
+    "overdue_unknown": "Wir können gerade nicht sagen, ob eine Anfrage überfällig ist.",
+    "overdue_rule": "Eine Anfrage ist überfällig, wenn sie seit mehr als {{days}} Tagen offen ist. Die Frist beginnt, wenn die Anfrage gestellt wurde. Offen heißt: wartend oder in Bearbeitung.",
+    "nearly_due_rule": "Bald fällig heißt: seit {{from}} bis {{to}} Tagen offen.",
+    "unavailable_note": "Einige Zahlen konnten gerade nicht gelesen werden. Dort steht \"Nicht verfügbar\". Sie sind nicht null.",
+    "not_available": "Nicht verfügbar",
+    "nothing_open": "Nichts offen",
+    "no_oldest": "Keine offen",
+    "not_active": "Nicht aktiv",
+    "totals_row": "Alle Gemeinschaften",
+    "column": {
+      "community": "Gemeinschaft",
+      "open": "Offen",
+      "overdue": "Überfällig",
+      "nearly_due": "Bald fällig",
+      "oldest_open_days": "Älteste offene Anfrage, in Tagen",
+      "completed_last_90_days": "Erledigt in den letzten {{days}} Tagen",
+      "open_by_type": "Offen, nach Art"
+    },
+    "type": {
+      "access": "Eine Kopie ihrer Daten",
+      "erasure": "Löschung",
+      "rectification": "Eine Berichtigung",
+      "restriction": "Eine Einschränkung der Nutzung",
+      "portability": "Eine Übertragung",
+      "objection": "Ein Widerspruch"
+    }
   }
 }

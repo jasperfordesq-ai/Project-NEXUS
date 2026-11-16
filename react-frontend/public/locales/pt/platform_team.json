@@ -514,5 +514,45 @@
     "on_in": "Comunidades em que está ligado: {{count}}",
     "on_names": "Ligado em: {{names}}",
     "on_nowhere": "Não está ligado em nenhuma comunidade"
+  },
+  "data_requests": {
+    "title": "Solicitações sobre dados",
+    "nav": "Solicitações sobre dados",
+    "intro": "Solicitações que os membros fizeram sobre os próprios dados, em todas as comunidades: quantas estão esperando e há quanto tempo.",
+    "where_answered": "Cada comunidade responde às próprias solicitações no próprio painel de administração. Nada pode ser alterado nesta página.",
+    "counts_only": "Somente números. Nenhum membro e nenhuma solicitação é nomeado nesta página.",
+    "loading": "Carregando as solicitações sobre dados",
+    "load_error_title": "Não conseguimos carregar as solicitações sobre dados agora",
+    "empty": "Ainda não há comunidades.",
+    "community_count": "Comunidades: {{count}}",
+    "overdue_count": "Comunidades com uma solicitação atrasada: {{count}}",
+    "overdue_names": "Atrasadas: {{names}}",
+    "none_overdue": "Nenhuma comunidade tem uma solicitação atrasada.",
+    "overdue_unknown": "Não conseguimos saber agora se alguma solicitação está atrasada.",
+    "overdue_rule": "Uma solicitação está atrasada quando está aberta há mais de {{days}} dias. A contagem começa quando a solicitação foi feita. Aberta significa aguardando ou em andamento.",
+    "nearly_due_rule": "Perto do prazo significa aberta há {{from}} a {{to}} dias.",
+    "unavailable_note": "Alguns números não puderam ser lidos agora. Neles aparece \"Indisponível\". Eles não são zero.",
+    "not_available": "Indisponível",
+    "nothing_open": "Nada em aberto",
+    "no_oldest": "Nenhuma aberta",
+    "not_active": "Desativada",
+    "totals_row": "Todas as comunidades",
+    "column": {
+      "community": "Comunidade",
+      "open": "Abertas",
+      "overdue": "Atrasadas",
+      "nearly_due": "Perto do prazo",
+      "oldest_open_days": "Solicitação aberta mais antiga, em dias",
+      "completed_last_90_days": "Concluídas nos últimos {{days}} dias",
+      "open_by_type": "Abertas, por tipo"
+    },
+    "type": {
+      "access": "Uma cópia dos seus dados",
+      "erasure": "Exclusão",
+      "rectification": "Uma correção",
+      "restriction": "Um limite de uso",
+      "portability": "Uma transferência",
+      "objection": "Uma oposição"
+    }
   }
 }

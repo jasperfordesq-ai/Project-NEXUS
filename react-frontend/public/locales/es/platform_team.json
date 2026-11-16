@@ -514,5 +514,45 @@
     "on_in": "Comunidades que la tienen activada: {{count}}",
     "on_names": "Activada en: {{names}}",
     "on_nowhere": "No está activada en ninguna comunidad"
+  },
+  "data_requests": {
+    "title": "Solicitudes sobre datos",
+    "nav": "Solicitudes sobre datos",
+    "intro": "Solicitudes que los miembros han hecho sobre sus propios datos, en todas las comunidades: cuántas esperan y desde hace cuánto.",
+    "where_answered": "Cada comunidad responde a sus propias solicitudes desde su propio panel de administración. Desde esta página no se puede cambiar nada.",
+    "counts_only": "Solo cifras. En esta página no se nombra a ningún miembro ni ninguna solicitud.",
+    "loading": "Cargando las solicitudes sobre datos",
+    "load_error_title": "No hemos podido cargar las solicitudes sobre datos en este momento",
+    "empty": "Todavía no hay comunidades.",
+    "community_count": "Comunidades: {{count}}",
+    "overdue_count": "Comunidades con una solicitud vencida: {{count}}",
+    "overdue_names": "Vencidas: {{names}}",
+    "none_overdue": "Ninguna comunidad tiene una solicitud vencida.",
+    "overdue_unknown": "Ahora mismo no podemos saber si alguna solicitud está vencida.",
+    "overdue_rule": "Una solicitud está vencida cuando lleva abierta más de {{days}} días. El plazo empieza a contar cuando se hizo la solicitud. Abierta significa en espera o en curso.",
+    "nearly_due_rule": "A punto de vencer significa abierta entre {{from}} y {{to}} días.",
+    "unavailable_note": "Algunas cifras no se han podido leer ahora mismo. Indican \"No disponible\". No son cero.",
+    "not_available": "No disponible",
+    "nothing_open": "Nada abierto",
+    "no_oldest": "Ninguna abierta",
+    "not_active": "No activa",
+    "totals_row": "Todas las comunidades",
+    "column": {
+      "community": "Comunidad",
+      "open": "Abiertas",
+      "overdue": "Vencidas",
+      "nearly_due": "A punto de vencer",
+      "oldest_open_days": "Solicitud abierta más antigua, en días",
+      "completed_last_90_days": "Completadas en los últimos {{days}} días",
+      "open_by_type": "Abiertas, por tipo"
+    },
+    "type": {
+      "access": "Una copia de sus datos",
+      "erasure": "Supresión",
+      "rectification": "Una corrección",
+      "restriction": "Un límite de uso",
+      "portability": "Una transferencia",
+      "objection": "Una oposición"
+    }
   }
 }

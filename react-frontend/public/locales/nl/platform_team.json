@@ -514,5 +514,45 @@
     "on_in": "Gemeenschappen waar ze aanstaat: {{count}}",
     "on_names": "Aan in: {{names}}",
     "on_nowhere": "Staat in geen enkele gemeenschap aan"
+  },
+  "data_requests": {
+    "title": "Gegevensverzoeken",
+    "nav": "Gegevensverzoeken",
+    "intro": "Verzoeken die leden hebben gedaan over hun eigen gegevens, in elke gemeenschap: hoeveel er wachten, en hoe lang al.",
+    "where_answered": "Elke gemeenschap beantwoordt haar eigen verzoeken in haar eigen beheeromgeving. Op deze pagina kan niets worden gewijzigd.",
+    "counts_only": "Alleen aantallen. Op deze pagina wordt geen lid en geen verzoek genoemd.",
+    "loading": "Gegevensverzoeken laden",
+    "load_error_title": "We konden de gegevensverzoeken nu niet laden",
+    "empty": "Er zijn nog geen gemeenschappen.",
+    "community_count": "Gemeenschappen: {{count}}",
+    "overdue_count": "Gemeenschappen met een te laat verzoek: {{count}}",
+    "overdue_names": "Te laat: {{names}}",
+    "none_overdue": "Geen enkele gemeenschap heeft een te laat verzoek.",
+    "overdue_unknown": "We kunnen nu niet zeggen of er een verzoek te laat is.",
+    "overdue_rule": "Een verzoek is te laat als het langer dan {{days}} dagen openstaat. De tijd telt vanaf het moment dat het verzoek is gedaan. Open betekent wachtend of in behandeling.",
+    "nearly_due_rule": "Bijna verlopen betekent {{from}} tot {{to}} dagen open.",
+    "unavailable_note": "Sommige cijfers konden nu niet worden gelezen. Daar staat \"Niet beschikbaar\". Ze zijn niet nul.",
+    "not_available": "Niet beschikbaar",
+    "nothing_open": "Niets open",
+    "no_oldest": "Geen open",
+    "not_active": "Niet actief",
+    "totals_row": "Alle gemeenschappen",
+    "column": {
+      "community": "Gemeenschap",
+      "open": "Open",
+      "overdue": "Te laat",
+      "nearly_due": "Bijna verlopen",
+      "oldest_open_days": "Oudste open verzoek, in dagen",
+      "completed_last_90_days": "Afgehandeld in de afgelopen {{days}} dagen",
+      "open_by_type": "Open, per soort"
+    },
+    "type": {
+      "access": "Een kopie van hun gegevens",
+      "erasure": "Wissen",
+      "rectification": "Een correctie",
+      "restriction": "Een beperking van het gebruik",
+      "portability": "Een overdracht",
+      "objection": "Een bezwaar"
+    }
   }
 }

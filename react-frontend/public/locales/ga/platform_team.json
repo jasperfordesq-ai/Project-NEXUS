@@ -514,5 +514,45 @@
     "on_in": "Pobail a bhfuil sí casta air iontu: {{count}}",
     "on_names": "Casta air i: {{names}}",
     "on_nowhere": "Níl sí casta air in aon phobal"
+  },
+  "data_requests": {
+    "title": "Iarratais ar shonraí",
+    "nav": "Iarratais ar shonraí",
+    "intro": "Iarratais a rinne baill faoina sonraí féin, i ngach pobal: cé mhéad atá ag fanacht, agus le cé chomh fada.",
+    "where_answered": "Freagraíonn gach pobal a iarratais féin ina phainéal riaracháin féin. Ní féidir aon rud a athrú ón leathanach seo.",
+    "counts_only": "Comhaireamh amháin. Ní ainmnítear aon bhall ná aon iarratas ar an leathanach seo.",
+    "loading": "Iarratais ar shonraí á lódáil",
+    "load_error_title": "Níorbh fhéidir linn na hiarratais ar shonraí a lódáil anois",
+    "empty": "Níl aon phobal ann fós.",
+    "community_count": "Pobail: {{count}}",
+    "overdue_count": "Pobail a bhfuil iarratas thar téarma acu: {{count}}",
+    "overdue_names": "Thar téarma: {{names}}",
+    "none_overdue": "Níl iarratas thar téarma ag aon phobal.",
+    "overdue_unknown": "Ní féidir linn a rá anois an bhfuil aon iarratas thar téarma.",
+    "overdue_rule": "Bíonn iarratas thar téarma nuair a bhíonn sé oscailte ar feadh níos mó ná {{days}} lá. Tosaíonn an clog nuair a rinneadh an t-iarratas. Ciallaíonn oscailte ag fanacht, nó á phróiseáil.",
+    "nearly_due_rule": "Ciallaíonn beagnach dlite oscailte idir {{from}} agus {{to}} lá.",
+    "unavailable_note": "Níorbh fhéidir roinnt figiúirí a léamh faoi láthair. Deir siad \"Níl sé ar fáil\". Ní nialas iad.",
+    "not_available": "Níl sé ar fáil",
+    "nothing_open": "Faic oscailte",
+    "no_oldest": "Ceann ar bith oscailte",
+    "not_active": "Gan a bheith gníomhach",
+    "totals_row": "Gach pobal",
+    "column": {
+      "community": "Pobal",
+      "open": "Oscailte",
+      "overdue": "Thar téarma",
+      "nearly_due": "Beagnach dlite",
+      "oldest_open_days": "An t-iarratas oscailte is sine, i laethanta",
+      "completed_last_90_days": "Críochnaithe sna {{days}} lá seo caite",
+      "open_by_type": "Oscailte, de réir cineáil"
+    },
+    "type": {
+      "access": "Cóip dá sonraí",
+      "erasure": "Scriosadh",
+      "rectification": "Ceartúchán",
+      "restriction": "Teorainn ar úsáid",
+      "portability": "Aistriú",
+      "objection": "Agóid"
+    }
   }
 }

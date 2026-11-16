@@ -514,5 +514,45 @@
     "on_in": "Comunità in cui è attiva: {{count}}",
     "on_names": "Attiva in: {{names}}",
     "on_nowhere": "Non è attiva in nessuna comunità"
+  },
+  "data_requests": {
+    "title": "Richieste sui dati",
+    "nav": "Richieste sui dati",
+    "intro": "Le richieste fatte dai membri sui propri dati, in tutte le comunità: quante sono in attesa e da quanto tempo.",
+    "where_answered": "Ogni comunità risponde alle proprie richieste dal proprio pannello di amministrazione. Da questa pagina non si può cambiare nulla.",
+    "counts_only": "Solo numeri. In questa pagina non viene nominato nessun membro e nessuna richiesta.",
+    "loading": "Caricamento delle richieste sui dati",
+    "load_error_title": "Non siamo riusciti a caricare le richieste sui dati in questo momento",
+    "empty": "Non ci sono ancora comunità.",
+    "community_count": "Comunità: {{count}}",
+    "overdue_count": "Comunità con una richiesta scaduta: {{count}}",
+    "overdue_names": "Scadute: {{names}}",
+    "none_overdue": "Nessuna comunità ha una richiesta scaduta.",
+    "overdue_unknown": "In questo momento non possiamo dire se qualche richiesta è scaduta.",
+    "overdue_rule": "Una richiesta è scaduta quando è aperta da più di {{days}} giorni. Il conteggio parte da quando la richiesta è stata fatta. Aperta vuol dire in attesa o in lavorazione.",
+    "nearly_due_rule": "In scadenza vuol dire aperta da {{from}} a {{to}} giorni.",
+    "unavailable_note": "Alcuni numeri non sono stati letti in questo momento. Riportano \"Non disponibile\". Non sono zero.",
+    "not_available": "Non disponibile",
+    "nothing_open": "Niente di aperto",
+    "no_oldest": "Nessuna aperta",
+    "not_active": "Non attiva",
+    "totals_row": "Tutte le comunità",
+    "column": {
+      "community": "Comunità",
+      "open": "Aperte",
+      "overdue": "Scadute",
+      "nearly_due": "In scadenza",
+      "oldest_open_days": "Richiesta aperta più vecchia, in giorni",
+      "completed_last_90_days": "Completate negli ultimi {{days}} giorni",
+      "open_by_type": "Aperte, per tipo"
+    },
+    "type": {
+      "access": "Una copia dei loro dati",
+      "erasure": "Cancellazione",
+      "rectification": "Una correzione",
+      "restriction": "Un limite all’uso",
+      "portability": "Un trasferimento",
+      "objection": "Un’opposizione"
+    }
   }
 }

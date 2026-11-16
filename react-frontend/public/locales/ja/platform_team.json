@@ -514,5 +514,45 @@
     "on_in": "オンにしているコミュニティ数：{{count}}",
     "on_names": "オン：{{names}}",
     "on_nowhere": "どのコミュニティでもオンになっていません"
+  },
+  "data_requests": {
+    "title": "データに関する請求",
+    "nav": "データに関する請求",
+    "intro": "メンバーが自分のデータについて行った請求を、すべてのコミュニティについて表示します。いくつ待っているか、どれくらい待っているかがわかります。",
+    "where_answered": "請求には、各コミュニティが自分の管理画面で対応します。このページからは何も変更できません。",
+    "counts_only": "件数のみです。このページにはメンバーの名前も請求の内容も表示されません。",
+    "loading": "データに関する請求を読み込んでいます",
+    "load_error_title": "現在、データに関する請求を読み込めませんでした",
+    "empty": "まだコミュニティがありません。",
+    "community_count": "コミュニティ数：{{count}}",
+    "overdue_count": "期限を過ぎた請求があるコミュニティ：{{count}}",
+    "overdue_names": "期限切れ：{{names}}",
+    "none_overdue": "期限を過ぎた請求があるコミュニティはありません。",
+    "overdue_unknown": "現在、期限を過ぎた請求があるかどうかわかりません。",
+    "overdue_rule": "請求が{{days}}日を超えて未処理のままになると、期限切れになります。日数は請求が出された時点から数えます。未処理とは、待機中または対応中のことです。",
+    "nearly_due_rule": "期限間近とは、{{from}}日から{{to}}日のあいだ未処理のものです。",
+    "unavailable_note": "いま読み取れなかった数があります。そこには「利用できません」と表示されます。ゼロではありません。",
+    "not_available": "利用できません",
+    "nothing_open": "未処理なし",
+    "no_oldest": "未処理なし",
+    "not_active": "無効",
+    "totals_row": "すべてのコミュニティ",
+    "column": {
+      "community": "コミュニティ",
+      "open": "未処理",
+      "overdue": "期限切れ",
+      "nearly_due": "期限間近",
+      "oldest_open_days": "最も古い未処理の請求（日数）",
+      "completed_last_90_days": "過去{{days}}日間に完了",
+      "open_by_type": "未処理（種類別）"
+    },
+    "type": {
+      "access": "データのコピー",
+      "erasure": "削除",
+      "rectification": "訂正",
+      "restriction": "利用の制限",
+      "portability": "データの移転",
+      "objection": "異議"
+    }
   }
 }

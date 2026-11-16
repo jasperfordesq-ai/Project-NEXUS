@@ -514,5 +514,45 @@
     "on_in": "Communities with it on: {{count}}",
     "on_names": "On in: {{names}}",
     "on_nowhere": "Not on in any community"
+  },
+  "data_requests": {
+    "title": "Data requests",
+    "nav": "Data requests",
+    "intro": "Requests members have made about their own data, in every community: how many are waiting, and for how long.",
+    "where_answered": "Each community answers its own requests in its own admin panel. Nothing can be changed from this page.",
+    "counts_only": "Counts only. No member and no request is named on this page.",
+    "loading": "Loading data requests",
+    "load_error_title": "We couldn't load data requests just now",
+    "empty": "There are no communities yet.",
+    "community_count": "Communities: {{count}}",
+    "overdue_count": "Communities with an overdue request: {{count}}",
+    "overdue_names": "Overdue: {{names}}",
+    "none_overdue": "No community has an overdue request.",
+    "overdue_unknown": "We can't tell just now whether any request is overdue.",
+    "overdue_rule": "A request is overdue when it has been open for more than {{days}} days. The clock starts when the request was made. Open means waiting, or being worked on.",
+    "nearly_due_rule": "Nearly due means open for {{from}} to {{to}} days.",
+    "unavailable_note": "Some figures could not be read just now. They say \"Not available\". They are not zero.",
+    "not_available": "Not available",
+    "nothing_open": "Nothing open",
+    "no_oldest": "None open",
+    "not_active": "Not active",
+    "totals_row": "All communities",
+    "column": {
+      "community": "Community",
+      "open": "Open",
+      "overdue": "Overdue",
+      "nearly_due": "Nearly due",
+      "oldest_open_days": "Oldest open request, in days",
+      "completed_last_90_days": "Completed in the last {{days}} days",
+      "open_by_type": "Open, by kind"
+    },
+    "type": {
+      "access": "A copy of their data",
+      "erasure": "Erasure",
+      "rectification": "A correction",
+      "restriction": "A limit on use",
+      "portability": "A transfer",
+      "objection": "An objection"
+    }
   }
 }
