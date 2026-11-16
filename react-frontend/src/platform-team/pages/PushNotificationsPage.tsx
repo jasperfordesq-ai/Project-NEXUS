@@ -109,7 +109,7 @@ export function PushNotificationsPage() {
   };
 
   const figure = (label: string, value: number, testId: string) => (
-    <div className="min-w-0">
+    <div key={testId} className="min-w-0">
       <dt className="break-words text-xs text-muted">{label}</dt>
       <dd className="text-sm font-medium text-foreground" data-testid={testId}>
         {number(value)}

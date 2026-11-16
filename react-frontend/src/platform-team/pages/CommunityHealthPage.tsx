@@ -222,7 +222,7 @@ export function CommunityHealthPage() {
               <caption className="sr-only">{t('community_health.title')}</caption>
               <thead>
                 <tr className="bg-surface-secondary text-start text-xs text-muted">
-                  <th scope="col" className="sticky start-0 z-10 min-w-48 bg-surface-secondary px-3 py-2 font-medium">
+                  <th scope="col" className="sticky start-0 z-10 min-w-48 bg-surface-secondary px-3 py-2 text-start align-bottom font-medium">
                     {t('community_health.column.community')}
                   </th>
                   {FIGURES.map((figure) => (
@@ -230,7 +230,7 @@ export function CommunityHealthPage() {
                       {label(figure)}
                     </th>
                   ))}
-                  <th scope="col" className="min-w-28 px-3 py-2 align-bottom font-medium">
+                  <th scope="col" className="min-w-28 px-3 py-2 text-start align-bottom font-medium">
                     {t('community_health.column.last_sign_in')}
                   </th>
                 </tr>

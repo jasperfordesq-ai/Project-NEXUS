@@ -196,9 +196,9 @@ export function SecurityPage() {
   );
 
   const fact = (label: string, value: string) => (
-    <div className="flex gap-1">
+    <div className="flex min-w-0 flex-wrap gap-x-1">
       <dt>{label}</dt>
-      <dd className="font-medium text-foreground">{value}</dd>
+      <dd className="min-w-0 break-words font-medium text-foreground">{value}</dd>
     </div>
   );
 

@@ -277,9 +277,9 @@ export function AccessReviewPage() {
                                     {account.name ?? t('senior_accounts.unnamed')}
                                   </p>
                                   <dl className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
-                                    <div className="flex gap-1">
-                                      <dt>{t('senior_accounts.community')}</dt>
-                                      <dd className="break-words font-medium text-foreground">
+                                    <div className="flex min-w-0 gap-1">
+                                      <dt className="shrink-0">{t('senior_accounts.community')}</dt>
+                                      <dd className="min-w-0 break-words font-medium text-foreground">
                                         {communityName(account.community)}
                                       </dd>
                                     </div>

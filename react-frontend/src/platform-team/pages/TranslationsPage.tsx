@@ -190,7 +190,7 @@ export function TranslationsPage() {
           <caption className="sr-only">{t(`translations.${prefix}_title`)}</caption>
           <thead>
             <tr className="bg-surface-secondary text-start text-xs text-muted">
-              <th scope="col" className="px-3 py-2 font-medium">{t('translations.column.language')}</th>
+              <th scope="col" className="px-3 py-2 text-start align-bottom font-medium">{t('translations.column.language')}</th>
               <th scope="col" className="px-3 py-2 text-end font-medium">{t('translations.column.phrases')}</th>
               <th scope="col" className="px-3 py-2 text-end font-medium">{t('translations.column.missing')}</th>
               <th scope="col" className="px-3 py-2 text-end font-medium">{t('translations.column.same')}</th>

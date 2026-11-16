@@ -222,18 +222,18 @@ export function CommunitySetupPage() {
               <caption className="sr-only">{t('community_setup.title')}</caption>
               <thead>
                 <tr className="bg-surface-secondary text-start text-xs text-muted">
-                  <th scope="col" className="sticky start-0 z-10 min-w-48 bg-surface-secondary px-3 py-2 font-medium">
+                  <th scope="col" className="sticky start-0 z-10 min-w-48 bg-surface-secondary px-3 py-2 text-start align-bottom font-medium">
                     {t('community_setup.column.community')}
                   </th>
-                  <th scope="col" className="min-w-28 px-3 py-2 align-bottom font-medium">
+                  <th scope="col" className="min-w-28 px-3 py-2 text-start align-bottom font-medium">
                     {t('community_setup.column.make_it_yours')}
                   </th>
                   {STEPS.map((step) => (
-                    <th key={step} scope="col" className="min-w-28 px-3 py-2 align-bottom font-medium">
+                    <th key={step} scope="col" className="min-w-28 px-3 py-2 text-start align-bottom font-medium">
                       {label(step)}
                     </th>
                   ))}
-                  <th scope="col" className="min-w-32 px-3 py-2 align-bottom font-medium">
+                  <th scope="col" className="min-w-32 px-3 py-2 text-start align-bottom font-medium">
                     {t('community_setup.column.email_sender')}
                   </th>
                 </tr>

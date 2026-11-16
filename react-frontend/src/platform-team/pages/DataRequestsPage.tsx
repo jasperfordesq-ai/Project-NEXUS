@@ -246,7 +246,7 @@ export function DataRequestsPage() {
               <caption className="sr-only">{t('data_requests.title')}</caption>
               <thead>
                 <tr className="bg-surface-secondary text-start text-xs text-muted">
-                  <th scope="col" className="sticky start-0 z-10 min-w-48 bg-surface-secondary px-3 py-2 font-medium">
+                  <th scope="col" className="sticky start-0 z-10 min-w-48 bg-surface-secondary px-3 py-2 text-start align-bottom font-medium">
                     {t('data_requests.column.community')}
                   </th>
                   {FIGURES.map((figure) => (
@@ -254,7 +254,7 @@ export function DataRequestsPage() {
                       {label(figure)}
                     </th>
                   ))}
-                  <th scope="col" className="min-w-40 px-3 py-2 align-bottom font-medium">
+                  <th scope="col" className="min-w-40 px-3 py-2 text-start align-bottom font-medium">
                     {t('data_requests.column.open_by_type')}
                   </th>
                 </tr>
