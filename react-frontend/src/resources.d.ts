@@ -57388,6 +57388,68 @@ export default interface Resources {
       "saved": "Agreement saved",
       "title": "Agreements and renewals"
     },
+    "assurance": {
+      "access_review": {
+        "due": "A review is due",
+        "last": "Last review recorded: {{date}}",
+        "never": "No review has been recorded",
+        "not_due": "A review is not due yet",
+        "title": "Review of senior accounts"
+      },
+      "backup": {
+        "checked": "Checked: {{date}}",
+        "newest": "Newest backup made: {{date}}",
+        "not_available": "No result from the daily backup check in the last 26 hours.",
+        "state": {
+          "empty": "The newest backup is empty",
+          "healthy": "The newest backup was found and is recent",
+          "missing": "No backup was found",
+          "other": "The check gave a result this page does not recognise",
+          "stale": "The newest backup is too old",
+          "unreadable": "The backups could not be read"
+        },
+        "title": "Daily check of the database backup"
+      },
+      "could_not_read": "Could not be read",
+      "data_requests": {
+        "open": "Open, across all communities: {{count}}",
+        "overdue": "Open for more than 30 days: {{count}}",
+        "title": "Requests about personal data"
+      },
+      "failed_sign_ins": {
+        "none": "Nothing has been counted yet",
+        "note": "This says when the record starts. It is not a count of anything.",
+        "since": "Failed sign-ins have been counted since {{date}}",
+        "title": "Record of failed sign-ins"
+      },
+      "findings_note": "Open security findings are kept in a private record, not on this server, and are not shown here.",
+      "independent_test": {
+        "date": "Date: {{date}}",
+        "none": "Not recorded on this server",
+        "title": "Last independent security test"
+      },
+      "intro": "Facts the platform can measure about itself today. Check each one before quoting it to anyone.",
+      "load_error_title": "The facts could not be loaded",
+      "loading": "Reading the facts",
+      "not_recorded": "Not recorded",
+      "read_at": "Read {{time}}",
+      "release": {
+        "commit": "Version code: {{code}}",
+        "deployed": "Went live: {{date}}",
+        "deployed_unknown": "When it went live is not recorded on this server",
+        "title": "The version that is live",
+        "version": "Version {{version}}"
+      },
+      "source_label": "Where this comes from",
+      "source_owner": "Entered by the platform's owner in the server's settings",
+      "test_scope_note": "An independent test covers the version it tested, not changes made since.",
+      "title": "Assurance facts",
+      "two_step": {
+        "title": "Two-step sign-in on senior accounts",
+        "truncated": "The list stops at its limit, so some senior accounts may not be counted.",
+        "value": "Senior accounts with two-step sign-in on: {{with}} of {{total}}"
+      }
+    },
     "breadcrumbs": {
       "aria_label": "Where you are",
       "create": "Create",
@@ -57582,6 +57644,7 @@ export default interface Resources {
       "loading": "Loading keys and connections",
       "name": {
         "file_storage": "File storage",
+        "sentry_api": "Error service: reading the figures",
         "web_push": "Web push notifications"
       },
       "never_shown": "This page never shows a key or any part of one.",
@@ -57657,6 +57720,73 @@ export default interface Resources {
       "title": "Deployments",
       "version": "Version code",
       "watch_note": "The 30-minute watch for errors that follows each deployment is not recorded here."
+    },
+    "domains": {
+      "check_failed": "The check could not be run. Try again.",
+      "check_now": "Check now",
+      "checked": "Checked.",
+      "checked_at": "Checked {{time}}",
+      "communities_heading": "Communities",
+      "daily": "Every address is checked once a day. A certificate that runs out in {{days}} days or fewer is marked.",
+      "expires_on": "Certificate runs out on {{date}}",
+      "intro": "Whether each web address works, and when its security certificate runs out.",
+      "kind": {
+        "accessible": "Accessible site address",
+        "main": "Main address"
+      },
+      "load_error_title": "The addresses could not be loaded",
+      "loading": "Loading the addresses",
+      "no_address": "No address of its own. It uses the platform's address.",
+      "platform_heading": "The platform's own addresses",
+      "platform_none": "No platform addresses are set up on this server.",
+      "reason": {
+        "certificate_not_trusted": "A browser would not trust its certificate.",
+        "could_not_read_certificate": "Its certificate could not be read.",
+        "does_not_resolve": "The name does not lead anywhere.",
+        "expired": "The certificate has run out.",
+        "no_answer": "Nothing answered at this address.",
+        "not_a_public_address": "The name leads into a private network, so it was not contacted."
+      },
+      "seen_from_server": "This is what a visitor's browser would be given, as seen from the server. A problem between a visitor and the platform's front door would not show here.",
+      "status": {
+        "failing": "Not working",
+        "not_checkable": "Not a web address we can check",
+        "ok": "Fine",
+        "unknown": "Not checked yet",
+        "warning_one": "Certificate runs out in {{count}} day",
+        "warning_other": "Certificate runs out in {{count}} days"
+      },
+      "switched_off": "Switched off",
+      "title": "Addresses and certificates",
+      "too_many": "Too many checks in a minute. Wait a moment and try again.",
+      "uses_platform_address": "Uses the platform's address"
+    },
+    "errors": {
+      "checked_at": "Checked {{time}}",
+      "could_not_read": "The error service could not be read for this part. That is not the same as no errors.",
+      "counts_only": "These are counts only. The details of each error stay in the error service.",
+      "figure": {
+        "errors_24h": "Errors in the last 24 hours",
+        "errors_7d": "Errors in the last 7 days",
+        "unresolved": "Unresolved problems seen in the last 14 days"
+      },
+      "intro": "How many errors the error service recorded for each part of the platform.",
+      "kept_note": "Figures are kept for five minutes. \"Check again\" asks the error service now.",
+      "load_error_title": "Recent errors could not be loaded",
+      "loading": "Loading recent errors",
+      "not_available": "Not available",
+      "not_connected": {
+        "decision": "Whether to do it is a decision for the platform's owner.",
+        "meanwhile": "Until then, the nightly error report you already receive is the place to look.",
+        "needed": "The error service gives these figures only to a read-only access key of its own, stored on this server. That has not been done.",
+        "title": "Not connected"
+      },
+      "project": {
+        "php": "The server",
+        "react": "The website",
+        "webuk": "The accessible site"
+      },
+      "title": "Recent errors"
     },
     "failed_jobs": {
       "action_failed": "That didn't work. Nothing was changed.",

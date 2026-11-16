@@ -4511,9 +4511,14 @@ Route::middleware(['auth:sanctum', 'platform-team'])->group(function () {
     Route::delete('/v2/platform-team/failed-jobs/{uuid}', [\App\Http\Controllers\Api\PlatformTeam\FailedJobsController::class, 'destroy'])->whereUuid('uuid');
     // Deployments: the last deployments and rollbacks this server recorded (tail of the deploy record file). Read-only.
     Route::get('/v2/platform-team/deployments', [\App\Http\Controllers\Api\PlatformTeam\DeploymentsController::class, 'index']);
+    // Recent errors: three counts per part of the platform from the error service; off until a read-only key is stored.
+    Route::get('/v2/platform-team/errors', [\App\Http\Controllers\Api\PlatformTeam\RecentErrorsController::class, 'index']);
     // Rebuild search: every community with its last rebuild; POST {tenant_id} queues a rebuild of that community's search (adds and updates, never empties).
     Route::get('/v2/platform-team/search-rebuild', [\App\Http\Controllers\Api\PlatformTeam\SearchRebuildController::class, 'index']);
     Route::post('/v2/platform-team/search-rebuild', [\App\Http\Controllers\Api\PlatformTeam\SearchRebuildController::class, 'store']);
+    // Addresses and certificates: each community's own addresses and the platform's, whether they resolve and when the certificate runs out (from the daily check); POST {tenant_id} or {platform: true} checks again now. Hosts come from the tenants table only, never from the request.
+    Route::get('/v2/platform-team/domains', [\App\Http\Controllers\Api\PlatformTeam\DomainCheckController::class, 'index']);
+    Route::post('/v2/platform-team/domains/check', [\App\Http\Controllers\Api\PlatformTeam\DomainCheckController::class, 'check']);
     // Keys and connections: which outside services this server has a key for. Yes / no only, never any part of a key. Read-only.
     Route::get('/v2/platform-team/connections', [\App\Http\Controllers\Api\PlatformTeam\ConnectionsController::class, 'index']);
     // Translations: how much of the server's wording (lang/) each language still lacks. Counts only, kept an hour; ?refresh=1 recounts. Read-only.
@@ -4558,6 +4563,8 @@ Route::middleware(['auth:sanctum', 'platform-team'])->group(function () {
     Route::post('/v2/platform-team/agreements', [\App\Http\Controllers\Api\PlatformTeam\PlatformAgreementsController::class, 'store']);
     Route::put('/v2/platform-team/agreements/{id}', [\App\Http\Controllers\Api\PlatformTeam\PlatformAgreementsController::class, 'update'])->whereNumber('id');
     Route::post('/v2/platform-team/agreements/{id}/end', [\App\Http\Controllers\Api\PlatformTeam\PlatformAgreementsController::class, 'end'])->whereNumber('id');
+    // Assurance facts: what the platform can measure about itself, each from the service that owns it. Read-only.
+    Route::get('/v2/platform-team/assurance', [\App\Http\Controllers\Api\PlatformTeam\AssuranceFactsController::class, 'index']);
 });
 
 // AG71 — Pilot Region Inquiry & Qualification Funnel

@@ -17,4 +17,13 @@ return [
      * says so.
      */
     'deploy_history_path' => env('PLATFORM_TEAM_DEPLOY_HISTORY_PATH', storage_path('logs/host-logs/deploys.jsonl')),
+
+    /*
+     * The date of the last independent security test, as YYYY-MM-DD, shown on
+     * the Assurance facts page. Only the platform's owner sets it, on the
+     * server. 🔴 No date is ever written here: unset (null) is shown as "Not
+     * recorded on this server", and a malformed or future value is treated
+     * the same way.
+     */
+    'last_independent_test_on' => env('PLATFORM_TEAM_LAST_INDEPENDENT_TEST_ON'),
 ];

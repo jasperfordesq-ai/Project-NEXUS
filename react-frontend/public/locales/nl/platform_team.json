@@ -711,6 +711,33 @@
     "time_taken": "Duur",
     "changes_label": "Meegenomen wijzigingen"
   },
+  "errors": {
+    "title": "Recente fouten",
+    "intro": "Hoeveel fouten de foutendienst voor elk deel van het platform heeft vastgelegd.",
+    "counts_only": "Dit zijn alleen aantallen. De details van elke fout blijven in de foutendienst.",
+    "kept_note": "De cijfers worden vijf minuten bewaard. \"Opnieuw controleren\" vraagt het de foutendienst meteen.",
+    "checked_at": "Gecontroleerd: {{time}}",
+    "loading": "Recente fouten laden",
+    "load_error_title": "De recente fouten konden niet worden geladen",
+    "not_available": "Niet beschikbaar",
+    "could_not_read": "De foutendienst kon voor dit deel niet worden uitgelezen. Dat is niet hetzelfde als geen fouten.",
+    "figure": {
+      "errors_24h": "Fouten in de afgelopen 24 uur",
+      "errors_7d": "Fouten in de afgelopen 7 dagen",
+      "unresolved": "Onopgeloste problemen, gezien in de afgelopen 14 dagen"
+    },
+    "project": {
+      "php": "De server",
+      "react": "De website",
+      "webuk": "De toegankelijke website"
+    },
+    "not_connected": {
+      "title": "Niet gekoppeld",
+      "needed": "De foutendienst geeft deze cijfers alleen aan een eigen toegangssleutel die alleen mag lezen, opgeslagen op deze server. Dat is niet gebeurd.",
+      "decision": "Of dat gebeurt, beslist de eigenaar van het platform.",
+      "meanwhile": "Tot die tijd is het nachtelijke foutenrapport dat u al ontvangt de plek om te kijken."
+    }
+  },
   "connections": {
     "title": "Sleutels en koppelingen",
     "intro": "Voor welke externe diensten deze server een sleutel heeft. ‘Ingesteld’ betekent dat er een sleutel is. Het bewijst niet dat de dienst werkt.",
@@ -739,7 +766,8 @@
     },
     "name": {
       "web_push": "Webpushmeldingen",
-      "file_storage": "Bestandsopslag"
+      "file_storage": "Bestandsopslag",
+      "sentry_api": "Foutendienst: de cijfers ophalen"
     },
     "detail": {
       "stripe_webhook": "Sleutel die controleert of betalingsberichten echt van Stripe komen",
@@ -957,5 +985,107 @@
       "save": "Opslaan",
       "cancel": "Annuleren"
     }
+  },
+  "assurance": {
+    "title": "Gemeten feiten",
+    "intro": "Feiten die het platform vandaag over zichzelf kan meten. Controleer elk feit voordat u het aan iemand doorgeeft.",
+    "loading": "De feiten worden gelezen",
+    "load_error_title": "De feiten konden niet worden geladen",
+    "read_at": "Gelezen {{time}}",
+    "could_not_read": "Kon niet worden gelezen",
+    "not_recorded": "Niet vastgelegd",
+    "source_label": "Waar dit vandaan komt",
+    "source_owner": "Ingevuld door de eigenaar van het platform in de instellingen van de server",
+    "findings_note": "Openstaande beveiligingsbevindingen worden bijgehouden in een privéregister, niet op deze server, en worden hier niet getoond.",
+    "test_scope_note": "Een onafhankelijke test geldt voor de versie die is getest, niet voor wijzigingen sindsdien.",
+    "release": {
+      "title": "De versie die live staat",
+      "version": "Versie {{version}}",
+      "commit": "Versiecode: {{code}}",
+      "deployed": "Live sinds: {{date}}",
+      "deployed_unknown": "Wanneer deze live ging, is op deze server niet vastgelegd"
+    },
+    "two_step": {
+      "title": "Aanmelden in twee stappen op accounts met hoge rechten",
+      "value": "Accounts met hoge rechten waarop aanmelden in twee stappen aan staat: {{with}} van {{total}}",
+      "truncated": "De lijst stopt bij de grens, dus mogelijk zijn niet alle accounts met hoge rechten meegeteld."
+    },
+    "access_review": {
+      "title": "Controle van accounts met hoge rechten",
+      "last": "Laatste vastgelegde controle: {{date}}",
+      "never": "Er is nog geen controle vastgelegd",
+      "due": "Er moet een controle worden gedaan",
+      "not_due": "Een controle is nog niet nodig"
+    },
+    "backup": {
+      "title": "Dagelijkse controle van de databaseback-up",
+      "not_available": "Geen resultaat van de dagelijkse back-upcontrole in de afgelopen 26 uur.",
+      "state": {
+        "healthy": "De nieuwste back-up is gevonden en is recent",
+        "stale": "De nieuwste back-up is te oud",
+        "missing": "Er is geen back-up gevonden",
+        "empty": "De nieuwste back-up is leeg",
+        "unreadable": "De back-ups konden niet worden gelezen",
+        "other": "De controle gaf een resultaat dat deze pagina niet herkent"
+      },
+      "newest": "Nieuwste back-up gemaakt: {{date}}",
+      "checked": "Gecontroleerd: {{date}}"
+    },
+    "data_requests": {
+      "title": "Verzoeken over persoonsgegevens",
+      "open": "Open, over alle gemeenschappen: {{count}}",
+      "overdue": "Langer dan 30 dagen open: {{count}}"
+    },
+    "failed_sign_ins": {
+      "title": "Overzicht van mislukte aanmeldingen",
+      "since": "Mislukte aanmeldingen worden geteld sinds {{date}}",
+      "none": "Er is nog niets geteld",
+      "note": "Dit zegt wanneer het overzicht begint. Het is geen telling van iets."
+    },
+    "independent_test": {
+      "title": "Laatste onafhankelijke beveiligingstest",
+      "date": "Datum: {{date}}",
+      "none": "Niet vastgelegd op deze server"
+    }
+  },
+  "domains": {
+    "title": "Adressen en certificaten",
+    "intro": "Of elk webadres werkt, en wanneer het beveiligingscertificaat verloopt.",
+    "seen_from_server": "Dit is wat de browser van een bezoeker zou krijgen, gezien vanaf de server. Een probleem tussen een bezoeker en de voordeur van het platform zou hier niet te zien zijn.",
+    "daily": "Elk adres wordt één keer per dag gecontroleerd. Een certificaat dat binnen {{days}} dagen verloopt, wordt gemarkeerd.",
+    "loading": "De adressen worden geladen",
+    "load_error_title": "De adressen konden niet worden geladen",
+    "platform_heading": "De eigen adressen van het platform",
+    "platform_none": "Op deze server zijn geen platformadressen ingesteld.",
+    "communities_heading": "Gemeenschappen",
+    "switched_off": "Uitgeschakeld",
+    "no_address": "Geen eigen adres. Ze gebruikt het adres van het platform.",
+    "uses_platform_address": "Gebruikt het adres van het platform",
+    "kind": {
+      "main": "Hoofdadres",
+      "accessible": "Adres van de toegankelijke site"
+    },
+    "status": {
+      "ok": "In orde",
+      "warning_one": "Certificaat verloopt over {{count}} dag",
+      "warning_other": "Certificaat verloopt over {{count}} dagen",
+      "failing": "Werkt niet",
+      "unknown": "Nog niet gecontroleerd",
+      "not_checkable": "Geen webadres dat we kunnen controleren"
+    },
+    "reason": {
+      "does_not_resolve": "De naam leidt nergens naartoe.",
+      "not_a_public_address": "De naam leidt naar een privénetwerk, dus er is geen contact mee gelegd.",
+      "no_answer": "Er antwoordde niets op dit adres.",
+      "certificate_not_trusted": "Een browser zou het certificaat niet vertrouwen.",
+      "could_not_read_certificate": "Het certificaat kon niet worden gelezen.",
+      "expired": "Het certificaat is verlopen."
+    },
+    "expires_on": "Certificaat verloopt op {{date}}",
+    "checked_at": "Gecontroleerd op {{time}}",
+    "check_now": "Nu controleren",
+    "checked": "Gecontroleerd.",
+    "check_failed": "De controle kon niet worden uitgevoerd. Probeer het opnieuw.",
+    "too_many": "Te veel controles in een minuut. Wacht even en probeer het opnieuw."
   }
 }

@@ -123,7 +123,7 @@ final class CommunitySetupChecklistService
         $legal = $step('legal_documents', fn (): array => $this->publishedLegalDocuments($ids));
         $adminSignedIn = $step('first_admin_signed_in', fn (): array => $this->adminSignedIn($ids));
         $ownSender = $step('email_sender', fn (): array => $this->ownSender($ids));
-        $platformAddresses = $this->platformAddresses();
+        $platformAddresses = self::platformAddresses();
 
         $communities = [];
         foreach ($tenants as $tenant) {
@@ -164,9 +164,12 @@ final class CommunitySetupChecklistService
      * that also takes every CORS origin, and those include communities' own
      * domains.
      *
+     * Public (16 Nov 2026) so the Addresses and certificates page
+     * (DomainCheckService) uses this same rule rather than a second one.
+     *
      * @return list<string>
      */
-    private function platformAddresses(): array
+    public static function platformAddresses(): array
     {
         $hosts = [];
         foreach (['tenancy.platform_hosts', 'tenancy.platform_app_hosts', 'tenancy.platform_accessible_hosts'] as $key) {
@@ -187,7 +190,7 @@ final class CommunitySetupChecklistService
      *
      * @param list<string> $platformAddresses
      */
-    private static function isPlatformAddress(string $host, array $platformAddresses): bool
+    public static function isPlatformAddress(string $host, array $platformAddresses): bool
     {
         foreach ($platformAddresses as $platform) {
             if ($host === $platform || str_ends_with($host, '.' . $platform)) {

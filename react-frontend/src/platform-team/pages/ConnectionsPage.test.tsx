@@ -71,6 +71,36 @@ describe('ConnectionsPage', () => {
     expect(within(screen.getByTestId('connection-file_storage')).getByText('connections.name.file_storage')).toBeInTheDocument();
   });
 
+  it('names reading the error figures in words, beside sending errors, set up or not, and only when the server lists it', async () => {
+    const withErrorRows = (configured: boolean): ConnectionsReport => ({
+      connections: [
+        ...REPORT.connections,
+        { key: 'sentry', group: 'error_reports', configured: true },
+        { key: 'sentry_api', group: 'error_reports', configured },
+      ],
+    });
+
+    apiGet.mockResolvedValue({ success: true, data: withErrorRows(false) });
+    const { unmount } = renderPage();
+    const group = await screen.findByTestId('connections-group-error_reports');
+    const row = within(group).getByTestId('connection-sentry_api');
+    expect(within(row).getByText('connections.name.sentry_api')).toBeInTheDocument();
+    expect(within(row).getByText('connections.status.not_set_up')).toBeInTheDocument();
+    expect(within(group).getByText('Sentry')).toBeInTheDocument();
+    unmount();
+
+    apiGet.mockResolvedValue({ success: true, data: withErrorRows(true) });
+    const second = renderPage();
+    const setUp = await screen.findByTestId('connection-sentry_api');
+    expect(within(setUp).getByText('connections.status.set_up')).toBeInTheDocument();
+    second.unmount();
+
+    apiGet.mockResolvedValue({ success: true, data: REPORT });
+    renderPage();
+    await screen.findByTestId('connection-postmark');
+    expect(screen.queryByTestId('connection-sentry_api')).not.toBeInTheDocument();
+  });
+
   it('counts the services that are set up', async () => {
     renderPage();
 

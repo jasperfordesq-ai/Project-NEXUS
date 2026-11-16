@@ -719,6 +719,33 @@
     "time_taken": "Czas trwania",
     "changes_label": "Zawarte zmiany"
   },
+  "errors": {
+    "title": "Ostatnie błędy",
+    "intro": "Ile błędów usługa błędów zapisała dla każdej części platformy.",
+    "counts_only": "To tylko liczby. Szczegóły każdego błędu zostają w usłudze błędów.",
+    "kept_note": "Liczby są przechowywane przez pięć minut. „Sprawdź ponownie” od razu pyta usługę błędów.",
+    "checked_at": "Sprawdzono: {{time}}",
+    "loading": "Wczytywanie ostatnich błędów",
+    "load_error_title": "Nie udało się wczytać ostatnich błędów",
+    "not_available": "Niedostępne",
+    "could_not_read": "Nie udało się odczytać usługi błędów dla tej części. To nie znaczy, że błędów nie ma.",
+    "figure": {
+      "errors_24h": "Błędy w ciągu ostatnich 24 godzin",
+      "errors_7d": "Błędy w ciągu ostatnich 7 dni",
+      "unresolved": "Nierozwiązane problemy widziane w ciągu ostatnich 14 dni"
+    },
+    "project": {
+      "php": "Serwer",
+      "react": "Strona internetowa",
+      "webuk": "Strona dostępna"
+    },
+    "not_connected": {
+      "title": "Brak połączenia",
+      "needed": "Usługa błędów podaje te liczby tylko własnemu kluczowi dostępu tylko do odczytu, zapisanemu na tym serwerze. Tego nie zrobiono.",
+      "decision": "Czy to zrobić, decyduje właściciel platformy.",
+      "meanwhile": "Do tego czasu warto zaglądać do nocnego raportu o błędach, który już otrzymujesz."
+    }
+  },
   "connections": {
     "title": "Klucze i połączenia",
     "intro": "Do których usług zewnętrznych ten serwer ma klucz. „Skonfigurowane” oznacza, że klucz jest na miejscu. Nie dowodzi to, że usługa działa.",
@@ -747,7 +774,8 @@
     },
     "name": {
       "web_push": "Powiadomienia push w przeglądarce",
-      "file_storage": "Przechowywanie plików"
+      "file_storage": "Przechowywanie plików",
+      "sentry_api": "Usługa błędów: odczyt liczb"
     },
     "detail": {
       "stripe_webhook": "Klucz, który sprawdza, czy wiadomości o płatnościach naprawdę pochodzą ze Stripe",
@@ -969,5 +997,109 @@
       "save": "Zapisz",
       "cancel": "Anuluj"
     }
+  },
+  "assurance": {
+    "title": "Zmierzone fakty",
+    "intro": "Fakty, które platforma może dziś zmierzyć na swój temat. Sprawdź każdy z nich, zanim go komukolwiek przytoczysz.",
+    "loading": "Odczytywanie faktów",
+    "load_error_title": "Nie udało się wczytać faktów",
+    "read_at": "Odczytano {{time}}",
+    "could_not_read": "Nie udało się odczytać",
+    "not_recorded": "Nie zapisano",
+    "source_label": "Skąd to pochodzi",
+    "source_owner": "Wpisane przez właściciela platformy w ustawieniach serwera",
+    "findings_note": "Otwarte ustalenia dotyczące bezpieczeństwa są prowadzone w prywatnym rejestrze, nie na tym serwerze, i nie są tu pokazywane.",
+    "test_scope_note": "Niezależny test obejmuje wersję, którą testowano, a nie zmiany wprowadzone później.",
+    "release": {
+      "title": "Wersja działająca na żywo",
+      "version": "Wersja {{version}}",
+      "commit": "Kod wersji: {{code}}",
+      "deployed": "Na żywo od: {{date}}",
+      "deployed_unknown": "Na tym serwerze nie zapisano, kiedy weszła na żywo"
+    },
+    "two_step": {
+      "title": "Logowanie dwuetapowe na kontach wysokiego szczebla",
+      "value": "Konta wysokiego szczebla z włączonym logowaniem dwuetapowym: {{with}} z {{total}}",
+      "truncated": "Lista kończy się na swoim limicie, więc niektóre konta wysokiego szczebla mogły nie zostać policzone."
+    },
+    "access_review": {
+      "title": "Przegląd kont wysokiego szczebla",
+      "last": "Ostatni zapisany przegląd: {{date}}",
+      "never": "Nie zapisano jeszcze żadnego przeglądu",
+      "due": "Przegląd jest wymagany",
+      "not_due": "Przegląd nie jest jeszcze wymagany"
+    },
+    "backup": {
+      "title": "Codzienne sprawdzenie kopii zapasowej bazy danych",
+      "not_available": "Brak wyniku codziennego sprawdzenia kopii zapasowej w ciągu ostatnich 26 godzin.",
+      "state": {
+        "healthy": "Najnowszą kopię zapasową znaleziono i jest świeża",
+        "stale": "Najnowsza kopia zapasowa jest za stara",
+        "missing": "Nie znaleziono żadnej kopii zapasowej",
+        "empty": "Najnowsza kopia zapasowa jest pusta",
+        "unreadable": "Nie udało się odczytać kopii zapasowych",
+        "other": "Sprawdzenie dało wynik, którego ta strona nie rozpoznaje"
+      },
+      "newest": "Najnowsza kopia zapasowa wykonana: {{date}}",
+      "checked": "Sprawdzono: {{date}}"
+    },
+    "data_requests": {
+      "title": "Wnioski dotyczące danych osobowych",
+      "open": "Otwarte, we wszystkich społecznościach: {{count}}",
+      "overdue": "Otwarte dłużej niż 30 dni: {{count}}"
+    },
+    "failed_sign_ins": {
+      "title": "Zapis nieudanych logowań",
+      "since": "Nieudane logowania są liczone od {{date}}",
+      "none": "Niczego jeszcze nie policzono",
+      "note": "To mówi, kiedy zaczyna się zapis. Nie jest to liczba czegokolwiek."
+    },
+    "independent_test": {
+      "title": "Ostatni niezależny test bezpieczeństwa",
+      "date": "Data: {{date}}",
+      "none": "Nie zapisano na tym serwerze"
+    }
+  },
+  "domains": {
+    "title": "Adresy i certyfikaty",
+    "intro": "Czy każdy adres internetowy działa i kiedy wygasa jego certyfikat bezpieczeństwa.",
+    "seen_from_server": "Tak widzi to przeglądarka odwiedzającego, sprawdzone z serwera. Problem między odwiedzającym a wejściem do platformy nie byłby tu widoczny.",
+    "daily": "Każdy adres jest sprawdzany raz dziennie. Certyfikat, który wygasa w ciągu {{days}} dni lub szybciej, jest oznaczany.",
+    "loading": "Wczytywanie adresów",
+    "load_error_title": "Nie udało się wczytać adresów",
+    "platform_heading": "Własne adresy platformy",
+    "platform_none": "Na tym serwerze nie skonfigurowano adresów platformy.",
+    "communities_heading": "Społeczności",
+    "switched_off": "Wyłączona",
+    "no_address": "Brak własnego adresu. Korzysta z adresu platformy.",
+    "uses_platform_address": "Korzysta z adresu platformy",
+    "kind": {
+      "main": "Adres główny",
+      "accessible": "Adres strony dostępnej"
+    },
+    "status": {
+      "ok": "W porządku",
+      "warning_one": "Certyfikat wygasa za {{count}} dzień",
+      "warning_few": "Certyfikat wygasa za {{count}} dni",
+      "warning_many": "Certyfikat wygasa za {{count}} dni",
+      "warning_other": "Certyfikat wygasa za {{count}} dnia",
+      "failing": "Nie działa",
+      "unknown": "Jeszcze nie sprawdzono",
+      "not_checkable": "To nie jest adres internetowy, który możemy sprawdzić"
+    },
+    "reason": {
+      "does_not_resolve": "Ta nazwa nigdzie nie prowadzi.",
+      "not_a_public_address": "Ta nazwa prowadzi do sieci prywatnej, więc nie nawiązano z nią połączenia.",
+      "no_answer": "Pod tym adresem nic nie odpowiedziało.",
+      "certificate_not_trusted": "Przeglądarka nie zaufałaby jego certyfikatowi.",
+      "could_not_read_certificate": "Nie udało się odczytać jego certyfikatu.",
+      "expired": "Certyfikat wygasł."
+    },
+    "expires_on": "Certyfikat wygasa {{date}}",
+    "checked_at": "Sprawdzono {{time}}",
+    "check_now": "Sprawdź teraz",
+    "checked": "Sprawdzono.",
+    "check_failed": "Nie udało się wykonać sprawdzenia. Spróbuj ponownie.",
+    "too_many": "Za dużo sprawdzeń w ciągu minuty. Poczekaj chwilę i spróbuj ponownie."
   }
 }

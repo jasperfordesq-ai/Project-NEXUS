@@ -24,6 +24,18 @@ return [
         'dsn' => env('SENTRY_DSN_PHP', env('SENTRY_LARAVEL_DSN')),
         'environment' => env('SENTRY_ENVIRONMENT', env('APP_ENV', 'production')),
         'traces_sample_rate' => (float) env('SENTRY_TRACES_SAMPLE_RATE', 0.1),
+        // Platform team panel → Recent errors: READING counts from the error
+        // service needs its own read-only key. Unset (the default) = the page
+        // says "Not connected" and the server asks the error service nothing.
+        // Same names as scripts/postdeploy-watch.mjs reads on a developer machine.
+        'api_token' => env('SENTRY_AUTH_TOKEN_MONITOR'),
+        'org' => env('SENTRY_ORG'),
+        'api_base' => env('SENTRY_API_BASE', 'https://sentry.io/api/0'),
+        'projects' => [
+            'php' => env('SENTRY_PROJECT_PHP'),
+            'react' => env('SENTRY_PROJECT_REACT'),
+            'webuk' => env('SENTRY_PROJECT_WEBUK'),
+        ],
     ],
 
     'openai' => [

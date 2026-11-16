@@ -28,7 +28,7 @@ class ConnectionsTest extends TestCase
 
     private const EXPECTED_KEYS = [
         'gmail_api', 'postmark', 'smtp', 'pusher', 'fcm', 'expo', 'web_push', 'stripe', 'stripe_webhook',
-        'openai', 'anthropic', 'gemini', 'google_maps', 'google_translate', 'meilisearch', 'sentry',
+        'openai', 'anthropic', 'gemini', 'google_maps', 'google_translate', 'meilisearch', 'sentry', 'sentry_api',
         'cloudflare_origin', 'turnstile', 'clamav', 'slack_slo_alerts', 'slack_email_alerts',
         'google_sign_in', 'facebook_sign_in', 'apple_sign_in', 'mailchimp', 'file_storage',
     ];
@@ -180,6 +180,45 @@ class ConnectionsTest extends TestCase
 
         config(['mail.gmail_api.refresh_token' => '']);
         $this->assertFalse($this->rows()['gmail_api']['configured']);
+    }
+
+    /**
+     * Reading figures from the error service (the Recent errors page) needs its
+     * own read-only key, the organisation and the server's project id: all
+     * three, and none of them leaves the server. Made-up values only.
+     */
+    public function test_reading_error_figures_is_set_up_only_with_the_key_the_organisation_and_the_project(): void
+    {
+        $all = [
+            'services.sentry.api_token' => 'tok_PLANTED_CONN_7k2Q',
+            'services.sentry.org' => 'example-org',
+            'services.sentry.api_base' => 'https://errors.example.test/api/0',
+            'services.sentry.projects' => ['php' => '1001', 'react' => null, 'webuk' => null],
+        ];
+
+        config(array_merge($all, ['services.sentry.api_token' => null, 'services.sentry.org' => null,
+            'services.sentry.projects' => ['php' => null, 'react' => null, 'webuk' => null]]));
+        $this->assertFalse($this->rows()['sentry_api']['configured'], 'nothing set');
+
+        config(array_merge($all, ['services.sentry.api_token' => '']));
+        $this->assertFalse($this->rows()['sentry_api']['configured'], 'no key');
+
+        config(array_merge($all, ['services.sentry.projects' => ['php' => null, 'react' => '1002', 'webuk' => null]]));
+        $this->assertFalse($this->rows()['sentry_api']['configured'], 'no server project');
+
+        config($all);
+        $this->actAsPlatformTeam();
+        $response = $this->apiGet(self::URI)->assertStatus(200);
+        $rows = [];
+        foreach ($response->json('data.connections') as $row) {
+            $rows[$row['key']] = $row;
+        }
+        $this->assertTrue($rows['sentry_api']['configured']);
+        $this->assertSame('error_reports', $rows['sentry_api']['group']);
+        $body = (string) $response->getContent();
+        foreach (['PLAN', 'CONN', '7k2Q', 'example-org', '1001'] as $piece) {
+            $this->assertStringNotContainsString($piece, $body);
+        }
     }
 
     public function test_nothing_can_be_changed_through_it(): void

@@ -102,6 +102,17 @@ $app = Application::configure(basePath: dirname(__DIR__))
             ->runInBackground()
             ->name('taxonomy-translate-names');
 
+        // Platform team → Addresses and certificates: does each community and
+        // platform address resolve, when does its certificate run out. Hosts
+        // from the tenants table and the platform's own list only. A failing
+        // host is a finding on the page, not a failed run.
+        $schedule->command('domains:check')
+            ->dailyAt('05:20')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground()
+            ->name('domains-check');
+
         $schedule->command('slo:check')
             ->dailyAt('07:30')
             ->withoutOverlapping()

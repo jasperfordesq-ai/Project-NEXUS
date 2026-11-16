@@ -711,6 +711,33 @@
     "time_taken": "Time taken",
     "changes_label": "Changes it carried"
   },
+  "errors": {
+    "title": "Recent errors",
+    "intro": "How many errors the error service recorded for each part of the platform.",
+    "counts_only": "These are counts only. The details of each error stay in the error service.",
+    "kept_note": "Figures are kept for five minutes. \"Check again\" asks the error service now.",
+    "checked_at": "Checked {{time}}",
+    "loading": "Loading recent errors",
+    "load_error_title": "Recent errors could not be loaded",
+    "not_available": "Not available",
+    "could_not_read": "The error service could not be read for this part. That is not the same as no errors.",
+    "figure": {
+      "errors_24h": "Errors in the last 24 hours",
+      "errors_7d": "Errors in the last 7 days",
+      "unresolved": "Unresolved problems seen in the last 14 days"
+    },
+    "project": {
+      "php": "The server",
+      "react": "The website",
+      "webuk": "The accessible site"
+    },
+    "not_connected": {
+      "title": "Not connected",
+      "needed": "The error service gives these figures only to a read-only access key of its own, stored on this server. That has not been done.",
+      "decision": "Whether to do it is a decision for the platform's owner.",
+      "meanwhile": "Until then, the nightly error report you already receive is the place to look."
+    }
+  },
   "connections": {
     "title": "Keys and connections",
     "intro": "Which outside services this server has a key for. \"Set up\" means a key is in place. It does not prove the service is working.",
@@ -739,7 +766,8 @@
     },
     "name": {
       "web_push": "Web push notifications",
-      "file_storage": "File storage"
+      "file_storage": "File storage",
+      "sentry_api": "Error service: reading the figures"
     },
     "detail": {
       "stripe_webhook": "Key that checks payment messages really come from Stripe",
@@ -957,5 +985,107 @@
       "save": "Save",
       "cancel": "Cancel"
     }
+  },
+  "assurance": {
+    "title": "Assurance facts",
+    "intro": "Facts the platform can measure about itself today. Check each one before quoting it to anyone.",
+    "loading": "Reading the facts",
+    "load_error_title": "The facts could not be loaded",
+    "read_at": "Read {{time}}",
+    "could_not_read": "Could not be read",
+    "not_recorded": "Not recorded",
+    "source_label": "Where this comes from",
+    "source_owner": "Entered by the platform's owner in the server's settings",
+    "findings_note": "Open security findings are kept in a private record, not on this server, and are not shown here.",
+    "test_scope_note": "An independent test covers the version it tested, not changes made since.",
+    "release": {
+      "title": "The version that is live",
+      "version": "Version {{version}}",
+      "commit": "Version code: {{code}}",
+      "deployed": "Went live: {{date}}",
+      "deployed_unknown": "When it went live is not recorded on this server"
+    },
+    "two_step": {
+      "title": "Two-step sign-in on senior accounts",
+      "value": "Senior accounts with two-step sign-in on: {{with}} of {{total}}",
+      "truncated": "The list stops at its limit, so some senior accounts may not be counted."
+    },
+    "access_review": {
+      "title": "Review of senior accounts",
+      "last": "Last review recorded: {{date}}",
+      "never": "No review has been recorded",
+      "due": "A review is due",
+      "not_due": "A review is not due yet"
+    },
+    "backup": {
+      "title": "Daily check of the database backup",
+      "not_available": "No result from the daily backup check in the last 26 hours.",
+      "state": {
+        "healthy": "The newest backup was found and is recent",
+        "stale": "The newest backup is too old",
+        "missing": "No backup was found",
+        "empty": "The newest backup is empty",
+        "unreadable": "The backups could not be read",
+        "other": "The check gave a result this page does not recognise"
+      },
+      "newest": "Newest backup made: {{date}}",
+      "checked": "Checked: {{date}}"
+    },
+    "data_requests": {
+      "title": "Requests about personal data",
+      "open": "Open, across all communities: {{count}}",
+      "overdue": "Open for more than 30 days: {{count}}"
+    },
+    "failed_sign_ins": {
+      "title": "Record of failed sign-ins",
+      "since": "Failed sign-ins have been counted since {{date}}",
+      "none": "Nothing has been counted yet",
+      "note": "This says when the record starts. It is not a count of anything."
+    },
+    "independent_test": {
+      "title": "Last independent security test",
+      "date": "Date: {{date}}",
+      "none": "Not recorded on this server"
+    }
+  },
+  "domains": {
+    "title": "Addresses and certificates",
+    "intro": "Whether each web address works, and when its security certificate runs out.",
+    "seen_from_server": "This is what a visitor's browser would be given, as seen from the server. A problem between a visitor and the platform's front door would not show here.",
+    "daily": "Every address is checked once a day. A certificate that runs out in {{days}} days or fewer is marked.",
+    "loading": "Loading the addresses",
+    "load_error_title": "The addresses could not be loaded",
+    "platform_heading": "The platform's own addresses",
+    "platform_none": "No platform addresses are set up on this server.",
+    "communities_heading": "Communities",
+    "switched_off": "Switched off",
+    "no_address": "No address of its own. It uses the platform's address.",
+    "uses_platform_address": "Uses the platform's address",
+    "kind": {
+      "main": "Main address",
+      "accessible": "Accessible site address"
+    },
+    "status": {
+      "ok": "Fine",
+      "warning_one": "Certificate runs out in {{count}} day",
+      "warning_other": "Certificate runs out in {{count}} days",
+      "failing": "Not working",
+      "unknown": "Not checked yet",
+      "not_checkable": "Not a web address we can check"
+    },
+    "reason": {
+      "does_not_resolve": "The name does not lead anywhere.",
+      "not_a_public_address": "The name leads into a private network, so it was not contacted.",
+      "no_answer": "Nothing answered at this address.",
+      "certificate_not_trusted": "A browser would not trust its certificate.",
+      "could_not_read_certificate": "Its certificate could not be read.",
+      "expired": "The certificate has run out."
+    },
+    "expires_on": "Certificate runs out on {{date}}",
+    "checked_at": "Checked {{time}}",
+    "check_now": "Check now",
+    "checked": "Checked.",
+    "check_failed": "The check could not be run. Try again.",
+    "too_many": "Too many checks in a minute. Wait a moment and try again."
   }
 }

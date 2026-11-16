@@ -42,10 +42,13 @@ const SEGMENT_LABEL_KEYS: Record<string, string> = {
   'clean-up-jobs': 'clean_up_jobs.title',
   'push-notifications': 'push_notifications.title',
   deployments: 'deployments.title',
+  errors: 'errors.title',
   'search-rebuild': 'search_rebuild.title',
+  domains: 'domains.title',
   connections: 'connections.title',
   translations: 'translations.title',
   agreements: 'agreements.title',
+  assurance: 'assurance.title',
   // Pages that came from the super admin panel, or whose admin breadcrumb
   // wording would mislead: named with the wording their own menu entry uses.
   translation: 'super_admin:breadcrumbs.translation',

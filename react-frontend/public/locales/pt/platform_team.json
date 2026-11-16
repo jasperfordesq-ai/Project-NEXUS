@@ -711,6 +711,33 @@
     "time_taken": "Tempo gasto",
     "changes_label": "Mudanças incluídas"
   },
+  "errors": {
+    "title": "Erros recentes",
+    "intro": "Quantos erros o serviço de erros registrou em cada parte da plataforma.",
+    "counts_only": "São só contagens. Os detalhes de cada erro ficam no serviço de erros.",
+    "kept_note": "Os números ficam guardados por cinco minutos. \"Verificar de novo\" consulta o serviço de erros agora.",
+    "checked_at": "Verificado: {{time}}",
+    "loading": "Carregando os erros recentes",
+    "load_error_title": "Não foi possível carregar os erros recentes",
+    "not_available": "Não disponível",
+    "could_not_read": "Não foi possível consultar o serviço de erros para esta parte. Isso não quer dizer que não haja erros.",
+    "figure": {
+      "errors_24h": "Erros nas últimas 24 horas",
+      "errors_7d": "Erros nos últimos 7 dias",
+      "unresolved": "Problemas não resolvidos vistos nos últimos 14 dias"
+    },
+    "project": {
+      "php": "O servidor",
+      "react": "O site",
+      "webuk": "O site acessível"
+    },
+    "not_connected": {
+      "title": "Não conectado",
+      "needed": "O serviço de erros só fornece esses números a uma chave de acesso própria, somente leitura, guardada neste servidor. Isso não foi feito.",
+      "decision": "Fazer isso ou não é uma decisão do dono da plataforma.",
+      "meanwhile": "Até lá, o relatório noturno de erros que você já recebe é o lugar para conferir."
+    }
+  },
   "connections": {
     "title": "Chaves e conexões",
     "intro": "Para quais serviços externos este servidor tem uma chave. \"Configurado\" significa que há uma chave. Isso não prova que o serviço está funcionando.",
@@ -739,7 +766,8 @@
     },
     "name": {
       "web_push": "Notificações push na web",
-      "file_storage": "Armazenamento de arquivos"
+      "file_storage": "Armazenamento de arquivos",
+      "sentry_api": "Serviço de erros: leitura dos números"
     },
     "detail": {
       "stripe_webhook": "Chave que confere se as mensagens de pagamento vêm mesmo da Stripe",
@@ -957,5 +985,107 @@
       "save": "Salvar",
       "cancel": "Cancelar"
     }
+  },
+  "assurance": {
+    "title": "Fatos medidos",
+    "intro": "Fatos que a plataforma consegue medir sobre si mesma hoje. Confira cada um antes de citá-lo para qualquer pessoa.",
+    "loading": "Lendo os fatos",
+    "load_error_title": "Não foi possível carregar os fatos",
+    "read_at": "Lido {{time}}",
+    "could_not_read": "Não foi possível ler",
+    "not_recorded": "Não registrado",
+    "source_label": "De onde isso vem",
+    "source_owner": "Informado pelo dono da plataforma nas configurações do servidor",
+    "findings_note": "Os achados de segurança em aberto ficam em um registro privado, não neste servidor, e não são mostrados aqui.",
+    "test_scope_note": "Um teste independente cobre a versão que testou, não as mudanças feitas depois.",
+    "release": {
+      "title": "A versão que está no ar",
+      "version": "Versão {{version}}",
+      "commit": "Código da versão: {{code}}",
+      "deployed": "No ar desde: {{date}}",
+      "deployed_unknown": "Quando ela entrou no ar não está registrado neste servidor"
+    },
+    "two_step": {
+      "title": "Login em duas etapas nas contas de alto nível",
+      "value": "Contas de alto nível com login em duas etapas ativado: {{with}} de {{total}}",
+      "truncated": "A lista para no limite, então algumas contas de alto nível podem não ter sido contadas."
+    },
+    "access_review": {
+      "title": "Revisão das contas de alto nível",
+      "last": "Última revisão registrada: {{date}}",
+      "never": "Nenhuma revisão foi registrada",
+      "due": "Uma revisão está pendente",
+      "not_due": "Ainda não é hora de uma revisão"
+    },
+    "backup": {
+      "title": "Verificação diária do backup do banco de dados",
+      "not_available": "Nenhum resultado da verificação diária de backup nas últimas 26 horas.",
+      "state": {
+        "healthy": "O backup mais novo foi encontrado e é recente",
+        "stale": "O backup mais novo é antigo demais",
+        "missing": "Nenhum backup foi encontrado",
+        "empty": "O backup mais novo está vazio",
+        "unreadable": "Não foi possível ler os backups",
+        "other": "A verificação deu um resultado que esta página não reconhece"
+      },
+      "newest": "Backup mais novo feito em: {{date}}",
+      "checked": "Verificado em: {{date}}"
+    },
+    "data_requests": {
+      "title": "Pedidos sobre dados pessoais",
+      "open": "Em aberto, em todas as comunidades: {{count}}",
+      "overdue": "Em aberto há mais de 30 dias: {{count}}"
+    },
+    "failed_sign_ins": {
+      "title": "Registro de logins que falharam",
+      "since": "Os logins que falharam são contados desde {{date}}",
+      "none": "Nada foi contado ainda",
+      "note": "Isto diz quando o registro começa. Não é uma contagem de nada."
+    },
+    "independent_test": {
+      "title": "Último teste de segurança independente",
+      "date": "Data: {{date}}",
+      "none": "Não registrado neste servidor"
+    }
+  },
+  "domains": {
+    "title": "Endereços e certificados",
+    "intro": "Se cada endereço da web funciona e quando o certificado de segurança dele vence.",
+    "seen_from_server": "Isto é o que o navegador de um visitante receberia, visto a partir do servidor. Um problema entre um visitante e a entrada da plataforma não apareceria aqui.",
+    "daily": "Cada endereço é verificado uma vez por dia. Um certificado que vence em {{days}} dias ou menos é sinalizado.",
+    "loading": "Carregando os endereços",
+    "load_error_title": "Não foi possível carregar os endereços",
+    "platform_heading": "Os endereços próprios da plataforma",
+    "platform_none": "Nenhum endereço da plataforma está configurado neste servidor.",
+    "communities_heading": "Comunidades",
+    "switched_off": "Desativada",
+    "no_address": "Não tem endereço próprio. Usa o endereço da plataforma.",
+    "uses_platform_address": "Usa o endereço da plataforma",
+    "kind": {
+      "main": "Endereço principal",
+      "accessible": "Endereço do site acessível"
+    },
+    "status": {
+      "ok": "Tudo certo",
+      "warning_one": "O certificado vence em {{count}} dia",
+      "warning_other": "O certificado vence em {{count}} dias",
+      "failing": "Não está funcionando",
+      "unknown": "Ainda não verificado",
+      "not_checkable": "Não é um endereço da web que possamos verificar"
+    },
+    "reason": {
+      "does_not_resolve": "O nome não leva a lugar nenhum.",
+      "not_a_public_address": "O nome leva a uma rede privada, então não foi contatado.",
+      "no_answer": "Nada respondeu neste endereço.",
+      "certificate_not_trusted": "Um navegador não confiaria no certificado.",
+      "could_not_read_certificate": "Não foi possível ler o certificado.",
+      "expired": "O certificado venceu."
+    },
+    "expires_on": "O certificado vence em {{date}}",
+    "checked_at": "Verificado em {{time}}",
+    "check_now": "Verificar agora",
+    "checked": "Verificado.",
+    "check_failed": "Não foi possível fazer a verificação. Tente novamente.",
+    "too_many": "Verificações demais em um minuto. Aguarde um pouco e tente novamente."
   }
 }

@@ -711,6 +711,33 @@
     "time_taken": "Dauer",
     "changes_label": "Enthaltene Änderungen"
   },
+  "errors": {
+    "title": "Aktuelle Fehler",
+    "intro": "Wie viele Fehler der Fehlerdienst für jeden Teil der Plattform erfasst hat.",
+    "counts_only": "Das sind nur Zahlen. Die Einzelheiten zu jedem Fehler bleiben im Fehlerdienst.",
+    "kept_note": "Die Zahlen werden fünf Minuten lang aufbewahrt. „Erneut prüfen“ fragt den Fehlerdienst sofort.",
+    "checked_at": "Geprüft: {{time}}",
+    "loading": "Aktuelle Fehler werden geladen",
+    "load_error_title": "Die aktuellen Fehler konnten nicht geladen werden",
+    "not_available": "Nicht verfügbar",
+    "could_not_read": "Der Fehlerdienst konnte für diesen Teil nicht abgefragt werden. Das heißt nicht, dass es keine Fehler gibt.",
+    "figure": {
+      "errors_24h": "Fehler in den letzten 24 Stunden",
+      "errors_7d": "Fehler in den letzten 7 Tagen",
+      "unresolved": "Ungelöste Probleme, aufgetreten in den letzten 14 Tagen"
+    },
+    "project": {
+      "php": "Der Server",
+      "react": "Die Website",
+      "webuk": "Die barrierearme Website"
+    },
+    "not_connected": {
+      "title": "Nicht verbunden",
+      "needed": "Der Fehlerdienst gibt diese Zahlen nur an einen eigenen Zugangsschlüssel mit reinem Leserecht heraus, der auf diesem Server gespeichert ist. Das ist nicht geschehen.",
+      "decision": "Ob das geschehen soll, entscheidet der Eigentümer der Plattform.",
+      "meanwhile": "Bis dahin ist der nächtliche Fehlerbericht, den Sie bereits erhalten, die richtige Stelle zum Nachsehen."
+    }
+  },
   "connections": {
     "title": "Schlüssel und Verbindungen",
     "intro": "Für welche externen Dienste dieser Server einen Schlüssel hat. „Eingerichtet“ heißt, dass ein Schlüssel vorhanden ist. Es beweist nicht, dass der Dienst funktioniert.",
@@ -739,7 +766,8 @@
     },
     "name": {
       "web_push": "Web-Push-Benachrichtigungen",
-      "file_storage": "Dateispeicher"
+      "file_storage": "Dateispeicher",
+      "sentry_api": "Fehlerdienst: Zahlen abrufen"
     },
     "detail": {
       "stripe_webhook": "Schlüssel, der prüft, ob Zahlungsnachrichten wirklich von Stripe kommen",
@@ -957,5 +985,107 @@
       "save": "Speichern",
       "cancel": "Abbrechen"
     }
+  },
+  "assurance": {
+    "title": "Gemessene Fakten",
+    "intro": "Fakten, die die Plattform heute über sich selbst messen kann. Prüfen Sie jeden einzelnen, bevor Sie ihn jemandem gegenüber zitieren.",
+    "loading": "Die Fakten werden gelesen",
+    "load_error_title": "Die Fakten konnten nicht geladen werden",
+    "read_at": "Gelesen {{time}}",
+    "could_not_read": "Konnte nicht gelesen werden",
+    "not_recorded": "Nicht erfasst",
+    "source_label": "Woher das kommt",
+    "source_owner": "Vom Eigentümer der Plattform in den Einstellungen des Servers eingetragen",
+    "findings_note": "Offene Sicherheitsbefunde werden in einem privaten Verzeichnis geführt, nicht auf diesem Server, und werden hier nicht gezeigt.",
+    "test_scope_note": "Ein unabhängiger Test gilt für die getestete Version, nicht für spätere Änderungen.",
+    "release": {
+      "title": "Die Version, die live ist",
+      "version": "Versionsnummer {{version}}",
+      "commit": "Versionskennung: {{code}}",
+      "deployed": "Live seit: {{date}}",
+      "deployed_unknown": "Wann sie live ging, ist auf diesem Server nicht erfasst"
+    },
+    "two_step": {
+      "title": "Zweistufige Anmeldung bei Konten mit hohen Rechten",
+      "value": "Konten mit hohen Rechten mit eingeschalteter zweistufiger Anmeldung: {{with}} von {{total}}",
+      "truncated": "Die Liste endet an ihrer Grenze, daher sind vielleicht nicht alle Konten mit hohen Rechten mitgezählt."
+    },
+    "access_review": {
+      "title": "Überprüfung der Konten mit hohen Rechten",
+      "last": "Letzte erfasste Überprüfung: {{date}}",
+      "never": "Es wurde noch keine Überprüfung erfasst",
+      "due": "Eine Überprüfung ist fällig",
+      "not_due": "Eine Überprüfung ist noch nicht fällig"
+    },
+    "backup": {
+      "title": "Tägliche Prüfung der Datenbanksicherung",
+      "not_available": "Kein Ergebnis der täglichen Sicherungsprüfung in den letzten 26 Stunden.",
+      "state": {
+        "healthy": "Die neueste Sicherung wurde gefunden und ist aktuell",
+        "stale": "Die neueste Sicherung ist zu alt",
+        "missing": "Es wurde keine Sicherung gefunden",
+        "empty": "Die neueste Sicherung ist leer",
+        "unreadable": "Die Sicherungen konnten nicht gelesen werden",
+        "other": "Die Prüfung lieferte ein Ergebnis, das diese Seite nicht kennt"
+      },
+      "newest": "Neueste Sicherung erstellt: {{date}}",
+      "checked": "Geprüft: {{date}}"
+    },
+    "data_requests": {
+      "title": "Anfragen zu personenbezogenen Daten",
+      "open": "Offen, über alle Gemeinschaften: {{count}}",
+      "overdue": "Seit mehr als 30 Tagen offen: {{count}}"
+    },
+    "failed_sign_ins": {
+      "title": "Aufzeichnung fehlgeschlagener Anmeldungen",
+      "since": "Fehlgeschlagene Anmeldungen werden gezählt seit {{date}}",
+      "none": "Es wurde noch nichts gezählt",
+      "note": "Das sagt, wann die Aufzeichnung beginnt. Es ist keine Zählung von irgendetwas."
+    },
+    "independent_test": {
+      "title": "Letzter unabhängiger Sicherheitstest",
+      "date": "Datum: {{date}}",
+      "none": "Auf diesem Server nicht erfasst"
+    }
+  },
+  "domains": {
+    "title": "Adressen und Zertifikate",
+    "intro": "Ob jede Webadresse funktioniert und wann ihr Sicherheitszertifikat abläuft.",
+    "seen_from_server": "So sieht es der Browser eines Besuchers, vom Server aus geprüft. Ein Problem zwischen einem Besucher und dem Eingang der Plattform wäre hier nicht zu sehen.",
+    "daily": "Jede Adresse wird einmal am Tag geprüft. Ein Zertifikat, das in {{days}} Tagen oder früher abläuft, wird markiert.",
+    "loading": "Die Adressen werden geladen",
+    "load_error_title": "Die Adressen konnten nicht geladen werden",
+    "platform_heading": "Die eigenen Adressen der Plattform",
+    "platform_none": "Auf diesem Server sind keine Plattformadressen eingerichtet.",
+    "communities_heading": "Gemeinschaften",
+    "switched_off": "Ausgeschaltet",
+    "no_address": "Keine eigene Adresse. Sie nutzt die Adresse der Plattform.",
+    "uses_platform_address": "Nutzt die Adresse der Plattform",
+    "kind": {
+      "main": "Hauptadresse",
+      "accessible": "Adresse der barrierefreien Seite"
+    },
+    "status": {
+      "ok": "In Ordnung",
+      "warning_one": "Zertifikat läuft in {{count}} Tag ab",
+      "warning_other": "Zertifikat läuft in {{count}} Tagen ab",
+      "failing": "Funktioniert nicht",
+      "unknown": "Noch nicht geprüft",
+      "not_checkable": "Keine Webadresse, die wir prüfen können"
+    },
+    "reason": {
+      "does_not_resolve": "Der Name führt nirgendwohin.",
+      "not_a_public_address": "Der Name führt in ein privates Netz, deshalb wurde er nicht kontaktiert.",
+      "no_answer": "Unter dieser Adresse hat nichts geantwortet.",
+      "certificate_not_trusted": "Ein Browser würde seinem Zertifikat nicht vertrauen.",
+      "could_not_read_certificate": "Sein Zertifikat konnte nicht gelesen werden.",
+      "expired": "Das Zertifikat ist abgelaufen."
+    },
+    "expires_on": "Zertifikat läuft am {{date}} ab",
+    "checked_at": "Geprüft am {{time}}",
+    "check_now": "Jetzt prüfen",
+    "checked": "Geprüft.",
+    "check_failed": "Die Prüfung konnte nicht ausgeführt werden. Bitte erneut versuchen.",
+    "too_many": "Zu viele Prüfungen in einer Minute. Bitte kurz warten und erneut versuchen."
   }
 }

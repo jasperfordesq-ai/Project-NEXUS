@@ -711,6 +711,33 @@
     "time_taken": "Tempo impiegato",
     "changes_label": "Modifiche incluse"
   },
+  "errors": {
+    "title": "Errori recenti",
+    "intro": "Quanti errori il servizio errori ha registrato per ogni parte della piattaforma.",
+    "counts_only": "Sono solo conteggi. I dettagli di ogni errore restano nel servizio errori.",
+    "kept_note": "I numeri sono conservati per cinque minuti. «Controlla di nuovo» interroga subito il servizio errori.",
+    "checked_at": "Controllato: {{time}}",
+    "loading": "Caricamento degli errori recenti",
+    "load_error_title": "Non è stato possibile caricare gli errori recenti",
+    "not_available": "Non disponibile",
+    "could_not_read": "Non è stato possibile consultare il servizio errori per questa parte. Non significa che non ci siano errori.",
+    "figure": {
+      "errors_24h": "Errori nelle ultime 24 ore",
+      "errors_7d": "Errori negli ultimi 7 giorni",
+      "unresolved": "Problemi non risolti visti negli ultimi 14 giorni"
+    },
+    "project": {
+      "php": "Il server",
+      "react": "Il sito web",
+      "webuk": "Il sito accessibile"
+    },
+    "not_connected": {
+      "title": "Non collegato",
+      "needed": "Il servizio errori fornisce questi numeri solo a una sua chiave di accesso in sola lettura, salvata su questo server. Non è stato fatto.",
+      "decision": "Se farlo è una decisione del proprietario della piattaforma.",
+      "meanwhile": "Fino ad allora, il rapporto notturno sugli errori che ricevi già è il posto dove guardare."
+    }
+  },
   "connections": {
     "title": "Chiavi e collegamenti",
     "intro": "Per quali servizi esterni questo server ha una chiave. «Configurato» significa che c’è una chiave. Non dimostra che il servizio funzioni.",
@@ -739,7 +766,8 @@
     },
     "name": {
       "web_push": "Notifiche push web",
-      "file_storage": "Archiviazione dei file"
+      "file_storage": "Archiviazione dei file",
+      "sentry_api": "Servizio errori: lettura dei numeri"
     },
     "detail": {
       "stripe_webhook": "Chiave che verifica che i messaggi di pagamento arrivino davvero da Stripe",
@@ -957,5 +985,107 @@
       "save": "Salva",
       "cancel": "Annulla"
     }
+  },
+  "assurance": {
+    "title": "Fatti misurati",
+    "intro": "Fatti che la piattaforma può misurare su sé stessa oggi. Controllali uno per uno prima di citarli a chiunque.",
+    "loading": "Lettura dei fatti",
+    "load_error_title": "Non è stato possibile caricare i fatti",
+    "read_at": "Letto {{time}}",
+    "could_not_read": "Non è stato possibile leggerlo",
+    "not_recorded": "Non registrato",
+    "source_label": "Da dove viene",
+    "source_owner": "Inserito dal proprietario della piattaforma nelle impostazioni del server",
+    "findings_note": "I rilievi di sicurezza aperti sono tenuti in un registro privato, non su questo server, e qui non vengono mostrati.",
+    "test_scope_note": "Un test indipendente riguarda la versione che ha testato, non le modifiche fatte dopo.",
+    "release": {
+      "title": "La versione online",
+      "version": "Versione {{version}}",
+      "commit": "Codice di versione: {{code}}",
+      "deployed": "Online dal: {{date}}",
+      "deployed_unknown": "Quando è andata online non è registrato su questo server"
+    },
+    "two_step": {
+      "title": "Accesso in due passaggi sugli account di alto livello",
+      "value": "Account di alto livello con l’accesso in due passaggi attivo: {{with}} su {{total}}",
+      "truncated": "L’elenco si ferma al suo limite, quindi alcuni account di alto livello potrebbero non essere contati."
+    },
+    "access_review": {
+      "title": "Revisione degli account di alto livello",
+      "last": "Ultima revisione registrata: {{date}}",
+      "never": "Non è stata registrata alcuna revisione",
+      "due": "È ora di fare una revisione",
+      "not_due": "Non è ancora ora di fare una revisione"
+    },
+    "backup": {
+      "title": "Controllo giornaliero del backup del database",
+      "not_available": "Nessun risultato dal controllo giornaliero dei backup nelle ultime 26 ore.",
+      "state": {
+        "healthy": "Il backup più recente è stato trovato ed è recente",
+        "stale": "Il backup più recente è troppo vecchio",
+        "missing": "Non è stato trovato alcun backup",
+        "empty": "Il backup più recente è vuoto",
+        "unreadable": "Non è stato possibile leggere i backup",
+        "other": "Il controllo ha dato un risultato che questa pagina non riconosce"
+      },
+      "newest": "Backup più recente fatto: {{date}}",
+      "checked": "Controllato: {{date}}"
+    },
+    "data_requests": {
+      "title": "Richieste sui dati personali",
+      "open": "Aperte, in tutte le comunità: {{count}}",
+      "overdue": "Aperte da più di 30 giorni: {{count}}"
+    },
+    "failed_sign_ins": {
+      "title": "Registro degli accessi non riusciti",
+      "since": "Gli accessi non riusciti sono contati dal {{date}}",
+      "none": "Non è ancora stato contato nulla",
+      "note": "Questo dice quando inizia il registro. Non è un conteggio di nulla."
+    },
+    "independent_test": {
+      "title": "Ultimo test di sicurezza indipendente",
+      "date": "Data: {{date}}",
+      "none": "Non registrato su questo server"
+    }
+  },
+  "domains": {
+    "title": "Indirizzi e certificati",
+    "intro": "Se ogni indirizzo web funziona e quando scade il suo certificato di sicurezza.",
+    "seen_from_server": "Questo è ciò che riceverebbe il browser di un visitatore, visto dal server. Un problema tra un visitatore e l'ingresso della piattaforma non comparirebbe qui.",
+    "daily": "Ogni indirizzo viene controllato una volta al giorno. Un certificato che scade entro {{days}} giorni viene segnalato.",
+    "loading": "Caricamento degli indirizzi",
+    "load_error_title": "Non è stato possibile caricare gli indirizzi",
+    "platform_heading": "Gli indirizzi propri della piattaforma",
+    "platform_none": "Su questo server non sono configurati indirizzi della piattaforma.",
+    "communities_heading": "Comunità",
+    "switched_off": "Disattivata",
+    "no_address": "Nessun indirizzo proprio. Usa l'indirizzo della piattaforma.",
+    "uses_platform_address": "Usa l'indirizzo della piattaforma",
+    "kind": {
+      "main": "Indirizzo principale",
+      "accessible": "Indirizzo del sito accessibile"
+    },
+    "status": {
+      "ok": "Tutto a posto",
+      "warning_one": "Il certificato scade tra {{count}} giorno",
+      "warning_other": "Il certificato scade tra {{count}} giorni",
+      "failing": "Non funziona",
+      "unknown": "Non ancora controllato",
+      "not_checkable": "Non è un indirizzo web che possiamo controllare"
+    },
+    "reason": {
+      "does_not_resolve": "Il nome non porta da nessuna parte.",
+      "not_a_public_address": "Il nome porta a una rete privata, quindi non è stato contattato.",
+      "no_answer": "Nessuno ha risposto a questo indirizzo.",
+      "certificate_not_trusted": "Un browser non si fiderebbe del suo certificato.",
+      "could_not_read_certificate": "Non è stato possibile leggere il suo certificato.",
+      "expired": "Il certificato è scaduto."
+    },
+    "expires_on": "Il certificato scade il {{date}}",
+    "checked_at": "Controllato il {{time}}",
+    "check_now": "Controlla ora",
+    "checked": "Controllato.",
+    "check_failed": "Non è stato possibile eseguire il controllo. Riprova.",
+    "too_many": "Troppi controlli in un minuto. Attendi un momento e riprova."
   }
 }

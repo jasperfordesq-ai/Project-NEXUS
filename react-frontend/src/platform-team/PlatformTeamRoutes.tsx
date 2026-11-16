@@ -34,7 +34,9 @@ const PlatformTeamHome = lazy(() => import('./pages/PlatformTeamHome'));
 // Pages written for the panel itself (not moved in from another panel).
 const FailedJobsPage = lazy(() => import('./pages/FailedJobsPage'));
 const DeploymentsPage = lazy(() => import('./pages/DeploymentsPage'));
+const RecentErrorsPage = lazy(() => import('./pages/RecentErrorsPage'));
 const SearchRebuildPage = lazy(() => import('./pages/SearchRebuildPage'));
+const DomainsPage = lazy(() => import('./pages/DomainsPage'));
 const ConnectionsPage = lazy(() => import('./pages/ConnectionsPage'));
 const PhoneAppPage = lazy(() => import('./pages/PhoneAppPage'));
 const SeniorAccountsPage = lazy(() => import('./pages/SeniorAccountsPage'));
@@ -53,6 +55,7 @@ const CleanUpJobsPage = lazy(() => import('./pages/CleanUpJobsPage'));
 const PushNotificationsPage = lazy(() => import('./pages/PushNotificationsPage'));
 const TranslationsPage = lazy(() => import('./pages/TranslationsPage'));
 const AgreementsPage = lazy(() => import('./pages/AgreementsPage'));
+const AssuranceFactsPage = lazy(() => import('./pages/AssuranceFactsPage'));
 
 const MenusAdmin = lazy(() => import('@/admin/modules/content/MenusAdmin'));
 const MenuBuilder = lazy(() => import('@/admin/modules/content/MenuBuilder'));
@@ -118,7 +121,9 @@ export function PlatformTeamRoutes() {
 
       <Route path="failed-jobs" element={<Lazy><FailedJobsPage /></Lazy>} />
       <Route path="deployments" element={<Lazy><DeploymentsPage /></Lazy>} />
+      <Route path="errors" element={<Lazy><RecentErrorsPage /></Lazy>} />
       <Route path="search-rebuild" element={<Lazy><SearchRebuildPage /></Lazy>} />
+      <Route path="domains" element={<Lazy><DomainsPage /></Lazy>} />
       <Route path="connections" element={<Lazy><ConnectionsPage /></Lazy>} />
       <Route path="phone-app" element={<Lazy><PhoneAppPage /></Lazy>} />
       <Route path="push-notifications" element={<Lazy><PushNotificationsPage /></Lazy>} />
@@ -137,6 +142,7 @@ export function PlatformTeamRoutes() {
       <Route path="legal-documents" element={<Lazy><LegalDocumentsPage /></Lazy>} />
       <Route path="clean-up-jobs" element={<Lazy><CleanUpJobsPage /></Lazy>} />
       <Route path="agreements" element={<Lazy><AgreementsPage /></Lazy>} />
+      <Route path="assurance" element={<Lazy><AssuranceFactsPage /></Lazy>} />
 
       <Route path="menus" element={<Lazy><MenusAdmin /></Lazy>} />
       <Route path="menus/builder/:id" element={<Lazy><MenuBuilder /></Lazy>} />

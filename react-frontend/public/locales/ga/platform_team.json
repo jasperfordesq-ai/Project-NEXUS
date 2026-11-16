@@ -723,6 +723,33 @@
     "time_taken": "Am a tógadh",
     "changes_label": "Athruithe a bhí ann"
   },
+  "errors": {
+    "title": "Earráidí le déanaí",
+    "intro": "Cé mhéad earráid a thaifead an tseirbhís earráidí do gach cuid den ardán.",
+    "counts_only": "Níl anseo ach líon. Fanann sonraí gach earráide sa tseirbhís earráidí.",
+    "kept_note": "Coinnítear na figiúirí ar feadh cúig nóiméad. Fiafraíonn “Seiceáil arís” den tseirbhís earráidí anois.",
+    "checked_at": "Seiceáilte: {{time}}",
+    "loading": "Earráidí le déanaí á lódáil",
+    "load_error_title": "Níorbh fhéidir na hearráidí le déanaí a lódáil",
+    "not_available": "Níl ar fáil",
+    "could_not_read": "Níorbh fhéidir an tseirbhís earráidí a léamh don chuid seo. Ní hionann sin agus gan earráid ar bith.",
+    "figure": {
+      "errors_24h": "Earráidí sna 24 uair an chloig seo caite",
+      "errors_7d": "Earráidí sna 7 lá seo caite",
+      "unresolved": "Fadhbanna gan réiteach a chonacthas sna 14 lá seo caite"
+    },
+    "project": {
+      "php": "An freastalaí",
+      "react": "An suíomh gréasáin",
+      "webuk": "An suíomh inrochtana"
+    },
+    "not_connected": {
+      "title": "Gan nascadh",
+      "needed": "Ní thugann an tseirbhís earráidí na figiúirí seo ach d’eochair rochtana dá cuid féin, léamh amháin, atá stóráilte ar an bhfreastalaí seo. Níor rinneadh sin.",
+      "decision": "Is é úinéir an ardáin a chinnfidh an ndéanfar é.",
+      "meanwhile": "Go dtí sin, is í an tuairisc earráidí oíche a fhaigheann tú cheana féin an áit le féachaint."
+    }
+  },
   "connections": {
     "title": "Eochracha agus naisc",
     "intro": "Na seirbhísí seachtracha a bhfuil eochair ag an bhfreastalaí seo dóibh. Ciallaíonn « Socraithe » go bhfuil eochair ann. Ní chruthaíonn sé go bhfuil an tseirbhís ag obair.",
@@ -751,7 +778,8 @@
     },
     "name": {
       "web_push": "Fógraí brú gréasáin",
-      "file_storage": "Stóráil comhad"
+      "file_storage": "Stóráil comhad",
+      "sentry_api": "Seirbhís earráidí: na figiúirí a léamh"
     },
     "detail": {
       "stripe_webhook": "Eochair a sheiceálann gur ó Stripe i ndáiríre a thagann teachtaireachtaí íocaíochta",
@@ -969,5 +997,107 @@
       "save": "Sábháil",
       "cancel": "Cealaigh"
     }
+  },
+  "assurance": {
+    "title": "Fíricí tomhaiste",
+    "intro": "Fíricí is féidir leis an ardán a thomhas faoi féin inniu. Seiceáil gach ceann acu sula luann tú é le duine ar bith.",
+    "loading": "Na fíricí á léamh",
+    "load_error_title": "Níorbh fhéidir na fíricí a lódáil",
+    "read_at": "Léite {{time}}",
+    "could_not_read": "Níorbh fhéidir é a léamh",
+    "not_recorded": "Níl sé taifeadta",
+    "source_label": "Cad as a dtagann sé seo",
+    "source_owner": "Curtha isteach ag úinéir an ardáin i socruithe an fhreastalaí",
+    "findings_note": "Coinnítear torthaí slándála oscailte i dtaifead príobháideach, ní ar an bhfreastalaí seo, agus ní thaispeántar anseo iad.",
+    "test_scope_note": "Clúdaíonn tástáil neamhspleách an leagan a thástáil sí, ní na hathruithe a rinneadh ó shin.",
+    "release": {
+      "title": "An leagan atá beo",
+      "version": "Leagan {{version}}",
+      "commit": "Cód an leagain: {{code}}",
+      "deployed": "Beo ó: {{date}}",
+      "deployed_unknown": "Níl sé taifeadta ar an bhfreastalaí seo cathain a chuaigh sé beo"
+    },
+    "two_step": {
+      "title": "Síniú isteach dhá chéim ar chuntais shinsearacha",
+      "value": "Cuntais shinsearacha a bhfuil síniú isteach dhá chéim ar siúl orthu: {{with}} as {{total}}",
+      "truncated": "Stopann an liosta ag a theorainn, mar sin b’fhéidir nach gcomhairtear roinnt cuntas sinsearach."
+    },
+    "access_review": {
+      "title": "Athbhreithniú ar chuntais shinsearacha",
+      "last": "An t-athbhreithniú deireanach a taifeadadh: {{date}}",
+      "never": "Níor taifeadadh aon athbhreithniú",
+      "due": "Tá athbhreithniú le déanamh",
+      "not_due": "Níl athbhreithniú le déanamh fós"
+    },
+    "backup": {
+      "title": "Seiceáil laethúil ar chúltaca an bhunachair sonraí",
+      "not_available": "Níl aon toradh ón tseiceáil laethúil cúltaca sna 26 uair an chloig seo caite.",
+      "state": {
+        "healthy": "Aimsíodh an cúltaca is nuaí agus is le déanaí é",
+        "stale": "Tá an cúltaca is nuaí ró-shean",
+        "missing": "Níor aimsíodh aon chúltaca",
+        "empty": "Tá an cúltaca is nuaí folamh",
+        "unreadable": "Níorbh fhéidir na cúltacaí a léamh",
+        "other": "Thug an tseiceáil toradh nach n-aithníonn an leathanach seo"
+      },
+      "newest": "An cúltaca is nuaí a rinneadh: {{date}}",
+      "checked": "Seiceáilte: {{date}}"
+    },
+    "data_requests": {
+      "title": "Iarratais faoi shonraí pearsanta",
+      "open": "Oscailte, ar fud na bpobal go léir: {{count}}",
+      "overdue": "Oscailte le níos mó ná 30 lá: {{count}}"
+    },
+    "failed_sign_ins": {
+      "title": "Taifead ar shínithe isteach a theip",
+      "since": "Tá sínithe isteach a theip á gcomhaireamh ó {{date}}",
+      "none": "Níor comhaireadh aon rud fós",
+      "note": "Insíonn sé seo cathain a thosaíonn an taifead. Ní comhaireamh ar rud ar bith é."
+    },
+    "independent_test": {
+      "title": "An tástáil slándála neamhspleách dheireanach",
+      "date": "Dáta: {{date}}",
+      "none": "Níl sé taifeadta ar an bhfreastalaí seo"
+    }
+  },
+  "domains": {
+    "title": "Seoltaí agus teastais",
+    "intro": "An oibríonn gach seoladh gréasáin, agus cathain a rachaidh a theastas slándála in éag.",
+    "seen_from_server": "Seo a bhfaigheadh brabhsálaí cuairteora, mar a fheictear ón bhfreastalaí é. Ní thaispeánfaí anseo fadhb idir cuairteoir agus doras tosaigh an ardáin.",
+    "daily": "Seiceáiltear gach seoladh uair sa lá. Marcáiltear teastas a rachaidh in éag i gceann {{days}} lá nó níos lú.",
+    "loading": "Na seoltaí á lódáil",
+    "load_error_title": "Níorbh fhéidir na seoltaí a lódáil",
+    "platform_heading": "Seoltaí an ardáin féin",
+    "platform_none": "Níl aon seoltaí ardáin socraithe ar an bhfreastalaí seo.",
+    "communities_heading": "Pobail",
+    "switched_off": "Múchta",
+    "no_address": "Níl a sheoladh féin aige. Úsáideann sé seoladh an ardáin.",
+    "uses_platform_address": "Úsáideann sé seoladh an ardáin",
+    "kind": {
+      "main": "Príomhsheoladh",
+      "accessible": "Seoladh an tsuímh inrochtana"
+    },
+    "status": {
+      "ok": "Go breá",
+      "warning_one": "Rachaidh an teastas in éag i gceann {{count}} lá",
+      "warning_other": "Rachaidh an teastas in éag i gceann {{count}} lá",
+      "failing": "Ní oibríonn sé",
+      "unknown": "Gan seiceáil fós",
+      "not_checkable": "Ní seoladh gréasáin é ar féidir linn a sheiceáil"
+    },
+    "reason": {
+      "does_not_resolve": "Ní théann an t-ainm áit ar bith.",
+      "not_a_public_address": "Téann an t-ainm isteach i líonra príobháideach, mar sin níor rinneadh teagmháil leis.",
+      "no_answer": "Níor fhreagair aon rud ag an seoladh seo.",
+      "certificate_not_trusted": "Ní bheadh muinín ag brabhsálaí as a theastas.",
+      "could_not_read_certificate": "Níorbh fhéidir a theastas a léamh.",
+      "expired": "Tá an teastas imithe in éag."
+    },
+    "expires_on": "Rachaidh an teastas in éag ar {{date}}",
+    "checked_at": "Seiceáilte ag {{time}}",
+    "check_now": "Seiceáil anois",
+    "checked": "Seiceáilte.",
+    "check_failed": "Níorbh fhéidir an seiceáil a dhéanamh. Bain triail eile as.",
+    "too_many": "An iomarca seiceálacha in aon nóiméad amháin. Fan nóiméad agus bain triail eile as."
   }
 }

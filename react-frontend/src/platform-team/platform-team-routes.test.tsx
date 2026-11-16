@@ -51,7 +51,9 @@ vi.mock('react-i18next', () => ({
 vi.mock('./pages/PlatformTeamHome', () => ({ default: () => <div>page:PlatformTeamHome</div> }));
 vi.mock('./pages/FailedJobsPage', () => ({ default: () => <div>page:FailedJobsPage</div> }));
 vi.mock('./pages/DeploymentsPage', () => ({ default: () => <div>page:DeploymentsPage</div> }));
+vi.mock('./pages/RecentErrorsPage', () => ({ default: () => <div>page:RecentErrorsPage</div> }));
 vi.mock('./pages/SearchRebuildPage', () => ({ default: () => <div>page:SearchRebuildPage</div> }));
+vi.mock('./pages/DomainsPage', () => ({ default: () => <div>page:DomainsPage</div> }));
 vi.mock('./pages/ConnectionsPage', () => ({ default: () => <div>page:ConnectionsPage</div> }));
 vi.mock('./pages/PhoneAppPage', () => ({ default: () => <div>page:PhoneAppPage</div> }));
 vi.mock('./pages/SeniorAccountsPage', () => ({ default: () => <div>page:SeniorAccountsPage</div> }));
@@ -70,6 +72,7 @@ vi.mock('./pages/CleanUpJobsPage', () => ({ default: () => <div>page:CleanUpJobs
 vi.mock('./pages/PushNotificationsPage', () => ({ default: () => <div>page:PushNotificationsPage</div> }));
 vi.mock('./pages/TranslationsPage', () => ({ default: () => <div>page:TranslationsPage</div> }));
 vi.mock('./pages/AgreementsPage', () => ({ default: () => <div>page:AgreementsPage</div> }));
+vi.mock('./pages/AssuranceFactsPage', () => ({ default: () => <div>page:AssuranceFactsPage</div> }));
 vi.mock('@/admin/modules/content/MenusAdmin', () => ({ default: () => <div>page:MenusAdmin</div> }));
 vi.mock('@/admin/modules/content/MenuBuilder', () => ({ default: () => <div>page:MenuBuilder</div> }));
 vi.mock('@/admin/modules/advanced/EmailSettings', () => ({ default: () => <div>page:EmailSettings</div> }));
@@ -254,9 +257,19 @@ describe('the Platform team panel mounts every moved page', () => {
     expect(await screen.findByText('page:DeploymentsPage')).toBeInTheDocument();
   });
 
+  it('opens Recent errors, a page of the panel\'s own', async () => {
+    renderAt('/test/platform-team/errors');
+    expect(await screen.findByText('page:RecentErrorsPage')).toBeInTheDocument();
+  });
+
   it('opens Rebuild search, a page of the panel\'s own', async () => {
     renderAt('/test/platform-team/search-rebuild');
     expect(await screen.findByText('page:SearchRebuildPage')).toBeInTheDocument();
+  });
+
+  it('opens Addresses and certificates, a page of the panel\'s own', async () => {
+    renderAt('/test/platform-team/domains');
+    expect(await screen.findByText('page:DomainsPage')).toBeInTheDocument();
   });
 
   it('opens Keys and connections, a page of the panel\'s own', async () => {
@@ -312,6 +325,11 @@ describe('the Platform team panel mounts every moved page', () => {
   it('opens the Agreements and renewals page', async () => {
     renderAt('/test/platform-team/agreements');
     expect(await screen.findByText('page:AgreementsPage')).toBeInTheDocument();
+  });
+
+  it('opens the Assurance facts page', async () => {
+    renderAt('/test/platform-team/assurance');
+    expect(await screen.findByText('page:AssuranceFactsPage')).toBeInTheDocument();
   });
 
   it('opens the Security page', async () => {

@@ -549,6 +549,19 @@ unreadable file answers `available: false` ("this server keeps no record"),
 never an empty list; lines that are not JSON objects are counted in
 `skipped_lines`.
 
+Recent errors (`GET /v2/platform-team/errors`; `RecentErrorsService`, 16
+November 2026) is read-only and switched off until `services.sentry.api_token`,
+`services.sentry.org` and the PHP project id are all set, `api_base` is
+`https://`, the organisation matches `[A-Za-z0-9_-]{1,64}` and every project id
+is digits; otherwise it answers `{connected: false}` and makes no outside
+request. Connected, per configured project (php always; react and webuk when
+set) three GETs with a 5-second limit and no redirects: errors in 24 hours and
+7 days (`events/`, `dataset=errors`) and unresolved issues seen in 14 days
+(`issues/?limit=1`, total from `X-Hits`, the body never read). Cached 5
+minutes; `?refresh=1` asks again, 6 a minute per caller. A failed project is
+`available: false` with null figures and one `error` log line (project key,
+status, exception class): 🔴 never the token, the address or a response body.
+
 Rebuild search (`GET` and `POST /v2/platform-team/search-rebuild`;
 `SearchRebuildController`, `PlatformTeam\SearchRebuildService`, 16 November
 2026). The list covers every community (id, name, slug, switched on or off)
@@ -565,6 +578,25 @@ never empties the community's search first, so entries for deleted things
 stay. A waiting or running record not refreshed for 30 minutes no longer
 blocks a start and is shown as failed. Who started it is an `activity_log` row
 with `tenant_id` NULL, the community as the entity.
+
+Addresses and certificates (`GET /v2/platform-team/domains`, `POST
+/v2/platform-team/domains/check`; `DomainCheckController`,
+`PlatformTeam\DomainCheckService`, command `domains:check` daily at 05:20, 16
+November 2026). For every community's own `tenants.domain` and
+`tenants.accessible_domain`, and once each for the platform's own addresses
+(`CommunitySetupChecklistService::platformAddresses()`): does the name resolve,
+and when does the certificate a browser is given run out (verified as a browser
+would; an untrusted certificate is a failure, never read unverified). Cached per
+host (`domain_check:<host>`, 3 days); `ok`, `warning` (21 days or fewer),
+`failing` (with a reason code), `unknown` (never checked). 🔴 The request names
+a community (`{tenant_id}`) or `{platform: true}`, never a host. A host is
+contacted only when it came from the tenants table or the platform's own list,
+is a plain host name, and resolves only to public addresses
+(`OutboundUrlGuard::publicAddressesForHost()`); the connection goes to one of
+those addresses. No error message or address is kept or sent. A community on a
+platform address is listed as using it and not checked on its own. Check now: 6
+a minute per caller, 404 for an unknown community; who asked is an
+`activity_log` row with `tenant_id` NULL.
 
 Keys and connections (`GET /v2/platform-team/connections`; `ConnectionsService`,
 16 November 2026) is read-only: for a fixed list of outside services, whether
@@ -661,6 +693,21 @@ agreement by number only, never the contact. Nothing is filled in that was
 not typed. The home page card `agreements` is `warning` when an agreement that
 has not ended renews within 60 days or its renewal date has passed; there is
 no reminder email.
+
+Assurance facts (`/platform-team/assurance`, `GET /v2/platform-team/assurance`;
+`AssuranceFactsService`) is read-only and internal: seven facts the platform can
+measure about itself (the live version, two-step sign-in on senior accounts, the
+access review, the daily backup check, open and overdue data requests, since
+when failed sign-ins are counted, and the date of the last independent security
+test). Each is read through the service that owns it, inside its own guard: one
+that cannot be read is `available: false` and the others still answer. It sends
+counts, dates and states only: no member, email, community or account id, no
+customer's name, no export. 🔴 The test date comes only from
+`platform_team.last_independent_test_on` (env
+`PLATFORM_TEAM_LAST_INDEPENDENT_TEST_ON`, `YYYY-MM-DD`), which the platform's
+owner sets on the server; unset, malformed or in the future, the page says "Not
+recorded on this server". The code holds no date. Open security findings are
+not on the server and are not shown.
 
 **Left open on purpose.** An endpoint that a screen outside the panel still
 calls keeps its previous check, and a test pins that a community admin still

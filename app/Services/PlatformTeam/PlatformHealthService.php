@@ -57,8 +57,8 @@ final class PlatformHealthService
     /** The queue verdict is re-written every few minutes; older than this says nothing about now. */
     private const QUEUE_VERDICT_STALE_SECONDS = 3600;
 
-    /** backup:verify runs once a day; a verdict older than this says nothing about now. */
-    private const BACKUP_VERDICT_STALE_SECONDS = 26 * 3600;
+    /** backup:verify runs once a day; a verdict older than this says nothing about now. Also read by AssuranceFactsService. */
+    public const BACKUP_VERDICT_STALE_SECONDS = 26 * 3600;
 
     public function __construct(
         private readonly EmailMonitorService $emailMonitor,
@@ -141,8 +141,12 @@ final class PlatformHealthService
         return ['key' => $key, 'value' => $value, 'type' => $type];
     }
 
-    /** @return array{0: string, 1: list<array{key: string, value: mixed, type: string}>} */
-    private function release(): array
+    /**
+     * Public so AssuranceFactsService can show the same release without a second reading of it.
+     *
+     * @return array{0: string, 1: list<array{key: string, value: mixed, type: string}>}
+     */
+    public function release(): array
     {
         $commit = '';
         $deployedAt = null;

@@ -1,0 +1,32 @@
+<?php
+// Copyright © 2024–2026 Jasper Ford
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Author: Jasper Ford
+// See NOTICE file for attribution and acknowledgements.
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers\Api\PlatformTeam;
+
+use App\Http\Controllers\Api\BaseApiController;
+use App\Services\PlatformTeam\AssuranceFactsService;
+use Illuminate\Http\JsonResponse;
+
+/**
+ * Platform team panel → Assurance facts: facts the platform can measure about
+ * itself today, each read through the service that owns it.
+ *
+ * 🔴 One method, and it only reads. No export.
+ */
+final class AssuranceFactsController extends BaseApiController
+{
+    protected bool $isV2Api = true;
+
+    /** GET /api/v2/platform-team/assurance */
+    public function index(): JsonResponse
+    {
+        $this->requireGodPlatformAdmin();
+
+        return $this->respondWithData(app(AssuranceFactsService::class)->facts());
+    }
+}

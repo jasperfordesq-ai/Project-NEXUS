@@ -711,6 +711,33 @@
     "time_taken": "Durée",
     "changes_label": "Modifications incluses"
   },
+  "errors": {
+    "title": "Erreurs récentes",
+    "intro": "Combien d’erreurs le service d’erreurs a enregistrées pour chaque partie de la plateforme.",
+    "counts_only": "Ce ne sont que des chiffres. Le détail de chaque erreur reste dans le service d’erreurs.",
+    "kept_note": "Les chiffres sont conservés cinq minutes. « Vérifier à nouveau » interroge le service d’erreurs tout de suite.",
+    "checked_at": "Vérifié : {{time}}",
+    "loading": "Chargement des erreurs récentes",
+    "load_error_title": "Les erreurs récentes n’ont pas pu être chargées",
+    "not_available": "Non disponible",
+    "could_not_read": "Le service d’erreurs n’a pas pu être consulté pour cette partie. Cela ne veut pas dire qu’il n’y a aucune erreur.",
+    "figure": {
+      "errors_24h": "Erreurs des dernières 24 heures",
+      "errors_7d": "Erreurs des 7 derniers jours",
+      "unresolved": "Problèmes non résolus vus ces 14 derniers jours"
+    },
+    "project": {
+      "php": "Le serveur",
+      "react": "Le site web",
+      "webuk": "Le site accessible"
+    },
+    "not_connected": {
+      "title": "Non connecté",
+      "needed": "Le service d’erreurs ne donne ces chiffres qu’à une clé d’accès à lui, en lecture seule, enregistrée sur ce serveur. Cela n’a pas été fait.",
+      "decision": "Le faire ou non est une décision du propriétaire de la plateforme.",
+      "meanwhile": "D’ici là, le rapport d’erreurs que vous recevez déjà chaque nuit est l’endroit où regarder."
+    }
+  },
   "connections": {
     "title": "Clés et connexions",
     "intro": "Les services externes pour lesquels ce serveur dispose d’une clé. « Configuré » signifie qu’une clé est en place. Cela ne prouve pas que le service fonctionne.",
@@ -739,7 +766,8 @@
     },
     "name": {
       "web_push": "Notifications push web",
-      "file_storage": "Stockage des fichiers"
+      "file_storage": "Stockage des fichiers",
+      "sentry_api": "Service d’erreurs : lecture des chiffres"
     },
     "detail": {
       "stripe_webhook": "Clé qui vérifie que les messages de paiement viennent bien de Stripe",
@@ -957,5 +985,107 @@
       "save": "Enregistrer",
       "cancel": "Annuler"
     }
+  },
+  "assurance": {
+    "title": "Faits mesurés",
+    "intro": "Des faits que la plateforme peut mesurer sur elle-même aujourd'hui. Contrôlez chacun avant de le citer à qui que ce soit.",
+    "loading": "Lecture des faits",
+    "load_error_title": "Les faits n'ont pas pu être chargés",
+    "read_at": "Lu {{time}}",
+    "could_not_read": "N'a pas pu être lu",
+    "not_recorded": "Non enregistré",
+    "source_label": "D'où cela vient",
+    "source_owner": "Saisi par le propriétaire de la plateforme dans les réglages du serveur",
+    "findings_note": "Les constats de sécurité ouverts sont tenus dans un registre privé, pas sur ce serveur, et ne sont pas affichés ici.",
+    "test_scope_note": "Un test indépendant porte sur la version testée, pas sur les changements faits depuis.",
+    "release": {
+      "title": "La version en ligne",
+      "version": "Numéro de version {{version}}",
+      "commit": "Code de version : {{code}}",
+      "deployed": "En ligne depuis : {{date}}",
+      "deployed_unknown": "La date de mise en ligne n'est pas enregistrée sur ce serveur"
+    },
+    "two_step": {
+      "title": "Connexion en deux étapes sur les comptes de haut niveau",
+      "value": "Comptes de haut niveau avec la connexion en deux étapes activée : {{with}} sur {{total}}",
+      "truncated": "La liste s'arrête à sa limite, certains comptes de haut niveau peuvent donc ne pas être comptés."
+    },
+    "access_review": {
+      "title": "Revue des comptes de haut niveau",
+      "last": "Dernière revue enregistrée : {{date}}",
+      "never": "Aucune revue n'a été enregistrée",
+      "due": "Une revue est à faire",
+      "not_due": "Une revue n'est pas encore à faire"
+    },
+    "backup": {
+      "title": "Contrôle quotidien de la sauvegarde de la base de données",
+      "not_available": "Aucun résultat du contrôle quotidien des sauvegardes dans les 26 dernières heures.",
+      "state": {
+        "healthy": "La sauvegarde la plus récente a été trouvée et elle est récente",
+        "stale": "La sauvegarde la plus récente est trop ancienne",
+        "missing": "Aucune sauvegarde n'a été trouvée",
+        "empty": "La sauvegarde la plus récente est vide",
+        "unreadable": "Les sauvegardes n'ont pas pu être lues",
+        "other": "Le contrôle a donné un résultat que cette page ne reconnaît pas"
+      },
+      "newest": "Sauvegarde la plus récente faite : {{date}}",
+      "checked": "Contrôlé : {{date}}"
+    },
+    "data_requests": {
+      "title": "Demandes sur les données personnelles",
+      "open": "Ouvertes, dans toutes les communautés : {{count}}",
+      "overdue": "Ouvertes depuis plus de 30 jours : {{count}}"
+    },
+    "failed_sign_ins": {
+      "title": "Relevé des connexions échouées",
+      "since": "Les connexions échouées sont comptées depuis {{date}}",
+      "none": "Rien n'a encore été compté",
+      "note": "Ceci indique quand le relevé commence. Ce n'est le décompte de rien."
+    },
+    "independent_test": {
+      "title": "Dernier test de sécurité indépendant",
+      "date": "Date : {{date}}",
+      "none": "Non enregistré sur ce serveur"
+    }
+  },
+  "domains": {
+    "title": "Adresses et certificats",
+    "intro": "Si chaque adresse web fonctionne, et quand son certificat de sécurité expire.",
+    "seen_from_server": "Voici ce que recevrait le navigateur d'un visiteur, vu depuis le serveur. Un problème entre un visiteur et l'entrée de la plateforme n'apparaîtrait pas ici.",
+    "daily": "Chaque adresse est vérifiée une fois par jour. Un certificat qui expire dans {{days}} jours ou moins est signalé.",
+    "loading": "Chargement des adresses",
+    "load_error_title": "Les adresses n'ont pas pu être chargées",
+    "platform_heading": "Les adresses propres à la plateforme",
+    "platform_none": "Aucune adresse de la plateforme n'est configurée sur ce serveur.",
+    "communities_heading": "Communautés",
+    "switched_off": "Désactivée",
+    "no_address": "Pas d'adresse propre. Elle utilise l'adresse de la plateforme.",
+    "uses_platform_address": "Utilise l'adresse de la plateforme",
+    "kind": {
+      "main": "Adresse principale",
+      "accessible": "Adresse du site accessible"
+    },
+    "status": {
+      "ok": "Tout va bien",
+      "warning_one": "Le certificat expire dans {{count}} jour",
+      "warning_other": "Le certificat expire dans {{count}} jours",
+      "failing": "Ne fonctionne pas",
+      "unknown": "Pas encore vérifiée",
+      "not_checkable": "Pas une adresse web que nous pouvons vérifier"
+    },
+    "reason": {
+      "does_not_resolve": "Le nom ne mène nulle part.",
+      "not_a_public_address": "Le nom mène à un réseau privé, il n'a donc pas été contacté.",
+      "no_answer": "Rien n'a répondu à cette adresse.",
+      "certificate_not_trusted": "Un navigateur ne ferait pas confiance à son certificat.",
+      "could_not_read_certificate": "Son certificat n'a pas pu être lu.",
+      "expired": "Le certificat a expiré."
+    },
+    "expires_on": "Le certificat expire le {{date}}",
+    "checked_at": "Vérifiée le {{time}}",
+    "check_now": "Vérifier maintenant",
+    "checked": "Vérifiée.",
+    "check_failed": "La vérification n'a pas pu être faite. Réessayez.",
+    "too_many": "Trop de vérifications en une minute. Attendez un instant et réessayez."
   }
 }

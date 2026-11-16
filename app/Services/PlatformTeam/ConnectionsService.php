@@ -73,6 +73,10 @@ final class ConnectionsService
             // default: read the host without that default, and the key.
             'meilisearch' => ['search', fn () => $this->envSet('MEILISEARCH_HOST') && $this->envSet('MEILISEARCH_KEY')],
             'sentry' => ['error_reports', fn () => $set('sentry.dsn')],
+            // Reading counts back (Recent errors page): a separate read-only key,
+            // the organisation and the server's project id, checked exactly as
+            // that page checks them, so the two pages never disagree.
+            'sentry_api' => ['error_reports', fn () => RecentErrorsService::isConnected()],
             'cloudflare_origin' => ['protection', fn () => $set('services.cloudflare.origin_secret')],
             'turnstile' => ['protection', fn () => $set('turnstile.secret', 'turnstile.site_key')],
             'clamav' => ['protection', fn () => $set('services.clamav.address')],

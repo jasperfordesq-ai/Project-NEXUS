@@ -45,6 +45,7 @@ import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
 import BarChart3 from 'lucide-react/icons/chart-column';
 import BellRing from 'lucide-react/icons/bell-ring';
+import Bug from 'lucide-react/icons/bug';
 import Building2 from 'lucide-react/icons/building-2';
 import CreditCard from 'lucide-react/icons/credit-card';
 import Eraser from 'lucide-react/icons/eraser';
@@ -53,6 +54,7 @@ import FileSignature from 'lucide-react/icons/file-signature';
 import FileText from 'lucide-react/icons/file-text';
 import FlaskConical from 'lucide-react/icons/flask-conical';
 import Globe from 'lucide-react/icons/globe';
+import GlobeLock from 'lucide-react/icons/globe-lock';
 import Handshake from 'lucide-react/icons/handshake';
 import Heart from 'lucide-react/icons/heart';
 import HeartPulse from 'lucide-react/icons/heart-pulse';
@@ -82,6 +84,7 @@ import Gauge from 'lucide-react/icons/gauge';
 import UserCog from 'lucide-react/icons/user-cog';
 import UserSearch from 'lucide-react/icons/user-search';
 import ClipboardCheck from 'lucide-react/icons/clipboard-check';
+import ClipboardList from 'lucide-react/icons/clipboard-list';
 import Stethoscope from 'lucide-react/icons/stethoscope';
 import Plug from 'lucide-react/icons/plug';
 import Target from 'lucide-react/icons/target';
@@ -144,7 +147,9 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
             { label: tNav('prerender_engine'), icon: Zap, path: `${P}/seo/prerender` },
             { label: t('home.card.failed_jobs'), icon: RotateCcw, path: `${P}/failed-jobs` },
             { label: t('deployments.title'), icon: Rocket, path: `${P}/deployments` },
+            { label: t('errors.title'), icon: Bug, path: `${P}/errors` },
             { label: t('search_rebuild.title'), icon: SearchCheck, path: `${P}/search-rebuild` },
+            { label: t('domains.title'), icon: GlobeLock, path: `${P}/domains` },
             { label: tNav('error_404_tracking'), icon: AlertTriangle, path: `${P}/404-errors` },
             { label: t('nav.tests'), icon: Stethoscope, path: `${P}/tests` },
           ],
@@ -217,6 +222,7 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
             { label: t('access_review.title'), icon: ClipboardCheck, path: `${P}/access-review` },
             { label: tNav('enterprise_dashboard'), icon: Building2, path: `${P}/enterprise` },
             { label: tNav('permissions_list'), icon: ListChecks, path: `${P}/enterprise/permissions` },
+            { label: t('assurance.title'), icon: ClipboardList, path: `${P}/assurance` },
           ],
         },
         {
