@@ -1,6 +1,6 @@
 {
   "note": "Decisions already taken on Sentry issues, written by scripts/sentry-triage.mjs. Committed on purpose: a judgement ('third-party noise, not worth fixing') must survive and be reviewable, and a ledgered issue stays out of the nightly queue until it recurs in a NEWER release than the one it was judged in. Decisions: fixed | wont-fix | needs-owner | watching.",
-  "lastRunAt": "2026-11-14T10:39:18.817Z",
+  "lastRunAt": "2026-11-16T03:08:28.015Z",
   "issues": {
     "120262618": {
       "title": "RedisException: php_network_getaddresses: getaddrinfo for nexus-php-redis failed: Temporary failure in name resolution",
@@ -969,10 +969,10 @@
       "title": "Members require vetted contact in communities that have recorded no vetting",
       "culprit": null,
       "decision": "needs-owner",
-      "note": "14 Nov: still firing daily (last 08:05 UTC 14 Nov), 14 events in 14 days, 0 members hit. Same daily SafeguardingPolicyHealthCheck alarm as before: communities have members asking for vetted-only contact but no vetting recorded, so nobody can contact them. Community action, not a code fault; tenant 2 part may touch DPO-17.",
+      "note": "16 Nov: still firing once a day (last 08:05 UTC 15 Nov), 14 events in 14 days, 0 members hit. Same daily SafeguardingPolicyHealthCheck alarm: some communities have members who asked for contact from vetted people only, but the community has recorded no vetting, so nobody can contact them. Needs a community/owner decision, not a code fix; the tenant 2 part may touch DPO-17.",
       "sha": null,
-      "decidedAt": "2026-11-14T10:39:36.103Z",
-      "decidedAtRelease": "nexus-php@da5d4c2e9ef5"
+      "decidedAt": "2026-11-16T03:08:56.343Z",
+      "decidedAtRelease": "nexus-php@f5d6549369ae"
     },
     "157283631": {
       "title": "ApiOfflineError: The service took too long to respond",
