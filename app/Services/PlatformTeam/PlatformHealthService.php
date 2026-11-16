@@ -79,6 +79,7 @@ final class PlatformHealthService
             $this->card('search', fn () => $this->search()),
             $this->card('snapshots', fn () => $this->snapshots()),
             $this->card('maintenance', fn () => $this->maintenance()),
+            $this->card('access_review', fn () => $this->accessReview()),
         ];
 
         return [
@@ -368,5 +369,24 @@ final class PlatformHealthService
             self::fact('platform_wide', $platformWide, 'bool'),
             self::fact('communities', $communities, 'count'),
         ]];
+    }
+
+    /**
+     * Whether a review of the senior accounts is due (none yet, or the newest
+     * is more than AccessReviewService::DUE_AFTER_DAYS days old).
+     *
+     * @return array{0: string, 1: list<array{key: string, value: mixed, type: string}>}
+     */
+    private function accessReview(): array
+    {
+        $state = app(AccessReviewService::class)->dueStatus();
+
+        $facts = [self::fact('review_due', $state['due'], 'bool')];
+        if ($state['last_review_at'] !== null) {
+            // Left out when there is none: "most recent: not known" would read as a gap.
+            $facts[] = self::fact('last_review_at', $state['last_review_at'], 'datetime');
+        }
+
+        return [$state['due'] ? self::WARNING : self::OK, $facts];
     }
 }

@@ -3066,4 +3066,5 @@ XP: :xp |レベル: :level |完了した交換: :completed_exchanges
     'platform_notice_cannot_be_closed' => 'このお知らせは閉じることができません。',
     'platform_notice_link_must_be_https' => 'リンクは「https://」で始まる完全なアドレスにしてください。',
     'platform_usage_month_invalid' => 'YYYY-MM の形式で、今月以前の月を選んでください。',
+    'platform_access_review_list_changed' => '確認している間に一覧が変わりました。もう一度読み込んでください。',
 ];

@@ -3066,4 +3066,5 @@ CANDIDATI::candidates',
     'platform_notice_cannot_be_closed' => 'Questo avviso non può essere chiuso.',
     'platform_notice_link_must_be_https' => 'Il link deve essere un indirizzo completo che inizia con «https://».',
     'platform_usage_month_invalid' => 'Scegli un mese scritto come AAAA-MM, non successivo a questo mese.',
+    'platform_access_review_list_changed' => 'L\'elenco è cambiato mentre lo stavi rivedendo; caricalo di nuovo.',
 ];

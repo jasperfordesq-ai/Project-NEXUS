@@ -88,7 +88,8 @@
       "email": "E-mail",
       "search": "Busca",
       "snapshots": "Páginas salvas para buscadores",
-      "maintenance": "Modo de manutenção"
+      "maintenance": "Modo de manutenção",
+      "access_review": "Revisão de acessos"
     },
     "fact": {
       "version": "Versão",
@@ -111,7 +112,9 @@
       "reachable": "Respondendo",
       "problems": "Verificações que merecem atenção",
       "platform_wide": "Toda a plataforma",
-      "communities": "Comunidades em manutenção"
+      "communities": "Comunidades em manutenção",
+      "review_due": "Revisão pendente",
+      "last_review_at": "Última revisão"
     },
     "value": {
       "yes": "Sim",
@@ -554,5 +557,43 @@
       "portability": "Uma transferência",
       "objection": "Uma oposição"
     }
+  },
+  "access_review": {
+    "title": "Revisão de acessos",
+    "intro": "Passe por cada conta com acesso elevado e diga se ela deve manter o acesso. É preciso fazer uma revisão pelo menos a cada 90 dias.",
+    "loading": "Carregando a revisão de acessos",
+    "load_error_title": "Não conseguimos carregar a revisão de acessos agora",
+    "never": "Nenhuma revisão foi registrada ainda.",
+    "last_review": "Última revisão: {{date}}, registrada por {{name}}.",
+    "last_review_erased": "Última revisão: {{date}}, registrada por uma conta apagada.",
+    "due": "Está na hora de uma revisão.",
+    "not_due": "A próxima revisão deve ser feita até {{date}}.",
+    "review_now": "Revisar agora",
+    "review_intro": "Escolha \"Manter\" ou \"Deve ser removida\" para cada conta. Nada vem escolhido.",
+    "nothing_changes": "Registrar uma revisão não muda o acesso de ninguém. Para remover um acesso, faça isso no painel de superadministração (para superadministradores) ou no banco de dados (para a equipe da plataforma). A próxima revisão mostra quem foi marcado para remoção e continua aqui.",
+    "keep": "Manter",
+    "remove": "Deve ser removida",
+    "decision_for": "Decisão sobre {{name}}",
+    "decision_for_unnamed": "Decisão sobre a conta nº {{id}}",
+    "progress": "Decididas: {{done}} de {{total}} contas.",
+    "note_label": "Observação (opcional)",
+    "note_hint": "Até {{max}} caracteres. Só a equipe da plataforma vê.",
+    "record": "Registrar esta revisão",
+    "recorded_toast": "A revisão foi registrada.",
+    "error_step_cancelled": "A revisão não foi registrada: o código de acesso não foi digitado. Suas escolhas continuam aqui.",
+    "error_list_changed": "A lista mudou enquanto você revisava. Carregue-a de novo e confira a nova lista.",
+    "error_failed": "Não foi possível registrar a revisão. Nada foi salvo. Tente de novo.",
+    "reload": "Carregar a lista de novo",
+    "no_accounts": "Não há contas com acesso elevado para revisar.",
+    "open_title": "Marcadas para remoção da última vez e ainda aqui",
+    "open_intro": "Estas contas foram marcadas como \"Deve ser removida\" na última revisão e ainda têm acesso.",
+    "history_title": "Revisões recentes",
+    "history_none": "Ainda não há revisões.",
+    "history_by": "Registrada por",
+    "history_accounts_one": "{{count}} conta",
+    "history_accounts_other": "{{count}} contas",
+    "history_removals_one": "{{count}} marcada para remoção",
+    "history_removals_other": "{{count}} marcadas para remoção",
+    "erased": "Conta apagada"
   }
 }

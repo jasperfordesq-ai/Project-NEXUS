@@ -36,6 +36,7 @@ const FailedJobsPage = lazy(() => import('./pages/FailedJobsPage'));
 const PhoneAppPage = lazy(() => import('./pages/PhoneAppPage'));
 const SeniorAccountsPage = lazy(() => import('./pages/SeniorAccountsPage'));
 const FindAccountPage = lazy(() => import('./pages/FindAccountPage'));
+const AccessReviewPage = lazy(() => import('./pages/AccessReviewPage'));
 const SecurityPage = lazy(() => import('./pages/SecurityPage'));
 const CommunitiesAtAGlancePage = lazy(() => import('./pages/CommunitiesAtAGlancePage'));
 const CommunityHealthPage = lazy(() => import('./pages/CommunityHealthPage'));
@@ -111,6 +112,7 @@ export function PlatformTeamRoutes() {
       <Route path="phone-app" element={<Lazy><PhoneAppPage /></Lazy>} />
       <Route path="senior-accounts" element={<Lazy><SeniorAccountsPage /></Lazy>} />
       <Route path="accounts" element={<Lazy><FindAccountPage /></Lazy>} />
+      <Route path="access-review" element={<Lazy><AccessReviewPage /></Lazy>} />
       <Route path="security" element={<Lazy><SecurityPage /></Lazy>} />
       <Route path="communities" element={<Lazy><CommunitiesAtAGlancePage /></Lazy>} />
       <Route path="community-health" element={<Lazy><CommunityHealthPage /></Lazy>} />

@@ -53,6 +53,7 @@ vi.mock('./pages/FailedJobsPage', () => ({ default: () => <div>page:FailedJobsPa
 vi.mock('./pages/PhoneAppPage', () => ({ default: () => <div>page:PhoneAppPage</div> }));
 vi.mock('./pages/SeniorAccountsPage', () => ({ default: () => <div>page:SeniorAccountsPage</div> }));
 vi.mock('./pages/FindAccountPage', () => ({ default: () => <div>page:FindAccountPage</div> }));
+vi.mock('./pages/AccessReviewPage', () => ({ default: () => <div>page:AccessReviewPage</div> }));
 vi.mock('./pages/SecurityPage', () => ({ default: () => <div>page:SecurityPage</div> }));
 vi.mock('./pages/CommunitiesAtAGlancePage', () => ({ default: () => <div>page:CommunitiesAtAGlancePage</div> }));
 vi.mock('./pages/CommunityHealthPage', () => ({ default: () => <div>page:CommunityHealthPage</div> }));
@@ -288,6 +289,11 @@ describe('the Platform team panel mounts every moved page', () => {
   it('opens the Find an account page', async () => {
     renderAt('/test/platform-team/accounts');
     expect(await screen.findByText('page:FindAccountPage')).toBeInTheDocument();
+  });
+
+  it('opens the Access review page', async () => {
+    renderAt('/test/platform-team/access-review');
+    expect(await screen.findByText('page:AccessReviewPage')).toBeInTheDocument();
   });
 
   it('opens the Phone app page', async () => {

@@ -3066,4 +3066,5 @@ XP: :xp | المستوى: :level | التبادلات المكتملة: :complet
     'platform_notice_cannot_be_closed' => 'لا يمكن إغلاق هذا الإشعار.',
     'platform_notice_link_must_be_https' => 'يجب أن يكون الرابط عنوانًا كاملًا يبدأ بـ "https://".',
     'platform_usage_month_invalid' => 'اختر شهرًا مكتوبًا بالصيغة YYYY-MM، على ألا يكون بعد الشهر الحالي.',
+    'platform_access_review_list_changed' => 'تغيّرت القائمة أثناء مراجعتك لها؛ حمّلها من جديد.',
 ];

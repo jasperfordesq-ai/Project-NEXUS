@@ -3066,4 +3066,5 @@ IARRTHÓIRÍ: :candidates',
     'platform_notice_cannot_be_closed' => 'Ní féidir an fógra seo a dhúnadh.',
     'platform_notice_link_must_be_https' => 'Caithfidh an nasc a bheith ina sheoladh iomlán a thosaíonn le "https://".',
     'platform_usage_month_invalid' => 'Roghnaigh mí scríofa mar BBBB-MM, nach déanaí ná an mhí seo.',
+    'platform_access_review_list_changed' => 'Athraíodh an liosta agus tú á athbhreithniú; lódáil arís é.',
 ];

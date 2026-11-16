@@ -33,6 +33,7 @@ import Activity from 'lucide-react/icons/activity';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import ArrowRight from 'lucide-react/icons/arrow-right';
 import CircleHelp from 'lucide-react/icons/circle-help';
+import ClipboardCheck from 'lucide-react/icons/clipboard-check';
 import Database from 'lucide-react/icons/database';
 import FileText from 'lucide-react/icons/file-text';
 import HardDrive from 'lucide-react/icons/hard-drive';
@@ -86,6 +87,7 @@ const CARD_ICON: Record<string, LucideIcon> = {
   search: Search,
   snapshots: FileText,
   maintenance: Wrench,
+  access_review: ClipboardCheck,
 };
 
 /** The panel page that holds the detail behind a card, where one exists. */
@@ -97,6 +99,7 @@ const CARD_PAGE: Record<string, string> = {
   cron: '/platform-team/cron-jobs',
   email: '/platform-team/email-deliverability',
   snapshots: '/platform-team/seo/prerender',
+  access_review: '/platform-team/access-review',
 };
 
 function asStatus(value: unknown): HealthStatus {

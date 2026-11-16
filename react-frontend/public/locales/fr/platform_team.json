@@ -88,7 +88,8 @@
       "email": "E-mail",
       "search": "Recherche",
       "snapshots": "Pages enregistrées pour les moteurs de recherche",
-      "maintenance": "Mode maintenance"
+      "maintenance": "Mode maintenance",
+      "access_review": "Revue des accès"
     },
     "fact": {
       "version": "Version",
@@ -111,7 +112,9 @@
       "reachable": "Répond",
       "problems": "Vérifications à regarder",
       "platform_wide": "Toute la plateforme",
-      "communities": "Communautés en maintenance"
+      "communities": "Communautés en maintenance",
+      "review_due": "Revue à faire",
+      "last_review_at": "Dernière revue"
     },
     "value": {
       "yes": "Oui",
@@ -554,5 +557,43 @@
       "portability": "Un transfert",
       "objection": "Une opposition"
     }
+  },
+  "access_review": {
+    "title": "Revue des accès",
+    "intro": "Passez en revue chaque compte à accès étendu et indiquez s’il doit garder son accès. Une revue est à faire au moins tous les 90 jours.",
+    "loading": "Chargement de la revue des accès",
+    "load_error_title": "Nous n’avons pas pu charger la revue des accès pour le moment",
+    "never": "Aucune revue n’a encore été enregistrée.",
+    "last_review": "Dernière revue : {{date}}, enregistrée par {{name}}.",
+    "last_review_erased": "Dernière revue : {{date}}, enregistrée par un compte effacé.",
+    "due": "Une revue est à faire.",
+    "not_due": "La prochaine revue est à faire d’ici le {{date}}.",
+    "review_now": "Faire la revue",
+    "review_intro": "Choisissez « Garder » ou « À retirer » pour chaque compte. Rien n’est choisi à votre place.",
+    "nothing_changes": "Enregistrer une revue ne modifie l’accès de personne. Pour retirer un accès, faites-le dans le panneau super admin (pour les super admins) ou dans la base de données (pour l’équipe plateforme). La revue suivante montre les comptes marqués à retirer qui sont toujours là.",
+    "keep": "Garder",
+    "remove": "À retirer",
+    "decision_for": "Décision pour {{name}}",
+    "decision_for_unnamed": "Décision pour le compte n° {{id}}",
+    "progress": "Décidé : {{done}} comptes sur {{total}}.",
+    "note_label": "Note (facultative)",
+    "note_hint": "Jusqu’à {{max}} caractères. Seule l’équipe plateforme la voit.",
+    "record": "Enregistrer cette revue",
+    "recorded_toast": "La revue a été enregistrée.",
+    "error_step_cancelled": "La revue n’a pas été enregistrée : le code de connexion n’a pas été saisi. Vos choix sont toujours là.",
+    "error_list_changed": "La liste a changé pendant votre revue. Rechargez-la et vérifiez la nouvelle liste.",
+    "error_failed": "La revue n’a pas pu être enregistrée. Rien n’a été sauvegardé. Réessayez.",
+    "reload": "Recharger la liste",
+    "no_accounts": "Il n’y a aucun compte à accès étendu à passer en revue.",
+    "open_title": "Marqués à retirer la dernière fois et toujours là",
+    "open_intro": "Ces comptes ont été marqués « À retirer » lors de la dernière revue et ont toujours leur accès.",
+    "history_title": "Revues récentes",
+    "history_none": "Pas encore de revue.",
+    "history_by": "Enregistrée par",
+    "history_accounts_one": "{{count}} compte",
+    "history_accounts_other": "{{count}} comptes",
+    "history_removals_one": "{{count}} marqué à retirer",
+    "history_removals_other": "{{count}} marqués à retirer",
+    "erased": "Compte effacé"
   }
 }

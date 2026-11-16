@@ -36,7 +36,7 @@ class PlatformHealthSummaryTest extends TestCase
 
     private const CARDS = [
         'release', 'database', 'cache', 'disk', 'queue', 'failed_jobs',
-        'cron', 'email', 'search', 'snapshots', 'maintenance',
+        'cron', 'email', 'search', 'snapshots', 'maintenance', 'access_review',
     ];
 
     private const STATUSES = ['ok', 'warning', 'failing', 'unknown'];
@@ -170,5 +170,53 @@ class PlatformHealthSummaryTest extends TestCase
         $this->assertSame((string) config('app.version'), $release['facts']['version']);
         $this->assertArrayHasKey('commit', $release['facts']);
         $this->assertArrayHasKey('deployed_at', $release['facts']);
+    }
+
+    /** Access review: due with none recorded, fine right after one, due again after 90 days. */
+    public function test_the_access_review_card_follows_the_newest_review(): void
+    {
+        $me = $this->actAsPlatformTeam();
+        $this->assertSame(0, DB::table('senior_access_reviews')->count(), 'this test needs a database with no review in it');
+
+        $card = $this->cards()['access_review'];
+        $this->assertSame('warning', $card['status']);
+        $this->assertTrue($card['facts']['review_due']);
+        $this->assertArrayNotHasKey('last_review_at', $card['facts']);
+
+        DB::table('senior_access_reviews')->insert([
+            'reviewed_by' => $me->id, 'account_count' => 1, 'remove_count' => 0, 'created_at' => now()->subDays(91),
+        ]);
+        $card = $this->cards()['access_review'];
+        $this->assertSame('warning', $card['status']);
+        $this->assertNotNull($card['facts']['last_review_at']);
+
+        DB::table('senior_access_reviews')->insert([
+            'reviewed_by' => $me->id, 'account_count' => 1, 'remove_count' => 0, 'created_at' => now()->subDays(2),
+        ]);
+        $card = $this->cards()['access_review'];
+        $this->assertSame('ok', $card['status']);
+        $this->assertFalse($card['facts']['review_due']);
+    }
+
+    public function test_the_access_review_card_is_unknown_when_it_cannot_be_read(): void
+    {
+        $this->actAsPlatformTeam();
+        $broken = true;
+        DB::connection()->beforeExecuting(static function (string $sql) use (&$broken): void {
+            if ($broken && str_contains($sql, 'from `senior_access_reviews`')) {
+                throw new \RuntimeException('review table unreadable');
+            }
+        });
+
+        try {
+            $response = $this->apiGet(self::URI)->assertStatus(200);
+        } finally {
+            $broken = false;
+        }
+        $card = collect($response->json('data.cards'))->firstWhere('key', 'access_review');
+
+        $this->assertSame('unknown', $card['status']);
+        $this->assertSame([], $card['facts']);
+        $this->assertStringNotContainsString('review table unreadable', (string) $response->getContent());
     }
 }

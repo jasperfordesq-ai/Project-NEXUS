@@ -75,6 +75,7 @@ import Smartphone from 'lucide-react/icons/smartphone';
 import Gauge from 'lucide-react/icons/gauge';
 import UserCog from 'lucide-react/icons/user-cog';
 import UserSearch from 'lucide-react/icons/user-search';
+import ClipboardCheck from 'lucide-react/icons/clipboard-check';
 import Stethoscope from 'lucide-react/icons/stethoscope';
 import Target from 'lucide-react/icons/target';
 import Timer from 'lucide-react/icons/timer';
@@ -200,6 +201,7 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
             { label: t('security.title'), icon: Lock, path: `${P}/security` },
             { label: t('senior_accounts.title'), icon: UserCog, path: `${P}/senior-accounts` },
             { label: t('accounts.title'), icon: UserSearch, path: `${P}/accounts` },
+            { label: t('access_review.title'), icon: ClipboardCheck, path: `${P}/access-review` },
             { label: tNav('enterprise_dashboard'), icon: Building2, path: `${P}/enterprise` },
             { label: tNav('permissions_list'), icon: ListChecks, path: `${P}/enterprise/permissions` },
           ],

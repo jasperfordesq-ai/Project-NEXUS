@@ -4516,6 +4516,9 @@ Route::middleware(['auth:sanctum', 'platform-team'])->group(function () {
     // Find an account by its exact email address (in the body, never the address), and sign it out everywhere (needs a recent second step, asked after the lock).
     Route::post('/v2/platform-team/accounts/find', [\App\Http\Controllers\Api\PlatformTeam\FindAccountController::class, 'find']);
     Route::post('/v2/platform-team/accounts/{id}/sign-out', [\App\Http\Controllers\Api\PlatformTeam\FindAccountController::class, 'signOut'])->whereNumber('id')->middleware('step-up');
+    // Access review: record "keep" or "should be removed" for every senior account (needs a recent second step, asked after the lock). Changes nobody's access.
+    Route::get('/v2/platform-team/access-review', [\App\Http\Controllers\Api\PlatformTeam\AccessReviewController::class, 'index']);
+    Route::post('/v2/platform-team/access-review', [\App\Http\Controllers\Api\PlatformTeam\AccessReviewController::class, 'store'])->middleware('step-up');
     // Security: senior access given and removed, sign-ins as another member, failed sign-ins. Read-only; names and counts only.
     Route::get('/v2/platform-team/security', [\App\Http\Controllers\Api\PlatformTeam\SecurityOverviewController::class, 'index']);
     // Communities at a glance: every community against every feature and core part. Read-only; no member data.

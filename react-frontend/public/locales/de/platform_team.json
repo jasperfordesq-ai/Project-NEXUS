@@ -88,7 +88,8 @@
       "email": "E-Mail",
       "search": "Suche",
       "snapshots": "Für Suchmaschinen gespeicherte Seiten",
-      "maintenance": "Wartungsmodus"
+      "maintenance": "Wartungsmodus",
+      "access_review": "Zugriffsprüfung"
     },
     "fact": {
       "version": "Version",
@@ -111,7 +112,9 @@
       "reachable": "Antwortet",
       "problems": "Prüfungen, die angesehen werden sollten",
       "platform_wide": "Ganze Plattform",
-      "communities": "Gemeinschaften im Wartungsmodus"
+      "communities": "Gemeinschaften im Wartungsmodus",
+      "review_due": "Prüfung fällig",
+      "last_review_at": "Letzte Prüfung"
     },
     "value": {
       "yes": "Ja",
@@ -554,5 +557,43 @@
       "portability": "Eine Übertragung",
       "objection": "Ein Widerspruch"
     }
+  },
+  "access_review": {
+    "title": "Zugriffsprüfung",
+    "intro": "Gehen Sie jedes Konto mit erweiterten Rechten durch und entscheiden Sie, ob es seinen Zugriff behalten soll. Eine Prüfung ist mindestens alle 90 Tage fällig.",
+    "loading": "Die Zugriffsprüfung wird geladen",
+    "load_error_title": "Die Zugriffsprüfung konnte gerade nicht geladen werden",
+    "never": "Es wurde noch keine Prüfung festgehalten.",
+    "last_review": "Letzte Prüfung: {{date}}, festgehalten von {{name}}.",
+    "last_review_erased": "Letzte Prüfung: {{date}}, festgehalten von einem gelöschten Konto.",
+    "due": "Eine Prüfung ist fällig.",
+    "not_due": "Die nächste Prüfung ist bis {{date}} fällig.",
+    "review_now": "Jetzt prüfen",
+    "review_intro": "Wählen Sie für jedes Konto „Behalten“ oder „Sollte entfernt werden“. Nichts ist vorausgewählt.",
+    "nothing_changes": "Das Festhalten einer Prüfung ändert niemandes Zugriff. Um Zugriff zu entziehen, tun Sie das im Super-Admin-Bereich (für Super-Admins) oder in der Datenbank (für das Plattform-Team). Die nächste Prüfung zeigt alle, die zur Entfernung markiert wurden und noch da sind.",
+    "keep": "Behalten",
+    "remove": "Sollte entfernt werden",
+    "decision_for": "Entscheidung für {{name}}",
+    "decision_for_unnamed": "Entscheidung für Konto #{{id}}",
+    "progress": "Entschieden: {{done}} von {{total}} Konten.",
+    "note_label": "Notiz (freiwillig)",
+    "note_hint": "Bis zu {{max}} Zeichen. Nur das Plattform-Team sieht sie.",
+    "record": "Diese Prüfung festhalten",
+    "recorded_toast": "Die Prüfung wurde festgehalten.",
+    "error_step_cancelled": "Die Prüfung wurde nicht festgehalten: Der Anmeldecode wurde nicht eingegeben. Ihre Auswahl ist noch da.",
+    "error_list_changed": "Die Liste hat sich während Ihrer Prüfung geändert. Laden Sie sie erneut und sehen Sie sich die neue Liste an.",
+    "error_failed": "Die Prüfung konnte nicht festgehalten werden. Es wurde nichts gespeichert. Versuchen Sie es erneut.",
+    "reload": "Liste neu laden",
+    "no_accounts": "Es gibt keine Konten mit erweiterten Rechten zu prüfen.",
+    "open_title": "Beim letzten Mal zur Entfernung markiert und noch da",
+    "open_intro": "Diese Konten wurden in der letzten Prüfung mit „Sollte entfernt werden“ markiert und haben ihren Zugriff noch.",
+    "history_title": "Letzte Prüfungen",
+    "history_none": "Noch keine Prüfungen.",
+    "history_by": "Festgehalten von",
+    "history_accounts_one": "{{count}} Konto",
+    "history_accounts_other": "{{count}} Konten",
+    "history_removals_one": "{{count}} zur Entfernung markiert",
+    "history_removals_other": "{{count}} zur Entfernung markiert",
+    "erased": "Gelöschtes Konto"
   }
 }

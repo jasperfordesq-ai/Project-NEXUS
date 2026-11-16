@@ -131,6 +131,7 @@ describe('PlatformTeamBreadcrumbs', () => {
     ['/platform-team/phone-app', 'phone_app.title'],
     ['/platform-team/senior-accounts', 'senior_accounts.title'],
     ['/platform-team/accounts', 'accounts.title'],
+    ['/platform-team/access-review', 'access_review.title'],
     ['/platform-team/security', 'security.title'],
     ['/platform-team/communities', 'glance.title'],
     ['/platform-team/community-health', 'community_health.title'],

@@ -3066,4 +3066,5 @@ KANDYDACI::candidates',
     'platform_notice_cannot_be_closed' => 'Tego komunikatu nie można zamknąć.',
     'platform_notice_link_must_be_https' => 'Link musi być pełnym adresem zaczynającym się od „https://”.',
     'platform_usage_month_invalid' => 'Wybierz miesiąc zapisany jako RRRR-MM, nie późniejszy niż bieżący.',
+    'platform_access_review_list_changed' => 'Lista zmieniła się podczas przeglądu; wczytaj ją ponownie.',
 ];

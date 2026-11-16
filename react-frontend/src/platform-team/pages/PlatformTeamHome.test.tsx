@@ -44,6 +44,7 @@ const SUMMARY = {
     { key: 'email', status: 'unknown', facts: [] },
     { key: 'cron', status: 'warning', facts: [{ key: 'failed_24h', value: 3, type: 'count' }] },
     { key: 'disk', status: 'ok', facts: [{ key: 'used_percent', value: 41, type: 'percent' }] },
+    { key: 'access_review', status: 'warning', facts: [{ key: 'review_due', value: true, type: 'bool' }] },
     { key: 'something_new', status: 'ok', facts: [] },
   ],
 };
@@ -120,6 +121,7 @@ describe('PlatformTeamHome', () => {
 
     expect(within(card('cron')).getByRole('link')).toHaveAttribute('href', '/test/platform-team/cron-jobs');
     expect(within(card('database')).getByRole('link')).toHaveAttribute('href', '/test/platform-team/enterprise/monitoring');
+    expect(within(card('access_review')).getByRole('link')).toHaveAttribute('href', '/test/platform-team/access-review');
     // No detail page exists for these yet: no link to nowhere.
     expect(within(card('queue')).queryByRole('link')).not.toBeInTheDocument();
   });

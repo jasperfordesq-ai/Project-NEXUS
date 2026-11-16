@@ -88,7 +88,8 @@
       "email": "メール",
       "search": "検索",
       "snapshots": "検索エンジン向けに保存したページ",
-      "maintenance": "メンテナンスモード"
+      "maintenance": "メンテナンスモード",
+      "access_review": "アクセスの見直し"
     },
     "fact": {
       "version": "バージョン",
@@ -111,7 +112,9 @@
       "reachable": "応答",
       "problems": "要確認の項目",
       "platform_wide": "プラットフォーム全体",
-      "communities": "メンテナンス中のコミュニティ"
+      "communities": "メンテナンス中のコミュニティ",
+      "review_due": "見直しの時期",
+      "last_review_at": "前回の見直し"
     },
     "value": {
       "yes": "はい",
@@ -554,5 +557,43 @@
       "portability": "データの移転",
       "objection": "異議"
     }
+  },
+  "access_review": {
+    "title": "アクセスの見直し",
+    "intro": "上位権限を持つ各アカウントを確認し、そのアクセスを残すべきかどうかを決めます。見直しは少なくとも 90 日ごとに必要です。",
+    "loading": "アクセスの見直しを読み込んでいます",
+    "load_error_title": "今はアクセスの見直しを読み込めませんでした",
+    "never": "まだ見直しは記録されていません。",
+    "last_review": "前回の見直し：{{date}}、記録者：{{name}}。",
+    "last_review_erased": "前回の見直し：{{date}}、記録者：消去されたアカウント。",
+    "due": "見直しの時期です。",
+    "not_due": "次の見直しの期限は {{date}} です。",
+    "review_now": "今すぐ見直す",
+    "review_intro": "すべてのアカウントについて「残す」か「外すべき」を選んでください。最初から選ばれているものはありません。",
+    "nothing_changes": "見直しを記録しても、誰のアクセスも変わりません。アクセスを外すには、スーパー管理者パネル（スーパー管理者の場合）またはデータベース（プラットフォームチームの場合）で行ってください。次の見直しでは、外すべきとされたのにまだ残っているアカウントが表示されます。",
+    "keep": "残す",
+    "remove": "外すべき",
+    "decision_for": "{{name}} についての判断",
+    "decision_for_unnamed": "アカウント #{{id}} についての判断",
+    "progress": "判断済み：{{total}} 件中 {{done}} 件。",
+    "note_label": "メモ（任意）",
+    "note_hint": "{{max}} 文字まで。プラットフォームチームだけが見られます。",
+    "record": "この見直しを記録する",
+    "recorded_toast": "見直しを記録しました。",
+    "error_step_cancelled": "見直しは記録されませんでした。サインインのコードが入力されませんでした。選んだ内容はそのまま残っています。",
+    "error_list_changed": "見直しの間に一覧が変わりました。もう一度読み込んで、新しい一覧を確認してください。",
+    "error_failed": "見直しを記録できませんでした。何も保存されていません。もう一度お試しください。",
+    "reload": "一覧をもう一度読み込む",
+    "no_accounts": "見直す上位アカウントはありません。",
+    "open_title": "前回外すべきとされ、まだ残っているアカウント",
+    "open_intro": "これらのアカウントは前回の見直しで「外すべき」とされましたが、まだアクセスを持っています。",
+    "history_title": "最近の見直し",
+    "history_none": "まだ見直しはありません。",
+    "history_by": "記録者",
+    "history_accounts_one": "{{count}} 件のアカウント",
+    "history_accounts_other": "{{count}} 件のアカウント",
+    "history_removals_one": "外すべき：{{count}} 件",
+    "history_removals_other": "外すべき：{{count}} 件",
+    "erased": "消去されたアカウント"
   }
 }

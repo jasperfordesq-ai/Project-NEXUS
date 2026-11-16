@@ -448,6 +448,26 @@ caller's, in the same transaction as the sign-out: neither happens without the
 other. 🔴 A manager's stand-in (`status = 'delegate'`) and an erased account
 (`anonymized_at` set) are never found and cannot be signed out (404). 🔴 It
 changes no password, role or access, and must not grow an action that does.
+
+Access review (`/platform-team/access-review`; `AccessReviewService`,
+16 November 2026) records, every so often, a decision for every senior account
+as `SeniorAccountsService::list()` lists them: "keep" or "should be removed".
+`GET /v2/platform-team/access-review` sends the current senior accounts (no
+email address), the last ten reviews (who recorded each, by current name), and
+the accounts marked "remove" in the newest review that are still senior.
+`POST /v2/platform-team/access-review` takes `{decisions: [{user_id,
+decision}], note?}` and needs a recent second sign-in step (`step-up` after
+the `platform-team` group middleware, re-checked in the controller). The
+server reads the senior list again and refuses (422
+`ACCESS_REVIEW_LIST_CHANGED`) unless the decisions cover exactly that list,
+once each. A review is due when there has never been one or the newest is more
+than 90 days old; the home page card `access_review` says so. 🔴 Recording a
+review changes nobody's access: access is removed in the super admin panel or,
+for the platform team, in the database. 🔴 `senior_access_reviews` and
+`senior_access_review_items` are platform-global (no `tenant_id`), hold ids
+only (no name, no email), and are append-only by database trigger
+(`trg_sar_*`, `trg_sari_*`); they have no foreign key to `users`, so an erased
+or removed account is shown without a name rather than blocking the erasure.
 The Security page lists these sign-outs (who, whom, which community, when) in
 its `sign_outs` section; the reason is not sent there.
 

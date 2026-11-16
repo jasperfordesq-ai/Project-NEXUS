@@ -88,7 +88,8 @@
       "email": "Email",
       "search": "Ricerca",
       "snapshots": "Pagine salvate per i motori di ricerca",
-      "maintenance": "Modalità manutenzione"
+      "maintenance": "Modalità manutenzione",
+      "access_review": "Revisione degli accessi"
     },
     "fact": {
       "version": "Versione",
@@ -111,7 +112,9 @@
       "reachable": "Risponde",
       "problems": "Controlli da guardare",
       "platform_wide": "Tutta la piattaforma",
-      "communities": "Comunità in manutenzione"
+      "communities": "Comunità in manutenzione",
+      "review_due": "Revisione da fare",
+      "last_review_at": "Ultima revisione"
     },
     "value": {
       "yes": "Sì",
@@ -554,5 +557,43 @@
       "portability": "Un trasferimento",
       "objection": "Un’opposizione"
     }
+  },
+  "access_review": {
+    "title": "Revisione degli accessi",
+    "intro": "Esamina ogni account con accesso esteso e indica se deve mantenerlo. Una revisione va fatta almeno ogni 90 giorni.",
+    "loading": "Caricamento della revisione degli accessi",
+    "load_error_title": "Non siamo riusciti a caricare la revisione degli accessi in questo momento",
+    "never": "Non è stata ancora registrata nessuna revisione.",
+    "last_review": "Ultima revisione: {{date}}, registrata da {{name}}.",
+    "last_review_erased": "Ultima revisione: {{date}}, registrata da un account cancellato.",
+    "due": "È il momento di una revisione.",
+    "not_due": "La prossima revisione va fatta entro il {{date}}.",
+    "review_now": "Fai la revisione",
+    "review_intro": "Scegli «Mantieni» o «Da rimuovere» per ogni account. Non c’è nulla di già scelto.",
+    "nothing_changes": "Registrare una revisione non cambia l’accesso di nessuno. Per togliere un accesso, fallo nel pannello super admin (per i super admin) o nel database (per il team della piattaforma). La revisione successiva mostra chi era segnato da rimuovere ed è ancora qui.",
+    "keep": "Mantieni",
+    "remove": "Da rimuovere",
+    "decision_for": "Decisione per {{name}}",
+    "decision_for_unnamed": "Decisione per l’account n. {{id}}",
+    "progress": "Decisi: {{done}} account su {{total}}.",
+    "note_label": "Nota (facoltativa)",
+    "note_hint": "Fino a {{max}} caratteri. La vede solo il team della piattaforma.",
+    "record": "Registra questa revisione",
+    "recorded_toast": "La revisione è stata registrata.",
+    "error_step_cancelled": "La revisione non è stata registrata: il codice di accesso non è stato inserito. Le tue scelte sono ancora qui.",
+    "error_list_changed": "L’elenco è cambiato mentre lo stavi rivedendo. Caricalo di nuovo e controlla il nuovo elenco.",
+    "error_failed": "Non è stato possibile registrare la revisione. Non è stato salvato nulla. Riprova.",
+    "reload": "Ricarica l’elenco",
+    "no_accounts": "Non ci sono account con accesso esteso da rivedere.",
+    "open_title": "Segnati da rimuovere l’ultima volta e ancora qui",
+    "open_intro": "Questi account sono stati segnati «Da rimuovere» nell’ultima revisione e hanno ancora il loro accesso.",
+    "history_title": "Revisioni recenti",
+    "history_none": "Ancora nessuna revisione.",
+    "history_by": "Registrata da",
+    "history_accounts_one": "Account esaminati: {{count}}",
+    "history_accounts_other": "Account esaminati: {{count}}",
+    "history_removals_one": "{{count}} segnato da rimuovere",
+    "history_removals_other": "{{count}} segnati da rimuovere",
+    "erased": "Account cancellato"
   }
 }

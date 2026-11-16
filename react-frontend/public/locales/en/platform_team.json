@@ -88,7 +88,8 @@
       "email": "Email",
       "search": "Search",
       "snapshots": "Pages saved for search engines",
-      "maintenance": "Maintenance mode"
+      "maintenance": "Maintenance mode",
+      "access_review": "Access review"
     },
     "fact": {
       "version": "Version",
@@ -111,7 +112,9 @@
       "reachable": "Answering",
       "problems": "Checks needing a look",
       "platform_wide": "Whole platform",
-      "communities": "Communities in maintenance"
+      "communities": "Communities in maintenance",
+      "review_due": "Review due",
+      "last_review_at": "Last review"
     },
     "value": {
       "yes": "Yes",
@@ -554,5 +557,43 @@
       "portability": "A transfer",
       "objection": "An objection"
     }
+  },
+  "access_review": {
+    "title": "Access review",
+    "intro": "Go through every senior account and say whether it should keep its access. A review is due at least every 90 days.",
+    "loading": "Loading the access review",
+    "load_error_title": "We couldn't load the access review just now",
+    "never": "No review has been recorded yet.",
+    "last_review": "Last review: {{date}}, recorded by {{name}}.",
+    "last_review_erased": "Last review: {{date}}, recorded by an erased account.",
+    "due": "A review is due.",
+    "not_due": "The next review is due by {{date}}.",
+    "review_now": "Review now",
+    "review_intro": "Choose Keep or Should be removed for every account. Nothing is chosen for you.",
+    "nothing_changes": "Recording a review changes nobody's access. To remove access, do it in the super admin panel (for super admins) or in the database (for the platform team). The next review shows anyone marked for removal who is still here.",
+    "keep": "Keep",
+    "remove": "Should be removed",
+    "decision_for": "Decision for {{name}}",
+    "decision_for_unnamed": "Decision for account #{{id}}",
+    "progress": "Decided: {{done}} of {{total}} accounts.",
+    "note_label": "Note (optional)",
+    "note_hint": "Up to {{max}} characters. Only the platform team sees it.",
+    "record": "Record this review",
+    "recorded_toast": "The review was recorded.",
+    "error_step_cancelled": "The review was not recorded: the sign-in code was not entered. Your choices are still here.",
+    "error_list_changed": "The list changed while you were reviewing. Load it again and check the new list.",
+    "error_failed": "The review could not be recorded. Nothing was saved. Try again.",
+    "reload": "Load the list again",
+    "no_accounts": "There are no senior accounts to review.",
+    "open_title": "Marked for removal last time and still here",
+    "open_intro": "These accounts were marked \"Should be removed\" in the last review, and they still have their access.",
+    "history_title": "Recent reviews",
+    "history_none": "No reviews yet.",
+    "history_by": "Recorded by",
+    "history_accounts_one": "{{count}} account",
+    "history_accounts_other": "{{count}} accounts",
+    "history_removals_one": "{{count}} marked for removal",
+    "history_removals_other": "{{count}} marked for removal",
+    "erased": "Erased account"
   }
 }

@@ -3575,4 +3575,5 @@ return [
     'platform_notice_cannot_be_closed' => 'This notice cannot be closed.',
     'platform_notice_link_must_be_https' => 'The link must be a full address that starts with "https://".',
     'platform_usage_month_invalid' => 'Choose a month written as YYYY-MM, no later than this month.',
+    'platform_access_review_list_changed' => 'The list changed while you were reviewing; load it again.',
 ];

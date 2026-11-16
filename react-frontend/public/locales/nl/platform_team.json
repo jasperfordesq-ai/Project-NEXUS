@@ -88,7 +88,8 @@
       "email": "E-mail",
       "search": "Zoeken",
       "snapshots": "Pagina’s opgeslagen voor zoekmachines",
-      "maintenance": "Onderhoudsmodus"
+      "maintenance": "Onderhoudsmodus",
+      "access_review": "Toegangscontrole"
     },
     "fact": {
       "version": "Versie",
@@ -111,7 +112,9 @@
       "reachable": "Reageert",
       "problems": "Controles om naar te kijken",
       "platform_wide": "Hele platform",
-      "communities": "Gemeenschappen in onderhoud"
+      "communities": "Gemeenschappen in onderhoud",
+      "review_due": "Controle nodig",
+      "last_review_at": "Laatste controle"
     },
     "value": {
       "yes": "Ja",
@@ -554,5 +557,43 @@
       "portability": "Een overdracht",
       "objection": "Een bezwaar"
     }
+  },
+  "access_review": {
+    "title": "Toegangscontrole",
+    "intro": "Loop elk account met verhoogde rechten na en geef aan of het zijn toegang moet houden. Minstens elke 90 dagen is een controle nodig.",
+    "loading": "De toegangscontrole wordt geladen",
+    "load_error_title": "We konden de toegangscontrole nu niet laden",
+    "never": "Er is nog geen controle vastgelegd.",
+    "last_review": "Laatste controle: {{date}}, vastgelegd door {{name}}.",
+    "last_review_erased": "Laatste controle: {{date}}, vastgelegd door een gewist account.",
+    "due": "Er is een controle nodig.",
+    "not_due": "De volgende controle moet uiterlijk {{date}} gebeuren.",
+    "review_now": "Nu controleren",
+    "review_intro": "Kies voor elk account \"Houden\" of \"Moet weg\". Er is niets voor u gekozen.",
+    "nothing_changes": "Een controle vastleggen verandert niemands toegang. Toegang weghalen doet u in het superbeheerpaneel (voor superbeheerders) of in de database (voor het platformteam). De volgende controle toont wie als \"moet weg\" gemarkeerd is en er nog is.",
+    "keep": "Houden",
+    "remove": "Moet weg",
+    "decision_for": "Besluit voor {{name}}",
+    "decision_for_unnamed": "Besluit voor account #{{id}}",
+    "progress": "Besloten: {{done}} van {{total}} accounts.",
+    "note_label": "Notitie (optioneel)",
+    "note_hint": "Maximaal {{max}} tekens. Alleen het platformteam ziet deze.",
+    "record": "Deze controle vastleggen",
+    "recorded_toast": "De controle is vastgelegd.",
+    "error_step_cancelled": "De controle is niet vastgelegd: de inlogcode is niet ingevoerd. Uw keuzes staan er nog.",
+    "error_list_changed": "De lijst is veranderd terwijl u die naliep. Laad hem opnieuw en bekijk de nieuwe lijst.",
+    "error_failed": "De controle kon niet worden vastgelegd. Er is niets opgeslagen. Probeer het opnieuw.",
+    "reload": "Lijst opnieuw laden",
+    "no_accounts": "Er zijn geen accounts met verhoogde rechten om te controleren.",
+    "open_title": "Vorige keer als \"moet weg\" gemarkeerd en er nog",
+    "open_intro": "Deze accounts zijn bij de laatste controle als \"Moet weg\" gemarkeerd en hebben hun toegang nog.",
+    "history_title": "Recente controles",
+    "history_none": "Nog geen controles.",
+    "history_by": "Vastgelegd door",
+    "history_accounts_one": "{{count}} gebruikersaccount",
+    "history_accounts_other": "{{count}} gebruikersaccounts",
+    "history_removals_one": "{{count}} gemarkeerd als moet weg",
+    "history_removals_other": "{{count}} gemarkeerd als moet weg",
+    "erased": "Gewist account"
   }
 }

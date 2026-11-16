@@ -88,7 +88,8 @@
       "email": "Correo electrónico",
       "search": "Búsqueda",
       "snapshots": "Páginas guardadas para buscadores",
-      "maintenance": "Modo de mantenimiento"
+      "maintenance": "Modo de mantenimiento",
+      "access_review": "Revisión de accesos"
     },
     "fact": {
       "version": "Versión",
@@ -111,7 +112,9 @@
       "reachable": "Responde",
       "problems": "Comprobaciones que conviene mirar",
       "platform_wide": "Toda la plataforma",
-      "communities": "Comunidades en mantenimiento"
+      "communities": "Comunidades en mantenimiento",
+      "review_due": "Revisión pendiente",
+      "last_review_at": "Última revisión"
     },
     "value": {
       "yes": "Sí",
@@ -554,5 +557,43 @@
       "portability": "Una transferencia",
       "objection": "Una oposición"
     }
+  },
+  "access_review": {
+    "title": "Revisión de accesos",
+    "intro": "Revisa cada cuenta con acceso superior y decide si debe conservarlo. Hay que hacer una revisión al menos cada 90 días.",
+    "loading": "Cargando la revisión de accesos",
+    "load_error_title": "No hemos podido cargar la revisión de accesos ahora mismo",
+    "never": "Todavía no se ha registrado ninguna revisión.",
+    "last_review": "Última revisión: {{date}}, registrada por {{name}}.",
+    "last_review_erased": "Última revisión: {{date}}, registrada por una cuenta borrada.",
+    "due": "Toca hacer una revisión.",
+    "not_due": "La próxima revisión debe hacerse antes del {{date}}.",
+    "review_now": "Revisar ahora",
+    "review_intro": "Elige «Conservar» o «Debería quitarse» para cada cuenta. No hay nada elegido de antemano.",
+    "nothing_changes": "Registrar una revisión no cambia el acceso de nadie. Para quitar un acceso, hazlo en el panel de superadministración (para superadministradores) o en la base de datos (para el equipo de la plataforma). La próxima revisión muestra a quien se marcó para quitar y sigue aquí.",
+    "keep": "Conservar",
+    "remove": "Debería quitarse",
+    "decision_for": "Decisión sobre {{name}}",
+    "decision_for_unnamed": "Decisión sobre la cuenta n.º {{id}}",
+    "progress": "Decididas: {{done}} de {{total}} cuentas.",
+    "note_label": "Nota (opcional)",
+    "note_hint": "Hasta {{max}} caracteres. Solo la ve el equipo de la plataforma.",
+    "record": "Registrar esta revisión",
+    "recorded_toast": "La revisión se ha registrado.",
+    "error_step_cancelled": "La revisión no se ha registrado: no se introdujo el código de inicio de sesión. Tus elecciones siguen aquí.",
+    "error_list_changed": "La lista cambió mientras la revisabas. Vuelve a cargarla y comprueba la nueva lista.",
+    "error_failed": "No se pudo registrar la revisión. No se ha guardado nada. Inténtalo de nuevo.",
+    "reload": "Volver a cargar la lista",
+    "no_accounts": "No hay cuentas con acceso superior que revisar.",
+    "open_title": "Marcadas para quitar la última vez y todavía aquí",
+    "open_intro": "Estas cuentas se marcaron como «Debería quitarse» en la última revisión y todavía conservan su acceso.",
+    "history_title": "Revisiones recientes",
+    "history_none": "Todavía no hay revisiones.",
+    "history_by": "Registrada por",
+    "history_accounts_one": "{{count}} cuenta",
+    "history_accounts_other": "{{count}} cuentas",
+    "history_removals_one": "{{count}} marcada para quitar",
+    "history_removals_other": "{{count}} marcadas para quitar",
+    "erased": "Cuenta borrada"
   }
 }

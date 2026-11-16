@@ -29,6 +29,7 @@ const SEGMENT_LABEL_KEYS: Record<string, string> = {
   'phone-app': 'phone_app.title',
   'senior-accounts': 'senior_accounts.title',
   accounts: 'accounts.title',
+  'access-review': 'access_review.title',
   security: 'security.title',
   communities: 'glance.title',
   'community-health': 'community_health.title',

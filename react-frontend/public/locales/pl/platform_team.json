@@ -88,7 +88,8 @@
       "email": "E-mail",
       "search": "Wyszukiwanie",
       "snapshots": "Strony zapisane dla wyszukiwarek",
-      "maintenance": "Tryb konserwacji"
+      "maintenance": "Tryb konserwacji",
+      "access_review": "Przegląd dostępu"
     },
     "fact": {
       "version": "Wersja",
@@ -111,7 +112,9 @@
       "reachable": "Odpowiada",
       "problems": "Kontrole wymagające uwagi",
       "platform_wide": "Cała platforma",
-      "communities": "Społeczności w trybie konserwacji"
+      "communities": "Społeczności w trybie konserwacji",
+      "review_due": "Czas na przegląd",
+      "last_review_at": "Ostatni przegląd"
     },
     "value": {
       "yes": "Tak",
@@ -554,5 +557,47 @@
       "portability": "Przeniesienie",
       "objection": "Sprzeciw"
     }
+  },
+  "access_review": {
+    "title": "Przegląd dostępu",
+    "intro": "Przejrzyj każde konto z rozszerzonym dostępem i zdecyduj, czy ma go zachować. Przegląd trzeba robić co najmniej co 90 dni.",
+    "loading": "Wczytywanie przeglądu dostępu",
+    "load_error_title": "Nie udało się teraz wczytać przeglądu dostępu",
+    "never": "Nie zapisano jeszcze żadnego przeglądu.",
+    "last_review": "Ostatni przegląd: {{date}}, zapisany przez: {{name}}.",
+    "last_review_erased": "Ostatni przegląd: {{date}}, zapisany przez usunięte konto.",
+    "due": "Czas na przegląd.",
+    "not_due": "Następny przegląd trzeba zrobić do {{date}}.",
+    "review_now": "Przejrzyj teraz",
+    "review_intro": "Dla każdego konta wybierz „Zostawić” lub „Do usunięcia”. Nic nie jest wybrane z góry.",
+    "nothing_changes": "Zapisanie przeglądu nie zmienia niczyjego dostępu. Aby odebrać dostęp, zrób to w panelu superadministratora (dla superadministratorów) lub w bazie danych (dla zespołu platformy). Następny przegląd pokaże konta oznaczone do usunięcia, które wciąż tu są.",
+    "keep": "Zostawić",
+    "remove": "Do usunięcia",
+    "decision_for": "Decyzja dla: {{name}}",
+    "decision_for_unnamed": "Decyzja dla konta nr {{id}}",
+    "progress": "Zdecydowano: {{done}} z {{total}} kont.",
+    "note_label": "Notatka (opcjonalna)",
+    "note_hint": "Do {{max}} znaków. Widzi ją tylko zespół platformy.",
+    "record": "Zapisz ten przegląd",
+    "recorded_toast": "Przegląd został zapisany.",
+    "error_step_cancelled": "Przegląd nie został zapisany: nie wpisano kodu logowania. Twoje wybory wciąż tu są.",
+    "error_list_changed": "Lista zmieniła się podczas przeglądu. Wczytaj ją ponownie i sprawdź nową listę.",
+    "error_failed": "Nie udało się zapisać przeglądu. Nic nie zostało zapisane. Spróbuj ponownie.",
+    "reload": "Wczytaj listę ponownie",
+    "no_accounts": "Nie ma kont z rozszerzonym dostępem do przejrzenia.",
+    "open_title": "Oznaczone do usunięcia ostatnio i wciąż tutaj",
+    "open_intro": "Te konta oznaczono w ostatnim przeglądzie jako „Do usunięcia”, a nadal mają swój dostęp.",
+    "history_title": "Ostatnie przeglądy",
+    "history_none": "Nie ma jeszcze przeglądów.",
+    "history_by": "Zapisał(a)",
+    "history_accounts_one": "{{count}} konto",
+    "history_accounts_other": "Kont: {{count}}",
+    "history_removals_one": "{{count}} oznaczone do usunięcia",
+    "history_removals_other": "Oznaczone do usunięcia: {{count}}",
+    "erased": "Usunięte konto",
+    "history_accounts_few": "{{count}} konta",
+    "history_accounts_many": "Kont: {{count}}",
+    "history_removals_few": "{{count}} oznaczone do usunięcia",
+    "history_removals_many": "Oznaczonych do usunięcia: {{count}}"
   }
 }

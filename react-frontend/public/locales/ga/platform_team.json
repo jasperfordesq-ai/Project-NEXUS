@@ -88,7 +88,8 @@
       "email": "Ríomhphost",
       "search": "Cuardach",
       "snapshots": "Leathanaigh a sábháladh d’innill chuardaigh",
-      "maintenance": "Mód cothabhála"
+      "maintenance": "Mód cothabhála",
+      "access_review": "Athbhreithniú rochtana"
     },
     "fact": {
       "version": "Leagan",
@@ -111,7 +112,9 @@
       "reachable": "Ag freagairt",
       "problems": "Seiceálacha le breathnú orthu",
       "platform_wide": "An t-ardán iomlán",
-      "communities": "Pobail i mód cothabhála"
+      "communities": "Pobail i mód cothabhála",
+      "review_due": "Athbhreithniú dlite",
+      "last_review_at": "An t-athbhreithniú deireanach"
     },
     "value": {
       "yes": "Tá",
@@ -554,5 +557,49 @@
       "portability": "Aistriú",
       "objection": "Agóid"
     }
+  },
+  "access_review": {
+    "title": "Athbhreithniú rochtana",
+    "intro": "Téigh trí gach cuntas sinsearach agus abair ar chóir dó a rochtain a choinneáil. Bíonn athbhreithniú dlite uair sa 90 lá ar a laghad.",
+    "loading": "Ag lódáil an athbhreithnithe rochtana",
+    "load_error_title": "Níorbh fhéidir linn an t-athbhreithniú rochtana a lódáil faoi láthair",
+    "never": "Níor taifeadadh aon athbhreithniú fós.",
+    "last_review": "An t-athbhreithniú deireanach: {{date}}, taifeadta ag {{name}}.",
+    "last_review_erased": "An t-athbhreithniú deireanach: {{date}}, taifeadta ag cuntas scriosta.",
+    "due": "Tá athbhreithniú dlite.",
+    "not_due": "Beidh an chéad athbhreithniú eile dlite faoi {{date}}.",
+    "review_now": "Athbhreithnigh anois",
+    "review_intro": "Roghnaigh «Coinnigh» nó «Ba chóir é a bhaint» do gach cuntas. Níl aon rud roghnaithe duit.",
+    "nothing_changes": "Ní athraíonn taifeadadh athbhreithnithe rochtain duine ar bith. Chun rochtain a bhaint, déan é i bpainéal an tsár-riarthóra (do shár-riarthóirí) nó sa bhunachar sonraí (d’fhoireann an ardáin). Taispeánann an chéad athbhreithniú eile aon duine a marcáladh lena bhaint atá fós anseo.",
+    "keep": "Coinnigh",
+    "remove": "Ba chóir é a bhaint",
+    "decision_for": "Cinneadh maidir le {{name}}",
+    "decision_for_unnamed": "Cinneadh maidir le cuntas uimh. {{id}}",
+    "progress": "Socraithe: {{done}} as {{total}} cuntas.",
+    "note_label": "Nóta (roghnach)",
+    "note_hint": "Suas le {{max}} carachtar. Ní fheiceann ach foireann an ardáin é.",
+    "record": "Taifead an t-athbhreithniú seo",
+    "recorded_toast": "Taifeadadh an t-athbhreithniú.",
+    "error_step_cancelled": "Níor taifeadadh an t-athbhreithniú: níor iontráladh an cód síniú isteach. Tá do roghanna fós anseo.",
+    "error_list_changed": "Athraíodh an liosta agus tú á athbhreithniú. Lódáil arís é agus seiceáil an liosta nua.",
+    "error_failed": "Níorbh fhéidir an t-athbhreithniú a thaifeadadh. Níor sábháladh faic. Bain triail eile as.",
+    "reload": "Lódáil an liosta arís",
+    "no_accounts": "Níl aon chuntas sinsearach le hathbhreithniú.",
+    "open_title": "Marcáilte lena mbaint an uair dheireanach agus fós anseo",
+    "open_intro": "Marcáladh na cuntais seo «Ba chóir é a bhaint» san athbhreithniú deireanach, agus tá a rochtain fós acu.",
+    "history_title": "Athbhreithnithe le déanaí",
+    "history_none": "Níl aon athbhreithniú fós.",
+    "history_by": "Taifeadta ag",
+    "history_accounts_one": "{{count}} chuntas",
+    "history_accounts_other": "{{count}} cuntas",
+    "history_removals_one": "{{count}} marcáilte lena bhaint",
+    "history_removals_other": "{{count}} marcáilte lena mbaint",
+    "erased": "Cuntas scriosta",
+    "history_accounts_two": "{{count}} chuntas",
+    "history_accounts_few": "{{count}} chuntas",
+    "history_accounts_many": "{{count}} gcuntas",
+    "history_removals_two": "{{count}} marcáilte lena mbaint",
+    "history_removals_few": "{{count}} marcáilte lena mbaint",
+    "history_removals_many": "{{count}} marcáilte lena mbaint"
   }
 }
