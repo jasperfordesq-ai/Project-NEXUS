@@ -54,5 +54,70 @@
     "body": "このパネルは、プラットフォーム全体を運営する人のためのものです。メニューからページを選んでください。",
     "not_found_title": "そのページはこのパネルにありません",
     "not_found_body": "アドレスが間違っているか、ページが移動した可能性があります。メニューからページを選んでください。"
+  },
+  "home": {
+    "title": "プラットフォームの状態",
+    "intro": "プラットフォームを支えるものがすべて動いているかを手早く確認します。確認できなかったものは、そのとおり表示します。",
+    "loading": "プラットフォームを確認しています",
+    "refresh": "もう一度確認する",
+    "checked_at": "{{time}} に確認",
+    "open_page": "詳細を見る",
+    "load_error_title": "いまプラットフォームを確認できませんでした",
+    "unknown_note": "確認できなかったため、状態はわかりません。",
+    "overall": {
+      "ok": "確認したものはすべて正常です",
+      "warning": "見ておきたいものがあります",
+      "failing": "動いていないものがあります",
+      "unknown": "読み取れなかった確認があります"
+    },
+    "status": {
+      "ok": "正常",
+      "warning": "要確認",
+      "failing": "動いていません",
+      "unknown": "確認できませんでした"
+    },
+    "card": {
+      "release": "公開中のバージョン",
+      "database": "データベース",
+      "cache": "高速ストレージ（Redis）",
+      "disk": "ディスク容量",
+      "queue": "バックグラウンド処理",
+      "failed_jobs": "失敗したバックグラウンド処理",
+      "cron": "定期実行の処理",
+      "email": "メール",
+      "search": "検索",
+      "snapshots": "検索エンジン向けに保存したページ",
+      "maintenance": "メンテナンスモード"
+    },
+    "fact": {
+      "version": "バージョン",
+      "commit": "ビルド",
+      "deployed_at": "公開日時",
+      "connected": "接続",
+      "size": "サイズ",
+      "memory_used": "使用中のメモリ",
+      "free": "空き",
+      "total": "合計",
+      "used_percent": "使用済み",
+      "checked_at": "最終確認",
+      "lag_seconds": "遅れ（秒）",
+      "failed_count": "確認待ち",
+      "newest_failed_at": "最新",
+      "failed_24h": "過去24時間の失敗",
+      "last_failure_at": "最新の失敗",
+      "critical": "重大な警告",
+      "warnings": "警告",
+      "reachable": "応答",
+      "problems": "要確認の項目",
+      "platform_wide": "プラットフォーム全体",
+      "communities": "メンテナンス中のコミュニティ"
+    },
+    "value": {
+      "yes": "はい",
+      "no": "いいえ",
+      "not_known": "不明",
+      "browser_same": "このブラウザーは同じバージョンです。",
+      "browser_other": "このブラウザーは別のバージョンです。ページを再読み込みしてください。"
+    }
   }
 }

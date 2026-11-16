@@ -54,5 +54,70 @@
     "body": "This panel is for the people who run the whole platform. Choose a page from the menu.",
     "not_found_title": "That page is not in this panel",
     "not_found_body": "The address may be mistyped, or the page may have moved. Choose a page from the menu."
+  },
+  "home": {
+    "title": "Platform health",
+    "intro": "A quick check that everything the platform runs on is working. Anything that could not be checked says so.",
+    "loading": "Checking the platform",
+    "refresh": "Check again",
+    "checked_at": "Checked at {{time}}",
+    "open_page": "See the detail",
+    "load_error_title": "We couldn't check the platform just now",
+    "unknown_note": "This could not be checked, so its state is not known.",
+    "overall": {
+      "ok": "Everything checked is fine",
+      "warning": "Something needs a look",
+      "failing": "Something is not working",
+      "unknown": "Some checks could not be read"
+    },
+    "status": {
+      "ok": "Fine",
+      "warning": "Needs a look",
+      "failing": "Not working",
+      "unknown": "Could not be checked"
+    },
+    "card": {
+      "release": "What is live",
+      "database": "Database",
+      "cache": "Fast storage (Redis)",
+      "disk": "Disk space",
+      "queue": "Background jobs",
+      "failed_jobs": "Failed background jobs",
+      "cron": "Scheduled jobs",
+      "email": "Email",
+      "search": "Search",
+      "snapshots": "Pages saved for search engines",
+      "maintenance": "Maintenance mode"
+    },
+    "fact": {
+      "version": "Version",
+      "commit": "Build",
+      "deployed_at": "Went live",
+      "connected": "Connected",
+      "size": "Size",
+      "memory_used": "Memory in use",
+      "free": "Free",
+      "total": "Total",
+      "used_percent": "Used",
+      "checked_at": "Last checked",
+      "lag_seconds": "Seconds behind",
+      "failed_count": "Waiting to be looked at",
+      "newest_failed_at": "Most recent",
+      "failed_24h": "Failed in the last 24 hours",
+      "last_failure_at": "Most recent failure",
+      "critical": "Serious warnings",
+      "warnings": "Warnings",
+      "reachable": "Answering",
+      "problems": "Checks needing a look",
+      "platform_wide": "Whole platform",
+      "communities": "Communities in maintenance"
+    },
+    "value": {
+      "yes": "Yes",
+      "no": "No",
+      "not_known": "Not known",
+      "browser_same": "This browser is on the same version.",
+      "browser_other": "This browser is on a different version. Reload the page."
+    }
   }
 }

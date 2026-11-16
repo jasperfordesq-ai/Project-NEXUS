@@ -54,5 +54,70 @@
     "body": "Este painel é para as pessoas que cuidam da plataforma inteira. Escolha uma página no menu.",
     "not_found_title": "Essa página não está neste painel",
     "not_found_body": "Talvez o endereço esteja digitado errado, ou a página tenha mudado de lugar. Escolha uma página no menu."
+  },
+  "home": {
+    "title": "Saúde da plataforma",
+    "intro": "Uma verificação rápida de que tudo de que a plataforma depende está funcionando. O que não pôde ser verificado é indicado.",
+    "loading": "Verificando a plataforma",
+    "refresh": "Verificar de novo",
+    "checked_at": "Verificado às {{time}}",
+    "open_page": "Ver os detalhes",
+    "load_error_title": "Não conseguimos verificar a plataforma agora",
+    "unknown_note": "Não foi possível verificar, então o estado não é conhecido.",
+    "overall": {
+      "ok": "Tudo o que foi verificado está bem",
+      "warning": "Há algo que merece atenção",
+      "failing": "Há algo que não está funcionando",
+      "unknown": "Algumas verificações não puderam ser lidas"
+    },
+    "status": {
+      "ok": "Tudo bem",
+      "warning": "Merece atenção",
+      "failing": "Não está funcionando",
+      "unknown": "Não foi possível verificar"
+    },
+    "card": {
+      "release": "O que está no ar",
+      "database": "Banco de dados",
+      "cache": "Armazenamento rápido (Redis)",
+      "disk": "Espaço em disco",
+      "queue": "Tarefas em segundo plano",
+      "failed_jobs": "Tarefas em segundo plano com falha",
+      "cron": "Tarefas agendadas",
+      "email": "E-mail",
+      "search": "Busca",
+      "snapshots": "Páginas salvas para buscadores",
+      "maintenance": "Modo de manutenção"
+    },
+    "fact": {
+      "version": "Versão",
+      "commit": "Build",
+      "deployed_at": "Entrou no ar",
+      "connected": "Conectado",
+      "size": "Tamanho",
+      "memory_used": "Memória em uso",
+      "free": "Livre",
+      "total": "Total",
+      "used_percent": "Usado",
+      "checked_at": "Última verificação",
+      "lag_seconds": "Segundos de atraso",
+      "failed_count": "Aguardando análise",
+      "newest_failed_at": "Mais recente",
+      "failed_24h": "Falharam nas últimas 24 horas",
+      "last_failure_at": "Falha mais recente",
+      "critical": "Avisos graves",
+      "warnings": "Avisos",
+      "reachable": "Respondendo",
+      "problems": "Verificações que merecem atenção",
+      "platform_wide": "Toda a plataforma",
+      "communities": "Comunidades em manutenção"
+    },
+    "value": {
+      "yes": "Sim",
+      "no": "Não",
+      "not_known": "Não se sabe",
+      "browser_same": "Este navegador está na mesma versão.",
+      "browser_other": "Este navegador está em outra versão. Recarregue a página."
+    }
   }
 }

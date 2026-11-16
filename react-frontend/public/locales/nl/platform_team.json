@@ -54,5 +54,70 @@
     "body": "Dit paneel is voor de mensen die het hele platform draaiende houden. Kies een pagina in het menu.",
     "not_found_title": "Die pagina staat niet in dit paneel",
     "not_found_body": "Misschien is het adres verkeerd getypt, of is de pagina verplaatst. Kies een pagina in het menu."
+  },
+  "home": {
+    "title": "Staat van het platform",
+    "intro": "Een snelle controle of alles werkt waar het platform op draait. Wat niet gecontroleerd kon worden, staat er ook zo.",
+    "loading": "Het platform wordt gecontroleerd",
+    "refresh": "Opnieuw controleren",
+    "checked_at": "Gecontroleerd om {{time}}",
+    "open_page": "Bekijk de details",
+    "load_error_title": "We konden het platform nu niet controleren",
+    "unknown_note": "Dit kon niet gecontroleerd worden, dus de staat is niet bekend.",
+    "overall": {
+      "ok": "Alles wat gecontroleerd is, is in orde",
+      "warning": "Er is iets om naar te kijken",
+      "failing": "Er werkt iets niet",
+      "unknown": "Sommige controles konden niet gelezen worden"
+    },
+    "status": {
+      "ok": "In orde",
+      "warning": "Even naar kijken",
+      "failing": "Werkt niet",
+      "unknown": "Kon niet gecontroleerd worden"
+    },
+    "card": {
+      "release": "Wat er live staat",
+      "database": "Database",
+      "cache": "Snelle opslag (Redis)",
+      "disk": "Schijfruimte",
+      "queue": "Achtergrondtaken",
+      "failed_jobs": "Mislukte achtergrondtaken",
+      "cron": "Geplande taken",
+      "email": "E-mail",
+      "search": "Zoeken",
+      "snapshots": "Pagina’s opgeslagen voor zoekmachines",
+      "maintenance": "Onderhoudsmodus"
+    },
+    "fact": {
+      "version": "Versie",
+      "commit": "Build",
+      "deployed_at": "Live gegaan",
+      "connected": "Verbonden",
+      "size": "Grootte",
+      "memory_used": "Geheugen in gebruik",
+      "free": "Vrij",
+      "total": "Totaal",
+      "used_percent": "Gebruikt",
+      "checked_at": "Laatst gecontroleerd",
+      "lag_seconds": "Seconden achterstand",
+      "failed_count": "Wachten op een blik",
+      "newest_failed_at": "Meest recent",
+      "failed_24h": "Mislukt in de laatste 24 uur",
+      "last_failure_at": "Meest recente fout",
+      "critical": "Ernstige waarschuwingen",
+      "warnings": "Waarschuwingen",
+      "reachable": "Reageert",
+      "problems": "Controles om naar te kijken",
+      "platform_wide": "Hele platform",
+      "communities": "Gemeenschappen in onderhoud"
+    },
+    "value": {
+      "yes": "Ja",
+      "no": "Nee",
+      "not_known": "Niet bekend",
+      "browser_same": "Deze browser heeft dezelfde versie.",
+      "browser_other": "Deze browser heeft een andere versie. Laad de pagina opnieuw."
+    }
   }
 }

@@ -29,6 +29,9 @@ import { Navigate, Route } from 'react-router-dom';
 import { LoadingScreen } from '@/components/feedback/LoadingScreen';
 import { PlatformTeamIndex } from './PlatformTeamIndex';
 
+// The panel's front page: health at a glance (phase 3).
+const PlatformTeamHome = lazy(() => import('./pages/PlatformTeamHome'));
+
 const MenusAdmin = lazy(() => import('@/admin/modules/content/MenusAdmin'));
 const MenuBuilder = lazy(() => import('@/admin/modules/content/MenuBuilder'));
 const EmailSettings = lazy(() => import('@/admin/modules/advanced/EmailSettings'));
@@ -89,7 +92,7 @@ function Lazy({ children }: { children: React.ReactNode }) {
 export function PlatformTeamRoutes() {
   return (
     <>
-      <Route index element={<PlatformTeamIndex />} />
+      <Route index element={<Lazy><PlatformTeamHome /></Lazy>} />
 
       <Route path="menus" element={<Lazy><MenusAdmin /></Lazy>} />
       <Route path="menus/builder/:id" element={<Lazy><MenuBuilder /></Lazy>} />

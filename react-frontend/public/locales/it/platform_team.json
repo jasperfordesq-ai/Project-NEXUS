@@ -54,5 +54,70 @@
     "body": "Questo pannello è per le persone che gestiscono l'intera piattaforma. Scegli una pagina dal menu.",
     "not_found_title": "Quella pagina non è in questo pannello",
     "not_found_body": "Forse l'indirizzo è scritto male, oppure la pagina è stata spostata. Scegli una pagina dal menu."
+  },
+  "home": {
+    "title": "Stato della piattaforma",
+    "intro": "Un controllo rapido che tutto ciò da cui dipende la piattaforma funzioni. Ciò che non è stato possibile controllare viene indicato.",
+    "loading": "Controllo della piattaforma in corso",
+    "refresh": "Controlla di nuovo",
+    "checked_at": "Controllato alle {{time}}",
+    "open_page": "Vedi il dettaglio",
+    "load_error_title": "Non siamo riusciti a controllare la piattaforma in questo momento",
+    "unknown_note": "Non è stato possibile controllarlo, quindi il suo stato non è noto.",
+    "overall": {
+      "ok": "Tutto ciò che è stato controllato va bene",
+      "warning": "C’è qualcosa da guardare",
+      "failing": "C’è qualcosa che non funziona",
+      "unknown": "Alcuni controlli non sono stati letti"
+    },
+    "status": {
+      "ok": "Va bene",
+      "warning": "Da guardare",
+      "failing": "Non funziona",
+      "unknown": "Non è stato possibile controllare"
+    },
+    "card": {
+      "release": "Cosa è online",
+      "database": "Database",
+      "cache": "Archivio veloce (Redis)",
+      "disk": "Spazio su disco",
+      "queue": "Attività in background",
+      "failed_jobs": "Attività in background non riuscite",
+      "cron": "Attività pianificate",
+      "email": "Email",
+      "search": "Ricerca",
+      "snapshots": "Pagine salvate per i motori di ricerca",
+      "maintenance": "Modalità manutenzione"
+    },
+    "fact": {
+      "version": "Versione",
+      "commit": "Build",
+      "deployed_at": "Online dal",
+      "connected": "Connesso",
+      "size": "Dimensione",
+      "memory_used": "Memoria in uso",
+      "free": "Libero",
+      "total": "Totale",
+      "used_percent": "Usato",
+      "checked_at": "Ultimo controllo",
+      "lag_seconds": "Secondi di ritardo",
+      "failed_count": "In attesa di essere viste",
+      "newest_failed_at": "La più recente",
+      "failed_24h": "Non riuscite nelle ultime 24 ore",
+      "last_failure_at": "Errore più recente",
+      "critical": "Avvisi gravi",
+      "warnings": "Avvisi",
+      "reachable": "Risponde",
+      "problems": "Controlli da guardare",
+      "platform_wide": "Tutta la piattaforma",
+      "communities": "Comunità in manutenzione"
+    },
+    "value": {
+      "yes": "Sì",
+      "no": "No",
+      "not_known": "Non noto",
+      "browser_same": "Questo browser usa la stessa versione.",
+      "browser_other": "Questo browser usa un’altra versione. Ricarica la pagina."
+    }
   }
 }

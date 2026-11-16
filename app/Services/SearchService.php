@@ -211,6 +211,23 @@ class SearchService
         return static::$available;
     }
 
+    /**
+     * Ask Meilisearch now, without the per-process memo isAvailable() keeps.
+     * For a health page: a long-lived worker would otherwise go on reporting
+     * whatever it saw first. False means "did not answer", which the caller
+     * shows as not working.
+     */
+    public static function isReachableNow(): bool
+    {
+        try {
+            static::client()->health();
+
+            return true;
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
     // =========================================================================
     // Index management
     // =========================================================================

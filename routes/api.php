@@ -4495,6 +4495,15 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::post('/v2/admin/regional-analytics/invalidate-cache', [\App\Http\Controllers\Api\RegionalAnalyticsController::class, 'invalidateCache']);
 });
 
+// Platform team panel — endpoints of its own (the pages that moved in from the
+// admin and super admin panels keep their /v2/admin/... endpoints). Platform
+// team only, twice: this group's middleware, and requireGodPlatformAdmin() in
+// each controller method.
+Route::middleware(['auth:sanctum', 'platform-team'])->group(function () {
+    // Home page: health at a glance for the whole installation.
+    Route::get('/v2/platform-team/health', [\App\Http\Controllers\Api\PlatformTeam\PlatformHealthController::class, 'summary']);
+});
+
 // AG71 — Pilot Region Inquiry & Qualification Funnel
 // Deliberately public: logged-out lead-capture form (throttled). Do NOT wrap.
 // The admin endpoints below are the platform team's since 15 Nov 2026

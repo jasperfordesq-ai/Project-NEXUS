@@ -360,6 +360,17 @@ are pinned one file per controller in
 `tests/Laravel/Feature/Security/PlatformTeamLocks/`, each endpoint requested as
 four accounts (`tests/Laravel/Concerns/ActsAsAccessTiers.php`).
 
+**The panel's own endpoints.** Pages that moved in keep the `/v2/admin/...`
+endpoints they always had. Endpoints written for the panel itself live under
+`/v2/platform-team/`, in a route group behind the `platform-team` middleware,
+and each controller method still calls `requireGodPlatformAdmin()`. The first
+is the home page's `GET /v2/platform-team/health`
+(`App\Services\PlatformTeam\PlatformHealthService`): health at a glance for
+the whole installation. It reads tables with no community filter (scheduled
+job logs, failed background jobs, the maintenance setting of every community),
+which is correct only because nothing below the platform team can call it; it
+sends counts and times, never the contents of a failed job.
+
 **Left open on purpose.** An endpoint that a screen outside the panel still
 calls keeps its previous check, and a test pins that a community admin still
 gets an answer:

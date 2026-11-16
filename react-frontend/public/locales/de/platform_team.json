@@ -54,5 +54,70 @@
     "body": "Dieser Bereich ist für die Menschen, die die ganze Plattform betreiben. Wählen Sie eine Seite aus dem Menü.",
     "not_found_title": "Diese Seite gibt es in diesem Bereich nicht",
     "not_found_body": "Vielleicht ist die Adresse falsch geschrieben, oder die Seite ist umgezogen. Wählen Sie eine Seite aus dem Menü."
+  },
+  "home": {
+    "title": "Zustand der Plattform",
+    "intro": "Ein schneller Blick, ob alles läuft, worauf die Plattform angewiesen ist. Was nicht geprüft werden konnte, wird auch so angezeigt.",
+    "loading": "Plattform wird geprüft",
+    "refresh": "Erneut prüfen",
+    "checked_at": "Geprüft um {{time}}",
+    "open_page": "Details ansehen",
+    "load_error_title": "Wir konnten die Plattform gerade nicht prüfen",
+    "unknown_note": "Das konnte nicht geprüft werden, der Zustand ist daher nicht bekannt.",
+    "overall": {
+      "ok": "Alles Geprüfte ist in Ordnung",
+      "warning": "Etwas sollte angesehen werden",
+      "failing": "Etwas funktioniert nicht",
+      "unknown": "Einige Prüfungen konnten nicht gelesen werden"
+    },
+    "status": {
+      "ok": "In Ordnung",
+      "warning": "Bitte ansehen",
+      "failing": "Funktioniert nicht",
+      "unknown": "Konnte nicht geprüft werden"
+    },
+    "card": {
+      "release": "Was gerade live ist",
+      "database": "Datenbank",
+      "cache": "Schneller Speicher (Redis)",
+      "disk": "Speicherplatz",
+      "queue": "Hintergrundaufgaben",
+      "failed_jobs": "Fehlgeschlagene Hintergrundaufgaben",
+      "cron": "Geplante Aufgaben",
+      "email": "E-Mail",
+      "search": "Suche",
+      "snapshots": "Für Suchmaschinen gespeicherte Seiten",
+      "maintenance": "Wartungsmodus"
+    },
+    "fact": {
+      "version": "Version",
+      "commit": "Build",
+      "deployed_at": "Live seit",
+      "connected": "Verbunden",
+      "size": "Größe",
+      "memory_used": "Belegter Arbeitsspeicher",
+      "free": "Frei",
+      "total": "Gesamt",
+      "used_percent": "Belegt",
+      "checked_at": "Zuletzt geprüft",
+      "lag_seconds": "Sekunden Rückstand",
+      "failed_count": "Warten auf Durchsicht",
+      "newest_failed_at": "Neueste",
+      "failed_24h": "In den letzten 24 Stunden fehlgeschlagen",
+      "last_failure_at": "Letzter Fehler",
+      "critical": "Schwere Warnungen",
+      "warnings": "Warnungen",
+      "reachable": "Antwortet",
+      "problems": "Prüfungen, die angesehen werden sollten",
+      "platform_wide": "Ganze Plattform",
+      "communities": "Gemeinschaften im Wartungsmodus"
+    },
+    "value": {
+      "yes": "Ja",
+      "no": "Nein",
+      "not_known": "Nicht bekannt",
+      "browser_same": "Dieser Browser hat dieselbe Version.",
+      "browser_other": "Dieser Browser hat eine andere Version. Bitte die Seite neu laden."
+    }
   }
 }

@@ -48,6 +48,7 @@ vi.mock('react-i18next', () => ({
 }));
 
 // Stand-ins for every page these cases can land on, so nothing fetches.
+vi.mock('./pages/PlatformTeamHome', () => ({ default: () => <div>page:PlatformTeamHome</div> }));
 vi.mock('@/admin/modules/content/MenusAdmin', () => ({ default: () => <div>page:MenusAdmin</div> }));
 vi.mock('@/admin/modules/content/MenuBuilder', () => ({ default: () => <div>page:MenuBuilder</div> }));
 vi.mock('@/admin/modules/advanced/EmailSettings', () => ({ default: () => <div>page:EmailSettings</div> }));
@@ -214,6 +215,12 @@ describe('the Platform team panel mounts every moved page', () => {
     renderAt(`/test/platform-team/${tail}`);
     expect(await screen.findByText(page)).toBeInTheDocument();
     expect(await address()).toBe(`/test/platform-team/${tail}`);
+  });
+
+  it('opens on the health page', async () => {
+    renderAt('/test/platform-team');
+    expect(await screen.findByText('page:PlatformTeamHome')).toBeInTheDocument();
+    expect(await address()).toBe('/test/platform-team');
   });
 
   it('forwards /platform-team/integrations to its only page', async () => {

@@ -54,5 +54,70 @@
     "body": "Cet espace est destiné aux personnes qui font fonctionner toute la plateforme. Choisissez une page dans le menu.",
     "not_found_title": "Cette page n'est pas dans cet espace",
     "not_found_body": "L'adresse est peut-être mal saisie, ou la page a été déplacée. Choisissez une page dans le menu."
+  },
+  "home": {
+    "title": "État de la plateforme",
+    "intro": "Une vérification rapide que tout ce dont la plateforme dépend fonctionne. Ce qui n'a pas pu être vérifié est indiqué.",
+    "loading": "Vérification de la plateforme",
+    "refresh": "Vérifier à nouveau",
+    "checked_at": "Vérifié à {{time}}",
+    "open_page": "Voir le détail",
+    "load_error_title": "Nous n'avons pas pu vérifier la plateforme pour le moment",
+    "unknown_note": "Cela n'a pas pu être vérifié, son état n'est donc pas connu.",
+    "overall": {
+      "ok": "Tout ce qui a été vérifié va bien",
+      "warning": "Quelque chose mérite un coup d’œil",
+      "failing": "Quelque chose ne fonctionne pas",
+      "unknown": "Certaines vérifications n'ont pas pu être lues"
+    },
+    "status": {
+      "ok": "Tout va bien",
+      "warning": "À regarder",
+      "failing": "Ne fonctionne pas",
+      "unknown": "N'a pas pu être vérifié"
+    },
+    "card": {
+      "release": "Ce qui est en ligne",
+      "database": "Base de données",
+      "cache": "Stockage rapide (Redis)",
+      "disk": "Espace disque",
+      "queue": "Tâches en arrière-plan",
+      "failed_jobs": "Tâches en arrière-plan en échec",
+      "cron": "Tâches planifiées",
+      "email": "E-mail",
+      "search": "Recherche",
+      "snapshots": "Pages enregistrées pour les moteurs de recherche",
+      "maintenance": "Mode maintenance"
+    },
+    "fact": {
+      "version": "Version",
+      "commit": "Build",
+      "deployed_at": "Mise en ligne",
+      "connected": "Connecté",
+      "size": "Taille",
+      "memory_used": "Mémoire utilisée",
+      "free": "Libre",
+      "total": "Total",
+      "used_percent": "Utilisé",
+      "checked_at": "Dernière vérification",
+      "lag_seconds": "Secondes de retard",
+      "failed_count": "En attente d’examen",
+      "newest_failed_at": "Le plus récent",
+      "failed_24h": "En échec ces dernières 24 heures",
+      "last_failure_at": "Échec le plus récent",
+      "critical": "Avertissements graves",
+      "warnings": "Avertissements",
+      "reachable": "Répond",
+      "problems": "Vérifications à regarder",
+      "platform_wide": "Toute la plateforme",
+      "communities": "Communautés en maintenance"
+    },
+    "value": {
+      "yes": "Oui",
+      "no": "Non",
+      "not_known": "Non connu",
+      "browser_same": "Ce navigateur utilise la même version.",
+      "browser_other": "Ce navigateur utilise une autre version. Rechargez la page."
+    }
   }
 }

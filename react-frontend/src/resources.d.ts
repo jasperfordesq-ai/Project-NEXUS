@@ -57238,6 +57238,71 @@ export default interface Resources {
       "user_fallback": "Platform team",
       "user_menu": "Your account"
     },
+    "home": {
+      "card": {
+        "cache": "Fast storage (Redis)",
+        "cron": "Scheduled jobs",
+        "database": "Database",
+        "disk": "Disk space",
+        "email": "Email",
+        "failed_jobs": "Failed background jobs",
+        "maintenance": "Maintenance mode",
+        "queue": "Background jobs",
+        "release": "What is live",
+        "search": "Search",
+        "snapshots": "Pages saved for search engines"
+      },
+      "checked_at": "Checked at {{time}}",
+      "fact": {
+        "checked_at": "Last checked",
+        "commit": "Build",
+        "communities": "Communities in maintenance",
+        "connected": "Connected",
+        "critical": "Serious warnings",
+        "deployed_at": "Went live",
+        "failed_24h": "Failed in the last 24 hours",
+        "failed_count": "Waiting to be looked at",
+        "free": "Free",
+        "lag_seconds": "Seconds behind",
+        "last_failure_at": "Most recent failure",
+        "memory_used": "Memory in use",
+        "newest_failed_at": "Most recent",
+        "platform_wide": "Whole platform",
+        "problems": "Checks needing a look",
+        "reachable": "Answering",
+        "size": "Size",
+        "total": "Total",
+        "used_percent": "Used",
+        "version": "Version",
+        "warnings": "Warnings"
+      },
+      "intro": "A quick check that everything the platform runs on is working. Anything that could not be checked says so.",
+      "load_error_title": "We couldn't check the platform just now",
+      "loading": "Checking the platform",
+      "open_page": "See the detail",
+      "overall": {
+        "failing": "Something is not working",
+        "ok": "Everything checked is fine",
+        "unknown": "Some checks could not be read",
+        "warning": "Something needs a look"
+      },
+      "refresh": "Check again",
+      "status": {
+        "failing": "Not working",
+        "ok": "Fine",
+        "unknown": "Could not be checked",
+        "warning": "Needs a look"
+      },
+      "title": "Platform health",
+      "unknown_note": "This could not be checked, so its state is not known.",
+      "value": {
+        "browser_other": "This browser is on a different version. Reload the page.",
+        "browser_same": "This browser is on the same version.",
+        "no": "No",
+        "not_known": "Not known",
+        "yes": "Yes"
+      }
+    },
     "index": {
       "body": "This panel is for the people who run the whole platform. Choose a page from the menu.",
       "not_found_body": "The address may be mistyped, or the page may have moved. Choose a page from the menu.",

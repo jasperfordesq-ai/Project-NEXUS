@@ -54,5 +54,70 @@
     "body": "Ten panel jest dla osób, które prowadzą całą platformę. Wybierz stronę z menu.",
     "not_found_title": "Tej strony nie ma w tym panelu",
     "not_found_body": "Być może adres został wpisany błędnie albo strona została przeniesiona. Wybierz stronę z menu."
+  },
+  "home": {
+    "title": "Stan platformy",
+    "intro": "Szybkie sprawdzenie, czy działa wszystko, na czym opiera się platforma. Jeśli czegoś nie udało się sprawdzić, jest to wyraźnie zaznaczone.",
+    "loading": "Sprawdzanie platformy",
+    "refresh": "Sprawdź ponownie",
+    "checked_at": "Sprawdzono o {{time}}",
+    "open_page": "Zobacz szczegóły",
+    "load_error_title": "Nie udało się teraz sprawdzić platformy",
+    "unknown_note": "Nie udało się tego sprawdzić, więc stan nie jest znany.",
+    "overall": {
+      "ok": "Wszystko, co sprawdzono, jest w porządku",
+      "warning": "Coś wymaga uwagi",
+      "failing": "Coś nie działa",
+      "unknown": "Niektórych kontroli nie udało się odczytać"
+    },
+    "status": {
+      "ok": "W porządku",
+      "warning": "Wymaga uwagi",
+      "failing": "Nie działa",
+      "unknown": "Nie udało się sprawdzić"
+    },
+    "card": {
+      "release": "Co jest uruchomione",
+      "database": "Baza danych",
+      "cache": "Szybka pamięć (Redis)",
+      "disk": "Miejsce na dysku",
+      "queue": "Zadania w tle",
+      "failed_jobs": "Nieudane zadania w tle",
+      "cron": "Zadania zaplanowane",
+      "email": "E-mail",
+      "search": "Wyszukiwanie",
+      "snapshots": "Strony zapisane dla wyszukiwarek",
+      "maintenance": "Tryb konserwacji"
+    },
+    "fact": {
+      "version": "Wersja",
+      "commit": "Kompilacja",
+      "deployed_at": "Uruchomiono",
+      "connected": "Połączono",
+      "size": "Rozmiar",
+      "memory_used": "Używana pamięć",
+      "free": "Wolne",
+      "total": "Razem",
+      "used_percent": "Zajęte",
+      "checked_at": "Ostatnie sprawdzenie",
+      "lag_seconds": "Sekundy opóźnienia",
+      "failed_count": "Czekają na przejrzenie",
+      "newest_failed_at": "Najnowsze",
+      "failed_24h": "Nieudane w ostatnich 24 godzinach",
+      "last_failure_at": "Ostatni błąd",
+      "critical": "Poważne ostrzeżenia",
+      "warnings": "Ostrzeżenia",
+      "reachable": "Odpowiada",
+      "problems": "Kontrole wymagające uwagi",
+      "platform_wide": "Cała platforma",
+      "communities": "Społeczności w trybie konserwacji"
+    },
+    "value": {
+      "yes": "Tak",
+      "no": "Nie",
+      "not_known": "Nie wiadomo",
+      "browser_same": "Ta przeglądarka ma tę samą wersję.",
+      "browser_other": "Ta przeglądarka ma inną wersję. Odśwież stronę."
+    }
   }
 }

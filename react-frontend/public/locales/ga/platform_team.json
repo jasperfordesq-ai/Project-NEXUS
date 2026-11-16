@@ -54,5 +54,70 @@
     "body": "Tá an painéal seo ann do na daoine a ritheann an t-ardán ar fad. Roghnaigh leathanach ón roghchlár.",
     "not_found_title": "Níl an leathanach sin sa phainéal seo",
     "not_found_body": "B'fhéidir go bhfuil an seoladh mícheart, nó gur bogadh an leathanach. Roghnaigh leathanach ón roghchlár."
+  },
+  "home": {
+    "title": "Sláinte an ardáin",
+    "intro": "Seiceáil thapa go bhfuil gach rud a bhfuil an t-ardán ag brath air ag obair. Deirtear go soiléir é mura bhféadfaí rud a sheiceáil.",
+    "loading": "An t-ardán á sheiceáil",
+    "refresh": "Seiceáil arís",
+    "checked_at": "Seiceáilte ag {{time}}",
+    "open_page": "Féach ar na sonraí",
+    "load_error_title": "Níorbh fhéidir linn an t-ardán a sheiceáil faoi láthair",
+    "unknown_note": "Níorbh fhéidir é seo a sheiceáil, mar sin ní fios a staid.",
+    "overall": {
+      "ok": "Tá gach rud a seiceáladh ceart go leor",
+      "warning": "Tá rud éigin le breathnú air",
+      "failing": "Níl rud éigin ag obair",
+      "unknown": "Níorbh fhéidir roinnt seiceálacha a léamh"
+    },
+    "status": {
+      "ok": "Ceart go leor",
+      "warning": "Le breathnú air",
+      "failing": "Gan a bheith ag obair",
+      "unknown": "Níorbh fhéidir a sheiceáil"
+    },
+    "card": {
+      "release": "Cad atá beo",
+      "database": "Bunachar sonraí",
+      "cache": "Stóras tapa (Redis)",
+      "disk": "Spás diosca",
+      "queue": "Tascanna cúlra",
+      "failed_jobs": "Tascanna cúlra a theip orthu",
+      "cron": "Tascanna sceidealaithe",
+      "email": "Ríomhphost",
+      "search": "Cuardach",
+      "snapshots": "Leathanaigh a sábháladh d’innill chuardaigh",
+      "maintenance": "Mód cothabhála"
+    },
+    "fact": {
+      "version": "Leagan",
+      "commit": "Tógáil",
+      "deployed_at": "Chuaigh beo",
+      "connected": "Ceangailte",
+      "size": "Méid",
+      "memory_used": "Cuimhne in úsáid",
+      "free": "Saor",
+      "total": "Iomlán",
+      "used_percent": "In úsáid",
+      "checked_at": "Seiceáilte go deireanach",
+      "lag_seconds": "Soicindí chun deiridh",
+      "failed_count": "Ag fanacht le breathnú orthu",
+      "newest_failed_at": "Is déanaí",
+      "failed_24h": "Theip orthu le 24 uair an chloig anuas",
+      "last_failure_at": "An teip is déanaí",
+      "critical": "Rabhaidh thromchúiseacha",
+      "warnings": "Rabhaidh",
+      "reachable": "Ag freagairt",
+      "problems": "Seiceálacha le breathnú orthu",
+      "platform_wide": "An t-ardán iomlán",
+      "communities": "Pobail i mód cothabhála"
+    },
+    "value": {
+      "yes": "Tá",
+      "no": "Níl",
+      "not_known": "Ní fios",
+      "browser_same": "Tá an brabhsálaí seo ar an leagan céanna.",
+      "browser_other": "Tá an brabhsálaí seo ar leagan eile. Athlódáil an leathanach."
+    }
   }
 }
