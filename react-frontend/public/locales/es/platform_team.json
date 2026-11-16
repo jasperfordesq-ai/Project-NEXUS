@@ -659,5 +659,31 @@
       "failed": "Fallidas",
       "nobody_to_send_to": "Nadie a quien enviar"
     }
+  },
+  "deployments": {
+    "title": "Despliegues",
+    "intro": "Los últimos despliegues y reversiones que registró este servidor, del más reciente al más antiguo. Las horas se muestran en tu propia zona horaria.",
+    "watch_note": "La vigilancia de errores de 30 minutos que sigue a cada despliegue no se registra aquí.",
+    "loading": "Cargando el registro de despliegues",
+    "load_error_title": "No se pudo cargar el registro de despliegues",
+    "no_record_title": "Este servidor no guarda ningún registro de despliegues",
+    "no_record_text": "Solo el servidor en producción guarda uno, así que en el ordenador de un desarrollador es lo esperado.",
+    "empty": "Todavía no se ha registrado nada.",
+    "skipped": "Líneas del registro que no se pudieron leer y se omitieron: {{count}}",
+    "count": "Despliegues y reversiones mostrados: {{count}}",
+    "not_recorded": "No registrado",
+    "kind": {
+      "deploy": "Despliegue",
+      "rollback": "Reversión",
+      "other": "Otro tipo de cambio"
+    },
+    "outcome": {
+      "success": "Correcto",
+      "failed": "Fallido",
+      "unknown": "Resultado no registrado"
+    },
+    "version": "Código de versión",
+    "time_taken": "Tiempo empleado",
+    "changes_label": "Cambios que incluía"
   }
 }

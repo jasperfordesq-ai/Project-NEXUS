@@ -659,5 +659,31 @@
       "failed": "Com falha",
       "nobody_to_send_to": "Ninguém para quem enviar"
     }
+  },
+  "deployments": {
+    "title": "Implantações",
+    "intro": "As últimas implantações e reversões que este servidor registrou, da mais recente para a mais antiga. Os horários aparecem no seu próprio fuso horário.",
+    "watch_note": "O monitoramento de erros de 30 minutos que segue cada implantação não é registrado aqui.",
+    "loading": "Carregando o registro de implantações",
+    "load_error_title": "Não foi possível carregar o registro de implantações",
+    "no_record_title": "Este servidor não mantém registro de implantações",
+    "no_record_text": "Só o servidor em produção mantém um, então no computador de um desenvolvedor isso é esperado.",
+    "empty": "Nada foi registrado ainda.",
+    "skipped": "Linhas do registro que não puderam ser lidas e foram ignoradas: {{count}}",
+    "count": "Implantações e reversões exibidas: {{count}}",
+    "not_recorded": "Não registrado",
+    "kind": {
+      "deploy": "Implantação",
+      "rollback": "Reversão",
+      "other": "Outro tipo de mudança"
+    },
+    "outcome": {
+      "success": "Concluída",
+      "failed": "Falhou",
+      "unknown": "Resultado não registrado"
+    },
+    "version": "Código da versão",
+    "time_taken": "Tempo gasto",
+    "changes_label": "Mudanças incluídas"
   }
 }

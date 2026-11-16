@@ -659,5 +659,31 @@
       "failed": "Non riuscite",
       "nobody_to_send_to": "Nessuno a cui inviare"
     }
+  },
+  "deployments": {
+    "title": "Rilasci",
+    "intro": "Gli ultimi rilasci e ripristini registrati da questo server, dal più recente. Gli orari sono mostrati nel tuo fuso orario.",
+    "watch_note": "Il controllo degli errori di 30 minuti che segue ogni rilascio non è registrato qui.",
+    "loading": "Caricamento del registro dei rilasci",
+    "load_error_title": "Non è stato possibile caricare il registro dei rilasci",
+    "no_record_title": "Questo server non tiene alcun registro dei rilasci",
+    "no_record_text": "Solo il server in produzione ne tiene uno, quindi sul computer di uno sviluppatore è normale.",
+    "empty": "Non è stato ancora registrato nulla.",
+    "skipped": "Righe del registro illeggibili e saltate: {{count}}",
+    "count": "Rilasci e ripristini mostrati: {{count}}",
+    "not_recorded": "Non registrato",
+    "kind": {
+      "deploy": "Rilascio",
+      "rollback": "Ripristino",
+      "other": "Altro tipo di modifica"
+    },
+    "outcome": {
+      "success": "Riuscito",
+      "failed": "Non riuscito",
+      "unknown": "Esito non registrato"
+    },
+    "version": "Codice di versione",
+    "time_taken": "Tempo impiegato",
+    "changes_label": "Modifiche incluse"
   }
 }

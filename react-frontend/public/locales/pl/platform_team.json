@@ -663,5 +663,31 @@
       "failed": "Nieudane",
       "nobody_to_send_to": "Brak odbiorcy"
     }
+  },
+  "deployments": {
+    "title": "Wdrożenia",
+    "intro": "Ostatnie wdrożenia i wycofania zapisane przez ten serwer, od najnowszych. Godziny są pokazane w Twojej strefie czasowej.",
+    "watch_note": "30-minutowa obserwacja błędów po każdym wdrożeniu nie jest tu zapisywana.",
+    "loading": "Wczytywanie zapisu wdrożeń",
+    "load_error_title": "Nie udało się wczytać zapisu wdrożeń",
+    "no_record_title": "Ten serwer nie prowadzi zapisu wdrożeń",
+    "no_record_text": "Prowadzi go tylko serwer produkcyjny, więc na komputerze programisty jest to normalne.",
+    "empty": "Nic jeszcze nie zapisano.",
+    "skipped": "Wiersze zapisu, których nie udało się odczytać i które pominięto: {{count}}",
+    "count": "Pokazane wdrożenia i wycofania: {{count}}",
+    "not_recorded": "Nie zapisano",
+    "kind": {
+      "deploy": "Wdrożenie",
+      "rollback": "Wycofanie",
+      "other": "Inny rodzaj zmiany"
+    },
+    "outcome": {
+      "success": "Udane",
+      "failed": "Nieudane",
+      "unknown": "Wynik nie został zapisany"
+    },
+    "version": "Kod wersji",
+    "time_taken": "Czas trwania",
+    "changes_label": "Zawarte zmiany"
   }
 }

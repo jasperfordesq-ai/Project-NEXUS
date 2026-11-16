@@ -532,6 +532,18 @@ text that may hold token fragments), `title`, `activity_type` and `user_id`
 are never selected. A record that cannot be read answers `available: false`
 with null figures.
 
+Deployments (`GET /v2/platform-team/deployments`; `DeploymentHistoryService`,
+16 November 2026) is read-only: the newest 30 good lines of the deploy record
+(`deploys.jsonl`, written by `scripts/deploy/phases/record-deploy-metrics.sh`,
+mounted read-only into the production app container only; path from
+`platform_team.deploy_history_path`), newest first. Only the last 256 KB of the
+file is read. 🔴 An allowlist per line (`timestamp, subcommand, status,
+commit_short, subject, color, duration_s, commit_distance`): the server name,
+the full commit and the previous commit never leave the server. A missing or
+unreadable file answers `available: false` ("this server keeps no record"),
+never an empty list; lines that are not JSON objects are counted in
+`skipped_lines`.
+
 Unfinished features (`GET /v2/platform-team/unfinished-features`;
 `UnfinishedFeaturesService`, 16 November 2026) is read-only: every feature
 marked alpha or beta in the admin Features page's registry

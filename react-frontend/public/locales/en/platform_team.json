@@ -659,5 +659,31 @@
       "failed": "Failed",
       "nobody_to_send_to": "Nobody to send to"
     }
+  },
+  "deployments": {
+    "title": "Deployments",
+    "intro": "The last deployments and rollbacks this server recorded, newest first. Times are shown in your own time zone.",
+    "watch_note": "The 30-minute watch for errors that follows each deployment is not recorded here.",
+    "loading": "Loading the deployment record",
+    "load_error_title": "The deployment record could not be loaded",
+    "no_record_title": "This server keeps no record of deployments",
+    "no_record_text": "Only the live server keeps one, so on a developer's computer this is expected.",
+    "empty": "Nothing has been recorded yet.",
+    "skipped": "Lines in the record that could not be read and were skipped: {{count}}",
+    "count": "Deployments and rollbacks shown: {{count}}",
+    "not_recorded": "Not recorded",
+    "kind": {
+      "deploy": "Deployment",
+      "rollback": "Rollback",
+      "other": "Another kind of change"
+    },
+    "outcome": {
+      "success": "Succeeded",
+      "failed": "Failed",
+      "unknown": "Outcome not recorded"
+    },
+    "version": "Version code",
+    "time_taken": "Time taken",
+    "changes_label": "Changes it carried"
   }
 }

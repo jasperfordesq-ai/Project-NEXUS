@@ -50,6 +50,7 @@ vi.mock('react-i18next', () => ({
 // Stand-ins for every page these cases can land on, so nothing fetches.
 vi.mock('./pages/PlatformTeamHome', () => ({ default: () => <div>page:PlatformTeamHome</div> }));
 vi.mock('./pages/FailedJobsPage', () => ({ default: () => <div>page:FailedJobsPage</div> }));
+vi.mock('./pages/DeploymentsPage', () => ({ default: () => <div>page:DeploymentsPage</div> }));
 vi.mock('./pages/PhoneAppPage', () => ({ default: () => <div>page:PhoneAppPage</div> }));
 vi.mock('./pages/SeniorAccountsPage', () => ({ default: () => <div>page:SeniorAccountsPage</div> }));
 vi.mock('./pages/FindAccountPage', () => ({ default: () => <div>page:FindAccountPage</div> }));
@@ -241,6 +242,11 @@ describe('the Platform team panel mounts every moved page', () => {
   it('opens Failed background jobs, a page of the panel\'s own', async () => {
     renderAt('/test/platform-team/failed-jobs');
     expect(await screen.findByText('page:FailedJobsPage')).toBeInTheDocument();
+  });
+
+  it('opens Deployments, a page of the panel\'s own', async () => {
+    renderAt('/test/platform-team/deployments');
+    expect(await screen.findByText('page:DeploymentsPage')).toBeInTheDocument();
   });
 
   it('opens the Notices page', async () => {

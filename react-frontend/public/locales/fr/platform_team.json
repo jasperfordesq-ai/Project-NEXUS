@@ -659,5 +659,31 @@
       "failed": "Échouées",
       "nobody_to_send_to": "Personne à qui envoyer"
     }
+  },
+  "deployments": {
+    "title": "Déploiements",
+    "intro": "Les derniers déploiements et retours en arrière enregistrés par ce serveur, du plus récent au plus ancien. Les heures sont affichées dans votre propre fuseau horaire.",
+    "watch_note": "La surveillance des erreurs de 30 minutes qui suit chaque déploiement n'est pas enregistrée ici.",
+    "loading": "Chargement du registre des déploiements",
+    "load_error_title": "Le registre des déploiements n'a pas pu être chargé",
+    "no_record_title": "Ce serveur ne tient aucun registre des déploiements",
+    "no_record_text": "Seul le serveur en production en tient un : sur l'ordinateur d'un développeur, c'est normal.",
+    "empty": "Rien n'a encore été enregistré.",
+    "skipped": "Lignes du registre illisibles, ignorées : {{count}}",
+    "count": "Déploiements et retours en arrière affichés : {{count}}",
+    "not_recorded": "Non enregistré",
+    "kind": {
+      "deploy": "Déploiement",
+      "rollback": "Retour en arrière",
+      "other": "Autre type de changement"
+    },
+    "outcome": {
+      "success": "Réussi",
+      "failed": "Échoué",
+      "unknown": "Résultat non enregistré"
+    },
+    "version": "Code de version",
+    "time_taken": "Durée",
+    "changes_label": "Modifications incluses"
   }
 }

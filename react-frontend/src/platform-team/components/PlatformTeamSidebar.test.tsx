@@ -52,6 +52,7 @@ const PLATFORM_ZONE = [
   'usage',
   'unfinished-features',
   'data-requests',
+  'deployments',
   'legal-documents',
   'push-notifications',
 ];

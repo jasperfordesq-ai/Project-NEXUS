@@ -57440,6 +57440,32 @@ export default interface Resources {
       "unavailable_note": "Some figures could not be read just now. They say \"Not available\". They are not zero.",
       "where_answered": "Each community answers its own requests in its own admin panel. Nothing can be changed from this page."
     },
+    "deployments": {
+      "changes_label": "Changes it carried",
+      "count": "Deployments and rollbacks shown: {{count}}",
+      "empty": "Nothing has been recorded yet.",
+      "intro": "The last deployments and rollbacks this server recorded, newest first. Times are shown in your own time zone.",
+      "kind": {
+        "deploy": "Deployment",
+        "other": "Another kind of change",
+        "rollback": "Rollback"
+      },
+      "load_error_title": "The deployment record could not be loaded",
+      "loading": "Loading the deployment record",
+      "no_record_text": "Only the live server keeps one, so on a developer's computer this is expected.",
+      "no_record_title": "This server keeps no record of deployments",
+      "not_recorded": "Not recorded",
+      "outcome": {
+        "failed": "Failed",
+        "success": "Succeeded",
+        "unknown": "Outcome not recorded"
+      },
+      "skipped": "Lines in the record that could not be read and were skipped: {{count}}",
+      "time_taken": "Time taken",
+      "title": "Deployments",
+      "version": "Version code",
+      "watch_note": "The 30-minute watch for errors that follows each deployment is not recorded here."
+    },
     "failed_jobs": {
       "action_failed": "That didn't work. Nothing was changed.",
       "cancel": "Keep it",

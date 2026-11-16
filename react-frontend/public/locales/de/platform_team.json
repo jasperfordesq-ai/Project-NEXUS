@@ -659,5 +659,31 @@
       "failed": "Fehlgeschlagen",
       "nobody_to_send_to": "Niemand zum Senden"
     }
+  },
+  "deployments": {
+    "title": "Bereitstellungen",
+    "intro": "Die letzten Bereitstellungen und Rücknahmen, die dieser Server aufgezeichnet hat, die neueste zuerst. Zeiten werden in Ihrer eigenen Zeitzone angezeigt.",
+    "watch_note": "Die 30-minütige Fehlerbeobachtung nach jeder Bereitstellung wird hier nicht aufgezeichnet.",
+    "loading": "Aufzeichnung der Bereitstellungen wird geladen",
+    "load_error_title": "Die Aufzeichnung der Bereitstellungen konnte nicht geladen werden",
+    "no_record_title": "Dieser Server führt keine Aufzeichnung über Bereitstellungen",
+    "no_record_text": "Nur der Live-Server führt eine, daher ist das auf dem Computer eines Entwicklers zu erwarten.",
+    "empty": "Bisher wurde nichts aufgezeichnet.",
+    "skipped": "Zeilen der Aufzeichnung, die nicht gelesen werden konnten und übersprungen wurden: {{count}}",
+    "count": "Angezeigte Bereitstellungen und Rücknahmen: {{count}}",
+    "not_recorded": "Nicht aufgezeichnet",
+    "kind": {
+      "deploy": "Bereitstellung",
+      "rollback": "Rücknahme",
+      "other": "Andere Art von Änderung"
+    },
+    "outcome": {
+      "success": "Erfolgreich",
+      "failed": "Fehlgeschlagen",
+      "unknown": "Ergebnis nicht aufgezeichnet"
+    },
+    "version": "Versionskennung",
+    "time_taken": "Dauer",
+    "changes_label": "Enthaltene Änderungen"
   }
 }

@@ -128,6 +128,7 @@ describe('PlatformTeamBreadcrumbs', () => {
     ['/platform-team/platform-capabilities', 'admin_nav:platform_capabilities'],
     ['/platform-team/national/kiss', 'super_admin:nav.national_dashboard'],
     ['/platform-team/failed-jobs', 'home.card.failed_jobs'],
+    ['/platform-team/deployments', 'deployments.title'],
     ['/platform-team/phone-app', 'phone_app.title'],
     ['/platform-team/senior-accounts', 'senior_accounts.title'],
     ['/platform-team/accounts', 'accounts.title'],

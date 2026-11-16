@@ -665,5 +665,31 @@
       "failed": "Theip orthu",
       "nobody_to_send_to": "Gan aon duine le seoladh chuige"
     }
+  },
+  "deployments": {
+    "title": "Imscaradh",
+    "intro": "Na himscaradh agus na haisiompuithe is déanaí a thaifead an freastalaí seo, an ceann is nuaí ar dtús. Taispeántar na hamanna i do chrios ama féin.",
+    "watch_note": "Ní thaifeadtar anseo an faire 30 nóiméad ar earráidí a leanann gach imscaradh.",
+    "loading": "Taifead na n-imscaradh á lódáil",
+    "load_error_title": "Níorbh fhéidir taifead na n-imscaradh a lódáil",
+    "no_record_title": "Ní choinníonn an freastalaí seo aon taifead ar imscaradh",
+    "no_record_text": "Is é an freastalaí beo amháin a choinníonn ceann, mar sin táthar ag súil leis seo ar ríomhaire forbróra.",
+    "empty": "Níor taifeadadh aon rud fós.",
+    "skipped": "Línte sa taifead nárbh fhéidir a léamh agus a fágadh ar lár: {{count}}",
+    "count": "Imscaradh agus aisiompuithe á dtaispeáint: {{count}}",
+    "not_recorded": "Gan taifeadadh",
+    "kind": {
+      "deploy": "Imscaradh",
+      "rollback": "Aisiompú",
+      "other": "Cineál eile athraithe"
+    },
+    "outcome": {
+      "success": "D'éirigh leis",
+      "failed": "Theip air",
+      "unknown": "Toradh gan taifeadadh"
+    },
+    "version": "Cód leagain",
+    "time_taken": "Am a tógadh",
+    "changes_label": "Athruithe a bhí ann"
   }
 }

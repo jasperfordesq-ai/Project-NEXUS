@@ -659,5 +659,31 @@
       "failed": "Mislukt",
       "nobody_to_send_to": "Niemand om naar te sturen"
     }
+  },
+  "deployments": {
+    "title": "Uitrols",
+    "intro": "De laatste uitrols en terugdraaiingen die deze server heeft vastgelegd, nieuwste eerst. Tijden worden in je eigen tijdzone getoond.",
+    "watch_note": "De foutbewaking van 30 minuten na elke uitrol wordt hier niet vastgelegd.",
+    "loading": "Het uitrolverslag wordt geladen",
+    "load_error_title": "Het uitrolverslag kon niet worden geladen",
+    "no_record_title": "Deze server houdt geen verslag van uitrols bij",
+    "no_record_text": "Alleen de live server houdt er een bij, dus op de computer van een ontwikkelaar is dit normaal.",
+    "empty": "Er is nog niets vastgelegd.",
+    "skipped": "Regels in het verslag die niet gelezen konden worden en zijn overgeslagen: {{count}}",
+    "count": "Getoonde uitrols en terugdraaiingen: {{count}}",
+    "not_recorded": "Niet vastgelegd",
+    "kind": {
+      "deploy": "Uitrol",
+      "rollback": "Terugdraaiing",
+      "other": "Ander soort wijziging"
+    },
+    "outcome": {
+      "success": "Gelukt",
+      "failed": "Mislukt",
+      "unknown": "Uitkomst niet vastgelegd"
+    },
+    "version": "Versiecode",
+    "time_taken": "Duur",
+    "changes_label": "Meegenomen wijzigingen"
   }
 }
