@@ -2507,7 +2507,7 @@ class AdminEnterpriseController extends BaseApiController
     /** POST /api/v2/admin/enterprise/config/secrets/{key}/rotate */
     public function rotateSecret(string $key): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
 
         return $this->respondWithData([
             'key' => $key,
@@ -2519,7 +2519,7 @@ class AdminEnterpriseController extends BaseApiController
     /** DELETE /api/v2/admin/enterprise/config/secrets/{key} */
     public function deleteSecret(string $key): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
 
         return $this->respondWithData([
             'key' => $key,
@@ -2531,7 +2531,7 @@ class AdminEnterpriseController extends BaseApiController
     /** POST /api/v2/admin/enterprise/config/secrets/test-vault */
     public function testVaultConnection(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireGodPlatformAdmin();
 
         $checks = [
             'DB_HOST' => getenv('DB_HOST') !== false && getenv('DB_HOST') !== '',

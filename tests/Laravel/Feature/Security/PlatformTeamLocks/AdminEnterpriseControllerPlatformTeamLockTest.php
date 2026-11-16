@@ -36,7 +36,33 @@ final class AdminEnterpriseControllerPlatformTeamLockTest extends PlatformTeamLo
             'requirements' => ['GET', '/v2/admin/enterprise/monitoring/requirements'],
             // F-626: no screen calls it; it admitted any global super admin.
             'secrets list' => ['GET', '/v2/admin/enterprise/config/secrets'],
+            // F-627: no screen calls it; it told any community admin whether
+            // DB_HOST, REDIS_HOST and PUSHER_KEY are set on the server.
+            'secrets vault check' => ['POST', '/v2/admin/enterprise/config/secrets/test-vault'],
         ];
+    }
+
+    /**
+     * F-627: rotate and delete change nothing, but answered any community
+     * admin. They sit behind the second-factor step, which refuses first in a
+     * test, so the step is switched off here to reach the controller's own lock.
+     *
+     * @return array<string, array{0: string, 1: string}>
+     */
+    public static function lockedBehindStepUp(): array
+    {
+        return [
+            'rotate a secret' => ['POST', '/v2/admin/enterprise/config/secrets/FCM_SERVER_KEY/rotate'],
+            'delete a secret' => ['DELETE', '/v2/admin/enterprise/config/secrets/FCM_SERVER_KEY'],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('lockedBehindStepUp')]
+    public function test_the_secret_routes_behind_the_second_factor_step_answer_the_platform_team_only(string $method, string $uri): void
+    {
+        $this->withoutMiddleware(\App\Http\Middleware\RequireRecentSecondFactor::class);
+
+        $this->assertPlatformTeamOnly($method, $uri);
     }
 
     /**
