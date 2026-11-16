@@ -200,9 +200,12 @@ describe('ReactionSummary', () => {
     const summaryButton = screen.getByRole('button', { name: /View reactions/i });
     fireEvent.click(summaryButton);
 
-    await waitFor(() => {
-      expect(screen.getByRole('dialog')).toBeInTheDocument();
-    });
+    // The FIRST pop-up opened in a test file is the slow one: about 0.4 s on a
+    // quiet machine (measured 16 Nov 2026), against about 0.03 s for every
+    // later one. The default wait is 1 s, so with a second heavy suite running
+    // beside this one it tipped over now and then. It is slow, not wrong, so
+    // it gets a longer wait here and nowhere else.
+    expect(await screen.findByRole('dialog', {}, { timeout: 5000 })).toBeInTheDocument();
   });
 
   it('shows "Reactions" header in modal', async () => {
