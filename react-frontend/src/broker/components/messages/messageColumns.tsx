@@ -28,6 +28,9 @@ import { copyReasonLabel } from './messageLabels';
 
 export const HIGHLIGHT_ATTR = 'data-hotkey-row';
 
+/** How much of a message the list shows before the ellipsis. */
+const PREVIEW_LENGTH = 180;
+
 interface MessageColumnOptions {
   t: TFunction<'broker'>;
   /** Tenant-prefixed path of a message's detail page. */
@@ -52,7 +55,8 @@ export function buildMessageColumns({
     {
       key: 'sender_name',
       label: t('messages.col_participants'),
-      sortable: true,
+      // Not sortable: sorting reordered only the twenty rows on screen, never
+      // the queue, and j / k then moved in an order the list no longer showed.
       render: (item) => {
         const highlighted = item.id === highlightedId;
         return (
@@ -77,13 +81,20 @@ export function buildMessageColumns({
       label: t('messages.col_preview'),
       // The preview opens the message; until Oct 2026 only the sender's name
       // did, and brokers clicked the text and nothing happened. Since the
-      // names now open the member window, this is the row's link.
+      // names now open the member window, this is the row's link. The whole
+      // row opens the message too (the page's `onRowClick`); the link stays
+      // for the keyboard and for "open in a new tab". Two lines of the
+      // message, so most copies can be read without opening them at all.
+      // The column only widens on a wide screen: on a laptop the extra width
+      // pushed Reason, Status and Date out of sight under the pinned buttons.
       render: (item) => (
         <Link
           to={detailHref(item.id)}
-          className="line-clamp-1 min-w-0 max-w-[240px] text-sm text-muted hover:text-foreground hover:underline"
+          className="line-clamp-2 min-w-0 max-w-[15rem] whitespace-normal break-words text-sm text-muted hover:text-foreground hover:underline min-[1800px]:max-w-[26rem]"
         >
-          {item.message_body ? item.message_body.substring(0, 80) + (item.message_body.length > 80 ? '…' : '') : '—'}
+          {item.message_body
+            ? item.message_body.substring(0, PREVIEW_LENGTH) + (item.message_body.length > PREVIEW_LENGTH ? '…' : '')
+            : '—'}
         </Link>
       ),
     },
@@ -118,6 +129,7 @@ export function buildMessageColumns({
     {
       key: 'created_at',
       label: t('messages.col_date'),
+      // Sorted by the server across the whole queue (newest or oldest first).
       sortable: true,
       render: (item) => <span className="text-sm tabular-nums text-muted">{formatServerDate(item.created_at)}</span>,
     },
@@ -126,7 +138,10 @@ export function buildMessageColumns({
       label: t('messages.col_actions'),
       render: (item) => (
         <div className="flex gap-1">
-          {!item.reviewed_at && (
+          {/* A flagged copy is read before it is reviewed: it has no one-press
+              Review here, exactly as the `r` key and the bulk action refuse
+              it. Its row and the quick view both lead to the review. */}
+          {!item.reviewed_at && !item.flagged && (
             <Button
               size="sm"
               variant="tertiary"

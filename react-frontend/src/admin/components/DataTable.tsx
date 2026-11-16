@@ -99,6 +99,25 @@ function isInteractiveTarget(target: EventTarget | null, boundary?: EventTarget 
   return hit !== null && hit !== boundary;
 }
 
+/**
+ * A press that starts on a control inside a cell belongs to that control, not
+ * to the row. React Aria ticks a row on mouse-DOWN, so a press on a plain link
+ * or button in a row also ticked the row; the bulk-action bar then appeared
+ * above the list, the list moved before the button came back up, and the click
+ * landed on nothing. The shield is a layout-free wrapper inside each cell.
+ */
+function startsOnChildControl(event: SyntheticEvent): boolean {
+  if (!(event.target instanceof Element)) return false;
+  const hit = event.target.closest(INTERACTIVE_CHILD_SELECTOR);
+  return hit !== null && hit !== event.currentTarget && event.currentTarget.contains(hit);
+}
+function shieldRowFromChildPress(event: SyntheticEvent) {
+  if (startsOnChildControl(event)) event.stopPropagation();
+}
+function shieldRowFromChildKey(event: ReactKeyboardEvent) {
+  if ((event.key === 'Enter' || event.key === ' ') && startsOnChildControl(event)) event.stopPropagation();
+}
+
 function toHeroDirection(direction: DataTableSort['direction']): 'ascending' | 'descending' {
   return direction === 'desc' ? 'descending' : 'ascending';
 }
@@ -107,6 +126,8 @@ function fromHeroDirection(direction: 'ascending' | 'descending' | undefined): D
   return direction === 'descending' ? 'desc' : 'asc';
 }
 
+/** A ticked row, when the table draws its own boxes (React Aria marks its own). */
+const TICKED_ROW_CLASS = 'bg-accent/[0.06]';
 /** Row styling once a row can be clicked: a pointer and a hover tint. */
 const CLICKABLE_ROW_CLASS =
   'cursor-pointer transition-colors hover:bg-surface-secondary/50 data-[hovered=true]:bg-surface-secondary/50 data-[focus-visible=true]:outline data-[focus-visible=true]:outline-2 data-[focus-visible=true]:-outline-offset-2 data-[focus-visible=true]:outline-accent';
@@ -152,9 +173,12 @@ interface DataTableProps<T extends Record<string, any>> {
   /**
    * Makes every row clickable (pointer cursor, hover tint, Enter from the
    * keyboard). A click on a button, link, input, checkbox or menu inside the
-   * row never also fires this. While rows are selected for a bulk action, a
-   * row click toggles that row's selection instead (React Aria's convention);
-   * the row's own buttons and links keep working either way.
+   * row never also fires this.
+   *
+   * Together with `selectable` the two jobs are kept apart: the row always
+   * opens, and only its box ticks it, also while other rows are ticked.
+   * (Until November 2026 a row click ticked the row instead once anything was
+   * ticked, which read as the list ticking and unticking at random.)
    */
   onRowClick?: (row: T) => void;
   /**
@@ -204,6 +228,11 @@ export function DataTable<T extends Record<string, any>>({
   const searchValue = controlledSearch ?? internalSearch;
   const [localSort, setLocalSort] = useState<SortDescriptor | undefined>(undefined);
   const serverSorting = typeof onSortChange === 'function';
+  // A list that opens its rows draws its own boxes, so a press on the row can
+  // never tick it. Otherwise React Aria runs selection (a row press ticks).
+  const ticksByBoxOnly = selectable && typeof onRowClick === 'function';
+  const [internalTicked, setInternalTicked] = useState<Set<string>>(() => new Set());
+  const ticked = selectedKeys ?? internalTicked;
   const sortDescriptor = useMemo<SortDescriptor | undefined>(() => {
     if (!serverSorting) return localSort;
     return serverSort ? { column: serverSort.column, direction: toHeroDirection(serverSort.direction) } : undefined;
@@ -258,6 +287,23 @@ export function DataTable<T extends Record<string, any>>({
       }
     },
     [data, keyField, onSelectionChange]
+  );
+
+  const setTicked = useCallback(
+    (next: Set<string>) => {
+      setInternalTicked(next);
+      onSelectionChange?.(next);
+    },
+    [onSelectionChange]
+  );
+  const tickRow = useCallback(
+    (key: string, on: boolean) => {
+      const next = new Set(ticked);
+      if (on) next.add(key);
+      else next.delete(key);
+      setTicked(next);
+    },
+    [ticked, setTicked]
   );
 
   // Sort data locally if no server-side sorting
@@ -348,12 +394,7 @@ export function DataTable<T extends Record<string, any>>({
     const cell = (col: Column<T>, item: T): ReactNode =>
       col.render ? col.render(item) : ((item[col.key] as ReactNode) ?? '—');
     const selection = selectable && selectedKeys && onSelectionChange ? selectedKeys : null;
-    const toggle = (key: string, on: boolean) => {
-      const next = new Set(selection ?? []);
-      if (on) next.add(key);
-      else next.delete(key);
-      onSelectionChange?.(next);
-    };
+    const toggle = tickRow;
     // Cards are plain elements, so the row click is wired directly: a click
     // or Enter/Space anywhere on the card except on its own controls.
     const cardClick = (item: T) => (event: SyntheticEvent) => {
@@ -435,6 +476,11 @@ export function DataTable<T extends Record<string, any>>({
     );
   }
 
+  const pageKeys = sortedData.map((item) => String(item[keyField]));
+  const tickedOnPage = pageKeys.filter((key) => ticked.has(key)).length;
+  const allTicked = pageKeys.length > 0 && tickedOnPage === pageKeys.length;
+  const someTicked = tickedOnPage > 0;
+
   return (
     // The wrapper only observes where an interaction started (capture phase)
     // so a row press that began on a nested button or link can be ignored.
@@ -446,9 +492,9 @@ export function DataTable<T extends Record<string, any>>({
     >
     <Table
       aria-label={t('shared.data_table')}
-      selectionMode={selectable ? 'multiple' : 'none'}
-      selectedKeys={selectable && selectedKeys ? (selectedKeys as unknown as Selection) : undefined}
-      onSelectionChange={selectable ? handleSelectionChange : undefined}
+      selectionMode={selectable && !ticksByBoxOnly ? 'multiple' : 'none'}
+      selectedKeys={selectable && !ticksByBoxOnly && selectedKeys ? (selectedKeys as unknown as Selection) : undefined}
+      onSelectionChange={selectable && !ticksByBoxOnly ? handleSelectionChange : undefined}
       sortDescriptor={sortDescriptor}
       onSortChange={handleSortChange}
       onRowAction={onRowClick ? handleRowAction : undefined}
@@ -467,7 +513,17 @@ export function DataTable<T extends Record<string, any>>({
       <TableHeader>
         {selectable ? (
           <TableColumn className="w-10 pr-0" aria-label={t('shared.select_all_rows')}>
-            <Checkbox aria-label={t('shared.select_all_rows')} slot="selection" />
+            {ticksByBoxOnly ? (
+              <Checkbox
+                aria-label={t('shared.select_all_rows')}
+                isSelected={allTicked}
+                isIndeterminate={someTicked && !allTicked}
+                isDisabled={pageKeys.length === 0}
+                onChange={(on) => setTicked(on ? new Set(pageKeys) : new Set())}
+              />
+            ) : (
+              <Checkbox aria-label={t('shared.select_all_rows')} slot="selection" />
+            )}
           </TableColumn>
         ) : null}
         {columns.map((col, index) => (
@@ -502,30 +558,54 @@ export function DataTable<T extends Record<string, any>>({
           )
         }
       >
-        {sortedData.map((item) => (
-          <TableRow
-            key={String(item[keyField])}
-            id={String(item[keyField])}
-            className={onRowClick ? CLICKABLE_ROW_CLASS : undefined}
-          >
-            {selectable ? (
-              <TableCell className="w-10 pr-0">
-                <Checkbox
-                  aria-label={t('shared.select_row', { id: String(item[keyField]) })}
-                  slot="selection"
-                  variant="secondary"
-                />
-              </TableCell>
-            ) : null}
-            {columns.map((col) => (
-              <TableCell key={col.key} className={columnClass(col, false)}>
-                {col.render
-                  ? col.render(item as T)
-                  : (item[col.key] as ReactNode) ?? '—'}
-              </TableCell>
-            ))}
-          </TableRow>
-        ))}
+        {sortedData.map((item) => {
+          const rowKey = String(item[keyField]);
+          const isTicked = ticksByBoxOnly && ticked.has(rowKey);
+          const rowClass = [onRowClick ? CLICKABLE_ROW_CLASS : '', isTicked ? TICKED_ROW_CLASS : ''].filter(Boolean).join(' ');
+          return (
+            <TableRow key={rowKey} id={rowKey} className={rowClass || undefined}>
+              {selectable ? (
+                <TableCell className="w-10 pr-0">
+                  {ticksByBoxOnly ? (
+                    <Checkbox
+                      aria-label={t('shared.select_row', { id: rowKey })}
+                      isSelected={isTicked}
+                      onChange={(on) => tickRow(rowKey, on)}
+                      variant="secondary"
+                    />
+                  ) : (
+                    <Checkbox aria-label={t('shared.select_row', { id: rowKey })} slot="selection" variant="secondary" />
+                  )}
+                </TableCell>
+              ) : null}
+              {columns.map((col) => {
+                const content = col.render ? col.render(item as T) : ((item[col.key] as ReactNode) ?? '—');
+                return (
+                  <TableCell key={col.key} className={columnClass(col, false)}>
+                    {selectable && !ticksByBoxOnly ? (
+                      // `contents`: no box of its own, so the cell lays out exactly as before.
+                      // It only watches presses pass through; it is not a control itself.
+                      <span
+                        role="presentation"
+                        className="contents"
+                        onPointerDown={shieldRowFromChildPress}
+                        onMouseDown={shieldRowFromChildPress}
+                        onTouchStart={shieldRowFromChildPress}
+                        onClick={shieldRowFromChildPress}
+                        onKeyDown={shieldRowFromChildKey}
+                        onKeyUp={shieldRowFromChildKey}
+                      >
+                        {content}
+                      </span>
+                    ) : (
+                      content
+                    )}
+                  </TableCell>
+                );
+              })}
+            </TableRow>
+          );
+        })}
       </TableBody>
     </Table>
     </div>

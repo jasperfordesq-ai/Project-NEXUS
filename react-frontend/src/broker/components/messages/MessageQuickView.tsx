@@ -109,11 +109,14 @@ export function MessageQuickView({ item, onClose, onReviewed }: MessageQuickView
         </ModalHeader>
 
         <ModalBody className="gap-4">
-          {loading && <p className="py-8 text-center text-sm text-muted">{t('messages.loading')}</p>}
-
-          {!loading && item && (
-            <>
-              <div className="grid grid-cols-2 gap-3 text-sm">
+          {/* The list row already holds who, when, why and the message, so the
+              dialog opens with them at once. Only the conversation around the
+              message is fetched; it used to hide everything behind "Loading". */}
+          {item && (
+            // Its own column with gaps: the dialog body does not space its
+            // children, so the sections sat tight against their dividers.
+            <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-2 gap-x-3 gap-y-4 text-sm">
                 <div className="min-w-0">
                   <p className="mb-1 text-xs font-medium uppercase text-muted">{t('messages.detail_from')}</p>
                   <div className="flex min-w-0 items-center gap-2">
@@ -134,7 +137,11 @@ export function MessageQuickView({ item, onClose, onReviewed }: MessageQuickView
                 </div>
                 {(item.flag_reason || item.copy_reason) && (
                   <div>
-                    <p className="mb-0.5 text-xs font-medium uppercase text-muted">{t('messages.detail_reason')}</p>
+                    {/* "Flag reason" only for a flag. A routine copy read
+                        "Flag reason: Random sample", as if it had been flagged. */}
+                    <p className="mb-0.5 text-xs font-medium uppercase text-muted">
+                      {item.flag_reason ? t('messages.detail_reason') : t('messages.col_reason')}
+                    </p>
                     <p className="text-foreground">{item.flag_reason || copyReasonLabel(t, item.copy_reason)}</p>
                   </div>
                 )}
@@ -154,6 +161,12 @@ export function MessageQuickView({ item, onClose, onReviewed }: MessageQuickView
                   {detail?.copy?.message_body || item.message_body || '--'}
                 </div>
               </div>
+
+              {loading && (
+                <p role="status" className="text-sm text-muted">
+                  {t('messages.loading')}
+                </p>
+              )}
 
               {detail?.thread && detail.thread.length > 0 && (
                 <>
@@ -191,7 +204,7 @@ export function MessageQuickView({ item, onClose, onReviewed }: MessageQuickView
                   variant="bordered"
                 />
               )}
-            </>
+            </div>
           )}
         </ModalBody>
 

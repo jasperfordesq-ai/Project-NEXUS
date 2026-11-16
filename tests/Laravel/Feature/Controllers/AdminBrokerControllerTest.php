@@ -2474,6 +2474,71 @@ class AdminBrokerControllerTest extends TestCase
         ]);
     }
 
+    /**
+     * A broker working from a list that is a few seconds old presses Review on
+     * a copy a colleague has just reviewed. The first review stands: who
+     * reviewed it, when, and what they wrote. Until November 2026 the second
+     * press replaced all three, and a colleague's notes were lost to a null.
+     */
+    public function test_review_message_does_not_overwrite_an_earlier_review(): void
+    {
+        $first = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $second = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $sender = User::factory()->forTenant($this->testTenantId)->create();
+        $receiver = User::factory()->forTenant($this->testTenantId)->create();
+
+        $reviewedAt = now()->subDay()->startOfSecond();
+        $copyId = $this->insertMessageCopy($sender->id, $receiver->id, [
+            'reviewed_by'  => $first->id,
+            'reviewed_at'  => $reviewedAt,
+            'review_notes' => 'Spoke to both members. Nothing to act on.',
+        ]);
+
+        Sanctum::actingAs($second);
+
+        $response = $this->apiPost("/v2/admin/broker/messages/{$copyId}/review");
+
+        // Already done is not a failure: the page simply refreshes its list.
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.reviewed', true);
+        $response->assertJsonPath('data.already_reviewed', true);
+
+        $copy = DB::table('broker_message_copies')->where('id', $copyId)->first();
+        $this->assertSame($first->id, (int) $copy->reviewed_by);
+        $this->assertSame('Spoke to both members. Nothing to act on.', $copy->review_notes);
+        $this->assertSame($reviewedAt->toDateTimeString(), (string) $copy->reviewed_at);
+    }
+
+    /**
+     * A list that could not be read is an error, never an empty queue. An
+     * empty Unreviewed queue reads as "all caught up" on the page, so answering
+     * a database failure with no rows told brokers there was nothing to check.
+     */
+    public function test_messages_queue_answers_a_failed_read_with_an_error_not_an_empty_list(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $sender = User::factory()->forTenant($this->testTenantId)->create();
+        $receiver = User::factory()->forTenant($this->testTenantId)->create();
+        $this->insertMessageCopy($sender->id, $receiver->id);
+        Sanctum::actingAs($admin);
+
+        $armed = true;
+        DB::connection()->beforeExecuting(function (string $query) use (&$armed): void {
+            if ($armed && str_contains($query, 'FROM broker_message_copies bmc')) {
+                throw new \RuntimeException('simulated database failure');
+            }
+        });
+
+        try {
+            $response = $this->apiGet('/v2/admin/broker/messages?filter=unreviewed');
+        } finally {
+            $armed = false;
+        }
+
+        $response->assertStatus(500);
+        $response->assertJsonMissingPath('data');
+    }
+
     // ================================================================
     // BULK REVIEW — POST /v2/admin/broker/messages/review-bulk
     // ================================================================

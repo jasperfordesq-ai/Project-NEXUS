@@ -15,6 +15,13 @@
  * that reviews without leaving the page, and a quiet auto-refresh so the
  * list never disagrees with the sidebar badge.
  *
+ * Opening a message is one click anywhere on its row. Ticking is the box's
+ * job only, and the bulk bar sits in the table's own top row, so ticking the
+ * first row no longer moves the list. (Until November 2026 a press on a row
+ * ticked it on mouse-down, the "1 selected" bar pushed the list down before
+ * the button came back up, and the click landed on nothing: opening a message
+ * took three or four clicks, each ticking or unticking the row instead.)
+ *
  * The flag dialog, quick view, columns, tabs, KPI cards and date filter live
  * in `../components/messages` (shared with the message page and the archive).
  */
@@ -124,6 +131,9 @@ export function MessageReview() {
   const [page, setPage] = useState(1);
   const [reviewingId, setReviewingId] = useState<number | null>(null);
   const [dateRange, setDateRange] = useState<DateRangeValue>({ from: null, to: null });
+  // Newest first unless the broker turns the Date column round. The server
+  // sorts the whole queue, so "oldest first" really is the oldest waiting.
+  const [oldestFirst, setOldestFirst] = useState(false);
 
   // Server-side search over the message text and both people's names.
   // Debounced so typing doesn't fire a request on every keystroke. `?q=` seeds
@@ -180,32 +190,48 @@ export function MessageReview() {
         q: debouncedSearch || undefined,
         from: dateRange.from ?? undefined,
         to: dateRange.to ?? undefined,
+        sort: oldestFirst ? 'oldest' : undefined,
         ...overrides,
       }) as MessagesParams,
-    [page, filter, debouncedSearch, dateRange.from, dateRange.to],
+    [page, filter, debouncedSearch, dateRange.from, dateRange.to, oldestFirst],
   );
 
   // `quiet` keeps the rows on screen while new ones load (auto-refresh): no
   // skeleton, no spinner, the page stays where the broker left it.
+  //
+  // Only the newest request may write to the page. Changing tab, typing a
+  // search or turning the sort starts a new request while the last one is
+  // still out; without the sequence check a slow older answer arrived last
+  // and put the previous tab's rows under the new tab.
+  const requestSeq = useRef(0);
   const loadItems = useCallback(
     async (quiet = false) => {
+      const seq = ++requestSeq.current;
       if (!quiet) setLoading(true);
-      setLoadError(false);
       try {
         const res = await adminBroker.getMessages(listParams());
+        if (seq !== requestSeq.current) return;
         if (res.success && Array.isArray(res.data)) {
           setItems(res.data as BrokerMessage[]);
           setTotal(readTotal(res) ?? res.data.length);
-        } else {
+          setLoadError(false);
+        } else if (!quiet) {
           // A success:false answer is a failure, not an empty queue.
           setLoadError(true);
         }
+        // A failed quiet refresh changes nothing: the rows on screen stay,
+        // with their shortcuts and export, and the next refresh tries again.
       } catch {
-        setLoadError(true);
-        if (!quiet) toastRef.current.error(tRef.current('messages.load_failed'));
+        if (seq !== requestSeq.current) return;
+        if (!quiet) {
+          setLoadError(true);
+          toastRef.current.error(tRef.current('messages.load_failed'));
+        }
       } finally {
-        setLoading(false);
-        setHasLoaded(true);
+        if (seq === requestSeq.current) {
+          setLoading(false);
+          setHasLoaded(true);
+        }
       }
     },
     [listParams],
@@ -275,6 +301,17 @@ export function MessageReview() {
     setSelectedIds(new Set());
     setHighlightedId(null);
   }, [filter, page]);
+  // A tick only counts while its row is on screen. A search, a date range or
+  // a refresh that drops a row (someone else reviewed it) drops its tick too,
+  // so "3 selected" never counts a message the broker can no longer see.
+  useEffect(() => {
+    setSelectedIds((prev) => {
+      if (prev.size === 0) return prev;
+      const onScreen = new Set(items.map((item) => String(item.id)));
+      const next = new Set([...prev].filter((id) => onScreen.has(id)));
+      return next.size === prev.size ? prev : next;
+    });
+  }, [items]);
 
   const selectedRows = items.filter((item) => selectedIds.has(String(item.id)));
   const routineSelected = selectedRows.filter((item) => !item.flagged);
@@ -352,7 +389,10 @@ export function MessageReview() {
     {
       j: () => moveHighlight(1),
       k: () => moveHighlight(-1),
-      Enter: () => {
+      Enter: (event) => {
+        // A row that has the keyboard focus opens itself on Enter; without
+        // this the highlighted row opened instead of the focused one.
+        if (event.target instanceof Element && event.target.closest('tbody tr')) return;
         if (highlighted) navigate(tenantPath(detailPath(highlighted.id)));
       },
       r: () => {
@@ -478,30 +518,46 @@ export function MessageReview() {
         />
       ) : (
         <>
-          {canBulkReview && (
-            <BulkActionToolbar
-              selectedCount={selectedIds.size}
-              isLoading={bulkLoading}
-              onClearSelection={() => setSelectedIds(new Set())}
-              actions={[
-                {
-                  key: 'review',
-                  label: t('messages.bulk_review'),
-                  color: 'success',
-                  icon: <CheckCircle size={14} aria-hidden="true" />,
-                  confirmTitle: t('messages.bulk_review'),
-                  confirmMessage: t('messages.bulk_confirm_message', { count: routineSelected.length }),
-                  onConfirm: handleBulkReview,
-                },
-              ]}
-            />
-          )}
           <DataTable
             stickyActions
             mobileCards
             selectable={canBulkReview}
             selectedKeys={canBulkReview ? selectedIds : undefined}
             onSelectionChange={canBulkReview ? setSelectedIds : undefined}
+            // One click anywhere on a row opens the message; only the box ticks.
+            onRowClick={(item) => navigate(tenantPath(detailPath(item.id)))}
+            sortDescriptor={{ column: 'created_at', direction: oldestFirst ? 'asc' : 'desc' }}
+            onSortChange={(key, direction) => {
+              if (key !== 'created_at') return;
+              setOldestFirst(direction === 'asc');
+              setPage(1);
+            }}
+            // The bulk bar lives in the table's own top row, beside the search
+            // box, in a slot that is always there: ticking the first row does
+            // not move the list.
+            topContent={
+              canBulkReview ? (
+                <div className="flex min-h-9 items-center">
+                  <BulkActionToolbar
+                    compact
+                    selectedCount={selectedIds.size}
+                    isLoading={bulkLoading}
+                    onClearSelection={() => setSelectedIds(new Set())}
+                    actions={[
+                      {
+                        key: 'review',
+                        label: t('messages.bulk_review'),
+                        color: 'success',
+                        icon: <CheckCircle size={14} aria-hidden="true" />,
+                        confirmTitle: t('messages.bulk_review'),
+                        confirmMessage: t('messages.bulk_confirm_message', { count: routineSelected.length }),
+                        onConfirm: handleBulkReview,
+                      },
+                    ]}
+                  />
+                </div>
+              ) : undefined
+            }
             columns={columns}
             data={items}
             isLoading={loading}

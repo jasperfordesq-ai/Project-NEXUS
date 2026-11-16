@@ -144,7 +144,15 @@ vi.mock('@/admin/components', () => ({
     selectable,
     selectedKeys,
     onSelectionChange,
+    topContent,
+    onRowClick,
+    sortDescriptor,
+    onSortChange,
   }: {
+    topContent?: React.ReactNode;
+    onRowClick?: (row: unknown) => void;
+    sortDescriptor?: { column: string; direction: 'asc' | 'desc' };
+    onSortChange?: (key: string, direction: 'asc' | 'desc') => void;
     columns: { key: string; label: string; render?: (item: unknown) => React.ReactNode }[];
     data: unknown[];
     isLoading?: boolean;
@@ -161,13 +169,32 @@ vi.mock('@/admin/components', () => ({
       {searchable && (
         <input type="search" aria-label={searchPlaceholder} onChange={(e) => onSearch?.(e.target.value)} />
       )}
+      {/* The real table draws this beside the search box, in its own top row. */}
+      <div data-testid="table-top-slot">{topContent}</div>
+      {onSortChange && (
+        <button
+          type="button"
+          data-sort={sortDescriptor ? `${sortDescriptor.column}:${sortDescriptor.direction}` : ''}
+          onClick={() => onSortChange('created_at', sortDescriptor?.direction === 'asc' ? 'desc' : 'asc')}
+        >
+          sort by date
+        </button>
+      )}
       {isLoading && <div role="status" aria-busy="true" aria-label="loading">Loading…</div>}
       {!isLoading && data.length === 0 && (
         <div data-testid="empty-table">{emptyContent ?? 'No items'}</div>
       )}
       {!isLoading &&
         data.map((row) => (
-          <div key={String((row as Record<string, unknown>).id)} data-testid="table-row">
+          <div
+            key={String((row as Record<string, unknown>).id)}
+            data-testid="table-row"
+            // The real table opens the row unless the click was on a control inside it.
+            onClick={(e) => {
+              if ((e.target as HTMLElement).closest('button, a, input')) return;
+              onRowClick?.(row);
+            }}
+          >
             {selectable && (
               <input
                 type="checkbox"
@@ -400,6 +427,147 @@ describe('MessageReview (broker)', () => {
       'href',
       '/test/broker/messages/1?queue=unreviewed',
     );
+  });
+
+  // ── Opening a message ─────────────────────────────────────────────────────
+
+  // The owner's report (16 Nov 2026): opening a message took three or four
+  // clicks and each one ticked or unticked the row. The cause was in the
+  // shared table (pinned in DataTable.interaction.test.tsx); what the page
+  // owes it is a row click, and a bulk bar that is not inserted above the list.
+  it('opens the message when its row is clicked, and ticks nothing', async () => {
+    mockAdminBroker.getMessages.mockResolvedValue(makeListRes([makeMessage({ id: 7 })], 1));
+    const { MessageReview } = await import('./MessageReviewPage');
+    render(<MessageReview />);
+    await screen.findByText('Alice');
+
+    fireEvent.click(screen.getByTestId('table-row'));
+
+    expect(mockNavigate).toHaveBeenCalledWith('/test/broker/messages/7?queue=unreviewed');
+    expect(screen.getByRole('checkbox', { name: 'Select row 7' })).not.toBeChecked();
+    expect(screen.queryByTestId('bulk-toolbar')).not.toBeInTheDocument();
+  });
+
+  it('puts the bulk bar inside the table, so ticking a row does not push the list down', async () => {
+    mockAdminBroker.getMessages.mockResolvedValue(makeListRes([makeMessage({ id: 1 })], 1));
+    const { MessageReview } = await import('./MessageReviewPage');
+    render(<MessageReview />);
+    await screen.findByText('Alice');
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Select row 1' }));
+
+    const bar = await screen.findByTestId('bulk-toolbar');
+    expect(screen.getByTestId('table-top-slot')).toContainElement(bar);
+    // Ticking is not opening.
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  // A concern is read before it is reviewed: the r key and the bulk action
+  // already refused a flagged copy; the row's own button did not.
+  it('offers no one-press Review on a flagged copy, only the way in to read it', async () => {
+    mockAdminBroker.getMessages.mockResolvedValue(
+      makeListRes([makeMessage({ id: 2, flagged: true, flag_severity: 'concern' })], 1),
+    );
+    const { MessageReview } = await import('./MessageReviewPage');
+    render(<MessageReview />);
+    await screen.findByText('Alice');
+
+    expect(screen.queryByRole('button', { name: 'Mark message as reviewed' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Quick view message' })).toBeInTheDocument();
+  });
+
+  // ── Answers that arrive out of order ──────────────────────────────────────
+
+  it('never lets a slow older answer overwrite a newer one', async () => {
+    let releaseSlow: (v: unknown) => void = () => undefined;
+    const slow = new Promise((resolve) => {
+      releaseSlow = resolve;
+    });
+    mockAdminBroker.getMessages.mockImplementation((params: { q?: string; per_page?: number }) => {
+      if (params?.per_page === 1) return Promise.resolve(makeListRes());
+      if (params?.q === 'new') return Promise.resolve(makeListRes([makeMessage({ id: 9, sender_name: 'Newest' })], 1));
+      if (params?.q === 'old') return slow;
+      return Promise.resolve(makeListRes([makeMessage({ id: 1, sender_name: 'Alice' })], 1));
+    });
+    const { MessageReview } = await import('./MessageReviewPage');
+    render(<MessageReview />);
+    await screen.findByText('Alice');
+
+    const search = screen.getByRole('searchbox');
+    fireEvent.change(search, { target: { value: 'old' } });
+    await waitFor(() => expect(mockAdminBroker.getMessages).toHaveBeenCalledWith(expect.objectContaining({ q: 'old' })));
+    fireEvent.change(search, { target: { value: 'new' } });
+    expect(await screen.findByText('Newest')).toBeInTheDocument();
+
+    // The first search answers last. Its rows must not replace the newer ones.
+    await act(async () => {
+      releaseSlow(makeListRes([makeMessage({ id: 5, sender_name: 'Stale' })], 1));
+      await Promise.resolve();
+    });
+    expect(screen.queryByText('Stale')).not.toBeInTheDocument();
+    expect(screen.getByText('Newest')).toBeInTheDocument();
+  });
+
+  it('keeps the rows, with no error, when a quiet refresh fails', async () => {
+    mockAdminBroker.getMessages.mockResolvedValue(makeListRes([makeMessage()], 1));
+    const { MessageReview } = await import('./MessageReviewPage');
+    render(<MessageReview />);
+    await screen.findByText('Alice');
+
+    mockAdminBroker.getMessages.mockRejectedValue(new Error('offline'));
+    await act(async () => {
+      autoRefresh.callback!();
+      await Promise.resolve();
+    });
+
+    expect(screen.getByText('Alice')).toBeInTheDocument();
+    expect(mockToast.error).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: /export/i })).not.toBeDisabled();
+  });
+
+  it('drops the tick of a row a refresh has removed, so the count matches the list', async () => {
+    mockAdminBroker.getMessages.mockResolvedValue(
+      makeListRes([makeMessage({ id: 1, sender_name: 'Alice' }), makeMessage({ id: 3, sender_name: 'Dev' })], 2),
+    );
+    const { MessageReview } = await import('./MessageReviewPage');
+    render(<MessageReview />);
+    await screen.findByText('Dev');
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Select row 1' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Select row 3' }));
+    expect(await screen.findByText('2 selected')).toBeInTheDocument();
+
+    // A colleague reviews Alice's message; the quiet refresh no longer lists it.
+    mockAdminBroker.getMessages.mockResolvedValue(makeListRes([makeMessage({ id: 3, sender_name: 'Dev' })], 1));
+    await act(async () => {
+      autoRefresh.callback!();
+      await Promise.resolve();
+    });
+
+    expect(await screen.findByText('1 selected')).toBeInTheDocument();
+  });
+
+  // ── Oldest first ──────────────────────────────────────────────────────────
+
+  it('sorts the whole queue on the server from the Date heading, and exports it the same way', async () => {
+    mockAdminBroker.getMessages.mockResolvedValue(makeListRes([makeMessage()], 1));
+    const { MessageReview } = await import('./MessageReviewPage');
+    render(<MessageReview />);
+    await screen.findByText('Alice');
+    const sortButton = screen.getByRole('button', { name: 'sort by date' });
+    expect(sortButton).toHaveAttribute('data-sort', 'created_at:desc');
+
+    fireEvent.click(sortButton);
+
+    await waitFor(() =>
+      expect(mockAdminBroker.getMessages).toHaveBeenCalledWith({ page: 1, filter: 'unreviewed', sort: 'oldest' }),
+    );
+    expect(screen.getByRole('button', { name: 'sort by date' })).toHaveAttribute('data-sort', 'created_at:asc');
+
+    mockAdminBroker.getMessages.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: /export/i }));
+    const request = csvState.run.mock.calls[0]?.[0] as { fetchPage: (page: number) => Promise<unknown> };
+    await request.fetchPage(1);
+    expect(mockAdminBroker.getMessages).toHaveBeenCalledWith(expect.objectContaining({ sort: 'oldest', per_page: 100 }));
   });
 
   it('calls reviewMessage when Mark Reviewed button is clicked', async () => {
@@ -691,6 +859,25 @@ describe('MessageReview (broker)', () => {
 
       press('Enter');
       expect(mockNavigate).toHaveBeenCalledWith('/test/broker/messages/2?queue=unreviewed');
+    });
+
+    it('leaves Enter to a row that has the keyboard focus, so two messages never open at once', async () => {
+      mockAdminBroker.getMessages.mockResolvedValue(makeListRes(rows(), 3));
+      const { MessageReview } = await import('./MessageReviewPage');
+      render(<MessageReview />);
+      await screen.findByText('Dev');
+      press('j'); // highlight Alice
+
+      // A focused table row opens itself on Enter (the table's own handling).
+      const table = document.createElement('table');
+      table.innerHTML = '<tbody><tr tabindex="0"><td>row</td></tr></tbody>';
+      document.body.appendChild(table);
+      try {
+        fireEvent.keyDown(table.querySelector('tr') as HTMLElement, { key: 'Enter' });
+        expect(mockNavigate).not.toHaveBeenCalled();
+      } finally {
+        table.remove();
+      }
     });
 
     it('marks a highlighted routine copy reviewed with r, but never a flagged one', async () => {

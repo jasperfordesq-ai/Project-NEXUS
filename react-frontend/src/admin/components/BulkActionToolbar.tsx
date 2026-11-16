@@ -46,6 +46,13 @@ interface BulkActionToolbarProps {
   actions: BulkAction[];
   onClearSelection: () => void;
   isLoading?: boolean;
+  /**
+   * A slim bar with no margin of its own, for a place that is already there
+   * (a table's top row, beside the search box). The default bar is inserted
+   * above the list, which pushes the list down the moment the first row is
+   * ticked — under the pointer of whoever is ticking the second.
+   */
+  compact?: boolean;
 }
 
 export function BulkActionToolbar({
@@ -53,6 +60,7 @@ export function BulkActionToolbar({
   actions,
   onClearSelection,
   isLoading = false,
+  compact = false,
 }: BulkActionToolbarProps) {
   const { t } = useTranslation('admin_nav');
   const [pending, setPending] = useState<BulkAction | null>(null);
@@ -76,8 +84,14 @@ export function BulkActionToolbar({
 
   return (
     <>
-      <div className="flex items-center justify-between gap-3 rounded-lg border border-accent/40 bg-accent/10 px-4 py-2 mb-3">
-        <div className="flex items-center gap-2">
+      <div
+        className={
+          compact
+            ? 'flex min-w-0 items-center justify-between gap-3 rounded-lg border border-accent/40 bg-accent/10 py-0.5 pl-3 pr-1'
+            : 'flex items-center justify-between gap-3 rounded-lg border border-accent/40 bg-accent/10 px-4 py-2 mb-3'
+        }
+      >
+        <div className="flex items-center gap-2 whitespace-nowrap">
           <span className="text-sm font-medium">
             {t('bulk.selected_count', { count: selectedCount })}
           </span>

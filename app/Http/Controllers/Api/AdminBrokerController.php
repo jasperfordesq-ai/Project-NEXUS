@@ -1720,7 +1720,17 @@ class AdminBrokerController extends BaseApiController
 
             return $this->respondWithPaginatedCollection($items, $total, $page, $perPage);
         } catch (\Exception $e) {
-            return $this->respondWithPaginatedCollection([], 0, $page, $perPage);
+            // A list that could not be read is an error, never an empty queue.
+            // Until November 2026 this answered with no rows, and an empty
+            // Unreviewed queue reads as "all caught up" on the page: a database
+            // failure told brokers there was nothing to check.
+            \Illuminate\Support\Facades\Log::error('Broker message queue could not be read', [
+                'tenant_id' => $tenantId,
+                'filter' => $filter,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->respondWithError('SERVER_ERROR', __('api.fetch_failed', ['resource' => 'messages']), null, 500);
         }
     }
 
@@ -1939,10 +1949,23 @@ class AdminBrokerController extends BaseApiController
                 return $refusal;
             }
 
-            DB::update(
-                "UPDATE broker_message_copies SET reviewed_by = ?, reviewed_at = NOW(), review_notes = ? WHERE id = ? AND tenant_id = ?",
+            // reviewed_at IS NULL in the WHERE: the first review stands. A
+            // broker working from a list a few seconds old could press Review
+            // on a copy a colleague had just reviewed, and this replaced who
+            // reviewed it, when, and their notes (with null). The bulk review
+            // has always had the same guard. A copy that an edit put back in
+            // the queue has reviewed_at cleared, so it is reviewed afresh.
+            $updated = DB::update(
+                "UPDATE broker_message_copies SET reviewed_by = ?, reviewed_at = NOW(), review_notes = ?
+                 WHERE id = ? AND tenant_id = ? AND reviewed_at IS NULL",
                 [$adminId, $notes !== '' ? $notes : null, $id, $tenantId]
             );
+
+            if ($updated !== 1) {
+                // Already done is not a failure: the page refreshes its list.
+                // Nothing was changed, so nothing is audited.
+                return $this->respondWithData(['id' => $id, 'reviewed' => true, 'already_reviewed' => true]);
+            }
 
             $this->auditLogService->log('broker_message_reviewed', null, $adminId, [
                 'message_id' => $id,
