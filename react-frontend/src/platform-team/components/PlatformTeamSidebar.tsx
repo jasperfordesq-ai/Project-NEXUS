@@ -47,7 +47,9 @@ import BarChart3 from 'lucide-react/icons/chart-column';
 import BellRing from 'lucide-react/icons/bell-ring';
 import Building2 from 'lucide-react/icons/building-2';
 import CreditCard from 'lucide-react/icons/credit-card';
+import Eraser from 'lucide-react/icons/eraser';
 import FileSearch from 'lucide-react/icons/file-search';
+import FileSignature from 'lucide-react/icons/file-signature';
 import FileText from 'lucide-react/icons/file-text';
 import FlaskConical from 'lucide-react/icons/flask-conical';
 import Globe from 'lucide-react/icons/globe';
@@ -66,6 +68,7 @@ import PanelLeft from 'lucide-react/icons/panel-left';
 import PanelLeftClose from 'lucide-react/icons/panel-left-close';
 import RotateCcw from 'lucide-react/icons/rotate-ccw';
 import Rocket from 'lucide-react/icons/rocket';
+import SearchCheck from 'lucide-react/icons/search-check';
 import ScrollText from 'lucide-react/icons/scroll-text';
 import Settings from 'lucide-react/icons/settings';
 import Shield from 'lucide-react/icons/shield';
@@ -141,6 +144,7 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
             { label: tNav('prerender_engine'), icon: Zap, path: `${P}/seo/prerender` },
             { label: t('home.card.failed_jobs'), icon: RotateCcw, path: `${P}/failed-jobs` },
             { label: t('deployments.title'), icon: Rocket, path: `${P}/deployments` },
+            { label: t('search_rebuild.title'), icon: SearchCheck, path: `${P}/search-rebuild` },
             { label: tNav('error_404_tracking'), icon: AlertTriangle, path: `${P}/404-errors` },
             { label: t('nav.tests'), icon: Stethoscope, path: `${P}/tests` },
           ],
@@ -153,6 +157,7 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
             { label: tSuper('nav.revenue_dashboard'), icon: BarChart3, path: `${P}/billing/revenue` },
             { label: tNav('plans_pricing'), icon: CreditCard, path: `${P}/plans` },
             { label: tNav('subscriptions'), icon: CreditCard, path: `${P}/plans/subscriptions` },
+            { label: t('agreements.title'), icon: FileSignature, path: `${P}/agreements` },
           ],
         },
         {
@@ -180,6 +185,7 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
           items: [
             { label: t('data_requests.nav'), icon: Inbox, path: `${P}/data-requests` },
             { label: t('legal_documents.nav'), icon: Scale, path: `${P}/legal-documents` },
+            { label: t('clean_up_jobs.title'), icon: Eraser, path: `${P}/clean-up-jobs` },
           ],
         },
         {
@@ -227,6 +233,7 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
           items: [
             { label: t('connections.title'), icon: Plug, path: `${P}/connections` },
             { label: tSuper('nav.platform_translation'), icon: Languages, path: `${P}/platform/translation` },
+            { label: t('translations.title'), icon: Globe, path: `${P}/translations` },
           ],
         },
       ],

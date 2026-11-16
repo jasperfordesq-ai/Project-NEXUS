@@ -53,9 +53,13 @@ const PLATFORM_ZONE = [
   'unfinished-features',
   'data-requests',
   'deployments',
+  'search-rebuild',
   'legal-documents',
+  'clean-up-jobs',
   'push-notifications',
   'connections',
+  'translations',
+  'agreements',
 ];
 const COMMUNITY_ZONE = [
   'email-settings', 'email-deliverability', 'deliverability', 'settings/registration-policy', 'enterprise/roles',

@@ -35,6 +35,9 @@ import ArrowRight from 'lucide-react/icons/arrow-right';
 import CircleHelp from 'lucide-react/icons/circle-help';
 import ClipboardCheck from 'lucide-react/icons/clipboard-check';
 import Database from 'lucide-react/icons/database';
+import DatabaseBackup from 'lucide-react/icons/database-backup';
+import Eraser from 'lucide-react/icons/eraser';
+import FileSignature from 'lucide-react/icons/file-signature';
 import FileText from 'lucide-react/icons/file-text';
 import HardDrive from 'lucide-react/icons/hard-drive';
 import Mail from 'lucide-react/icons/mail';
@@ -88,6 +91,14 @@ const CARD_ICON: Record<string, LucideIcon> = {
   snapshots: FileText,
   maintenance: Wrench,
   access_review: ClipboardCheck,
+  clean_up: Eraser,
+  backup: DatabaseBackup,
+  agreements: FileSignature,
+};
+
+/** A line a card always carries, whatever its state: what the check cannot know. */
+const CARD_NOTE: Record<string, string> = {
+  backup: 'home.note.backup',
 };
 
 /** The panel page that holds the detail behind a card, where one exists. */
@@ -100,6 +111,8 @@ const CARD_PAGE: Record<string, string> = {
   email: '/platform-team/email-deliverability',
   snapshots: '/platform-team/seo/prerender',
   access_review: '/platform-team/access-review',
+  clean_up: '/platform-team/clean-up-jobs',
+  agreements: '/platform-team/agreements',
 };
 
 function asStatus(value: unknown): HealthStatus {
@@ -244,6 +257,10 @@ export function PlatformTeamHome() {
                             </div>
                           ))}
                         </dl>
+                      )}
+
+                      {CARD_NOTE[card.key] && (
+                        <p className="text-sm text-muted">{wording(CARD_NOTE[card.key] as string, '')}</p>
                       )}
 
                       {match !== null && (

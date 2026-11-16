@@ -51,6 +51,7 @@ vi.mock('react-i18next', () => ({
 vi.mock('./pages/PlatformTeamHome', () => ({ default: () => <div>page:PlatformTeamHome</div> }));
 vi.mock('./pages/FailedJobsPage', () => ({ default: () => <div>page:FailedJobsPage</div> }));
 vi.mock('./pages/DeploymentsPage', () => ({ default: () => <div>page:DeploymentsPage</div> }));
+vi.mock('./pages/SearchRebuildPage', () => ({ default: () => <div>page:SearchRebuildPage</div> }));
 vi.mock('./pages/ConnectionsPage', () => ({ default: () => <div>page:ConnectionsPage</div> }));
 vi.mock('./pages/PhoneAppPage', () => ({ default: () => <div>page:PhoneAppPage</div> }));
 vi.mock('./pages/SeniorAccountsPage', () => ({ default: () => <div>page:SeniorAccountsPage</div> }));
@@ -65,7 +66,10 @@ vi.mock('./pages/UsagePage', () => ({ default: () => <div>page:UsagePage</div> }
 vi.mock('./pages/UnfinishedFeaturesPage', () => ({ default: () => <div>page:UnfinishedFeaturesPage</div> }));
 vi.mock('./pages/DataRequestsPage', () => ({ default: () => <div>page:DataRequestsPage</div> }));
 vi.mock('./pages/LegalDocumentsPage', () => ({ default: () => <div>page:LegalDocumentsPage</div> }));
+vi.mock('./pages/CleanUpJobsPage', () => ({ default: () => <div>page:CleanUpJobsPage</div> }));
 vi.mock('./pages/PushNotificationsPage', () => ({ default: () => <div>page:PushNotificationsPage</div> }));
+vi.mock('./pages/TranslationsPage', () => ({ default: () => <div>page:TranslationsPage</div> }));
+vi.mock('./pages/AgreementsPage', () => ({ default: () => <div>page:AgreementsPage</div> }));
 vi.mock('@/admin/modules/content/MenusAdmin', () => ({ default: () => <div>page:MenusAdmin</div> }));
 vi.mock('@/admin/modules/content/MenuBuilder', () => ({ default: () => <div>page:MenuBuilder</div> }));
 vi.mock('@/admin/modules/advanced/EmailSettings', () => ({ default: () => <div>page:EmailSettings</div> }));
@@ -250,6 +254,11 @@ describe('the Platform team panel mounts every moved page', () => {
     expect(await screen.findByText('page:DeploymentsPage')).toBeInTheDocument();
   });
 
+  it('opens Rebuild search, a page of the panel\'s own', async () => {
+    renderAt('/test/platform-team/search-rebuild');
+    expect(await screen.findByText('page:SearchRebuildPage')).toBeInTheDocument();
+  });
+
   it('opens Keys and connections, a page of the panel\'s own', async () => {
     renderAt('/test/platform-team/connections');
     expect(await screen.findByText('page:ConnectionsPage')).toBeInTheDocument();
@@ -295,6 +304,16 @@ describe('the Platform team panel mounts every moved page', () => {
     expect(await screen.findByText('page:LegalDocumentsPage')).toBeInTheDocument();
   });
 
+  it('opens the Clean-up jobs page', async () => {
+    renderAt('/test/platform-team/clean-up-jobs');
+    expect(await screen.findByText('page:CleanUpJobsPage')).toBeInTheDocument();
+  });
+
+  it('opens the Agreements and renewals page', async () => {
+    renderAt('/test/platform-team/agreements');
+    expect(await screen.findByText('page:AgreementsPage')).toBeInTheDocument();
+  });
+
   it('opens the Security page', async () => {
     renderAt('/test/platform-team/security');
     expect(await screen.findByText('page:SecurityPage')).toBeInTheDocument();
@@ -323,6 +342,11 @@ describe('the Platform team panel mounts every moved page', () => {
   it('opens the Push notifications page', async () => {
     renderAt('/test/platform-team/push-notifications');
     expect(await screen.findByText('page:PushNotificationsPage')).toBeInTheDocument();
+  });
+
+  it('opens the Translations page', async () => {
+    renderAt('/test/platform-team/translations');
+    expect(await screen.findByText('page:TranslationsPage')).toBeInTheDocument();
   });
 
   it('forwards /platform-team/integrations to its only page', async () => {

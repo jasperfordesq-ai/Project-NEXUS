@@ -37,6 +37,7 @@ class PlatformHealthSummaryTest extends TestCase
     private const CARDS = [
         'release', 'database', 'cache', 'disk', 'queue', 'failed_jobs',
         'cron', 'email', 'search', 'snapshots', 'maintenance', 'access_review',
+        'clean_up', 'backup', 'agreements',
     ];
 
     private const STATUSES = ['ok', 'warning', 'failing', 'unknown'];
@@ -196,6 +197,84 @@ class PlatformHealthSummaryTest extends TestCase
         $card = $this->cards()['access_review'];
         $this->assertSame('ok', $card['status']);
         $this->assertFalse($card['facts']['review_due']);
+    }
+
+    /** Clean-up jobs: the worst state of the list on the Clean-up jobs page; unknown when nothing is recorded. */
+    public function test_the_clean_up_card_follows_the_worst_job(): void
+    {
+        $this->actAsPlatformTeam();
+        Cache::flush();
+        DB::table('cron_logs')->whereIn('job_id', [
+            'cleanup', 'cleanup-sessions', 'story-cleanup', 'gdpr-export-cleanup',
+            'abuse-cleanup', 'gamification-cleanup', 'purge-verification-sessions',
+        ])->delete();
+        DB::table('tenant_retention_runs')->delete();
+
+        $card = $this->cards()['clean_up'];
+        $this->assertSame('unknown', $card['status'], 'nothing recorded is never fine');
+        $this->assertSame(15, $card['facts']['jobs_no_record']);
+
+        // Every job fine.
+        foreach (\App\Services\PlatformTeam\CleanUpJobsService::JOBS as $job) {
+            if ($job['source'] === 'schedule') {
+                Cache::put("schedule:{$job['name']}:last_ok_at", now()->subMinutes(10)->toIso8601String(), 3600);
+            } else {
+                DB::table('cron_logs')->insert(['job_id' => $job['name'], 'status' => 'success', 'executed_at' => now()->subMinutes(10)]);
+            }
+        }
+        $card = $this->cards()['clean_up'];
+        $this->assertSame('ok', $card['status']);
+        $this->assertSame(15, $card['facts']['jobs_ok']);
+
+        // One late job is something to look at; one failing job is not working.
+        Cache::put('schedule:nexus:prune-logs:last_ok_at', now()->subDays(4)->toIso8601String(), 3600);
+        $this->assertSame('warning', $this->cards()['clean_up']['status']);
+        Cache::put('schedule:performance:prune:last_failed_at', now()->toIso8601String(), 3600);
+        $card = $this->cards()['clean_up'];
+        $this->assertSame('failing', $card['status']);
+        $this->assertSame(1, $card['facts']['jobs_failing']);
+        $this->assertSame(1, $card['facts']['jobs_late']);
+    }
+
+    /** Backup: follows the verdict backup:verify writes; no verdict, or an old one, is unknown. */
+    public function test_the_backup_card_follows_the_last_verdict(): void
+    {
+        $this->actAsPlatformTeam();
+
+        Cache::forget('backup:verify:status');
+        $card = $this->cards()['backup'];
+        $this->assertSame('unknown', $card['status'], 'no verdict, as on a developer machine');
+        // It says what it cannot know, whatever the verdict.
+        $this->assertArrayHasKey('off_server_copy', $card['facts']);
+        $this->assertNull($card['facts']['off_server_copy']);
+        $this->assertArrayHasKey('restore_test', $card['facts']);
+        $this->assertNull($card['facts']['restore_test']);
+
+        $verdict = fn (string $state, int $checkedHoursAgo) => [
+            'state' => $state,
+            'newest_at' => now()->subHours($checkedHoursAgo + 7)->toIso8601String(),
+            'age_hours' => 7.0,
+            'size_bytes' => 52_428_800,
+            'checked_at' => now()->subHours($checkedHoursAgo)->toIso8601String(),
+        ];
+
+        Cache::put('backup:verify:status', $verdict('healthy', 1), 3600);
+        $card = $this->cards()['backup'];
+        $this->assertSame('ok', $card['status']);
+        $this->assertSame('50.0 MB', $card['facts']['size']);
+        $this->assertNotNull($card['facts']['newest_backup_at']);
+        $this->assertNotNull($card['facts']['checked_at']);
+
+        foreach (['stale', 'missing', 'empty', 'unreadable'] as $state) {
+            Cache::put('backup:verify:status', $verdict($state, 1), 3600);
+            $this->assertSame('failing', $this->cards()['backup']['status'], $state);
+        }
+
+        // A verdict nobody has refreshed for more than 26 hours says nothing about now.
+        Cache::put('backup:verify:status', $verdict('healthy', 30), 3600);
+        $this->assertSame('unknown', $this->cards()['backup']['status']);
+        Cache::put('backup:verify:status', $verdict('stale', 30), 3600);
+        $this->assertSame('unknown', $this->cards()['backup']['status']);
     }
 
     public function test_the_access_review_card_is_unknown_when_it_cannot_be_read(): void

@@ -9,6 +9,7 @@ namespace App\Console\Commands;
 use App\Support\Sentry\OperatorLog;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -39,6 +40,11 @@ use Illuminate\Support\Facades\Log;
  */
 class BackupVerify extends Command
 {
+    /** Read by PlatformHealthService (the Platform team's backup card). */
+    public const VERDICT_KEY = 'backup:verify:status';
+
+    public const VERDICT_TTL_SECONDS = 3 * 86400;
+
     protected $signature = 'backup:verify
                             {--dir= : Directory holding nexus_db_*.sql.gz dumps (default: BACKUP_VERIFY_DIR or base_path("backups"))}
                             {--max-age-hours=26 : Alarm if the newest DB backup is older than this many hours}
@@ -54,6 +60,8 @@ class BackupVerify extends Command
         $pattern = (string) $this->option('glob');
 
         if (! is_dir($dir)) {
+            $this->recordVerdict('missing');
+
             return $this->alarm(
                 sprintf('BACKUP ALARM: backup directory "%s" does not exist — no database backups are being written.', $dir),
                 ['dir' => $dir, 'reason' => 'dir_missing']
@@ -62,6 +70,8 @@ class BackupVerify extends Command
 
         $matches = glob($dir . DIRECTORY_SEPARATOR . $pattern) ?: [];
         if ($matches === []) {
+            $this->recordVerdict('missing');
+
             return $this->alarm(
                 sprintf('BACKUP ALARM: no database backup matching "%s" found in %s — the nightly backup is not running.', $pattern, $dir),
                 ['dir' => $dir, 'glob' => $pattern, 'reason' => 'no_backup']
@@ -82,6 +92,8 @@ class BackupVerify extends Command
         }
 
         if ($newest === null) {
+            $this->recordVerdict('unreadable');
+
             return $this->alarm(
                 sprintf('BACKUP ALARM: found backup files in %s but none were readable (filemtime failed).', $dir),
                 ['dir' => $dir, 'reason' => 'unreadable']
@@ -91,15 +103,20 @@ class BackupVerify extends Command
         $size = (int) (@filesize($newest) ?: 0);
         $name = basename($newest);
 
+        $ageHours = (Carbon::now()->getTimestamp() - $newestMtime) / 3600;
+
         if ($size === 0) {
+            $this->recordVerdict('empty', $newestMtime, 0, $ageHours);
+
             return $this->alarm(
                 sprintf('BACKUP ALARM: newest database backup %s is zero bytes — the dump failed or was truncated.', $name),
                 ['dir' => $dir, 'file' => $name, 'size' => 0, 'reason' => 'empty']
             );
         }
 
-        $ageHours = (Carbon::now()->getTimestamp() - $newestMtime) / 3600;
         if ($ageHours > $maxAgeHours) {
+            $this->recordVerdict('stale', $newestMtime, $size, $ageHours);
+
             return $this->alarm(
                 sprintf(
                     'BACKUP ALARM: newest database backup %s is %.1fh old (> %dh threshold) — the nightly backup has stopped running.',
@@ -124,8 +141,33 @@ class BackupVerify extends Command
             'size' => $size,
             'age_hours' => round($ageHours, 1),
         ]);
+        $this->recordVerdict('healthy', $newestMtime, $size, $ageHours);
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Leave this run's verdict where the Platform team's home page reads it
+     * (VERDICT_KEY, kept three days), on every run, healthy or not. No folder
+     * or file name: the state, when the newest backup was made, its age and
+     * size, and when it was checked.
+     *
+     * 🔴 It must never change the check or its exit code: a cache failure is
+     * logged and the run carries on.
+     */
+    private function recordVerdict(string $state, ?int $newestMtime = null, ?int $size = null, ?float $ageHours = null): void
+    {
+        try {
+            Cache::put(self::VERDICT_KEY, [
+                'state' => $state,
+                'newest_at' => $newestMtime !== null ? date('c', $newestMtime) : null,
+                'age_hours' => $ageHours !== null ? round($ageHours, 1) : null,
+                'size_bytes' => $size,
+                'checked_at' => Carbon::now()->toIso8601String(),
+            ], self::VERDICT_TTL_SECONDS);
+        } catch (\Throwable $e) {
+            Log::warning('backup:verify could not record its verdict for the platform health page', ['error' => $e->getMessage()]);
+        }
     }
 
     /**

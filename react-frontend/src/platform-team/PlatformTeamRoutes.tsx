@@ -34,6 +34,7 @@ const PlatformTeamHome = lazy(() => import('./pages/PlatformTeamHome'));
 // Pages written for the panel itself (not moved in from another panel).
 const FailedJobsPage = lazy(() => import('./pages/FailedJobsPage'));
 const DeploymentsPage = lazy(() => import('./pages/DeploymentsPage'));
+const SearchRebuildPage = lazy(() => import('./pages/SearchRebuildPage'));
 const ConnectionsPage = lazy(() => import('./pages/ConnectionsPage'));
 const PhoneAppPage = lazy(() => import('./pages/PhoneAppPage'));
 const SeniorAccountsPage = lazy(() => import('./pages/SeniorAccountsPage'));
@@ -48,7 +49,10 @@ const UsagePage = lazy(() => import('./pages/UsagePage'));
 const UnfinishedFeaturesPage = lazy(() => import('./pages/UnfinishedFeaturesPage'));
 const DataRequestsPage = lazy(() => import('./pages/DataRequestsPage'));
 const LegalDocumentsPage = lazy(() => import('./pages/LegalDocumentsPage'));
+const CleanUpJobsPage = lazy(() => import('./pages/CleanUpJobsPage'));
 const PushNotificationsPage = lazy(() => import('./pages/PushNotificationsPage'));
+const TranslationsPage = lazy(() => import('./pages/TranslationsPage'));
+const AgreementsPage = lazy(() => import('./pages/AgreementsPage'));
 
 const MenusAdmin = lazy(() => import('@/admin/modules/content/MenusAdmin'));
 const MenuBuilder = lazy(() => import('@/admin/modules/content/MenuBuilder'));
@@ -114,9 +118,11 @@ export function PlatformTeamRoutes() {
 
       <Route path="failed-jobs" element={<Lazy><FailedJobsPage /></Lazy>} />
       <Route path="deployments" element={<Lazy><DeploymentsPage /></Lazy>} />
+      <Route path="search-rebuild" element={<Lazy><SearchRebuildPage /></Lazy>} />
       <Route path="connections" element={<Lazy><ConnectionsPage /></Lazy>} />
       <Route path="phone-app" element={<Lazy><PhoneAppPage /></Lazy>} />
       <Route path="push-notifications" element={<Lazy><PushNotificationsPage /></Lazy>} />
+      <Route path="translations" element={<Lazy><TranslationsPage /></Lazy>} />
       <Route path="senior-accounts" element={<Lazy><SeniorAccountsPage /></Lazy>} />
       <Route path="accounts" element={<Lazy><FindAccountPage /></Lazy>} />
       <Route path="access-review" element={<Lazy><AccessReviewPage /></Lazy>} />
@@ -129,6 +135,8 @@ export function PlatformTeamRoutes() {
       <Route path="unfinished-features" element={<Lazy><UnfinishedFeaturesPage /></Lazy>} />
       <Route path="data-requests" element={<Lazy><DataRequestsPage /></Lazy>} />
       <Route path="legal-documents" element={<Lazy><LegalDocumentsPage /></Lazy>} />
+      <Route path="clean-up-jobs" element={<Lazy><CleanUpJobsPage /></Lazy>} />
+      <Route path="agreements" element={<Lazy><AgreementsPage /></Lazy>} />
 
       <Route path="menus" element={<Lazy><MenusAdmin /></Lazy>} />
       <Route path="menus/builder/:id" element={<Lazy><MenuBuilder /></Lazy>} />

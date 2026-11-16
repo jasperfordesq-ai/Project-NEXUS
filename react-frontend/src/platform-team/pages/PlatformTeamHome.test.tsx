@@ -45,6 +45,24 @@ const SUMMARY = {
     { key: 'cron', status: 'warning', facts: [{ key: 'failed_24h', value: 3, type: 'count' }] },
     { key: 'disk', status: 'ok', facts: [{ key: 'used_percent', value: 41, type: 'percent' }] },
     { key: 'access_review', status: 'warning', facts: [{ key: 'review_due', value: true, type: 'bool' }] },
+    { key: 'clean_up', status: 'unknown', facts: [{ key: 'jobs_no_record', value: 15, type: 'count' }] },
+    {
+      key: 'backup',
+      status: 'ok',
+      facts: [
+        { key: 'newest_backup_at', value: '2026-11-16T02:00:00+00:00', type: 'datetime' },
+        { key: 'off_server_copy', value: null, type: 'text' },
+        { key: 'restore_test', value: null, type: 'text' },
+      ],
+    },
+    {
+      key: 'agreements',
+      status: 'warning',
+      facts: [
+        { key: 'agreements_entered', value: 3, type: 'count' },
+        { key: 'agreements_renewing_soon', value: 1, type: 'count' },
+      ],
+    },
     { key: 'something_new', status: 'ok', facts: [] },
   ],
 };
@@ -124,6 +142,34 @@ describe('PlatformTeamHome', () => {
     expect(within(card('access_review')).getByRole('link')).toHaveAttribute('href', '/test/platform-team/access-review');
     // No detail page exists for these yet: no link to nowhere.
     expect(within(card('queue')).queryByRole('link')).not.toBeInTheDocument();
+  });
+
+  it('links the clean-up card to the Clean-up jobs page; the backup card has no page of its own', async () => {
+    renderHome();
+    await waitFor(() => expect(card('clean_up')).toBeInTheDocument());
+
+    expect(within(card('clean_up')).getByRole('link')).toHaveAttribute('href', '/test/platform-team/clean-up-jobs');
+    expect(within(card('backup')).queryByRole('link')).not.toBeInTheDocument();
+  });
+
+  it('links the agreements card to the Agreements and renewals page, with its counts', async () => {
+    renderHome();
+    await waitFor(() => expect(card('agreements')).toBeInTheDocument());
+
+    expect(within(card('agreements')).getByText('home.card.agreements')).toBeInTheDocument();
+    expect(within(card('agreements')).getByText('home.status.warning')).toBeInTheDocument();
+    expect(within(card('agreements')).getByText('home.fact.agreements_renewing_soon')).toBeInTheDocument();
+    expect(within(card('agreements')).getByRole('link')).toHaveAttribute('href', '/test/platform-team/agreements');
+  });
+
+  it('says on the backup card what it cannot know, even when the check is fine', async () => {
+    renderHome();
+    await waitFor(() => expect(card('backup')).toBeInTheDocument());
+
+    expect(within(card('backup')).getByText('home.note.backup')).toBeInTheDocument();
+    expect(within(card('backup')).getAllByText('home.value.not_known')).toHaveLength(2);
+    // Only the backup card carries that note.
+    expect(within(card('clean_up')).queryByText('home.note.backup')).not.toBeInTheDocument();
   });
 
   it('still shows a card the page has no wording for, under its own name', async () => {

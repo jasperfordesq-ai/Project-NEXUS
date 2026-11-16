@@ -6,6 +6,7 @@
 
 namespace App\Services;
 
+use App\Http\Middleware\EnforceMobileMinimumVersion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -1315,15 +1316,19 @@ class TokenService
         if ($parentJtiHash === null) {
             // E-119 F-608: a new sign-in is active from the moment it is made.
             // Whether it came through the phone app is fixed here, at sign-in.
+            $fromPhoneApp = $this->isMobileRequest();
             DB::table('refresh_session_activity')->insertOrIgnore([
                 'family_hash' => $this->hashIdentifier($familyId),
                 'tenant_id' => $tenantId,
                 'user_id' => $userId,
                 'last_activity_at' => $now,
-                'from_phone_app' => $this->isMobileRequest(),
+                'from_phone_app' => $fromPhoneApp,
                 'created_at' => $now,
                 'updated_at' => $now,
             ]);
+            if ($fromPhoneApp) {
+                $this->stampPhoneAppVersion($this->hashIdentifier($familyId));
+            }
         }
         DB::table('refresh_token_sessions')->insert([
             'tenant_id' => $tenantId,
@@ -1408,15 +1413,19 @@ class TokenService
                 // Signed in before activity was recorded: active from now on,
                 // and its kind is taken from this, its first request since.
                 $now = now();
+                $fromPhoneApp = $this->isMobileRequest();
                 DB::table('refresh_session_activity')->insertOrIgnore([
                     'family_hash' => $familyHash,
                     'tenant_id' => $tenantId,
                     'user_id' => $userId,
                     'last_activity_at' => $now,
-                    'from_phone_app' => $this->isMobileRequest(),
+                    'from_phone_app' => $fromPhoneApp,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ]);
+                if ($fromPhoneApp) {
+                    $this->stampPhoneAppVersion($familyHash);
+                }
                 return false;
             }
             if ((bool) $activity->from_phone_app) {
@@ -1442,12 +1451,65 @@ class TokenService
     private function recordSessionActivity(string $familyHash): void
     {
         try {
+            $values = ['last_activity_at' => now(), 'updated_at' => now()];
+            // The app can be updated without signing in again: a request from
+            // the app with a plain version refreshes it on this same write. No
+            // valid version leaves the stored one as it is.
+            if ($this->isMobileRequest()) {
+                $version = $this->phoneAppVersion();
+                if ($version !== null) {
+                    $values['app_version'] = $version;
+                }
+            }
             DB::table('refresh_session_activity')
                 ->where('family_hash', $familyHash)
                 ->where('last_activity_at', '<', now()->subSeconds(self::ACTIVITY_WRITE_INTERVAL_SECONDS))
-                ->update(['last_activity_at' => now(), 'updated_at' => now()]);
+                ->update($values);
         } catch (\Throwable $e) {
             Log::warning('[TokenService] Could not record session activity', ['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * The phone app's version from its `X-Nexus-Mobile-Version` header, kept
+     * with the sign-in for the Platform team's "App versions in use" figures.
+     * Only a plain `1.2.3` (up to three digits a part) is kept; anything else,
+     * missing, junk, over-long or with a suffix, is null. Cannot throw: this
+     * runs on the sign-in path and must never be able to fail a sign-in.
+     */
+    private function phoneAppVersion(): ?string
+    {
+        $raw = request()->headers->get(EnforceMobileMinimumVersion::VERSION_HEADER);
+        if (!is_string($raw) || strlen($raw) > 20) {
+            return null;
+        }
+        $version = trim($raw);
+
+        return preg_match('/^\d{1,3}\.\d{1,3}\.\d{1,3}$/D', $version) === 1 ? $version : null;
+    }
+
+    /**
+     * Keep the phone app's version with a sign-in that came from the app.
+     *
+     * 🔴 Deliberately its own guarded write, AFTER the sign-in row exists, and
+     * never part of the sign-in insert: a sign-in must not depend on the
+     * `app_version` column. If the column is missing (code running before its
+     * migration) or the write fails, the sign-in is untouched and the version
+     * is simply not recorded.
+     */
+    private function stampPhoneAppVersion(string $familyHash): void
+    {
+        $version = $this->phoneAppVersion();
+        if ($version === null) {
+            return;
+        }
+
+        try {
+            DB::table('refresh_session_activity')
+                ->where('family_hash', $familyHash)
+                ->update(['app_version' => $version]);
+        } catch (\Throwable $e) {
+            Log::warning('[TokenService] Could not record the phone app version', ['error' => $e->getMessage()]);
         }
     }
 

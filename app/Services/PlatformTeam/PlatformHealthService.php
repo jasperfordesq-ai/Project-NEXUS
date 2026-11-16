@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace App\Services\PlatformTeam;
 
+use App\Console\Commands\BackupVerify;
 use App\Http\Middleware\SecurityHeaders;
 use App\Services\EmailMonitorService;
 use App\Services\PrerenderService;
@@ -56,6 +57,9 @@ final class PlatformHealthService
     /** The queue verdict is re-written every few minutes; older than this says nothing about now. */
     private const QUEUE_VERDICT_STALE_SECONDS = 3600;
 
+    /** backup:verify runs once a day; a verdict older than this says nothing about now. */
+    private const BACKUP_VERDICT_STALE_SECONDS = 26 * 3600;
+
     public function __construct(
         private readonly EmailMonitorService $emailMonitor,
         private readonly PrerenderService $prerender,
@@ -80,6 +84,9 @@ final class PlatformHealthService
             $this->card('snapshots', fn () => $this->snapshots()),
             $this->card('maintenance', fn () => $this->maintenance()),
             $this->card('access_review', fn () => $this->accessReview()),
+            $this->card('clean_up', fn () => $this->cleanUp()),
+            $this->card('backup', fn () => $this->backup()),
+            $this->card('agreements', fn () => $this->agreements()),
         ];
 
         return [
@@ -388,5 +395,110 @@ final class PlatformHealthService
         }
 
         return [$state['due'] ? self::WARNING : self::OK, $facts];
+    }
+
+    /**
+     * The worst state on the Clean-up jobs page: late is something to look
+     * at, failing is not working, and a job with no record yet keeps the card
+     * from being fine. A record that could not be read makes the whole card
+     * "could not be checked".
+     *
+     * @return array{0: string, 1: list<array{key: string, value: mixed, type: string}>}
+     */
+    private function cleanUp(): array
+    {
+        $counts = [CleanUpJobsService::OK => 0, CleanUpJobsService::LATE => 0, CleanUpJobsService::FAILING => 0, CleanUpJobsService::UNKNOWN => 0];
+        foreach ((new CleanUpJobsService())->report()['jobs'] as $job) {
+            if (!$job['readable']) {
+                throw new \RuntimeException("the record for clean-up job {$job['key']} could not be read");
+            }
+            $counts[$job['status']]++;
+        }
+
+        $status = self::worst(array_merge(
+            $counts[CleanUpJobsService::FAILING] > 0 ? [self::FAILING] : [],
+            $counts[CleanUpJobsService::LATE] > 0 ? [self::WARNING] : [],
+            $counts[CleanUpJobsService::UNKNOWN] > 0 ? [self::UNKNOWN] : [],
+        ));
+
+        return [$status, [
+            self::fact('jobs_ok', $counts[CleanUpJobsService::OK], 'count'),
+            self::fact('jobs_late', $counts[CleanUpJobsService::LATE], 'count'),
+            self::fact('jobs_failing', $counts[CleanUpJobsService::FAILING], 'count'),
+            self::fact('jobs_no_record', $counts[CleanUpJobsService::UNKNOWN], 'count'),
+        ]];
+    }
+
+    /**
+     * The verdict `backup:verify` leaves every morning (BackupVerify::VERDICT_KEY).
+     * Older than BACKUP_VERDICT_STALE_SECONDS, or none at all (a developer's
+     * computer), says nothing about now: unknown.
+     *
+     * 🔴 It only knows about the newest backup on this server. Whether a copy is
+     * kept off the server and when a restore was last tested are recorded
+     * nowhere this can read: those two facts are always "not known".
+     *
+     * @return array{0: string, 1: list<array{key: string, value: mixed, type: string}>}
+     */
+    private function backup(): array
+    {
+        $notKnown = [self::fact('off_server_copy', null), self::fact('restore_test', null)];
+
+        $verdict = Cache::get(BackupVerify::VERDICT_KEY);
+        $checkedAt = is_array($verdict) && isset($verdict['state'], $verdict['checked_at'])
+            ? strtotime((string) $verdict['checked_at'])
+            : false;
+        if (!is_array($verdict) || $checkedAt === false) {
+            return [self::UNKNOWN, $notKnown];
+        }
+
+        $newest = isset($verdict['newest_at']) ? strtotime((string) $verdict['newest_at']) : false;
+        $size = isset($verdict['size_bytes']) && is_int($verdict['size_bytes']) ? $verdict['size_bytes'] : null;
+        $facts = array_merge([
+            self::fact('newest_backup_at', $newest !== false ? date('c', $newest) : null, 'datetime'),
+            self::fact('size', $size !== null ? self::megabytes($size) : null),
+            self::fact('checked_at', date('c', $checkedAt), 'datetime'),
+        ], $notKnown);
+
+        if (time() - $checkedAt > self::BACKUP_VERDICT_STALE_SECONDS) {
+            return [self::UNKNOWN, $facts];
+        }
+
+        $status = match ((string) $verdict['state']) {
+            'healthy' => self::OK,
+            'stale', 'missing', 'empty', 'unreadable' => self::FAILING,
+            default => self::UNKNOWN,
+        };
+
+        return [$status, $facts];
+    }
+
+    /**
+     * The reminder for agreements (there is no reminder email): needs a look
+     * when an agreement that has not ended renews within
+     * PlatformAgreementService::RENEWAL_WARNING_DAYS days, or its renewal
+     * date has passed. None entered at all is fine, and the fact says 0.
+     *
+     * @return array{0: string, 1: list<array{key: string, value: mixed, type: string}>}
+     */
+    private function agreements(): array
+    {
+        $state = (new PlatformAgreementService())->renewalStatus();
+
+        $facts = [self::fact('agreements_entered', $state['entered'], 'count')];
+        if ($state['entered'] > 0) {
+            $facts[] = self::fact('agreements_renewing_soon', $state['renewing_soon'], 'count');
+        }
+
+        return [$state['renewing_soon'] > 0 ? self::WARNING : self::OK, $facts];
+    }
+
+    private static function megabytes(int $bytes): string
+    {
+        if ($bytes >= 1024 ** 3) {
+            return self::gigabytes((float) $bytes);
+        }
+
+        return number_format($bytes / 1024 / 1024, 1) . ' MB';
     }
 }

@@ -89,7 +89,10 @@
       "search": "Busca",
       "snapshots": "Páginas salvas para buscadores",
       "maintenance": "Modo de manutenção",
-      "access_review": "Revisão de acessos"
+      "access_review": "Revisão de acessos",
+      "clean_up": "Tarefas de limpeza",
+      "backup": "Backup do banco de dados",
+      "agreements": "Acordos e renovações"
     },
     "fact": {
       "version": "Versão",
@@ -114,7 +117,16 @@
       "platform_wide": "Toda a plataforma",
       "communities": "Comunidades em manutenção",
       "review_due": "Revisão pendente",
-      "last_review_at": "Última revisão"
+      "last_review_at": "Última revisão",
+      "jobs_ok": "Funcionando como esperado",
+      "jobs_late": "Atrasada",
+      "jobs_failing": "Falhando",
+      "jobs_no_record": "Ainda sem registro",
+      "newest_backup_at": "Backup mais recente feito",
+      "off_server_copy": "Cópia guardada fora do servidor",
+      "restore_test": "Último teste de restauração",
+      "agreements_entered": "Acordos cadastrados",
+      "agreements_renewing_soon": "Renovação próxima ou vencida"
     },
     "value": {
       "yes": "Sim",
@@ -122,6 +134,9 @@
       "not_known": "Não se sabe",
       "browser_same": "Este navegador está na mesma versão.",
       "browser_other": "Este navegador está em outra versão. Recarregue a página."
+    },
+    "note": {
+      "backup": "Aqui só se verifica o backup mais recente no próprio servidor. Se existe uma cópia guardada fora do servidor, e quando uma restauração foi testada pela última vez, não está registrado em nenhum lugar que esta página consiga ler."
     }
   },
   "failed_jobs": {
@@ -153,7 +168,17 @@
     "intro": "Quem tem o aplicativo para celular, em cada comunidade da plataforma. Os membros aparecem pelo nome; os endereços de e-mail não são mostrados.",
     "not_downloads": "São membros conectados no aplicativo, não downloads das lojas de aplicativos.",
     "loading": "Carregando os números do aplicativo",
-    "load_error_title": "Não conseguimos carregar os números do aplicativo agora"
+    "load_error_title": "Não conseguimos carregar os números do aplicativo agora",
+    "versions": {
+      "title": "Versões do app em uso",
+      "coverage": "Estes números só incluem os celulares que entraram depois que a versão do app passou a ser registrada, então no começo a maioria dos acessos vai aparecer como “não registrada”.",
+      "version": "Versão {{version}}",
+      "sign_ins_one": "{{count}} acesso",
+      "sign_ins_other": "{{count}} acessos",
+      "not_recorded_one": "{{count}} acesso sem versão registrada",
+      "not_recorded_other": "{{count}} acessos sem versão registrada",
+      "none_yet": "Nenhum celular registrou a versão do app ainda."
+    }
   },
   "senior_accounts": {
     "title": "Contas de alto nível",
@@ -728,6 +753,209 @@
       "consent_types": "Os tipos de consentimento ficam no painel de administração",
       "identity_fee": "A taxa da verificação de identidade fica no painel de administração, em Módulos",
       "secrets_replaced": "A antiga lista de chaves do servidor foi substituída por esta página."
+    }
+  },
+  "translations": {
+    "title": "Traduções",
+    "intro": "Quanto do texto está traduzido para cada idioma.",
+    "recount": "Contar de novo",
+    "loading": "Carregando os números de tradução",
+    "website_title": "Textos do site",
+    "website_intro": "Os textos do site e dos painéis. Contados quando esta versão do site foi gerada.",
+    "website_unavailable": "Os números do site não estão disponíveis neste servidor.",
+    "server_title": "Textos do servidor: e-mails e mensagens",
+    "server_intro": "Os textos dos e-mails e mensagens que o servidor envia. Contados a partir dos arquivos do servidor e guardados por uma hora.",
+    "server_unavailable": "Os números do servidor não estão disponíveis: não foi possível ler os textos em inglês.",
+    "server_load_error": "Não foi possível carregar os números do servidor",
+    "counted_at": "Contado em: {{date}}",
+    "column": {
+      "language": "Idioma",
+      "phrases": "Frases",
+      "missing": "Faltando",
+      "same": "Ainda igual ao inglês",
+      "translated": "Traduzido"
+    },
+    "same_note": "Algumas frases devem ser iguais em todos os idiomas, como nomes e unidades. Por isso, “ainda igual ao inglês” é um limite máximo, não um número exato.",
+    "not_measured": "O aplicativo de celular e o site acessível não são medidos aqui."
+  },
+  "clean_up_jobs": {
+    "title": "Tarefas de limpeza",
+    "intro": "As tarefas agendadas que apagam dados antigos. Para cada uma: o que apaga, com que frequência roda, quando rodou com sucesso pela última vez e quando falhou pela última vez. Os horários aparecem no seu fuso horário.",
+    "records_note": "Para a maioria dessas tarefas, os registros só começam no dia em que esta página entrou no ar. Até a próxima execução, a tarefa mostra \"Ainda sem registro\": isso pode levar até um dia, ou uma semana no caso de uma tarefa semanal. As tarefas executadas pela rotina de cada minuto guardam o registro por apenas 30 dias.",
+    "loading": "Carregando as tarefas de limpeza",
+    "load_error_title": "Não foi possível carregar as tarefas de limpeza",
+    "runs": "Roda",
+    "last_ok": "Última execução com sucesso",
+    "last_failed": "Última falha",
+    "not_recorded": "Não registrado",
+    "never_failed": "Nenhuma falha registrada",
+    "how_often": {
+      "hourly": "A cada hora",
+      "daily": "Todo dia",
+      "weekly": "Toda semana"
+    },
+    "status": {
+      "ok": "Funcionando como esperado",
+      "late": "Atrasada",
+      "failing": "Falhando",
+      "unknown": "Ainda sem registro",
+      "unreadable": "Não foi possível ler"
+    },
+    "job": {
+      "performance_prune": {
+        "name": "Medições de velocidade",
+        "deletes": "Apaga as medições de velocidade da própria plataforma quando passam do número de dias definido."
+      },
+      "retention_enforce": {
+        "name": "Regras de guarda das comunidades",
+        "deletes": "Apaga ou torna anônimos os dados mais antigos do que as configurações de guarda de cada comunidade permitem."
+      },
+      "prune_logs": {
+        "name": "Registros antigos de log",
+        "deletes": "Apaga linhas antigas dos logs da plataforma, como execuções de tarefas agendadas, páginas não encontradas, atividade e conexões de parceiros."
+      },
+      "prune_match_notifications": {
+        "name": "Registros de e-mails de combinação",
+        "deletes": "Apaga o registro de quais e-mails de combinação foram enviados quando ele tem mais de 30 dias."
+      },
+      "purge_message_copies": {
+        "name": "Cópias de mensagens guardadas para proteção",
+        "deletes": "Apaga as cópias de mensagens guardadas para revisão de proteção quando termina o prazo de guarda de cada comunidade."
+      },
+      "federation_purge_external_logs": {
+        "name": "Logs de pedidos de parceiros",
+        "deletes": "Apaga os logs de pedidos para e de plataformas parceiras quando passam do limite de idade."
+      },
+      "federation_prune_aggregate_logs": {
+        "name": "Log de números compartilhados",
+        "deletes": "Apaga o registro dos pedidos de números compartilhados feitos por parceiros quando ele tem mais de 12 meses."
+      },
+      "groups_prune_exports": {
+        "name": "Arquivos para download dos grupos",
+        "deletes": "Remove os arquivos para download dos grupos quando expiram e apaga os registros antigos deles."
+      },
+      "cleanup": {
+        "name": "Limpeza diária",
+        "deletes": "Apaga links de redefinição, chaves de acesso e bloqueios de boletim expirados, notificações enviadas e registros de tarefas agendadas com mais de 30 dias, e resultados de combinação antigos."
+      },
+      "cleanup_sessions": {
+        "name": "Acessos antigos",
+        "deletes": "Apaga acessos sem uso há mais de um dia e registros de acesso expirados."
+      },
+      "story_cleanup": {
+        "name": "Stories expirados",
+        "deletes": "Oculta os stories expirados e apaga suas fotos e vídeos."
+      },
+      "gdpr_export_cleanup": {
+        "name": "Arquivos de download de dados pessoais",
+        "deletes": "Apaga os arquivos com os dados pessoais de um membro quando o link de download expira."
+      },
+      "abuse_cleanup": {
+        "name": "Alertas de abuso encerrados",
+        "deletes": "Apaga alertas de abuso resolvidos ou descartados há mais de 90 dias."
+      },
+      "gamification_cleanup": {
+        "name": "Registros antigos de pontos e selos",
+        "deletes": "Apaga avisos de pontos com mais de 7 dias, prêmios de campanhas com mais de um ano e números de selos com mais de dois anos."
+      },
+      "purge_verification_sessions": {
+        "name": "Verificações de identidade antigas",
+        "deletes": "Apaga verificações de identidade concluídas ou expiradas com mais de 180 dias. O registro do que aconteceu em cada uma é mantido."
+      }
+    }
+  },
+  "search_rebuild": {
+    "title": "Reconstruir a busca",
+    "intro": "Envia de novo ao serviço de busca os anúncios, membros, próximos eventos, grupos e itens do mercado de uma comunidade. Use quando a busca não encontrar coisas que deveria encontrar.",
+    "loading": "Carregando as comunidades",
+    "load_error_title": "Não foi possível carregar a lista de comunidades",
+    "available": "O serviço de busca pode ser acessado.",
+    "unavailable": "O serviço de busca não pode ser acessado agora. Uma reconstrução só pode ser iniciada quando ele puder.",
+    "does": {
+      "adds": "Ela adiciona e atualiza as entradas de busca da comunidade.",
+      "not_removed": "As entradas de coisas que foram excluídas não são removidas por isso.",
+      "keep_searching": "Os membros podem continuar buscando enquanto ela é executada."
+    },
+    "auto_refresh": "Esta lista se atualiza sozinha a cada 10 segundos enquanto uma reconstrução está aguardando ou em andamento.",
+    "switched_off": "Desativada",
+    "rebuild": "Reconstruir",
+    "cancel": "Cancelar",
+    "confirm_title": "Reconstruir a busca de {{name}}?",
+    "confirm_message": "Isso adiciona e atualiza as entradas de busca da comunidade. As entradas de coisas que foram excluídas não são removidas por isso. Os membros podem continuar buscando enquanto ela é executada.",
+    "started": "A reconstrução está aguardando para começar. Esta lista se atualiza sozinha.",
+    "action_failed": "Não foi possível iniciar a reconstrução.",
+    "busy": "Já há uma reconstrução desta comunidade aguardando ou em andamento.",
+    "last": {
+      "never": "Nunca executada a partir desta página",
+      "queued": "Aguardando para começar",
+      "running": "Em andamento desde {{time}}",
+      "done_one": "Concluída {{time}}: {{count}} entrada atualizada",
+      "done_other": "Concluída {{time}}: {{count}} entradas atualizadas",
+      "done_with_errors_one": "Concluída {{time}} com {{count}} entrada que não pôde ser atualizada",
+      "done_with_errors_other": "Concluída {{time}} com {{count}} entradas que não puderam ser atualizadas",
+      "failed": "Falhou"
+    }
+  },
+  "agreements": {
+    "title": "Acordos e renovações",
+    "intro": "Os acordos da plataforma com comunidades e outras partes. A próxima renovação aparece primeiro. Todo acordo que se renova em até {{days}} dias, ou cuja data de renovação já passou, é marcado, e a página inicial mostra um lembrete.",
+    "private_note": "Os nomes e e-mails dos contatos aparecem só nesta página, para a equipe da plataforma. Eles não ficam guardados no registro de atividades.",
+    "new": "Adicionar um acordo",
+    "loading": "Carregando os acordos",
+    "load_error_title": "Não conseguimos carregar os acordos agora",
+    "empty_title": "Nenhum acordo cadastrado ainda",
+    "empty_text": "Adicione um para receber um lembrete antes da renovação.",
+    "not_entered": "Não informado",
+    "community_none": "Sem comunidade vinculada",
+    "community_gone": "A comunidade não existe mais (#{{id}})",
+    "chip_soon": "Renova em breve",
+    "chip_passed": "Data de renovação vencida",
+    "chip_ended": "Encerrado",
+    "renews_today": "Renova hoje",
+    "field": {
+      "community": "Comunidade",
+      "renews_on": "Data de renovação",
+      "days_left": "Dias até a renovação",
+      "days_since": "Dias desde a data de renovação",
+      "starts_on": "Data de início",
+      "ends_on": "Data de término",
+      "contact_name": "Nome do contato",
+      "contact_email": "E-mail do contato",
+      "notes": "Anotações"
+    },
+    "change": "Alterar",
+    "end": "Encerrar",
+    "ended_title": "Acordos encerrados",
+    "ended_text": "Os acordos encerrados continuam registrados. Não é possível excluir: um acordo cadastrado por engano também é encerrado.",
+    "end_title": "Encerrar este acordo?",
+    "end_message": "Ele vai para a lista de encerrados e continua registrado. Não pode ser reativado. Não é possível excluir, então é assim também que se retira um acordo cadastrado por engano.",
+    "end_confirm": "Encerrar",
+    "keep": "Manter",
+    "saved": "Acordo salvo",
+    "ended_toast": "Acordo encerrado",
+    "save_failed": "Não foi possível salvar. Tente de novo.",
+    "form": {
+      "title_new": "Adicionar um acordo",
+      "title_edit": "Alterar o acordo",
+      "hint": "Só são necessários o nome e com quem é. Deixe vazio o que você não souber: nada é preenchido por você.",
+      "title": "Nome do acordo",
+      "with_whom": "Com quem é",
+      "community": "Comunidade",
+      "starts_on": "Data de início",
+      "renews_on": "Data de renovação",
+      "ends_on": "Data de término",
+      "contact_name": "Nome do contato",
+      "contact_email": "E-mail do contato",
+      "notes": "Anotações",
+      "required": "Preencha este campo, com até 160 caracteres.",
+      "date_invalid": "Use uma data real ou deixe o campo vazio.",
+      "ends_before_start": "A data de término não pode ser anterior à data de início.",
+      "renews_before_start": "A data de renovação não pode ser anterior à data de início.",
+      "email_invalid": "Digite um endereço de e-mail válido ou deixe o campo vazio.",
+      "too_long": "Está longo demais.",
+      "community_unknown": "Essa comunidade não existe.",
+      "save": "Salvar",
+      "cancel": "Cancelar"
     }
   }
 }

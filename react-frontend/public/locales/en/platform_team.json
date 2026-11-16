@@ -89,7 +89,10 @@
       "search": "Search",
       "snapshots": "Pages saved for search engines",
       "maintenance": "Maintenance mode",
-      "access_review": "Access review"
+      "access_review": "Access review",
+      "clean_up": "Clean-up jobs",
+      "backup": "Database backup",
+      "agreements": "Agreements and renewals"
     },
     "fact": {
       "version": "Version",
@@ -114,7 +117,16 @@
       "platform_wide": "Whole platform",
       "communities": "Communities in maintenance",
       "review_due": "Review due",
-      "last_review_at": "Last review"
+      "last_review_at": "Last review",
+      "jobs_ok": "Running as expected",
+      "jobs_late": "Late",
+      "jobs_failing": "Failing",
+      "jobs_no_record": "No record yet",
+      "newest_backup_at": "Newest backup made",
+      "off_server_copy": "Copy kept off the server",
+      "restore_test": "Last restore test",
+      "agreements_entered": "Agreements entered",
+      "agreements_renewing_soon": "Renewing soon or past the date"
     },
     "value": {
       "yes": "Yes",
@@ -122,6 +134,9 @@
       "not_known": "Not known",
       "browser_same": "This browser is on the same version.",
       "browser_other": "This browser is on a different version. Reload the page."
+    },
+    "note": {
+      "backup": "This checks only the newest backup on the server itself. Whether a copy is kept off the server, and when a restore was last tested, are not recorded anywhere this page can read."
     }
   },
   "failed_jobs": {
@@ -153,7 +168,17 @@
     "intro": "Who has the phone app, in every community on the platform. Members are named; their email addresses are not shown.",
     "not_downloads": "These are members signed in on the app, not downloads from the app stores.",
     "loading": "Loading the phone app figures",
-    "load_error_title": "We couldn't load the phone app figures just now"
+    "load_error_title": "We couldn't load the phone app figures just now",
+    "versions": {
+      "title": "App versions in use",
+      "coverage": "These figures only cover phones that signed in after the app version started being recorded, so at first most sign-ins will be counted as \"not recorded\".",
+      "version": "Version {{version}}",
+      "sign_ins_one": "{{count}} sign-in",
+      "sign_ins_other": "{{count}} sign-ins",
+      "not_recorded_one": "{{count}} sign-in with no version recorded",
+      "not_recorded_other": "{{count}} sign-ins with no version recorded",
+      "none_yet": "No phone has recorded its app version yet."
+    }
   },
   "senior_accounts": {
     "title": "Senior accounts",
@@ -728,6 +753,209 @@
       "consent_types": "Consent types are in the admin panel",
       "identity_fee": "The identity check fee is in the admin panel, under Modules",
       "secrets_replaced": "The old list of server keys has been replaced by this page."
+    }
+  },
+  "translations": {
+    "title": "Translations",
+    "intro": "How much of the wording is translated into each language.",
+    "recount": "Count again",
+    "loading": "Loading the translation figures",
+    "website_title": "Website wording",
+    "website_intro": "The words on the website and in the panels. Counted when this version of the website was built.",
+    "website_unavailable": "The website figures are not available on this server.",
+    "server_title": "Server wording: emails and messages",
+    "server_intro": "The words in the emails and messages the server sends. Counted from the files on the server, and kept for an hour.",
+    "server_unavailable": "The server figures are not available: the English wording could not be read.",
+    "server_load_error": "The server figures could not be loaded",
+    "counted_at": "Counted {{date}}",
+    "column": {
+      "language": "Language",
+      "phrases": "Phrases",
+      "missing": "Missing",
+      "same": "Still the same as English",
+      "translated": "Translated"
+    },
+    "same_note": "Some phrases are meant to be the same in every language, such as names and units. So “still the same as English” is an upper limit, not an exact count.",
+    "not_measured": "The phone app and the accessible site are not measured here."
+  },
+  "clean_up_jobs": {
+    "title": "Clean-up jobs",
+    "intro": "The scheduled jobs that delete old data. For each: what it deletes, how often it runs, when it last ran successfully and when it last failed. Times are shown in your own time zone.",
+    "records_note": "Records for most of these jobs only start from the day this page went live. Until a job next runs it shows \"No record yet\": that can take up to a day, or a week for a weekly job. Jobs run by the every-minute runner keep their record for 30 days only.",
+    "loading": "Loading the clean-up jobs",
+    "load_error_title": "The clean-up jobs could not be loaded",
+    "runs": "Runs",
+    "last_ok": "Last ran successfully",
+    "last_failed": "Last failed",
+    "not_recorded": "Not recorded",
+    "never_failed": "No failure recorded",
+    "how_often": {
+      "hourly": "Every hour",
+      "daily": "Every day",
+      "weekly": "Every week"
+    },
+    "status": {
+      "ok": "Running as expected",
+      "late": "Late",
+      "failing": "Failing",
+      "unknown": "No record yet",
+      "unreadable": "Could not be read"
+    },
+    "job": {
+      "performance_prune": {
+        "name": "Speed measurements",
+        "deletes": "Deletes the platform's own speed measurements once they are older than the set number of days."
+      },
+      "retention_enforce": {
+        "name": "Community keeping rules",
+        "deletes": "Deletes or anonymises data older than each community's own keeping settings allow."
+      },
+      "prune_logs": {
+        "name": "Old log records",
+        "deletes": "Deletes old rows from the platform's own logs, such as scheduled job runs, missing pages, activity and partner connections."
+      },
+      "prune_match_notifications": {
+        "name": "Match email records",
+        "deletes": "Deletes the records of which match emails were sent, once they are older than 30 days."
+      },
+      "purge_message_copies": {
+        "name": "Message copies kept for safeguarding",
+        "deletes": "Deletes the copies of messages kept for safeguarding review once each community's keeping period has passed."
+      },
+      "federation_purge_external_logs": {
+        "name": "Partner request logs",
+        "deletes": "Deletes the logs of requests to and from partner platforms once they pass their age limit."
+      },
+      "federation_prune_aggregate_logs": {
+        "name": "Shared figures log",
+        "deletes": "Deletes the records of partners asking for shared figures once they are older than 12 months."
+      },
+      "groups_prune_exports": {
+        "name": "Group download files",
+        "deletes": "Removes group download files once they expire, and deletes old records of them."
+      },
+      "cleanup": {
+        "name": "Daily tidy-up",
+        "deletes": "Deletes expired reset links, sign-in keys and blocks on newsletters, sent notifications and scheduled job records older than 30 days, and old match results."
+      },
+      "cleanup_sessions": {
+        "name": "Old sign-ins",
+        "deletes": "Deletes sign-ins unused for more than a day and sign-in records that have expired."
+      },
+      "story_cleanup": {
+        "name": "Expired stories",
+        "deletes": "Hides stories that have expired and deletes their pictures and videos."
+      },
+      "gdpr_export_cleanup": {
+        "name": "Personal data download files",
+        "deletes": "Deletes the files with a member's personal data once their download link has expired."
+      },
+      "abuse_cleanup": {
+        "name": "Closed abuse alerts",
+        "deletes": "Deletes abuse alerts that were resolved or dismissed more than 90 days ago."
+      },
+      "gamification_cleanup": {
+        "name": "Old points and badge records",
+        "deletes": "Deletes points notices older than 7 days, campaign awards older than a year and badge figures older than two years."
+      },
+      "purge_verification_sessions": {
+        "name": "Old identity checks",
+        "deletes": "Deletes finished or expired identity checks older than 180 days. The record of what happened in each check is kept."
+      }
+    }
+  },
+  "search_rebuild": {
+    "title": "Rebuild search",
+    "intro": "Send one community's listings, members, upcoming events, groups and marketplace items to the search service again. Use it when search is missing things it should find.",
+    "loading": "Loading the communities",
+    "load_error_title": "The list of communities could not be loaded",
+    "available": "The search service can be reached.",
+    "unavailable": "The search service cannot be reached right now. A rebuild cannot be started until it can.",
+    "does": {
+      "adds": "It adds and updates the community's search entries.",
+      "not_removed": "Entries for things that were deleted are not removed by this.",
+      "keep_searching": "Members can keep searching while it runs."
+    },
+    "auto_refresh": "This list updates by itself every 10 seconds while a rebuild is waiting or running.",
+    "switched_off": "Switched off",
+    "rebuild": "Rebuild",
+    "cancel": "Cancel",
+    "confirm_title": "Rebuild search for {{name}}?",
+    "confirm_message": "This adds and updates the community's search entries. Entries for things that were deleted are not removed by this. Members can keep searching while it runs.",
+    "started": "The rebuild is waiting to start. This list updates by itself.",
+    "action_failed": "The rebuild could not be started.",
+    "busy": "A rebuild for this community is already waiting or running.",
+    "last": {
+      "never": "Never run from this page",
+      "queued": "Waiting to start",
+      "running": "Running since {{time}}",
+      "done_one": "Finished {{time}}: {{count}} entry updated",
+      "done_other": "Finished {{time}}: {{count}} entries updated",
+      "done_with_errors_one": "Finished {{time}} with {{count}} entry that could not be updated",
+      "done_with_errors_other": "Finished {{time}} with {{count}} entries that could not be updated",
+      "failed": "Failed"
+    }
+  },
+  "agreements": {
+    "title": "Agreements and renewals",
+    "intro": "The agreements the platform has with communities and others. The next renewal comes first. Any agreement that renews within {{days}} days, or whose renewal date has passed, is marked, and the home page shows a reminder.",
+    "private_note": "Contact names and email addresses are shown only on this page, to the platform team. They are not kept in the activity record.",
+    "new": "Add an agreement",
+    "loading": "Loading the agreements",
+    "load_error_title": "We couldn't load the agreements just now",
+    "empty_title": "No agreements entered yet",
+    "empty_text": "Add one to be reminded before it renews.",
+    "not_entered": "Not entered",
+    "community_none": "Not linked to a community",
+    "community_gone": "Community no longer exists (#{{id}})",
+    "chip_soon": "Renews soon",
+    "chip_passed": "Renewal date passed",
+    "chip_ended": "Ended",
+    "renews_today": "Renews today",
+    "field": {
+      "community": "Community",
+      "renews_on": "Renewal date",
+      "days_left": "Days until renewal",
+      "days_since": "Days since the renewal date",
+      "starts_on": "Start date",
+      "ends_on": "End date",
+      "contact_name": "Contact's name",
+      "contact_email": "Contact's email",
+      "notes": "Notes"
+    },
+    "change": "Change",
+    "end": "End",
+    "ended_title": "Ended agreements",
+    "ended_text": "Ended agreements stay on record. There is no delete: an agreement entered by mistake is ended too.",
+    "end_title": "End this agreement?",
+    "end_message": "It moves to the ended list and stays on record. It cannot be brought back. There is no delete, so this is also how to take away one that was entered by mistake.",
+    "end_confirm": "End it",
+    "keep": "Keep it",
+    "saved": "Agreement saved",
+    "ended_toast": "Agreement ended",
+    "save_failed": "That couldn't be saved. Please try again.",
+    "form": {
+      "title_new": "Add an agreement",
+      "title_edit": "Change the agreement",
+      "hint": "Only the name and who it is with are needed. Leave anything you do not know empty: nothing is filled in for you.",
+      "title": "Name of the agreement",
+      "with_whom": "Who it is with",
+      "community": "Community",
+      "starts_on": "Start date",
+      "renews_on": "Renewal date",
+      "ends_on": "End date",
+      "contact_name": "Contact's name",
+      "contact_email": "Contact's email",
+      "notes": "Notes",
+      "required": "Fill this in, in up to 160 characters.",
+      "date_invalid": "Use a real date, or leave it empty.",
+      "ends_before_start": "The end date cannot be before the start date.",
+      "renews_before_start": "The renewal date cannot be before the start date.",
+      "email_invalid": "Enter a valid email address, or leave it empty.",
+      "too_long": "This is too long.",
+      "community_unknown": "That community does not exist.",
+      "save": "Save",
+      "cancel": "Cancel"
     }
   }
 }

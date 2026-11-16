@@ -57,6 +57,18 @@ class NativeAppInstallStatsService
     public const MAX_PER_PAGE = 100;
 
     /**
+     * The "live sign-in" rule, for a `refresh_session_activity` row aliased `a`:
+     * a session of that family, member and community that is neither revoked
+     * nor past `family_expires_at` — the test TokenService applies before
+     * honouring a token. One binding: now.
+     */
+    private const LIVE_SIGN_IN_SQL = 'EXISTS ('
+        . 'SELECT 1 FROM refresh_token_sessions r WHERE r.family_hash = a.family_hash '
+        . 'AND r.user_id = a.user_id AND r.tenant_id = a.tenant_id '
+        . 'AND r.revoked_at IS NULL AND r.family_expires_at > ?'
+        . ')';
+
+    /**
      * Figures for one community. Numbers only — the members themselves are
      * served, paged, by {@see tenantMembers()}.
      *
@@ -146,6 +158,44 @@ class NativeAppInstallStatsService
                 'tenant_name' => $row->tenant_name !== null ? (string) $row->tenant_name : null,
             ])->all(),
         ];
+    }
+
+    /**
+     * Live phone-app sign-ins across every community, counted by the app
+     * version recorded with them (`refresh_session_activity.app_version`,
+     * recorded since 16 Nov 2026), newest version first. Counts only: no
+     * member, no device.
+     *
+     * "Live" is {@see self::LIVE_SIGN_IN_SQL}, the same rule as the
+     * phone-app sign-ins counted by {@see platformStats()}. A live phone-app
+     * sign-in with no version is counted in `version_not_recorded`.
+     *
+     * 🔴 Cross-community on purpose. Only call this for the platform team.
+     *
+     * @return array{versions: list<array{version: string, sign_ins: int}>, version_not_recorded: int}
+     */
+    public function platformAppVersions(): array
+    {
+        $rows = DB::table('refresh_session_activity as a')
+            ->where('a.from_phone_app', 1)
+            ->whereRaw(self::LIVE_SIGN_IN_SQL, [now()])
+            ->groupBy('a.app_version')
+            ->get(['a.app_version', DB::raw('COUNT(*) AS sign_ins')]);
+
+        $versions = [];
+        $notRecorded = 0;
+        foreach ($rows as $row) {
+            if ($row->app_version === null || $row->app_version === '') {
+                $notRecorded += (int) $row->sign_ins;
+                continue;
+            }
+            $versions[] = ['version' => (string) $row->app_version, 'sign_ins' => (int) $row->sign_ins];
+        }
+
+        // Newest first, each part compared as a number (1.10.0 before 1.9.0).
+        usort($versions, static fn (array $a, array $b): int => version_compare($b['version'], $a['version']));
+
+        return ['versions' => $versions, 'version_not_recorded' => $notRecorded];
     }
 
     /**
@@ -266,11 +316,7 @@ class NativeAppInstallStatsService
             ->where('a.from_phone_app', 1)
             ->selectRaw(
                 'a.user_id, a.tenant_id, NULL AS platform, a.created_at AS first_at, a.last_activity_at AS last_at, '
-                . '0 AS has_phone, CASE WHEN EXISTS ('
-                . 'SELECT 1 FROM refresh_token_sessions r WHERE r.family_hash = a.family_hash '
-                . 'AND r.user_id = a.user_id AND r.tenant_id = a.tenant_id '
-                . 'AND r.revoked_at IS NULL AND r.family_expires_at > ?'
-                . ') THEN 1 ELSE 0 END AS live',
+                . '0 AS has_phone, CASE WHEN ' . self::LIVE_SIGN_IN_SQL . ' THEN 1 ELSE 0 END AS live',
                 [now()]
             );
 

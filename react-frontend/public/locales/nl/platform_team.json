@@ -89,7 +89,10 @@
       "search": "Zoeken",
       "snapshots": "Pagina’s opgeslagen voor zoekmachines",
       "maintenance": "Onderhoudsmodus",
-      "access_review": "Toegangscontrole"
+      "access_review": "Toegangscontrole",
+      "clean_up": "Opruimtaken",
+      "backup": "Databaseback-up",
+      "agreements": "Overeenkomsten en verlengingen"
     },
     "fact": {
       "version": "Versie",
@@ -114,7 +117,16 @@
       "platform_wide": "Hele platform",
       "communities": "Gemeenschappen in onderhoud",
       "review_due": "Controle nodig",
-      "last_review_at": "Laatste controle"
+      "last_review_at": "Laatste controle",
+      "jobs_ok": "Werkt zoals verwacht",
+      "jobs_late": "Te laat",
+      "jobs_failing": "Mislukt",
+      "jobs_no_record": "Nog niets vastgelegd",
+      "newest_backup_at": "Nieuwste back-up gemaakt",
+      "off_server_copy": "Kopie buiten de server",
+      "restore_test": "Laatste hersteltest",
+      "agreements_entered": "Ingevoerde overeenkomsten",
+      "agreements_renewing_soon": "Binnenkort te verlengen of verlopen"
     },
     "value": {
       "yes": "Ja",
@@ -122,6 +134,9 @@
       "not_known": "Niet bekend",
       "browser_same": "Deze browser heeft dezelfde versie.",
       "browser_other": "Deze browser heeft een andere versie. Laad de pagina opnieuw."
+    },
+    "note": {
+      "backup": "Hier wordt alleen de nieuwste back-up op de server zelf gecontroleerd. Of er een kopie buiten de server wordt bewaard, en wanneer voor het laatst een herstel is getest, staat nergens waar deze pagina het kan lezen."
     }
   },
   "failed_jobs": {
@@ -153,7 +168,17 @@
     "intro": "Wie de telefoon-app heeft, in elke gemeenschap op het platform. Leden worden bij naam genoemd; hun e-mailadressen worden niet getoond.",
     "not_downloads": "Dit zijn leden die in de app zijn ingelogd, geen downloads uit de appwinkels.",
     "loading": "De cijfers van de telefoon-app worden geladen",
-    "load_error_title": "We konden de cijfers van de telefoon-app nu niet laden"
+    "load_error_title": "We konden de cijfers van de telefoon-app nu niet laden",
+    "versions": {
+      "title": "App-versies in gebruik",
+      "coverage": "Deze cijfers gelden alleen voor telefoons die zich hebben aangemeld nadat de app-versie werd bijgehouden. In het begin staan de meeste aanmeldingen dus als ‘niet vastgelegd’.",
+      "version": "Versie {{version}}",
+      "sign_ins_one": "{{count}} aanmelding",
+      "sign_ins_other": "{{count}} aanmeldingen",
+      "not_recorded_one": "{{count}} aanmelding zonder vastgelegde versie",
+      "not_recorded_other": "{{count}} aanmeldingen zonder vastgelegde versie",
+      "none_yet": "Er is nog van geen enkele telefoon een app-versie vastgelegd."
+    }
   },
   "senior_accounts": {
     "title": "Accounts op hoog niveau",
@@ -728,6 +753,209 @@
       "consent_types": "Toestemmingssoorten staan in het beheerpaneel",
       "identity_fee": "De kosten voor de identiteitscontrole staan in het beheerpaneel, onder Modules",
       "secrets_replaced": "De oude lijst met serversleutels is vervangen door deze pagina."
+    }
+  },
+  "translations": {
+    "title": "Vertalingen",
+    "intro": "Hoeveel van de teksten in elke taal is vertaald.",
+    "recount": "Opnieuw tellen",
+    "loading": "Vertaalcijfers laden",
+    "website_title": "Teksten van de website",
+    "website_intro": "De teksten op de website en in de panelen. Geteld toen deze versie van de website werd gebouwd.",
+    "website_unavailable": "De cijfers van de website zijn niet beschikbaar op deze server.",
+    "server_title": "Teksten van de server: e-mails en berichten",
+    "server_intro": "De teksten in de e-mails en berichten die de server verstuurt. Geteld uit de bestanden op de server en een uur bewaard.",
+    "server_unavailable": "De cijfers van de server zijn niet beschikbaar: de Engelse teksten konden niet worden gelezen.",
+    "server_load_error": "De cijfers van de server konden niet worden geladen",
+    "counted_at": "Geteld: {{date}}",
+    "column": {
+      "language": "Taal",
+      "phrases": "Zinnen",
+      "missing": "Ontbrekend",
+      "same": "Nog gelijk aan het Engels",
+      "translated": "Vertaald"
+    },
+    "same_note": "Sommige zinnen horen in elke taal gelijk te zijn, zoals namen en eenheden. „Nog gelijk aan het Engels” is dus een bovengrens, geen exact aantal.",
+    "not_measured": "De telefoonapp en de toegankelijke site worden hier niet gemeten."
+  },
+  "clean_up_jobs": {
+    "title": "Opruimtaken",
+    "intro": "De geplande taken die oude gegevens verwijderen. Per taak: wat hij verwijdert, hoe vaak hij draait, wanneer hij voor het laatst goed draaide en wanneer hij voor het laatst mislukte. Tijden staan in uw eigen tijdzone.",
+    "records_note": "Voor de meeste van deze taken beginnen de gegevens pas op de dag dat deze pagina live ging. Tot een taak weer draait staat er \"Nog niets vastgelegd\": dat kan tot een dag duren, of een week bij een wekelijkse taak. Taken die de elke-minuut-ronde uitvoert, bewaren hun gegevens maar 30 dagen.",
+    "loading": "De opruimtaken worden geladen",
+    "load_error_title": "De opruimtaken konden niet worden geladen",
+    "runs": "Draait",
+    "last_ok": "Laatst goed gedraaid",
+    "last_failed": "Laatst mislukt",
+    "not_recorded": "Niet vastgelegd",
+    "never_failed": "Geen mislukking vastgelegd",
+    "how_often": {
+      "hourly": "Elk uur",
+      "daily": "Elke dag",
+      "weekly": "Elke week"
+    },
+    "status": {
+      "ok": "Werkt zoals verwacht",
+      "late": "Te laat",
+      "failing": "Mislukt",
+      "unknown": "Nog niets vastgelegd",
+      "unreadable": "Kon niet worden gelezen"
+    },
+    "job": {
+      "performance_prune": {
+        "name": "Snelheidsmetingen",
+        "deletes": "Verwijdert de eigen snelheidsmetingen van het platform zodra ze ouder zijn dan het ingestelde aantal dagen."
+      },
+      "retention_enforce": {
+        "name": "Bewaarregels van de gemeenschappen",
+        "deletes": "Verwijdert of anonimiseert gegevens die ouder zijn dan de bewaarinstellingen van elke gemeenschap toestaan."
+      },
+      "prune_logs": {
+        "name": "Oude logregels",
+        "deletes": "Verwijdert oude regels uit de logs van het platform, zoals runs van geplande taken, niet-gevonden pagina's, activiteit en partnerverbindingen."
+      },
+      "prune_match_notifications": {
+        "name": "Gegevens over match-e-mails",
+        "deletes": "Verwijdert de gegevens over welke match-e-mails zijn verstuurd zodra ze ouder zijn dan 30 dagen."
+      },
+      "purge_message_copies": {
+        "name": "Berichtkopieën bewaard voor bescherming",
+        "deletes": "Verwijdert de kopieën van berichten die voor beschermingscontrole zijn bewaard zodra de bewaartermijn van elke gemeenschap voorbij is."
+      },
+      "federation_purge_external_logs": {
+        "name": "Logs van partnerverzoeken",
+        "deletes": "Verwijdert de logs van verzoeken van en naar partnerplatforms zodra ze hun maximale leeftijd overschrijden."
+      },
+      "federation_prune_aggregate_logs": {
+        "name": "Log van gedeelde cijfers",
+        "deletes": "Verwijdert de gegevens over verzoeken van partners om gedeelde cijfers zodra ze ouder zijn dan 12 maanden."
+      },
+      "groups_prune_exports": {
+        "name": "Downloadbestanden van groepen",
+        "deletes": "Verwijdert downloadbestanden van groepen zodra ze verlopen, en ook de oude gegevens erover."
+      },
+      "cleanup": {
+        "name": "Dagelijkse opruiming",
+        "deletes": "Verwijdert verlopen herstellinks, aanmeldsleutels en nieuwsbriefblokkades, verstuurde meldingen en gegevens van geplande taken ouder dan 30 dagen, en oude matchresultaten."
+      },
+      "cleanup_sessions": {
+        "name": "Oude aanmeldingen",
+        "deletes": "Verwijdert aanmeldingen die langer dan een dag niet zijn gebruikt en verlopen aanmeldgegevens."
+      },
+      "story_cleanup": {
+        "name": "Verlopen verhalen",
+        "deletes": "Verbergt verlopen verhalen en verwijdert hun foto's en video's."
+      },
+      "gdpr_export_cleanup": {
+        "name": "Downloadbestanden met persoonsgegevens",
+        "deletes": "Verwijdert de bestanden met de persoonsgegevens van een lid zodra hun downloadlink is verlopen."
+      },
+      "abuse_cleanup": {
+        "name": "Afgesloten misbruikmeldingen",
+        "deletes": "Verwijdert misbruikmeldingen die meer dan 90 dagen geleden zijn opgelost of afgewezen."
+      },
+      "gamification_cleanup": {
+        "name": "Oude punten- en badgegegevens",
+        "deletes": "Verwijdert puntenmeldingen ouder dan 7 dagen, campagnebeloningen ouder dan een jaar en badgecijfers ouder dan twee jaar."
+      },
+      "purge_verification_sessions": {
+        "name": "Oude identiteitscontroles",
+        "deletes": "Verwijdert afgeronde of verlopen identiteitscontroles ouder dan 180 dagen. Wat er bij elke controle gebeurde, blijft bewaard."
+      }
+    }
+  },
+  "search_rebuild": {
+    "title": "Zoekfunctie opnieuw opbouwen",
+    "intro": "Stuurt de advertenties, leden, komende evenementen, groepen en marktplaatsartikelen van één gemeenschap opnieuw naar de zoekdienst. Gebruik dit als de zoekfunctie dingen mist die ze zou moeten vinden.",
+    "loading": "De gemeenschappen worden geladen",
+    "load_error_title": "De lijst met gemeenschappen kon niet worden geladen",
+    "available": "De zoekdienst is bereikbaar.",
+    "unavailable": "De zoekdienst is op dit moment niet bereikbaar. Opnieuw opbouwen kan pas worden gestart als hij bereikbaar is.",
+    "does": {
+      "adds": "Het voegt de zoekitems van de gemeenschap toe en werkt ze bij.",
+      "not_removed": "Items van dingen die zijn verwijderd, worden hierdoor niet weggehaald.",
+      "keep_searching": "Leden kunnen blijven zoeken terwijl het loopt."
+    },
+    "auto_refresh": "Deze lijst werkt zichzelf elke 10 seconden bij zolang een opbouw wacht of loopt.",
+    "switched_off": "Uitgeschakeld",
+    "rebuild": "Opnieuw opbouwen",
+    "cancel": "Annuleren",
+    "confirm_title": "Zoekfunctie voor {{name}} opnieuw opbouwen?",
+    "confirm_message": "Dit voegt de zoekitems van de gemeenschap toe en werkt ze bij. Items van dingen die zijn verwijderd, worden hierdoor niet weggehaald. Leden kunnen blijven zoeken terwijl het loopt.",
+    "started": "Het opnieuw opbouwen wacht om te starten. Deze lijst werkt zichzelf bij.",
+    "action_failed": "Het opnieuw opbouwen kon niet worden gestart.",
+    "busy": "Voor deze gemeenschap wacht of loopt al een opbouw.",
+    "last": {
+      "never": "Nooit vanaf deze pagina uitgevoerd",
+      "queued": "Wacht om te starten",
+      "running": "Loopt sinds {{time}}",
+      "done_one": "Klaar {{time}}: {{count}} item bijgewerkt",
+      "done_other": "Klaar {{time}}: {{count}} items bijgewerkt",
+      "done_with_errors_one": "Klaar {{time}} met {{count}} item dat niet kon worden bijgewerkt",
+      "done_with_errors_other": "Klaar {{time}} met {{count}} items die niet konden worden bijgewerkt",
+      "failed": "Mislukt"
+    }
+  },
+  "agreements": {
+    "title": "Overeenkomsten en verlengingen",
+    "intro": "De overeenkomsten van het platform met gemeenschappen en anderen. De eerstvolgende verlenging staat bovenaan. Elke overeenkomst die binnen {{days}} dagen wordt verlengd, of waarvan de verlengingsdatum voorbij is, wordt gemarkeerd, en de startpagina toont een herinnering.",
+    "private_note": "Namen en e-mailadressen van contactpersonen worden alleen op deze pagina getoond, aan het platformteam. Ze worden niet in het activiteitenlogboek bewaard.",
+    "new": "Overeenkomst toevoegen",
+    "loading": "De overeenkomsten worden geladen",
+    "load_error_title": "De overeenkomsten konden nu niet worden geladen",
+    "empty_title": "Nog geen overeenkomsten ingevoerd",
+    "empty_text": "Voeg er een toe om vóór de verlenging een herinnering te krijgen.",
+    "not_entered": "Niet ingevuld",
+    "community_none": "Niet gekoppeld aan een gemeenschap",
+    "community_gone": "Gemeenschap bestaat niet meer (#{{id}})",
+    "chip_soon": "Binnenkort verlengen",
+    "chip_passed": "Verlengingsdatum voorbij",
+    "chip_ended": "Beëindigd",
+    "renews_today": "Wordt vandaag verlengd",
+    "field": {
+      "community": "Gemeenschap",
+      "renews_on": "Verlengingsdatum",
+      "days_left": "Dagen tot de verlenging",
+      "days_since": "Dagen sinds de verlengingsdatum",
+      "starts_on": "Begindatum",
+      "ends_on": "Einddatum",
+      "contact_name": "Naam contactpersoon",
+      "contact_email": "E-mail contactpersoon",
+      "notes": "Notities"
+    },
+    "change": "Wijzigen",
+    "end": "Beëindigen",
+    "ended_title": "Beëindigde overeenkomsten",
+    "ended_text": "Beëindigde overeenkomsten blijven bewaard. Verwijderen kan niet: een overeenkomst die per ongeluk is ingevoerd, wordt ook beëindigd.",
+    "end_title": "Deze overeenkomst beëindigen?",
+    "end_message": "Ze gaat naar de lijst met beëindigde overeenkomsten en blijft bewaard. Ze kan niet worden teruggezet. Verwijderen kan niet, dus zo haalt u ook een per ongeluk ingevoerde overeenkomst weg.",
+    "end_confirm": "Beëindigen",
+    "keep": "Behouden",
+    "saved": "Overeenkomst opgeslagen",
+    "ended_toast": "Overeenkomst beëindigd",
+    "save_failed": "Dat kon niet worden opgeslagen. Probeer het opnieuw.",
+    "form": {
+      "title_new": "Overeenkomst toevoegen",
+      "title_edit": "Overeenkomst wijzigen",
+      "hint": "Alleen de naam en met wie ze is, zijn nodig. Laat leeg wat u niet weet: er wordt niets voor u ingevuld.",
+      "title": "Naam van de overeenkomst",
+      "with_whom": "Met wie",
+      "community": "Gemeenschap",
+      "starts_on": "Begindatum",
+      "renews_on": "Verlengingsdatum",
+      "ends_on": "Einddatum",
+      "contact_name": "Naam contactpersoon",
+      "contact_email": "E-mail contactpersoon",
+      "notes": "Notities",
+      "required": "Vul dit in, met maximaal 160 tekens.",
+      "date_invalid": "Gebruik een bestaande datum of laat het veld leeg.",
+      "ends_before_start": "De einddatum kan niet vóór de begindatum liggen.",
+      "renews_before_start": "De verlengingsdatum kan niet vóór de begindatum liggen.",
+      "email_invalid": "Vul een geldig e-mailadres in of laat het veld leeg.",
+      "too_long": "Dit is te lang.",
+      "community_unknown": "Die gemeenschap bestaat niet.",
+      "save": "Opslaan",
+      "cancel": "Annuleren"
     }
   }
 }

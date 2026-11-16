@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 
 const { apiGet } = vi.hoisted(() => ({ apiGet: vi.fn() }));
 
@@ -12,7 +12,12 @@ vi.mock('@/lib/api', () => ({ api: { get: apiGet } }));
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key: string) => key, i18n: { language: 'en' } }),
+  // The values a key is given are shown after it, so a test can see them.
+  useTranslation: () => ({
+    t: (key: string, opts?: Record<string, unknown>) =>
+      opts && ('version' in opts || 'count' in opts) ? `${key}:${String(opts.version ?? opts.count)}` : key,
+    i18n: { language: 'en' },
+  }),
 }));
 // The block itself has its own life in the admin module; here only that it is
 // given the server's figures.
@@ -60,6 +65,50 @@ describe('PhoneAppPage', () => {
 
     expect(await screen.findByTestId('load-error')).toBeInTheDocument();
     expect(screen.queryByTestId('all-communities')).not.toBeInTheDocument();
+  });
+
+  it('lists the app versions in use, newest first as the server sends them, and the sign-ins with none', async () => {
+    apiGet.mockResolvedValue({
+      success: true,
+      data: {
+        ...STATS,
+        versions: [
+          { version: '1.13.0', sign_ins: 4 },
+          { version: '1.12.0', sign_ins: 1 },
+        ],
+        version_not_recorded: 7,
+      },
+    });
+    render(<PhoneAppPage />);
+
+    const section = await screen.findByRole('region', { name: 'phone_app.versions.title' });
+    const rows = within(section).getAllByRole('listitem');
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).toHaveTextContent('phone_app.versions.version:1.13.0');
+    expect(rows[0]).toHaveTextContent('phone_app.versions.sign_ins:4');
+    expect(rows[1]).toHaveTextContent('phone_app.versions.version:1.12.0');
+    expect(within(section).getByText('phone_app.versions.not_recorded:7')).toBeInTheDocument();
+    // Honest about what the figures cover.
+    expect(within(section).getByText('phone_app.versions.coverage')).toBeInTheDocument();
+    expect(screen.getByTestId('all-communities')).toBeInTheDocument();
+  });
+
+  it('says no version is recorded yet when none is, and still gives the count without one', async () => {
+    apiGet.mockResolvedValue({ success: true, data: { ...STATS, versions: [], version_not_recorded: 12 } });
+    render(<PhoneAppPage />);
+
+    const section = await screen.findByRole('region', { name: 'phone_app.versions.title' });
+    expect(within(section).queryAllByRole('listitem')).toHaveLength(0);
+    expect(within(section).getByText('phone_app.versions.none_yet')).toBeInTheDocument();
+    expect(within(section).getByText('phone_app.versions.not_recorded:12')).toBeInTheDocument();
+  });
+
+  it('shows no versions section, and no error, when an older server does not send one', async () => {
+    render(<PhoneAppPage />);
+
+    expect(await screen.findByTestId('all-communities')).toBeInTheDocument();
+    expect(screen.queryByText('phone_app.versions.title')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('load-error')).not.toBeInTheDocument();
   });
 
   it('shows the error card when the request throws, and can try again', async () => {

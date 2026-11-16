@@ -129,7 +129,9 @@ describe('PlatformTeamBreadcrumbs', () => {
     ['/platform-team/national/kiss', 'super_admin:nav.national_dashboard'],
     ['/platform-team/failed-jobs', 'home.card.failed_jobs'],
     ['/platform-team/deployments', 'deployments.title'],
+    ['/platform-team/search-rebuild', 'search_rebuild.title'],
     ['/platform-team/connections', 'connections.title'],
+    ['/platform-team/translations', 'translations.title'],
     ['/platform-team/phone-app', 'phone_app.title'],
     ['/platform-team/senior-accounts', 'senior_accounts.title'],
     ['/platform-team/accounts', 'accounts.title'],
@@ -143,7 +145,9 @@ describe('PlatformTeamBreadcrumbs', () => {
     ['/platform-team/unfinished-features', 'unfinished_features.title'],
     ['/platform-team/data-requests', 'data_requests.title'],
     ['/platform-team/legal-documents', 'legal_documents.title'],
+    ['/platform-team/clean-up-jobs', 'clean_up_jobs.title'],
     ['/platform-team/push-notifications', 'push_notifications.title'],
+    ['/platform-team/agreements', 'agreements.title'],
   ])('names the last step of %s', (pathname, label) => {
     state.pathname = pathname;
     render(<PlatformTeamBreadcrumbs />);

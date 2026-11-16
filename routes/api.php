@@ -4511,8 +4511,13 @@ Route::middleware(['auth:sanctum', 'platform-team'])->group(function () {
     Route::delete('/v2/platform-team/failed-jobs/{uuid}', [\App\Http\Controllers\Api\PlatformTeam\FailedJobsController::class, 'destroy'])->whereUuid('uuid');
     // Deployments: the last deployments and rollbacks this server recorded (tail of the deploy record file). Read-only.
     Route::get('/v2/platform-team/deployments', [\App\Http\Controllers\Api\PlatformTeam\DeploymentsController::class, 'index']);
+    // Rebuild search: every community with its last rebuild; POST {tenant_id} queues a rebuild of that community's search (adds and updates, never empties).
+    Route::get('/v2/platform-team/search-rebuild', [\App\Http\Controllers\Api\PlatformTeam\SearchRebuildController::class, 'index']);
+    Route::post('/v2/platform-team/search-rebuild', [\App\Http\Controllers\Api\PlatformTeam\SearchRebuildController::class, 'store']);
     // Keys and connections: which outside services this server has a key for. Yes / no only, never any part of a key. Read-only.
     Route::get('/v2/platform-team/connections', [\App\Http\Controllers\Api\PlatformTeam\ConnectionsController::class, 'index']);
+    // Translations: how much of the server's wording (lang/) each language still lacks. Counts only, kept an hour; ?refresh=1 recounts. Read-only.
+    Route::get('/v2/platform-team/translation-coverage', [\App\Http\Controllers\Api\PlatformTeam\TranslationCoverageController::class, 'index']);
     // Phone app: who has the app across every community (moved out of the community admin's request).
     Route::get('/v2/platform-team/phone-app', [\App\Http\Controllers\Api\PlatformTeam\PhoneAppController::class, 'index']);
     // Push notifications: per day and per community, pushes accepted / partly accepted / failed / with nobody to send to. Read-only; counts only.
@@ -4541,11 +4546,18 @@ Route::middleware(['auth:sanctum', 'platform-team'])->group(function () {
     Route::get('/v2/platform-team/data-requests', [\App\Http\Controllers\Api\PlatformTeam\DataRequestsController::class, 'index']);
     // Legal documents: per community, whether terms / privacy notice / other legal documents are published, and how many members have not accepted. Read-only; counts only.
     Route::get('/v2/platform-team/legal-documents', [\App\Http\Controllers\Api\PlatformTeam\LegalDocumentsController::class, 'index']);
+    // Clean-up jobs: the scheduled jobs that delete data, when each last worked and last failed. Read-only; times only.
+    Route::get('/v2/platform-team/clean-up-jobs', [\App\Http\Controllers\Api\PlatformTeam\CleanUpJobsController::class, 'index']);
     // Platform-wide notices: written here once, shown to every community's admins (see /v2/admin/platform-notices).
     Route::get('/v2/platform-team/notices', [\App\Http\Controllers\Api\PlatformTeam\PlatformNoticesController::class, 'index']);
     Route::post('/v2/platform-team/notices', [\App\Http\Controllers\Api\PlatformTeam\PlatformNoticesController::class, 'store']);
     Route::put('/v2/platform-team/notices/{id}', [\App\Http\Controllers\Api\PlatformTeam\PlatformNoticesController::class, 'update'])->whereNumber('id');
     Route::post('/v2/platform-team/notices/{id}/end', [\App\Http\Controllers\Api\PlatformTeam\PlatformNoticesController::class, 'end'])->whereNumber('id');
+    // Agreements and renewals: the platform's agreements, ordered by next renewal. No delete: a mistake is ended.
+    Route::get('/v2/platform-team/agreements', [\App\Http\Controllers\Api\PlatformTeam\PlatformAgreementsController::class, 'index']);
+    Route::post('/v2/platform-team/agreements', [\App\Http\Controllers\Api\PlatformTeam\PlatformAgreementsController::class, 'store']);
+    Route::put('/v2/platform-team/agreements/{id}', [\App\Http\Controllers\Api\PlatformTeam\PlatformAgreementsController::class, 'update'])->whereNumber('id');
+    Route::post('/v2/platform-team/agreements/{id}/end', [\App\Http\Controllers\Api\PlatformTeam\PlatformAgreementsController::class, 'end'])->whereNumber('id');
 });
 
 // AG71 — Pilot Region Inquiry & Qualification Funnel

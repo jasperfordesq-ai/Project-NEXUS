@@ -89,7 +89,10 @@
       "search": "Suche",
       "snapshots": "Für Suchmaschinen gespeicherte Seiten",
       "maintenance": "Wartungsmodus",
-      "access_review": "Zugriffsprüfung"
+      "access_review": "Zugriffsprüfung",
+      "clean_up": "Aufräumaufgaben",
+      "backup": "Datenbanksicherung",
+      "agreements": "Vereinbarungen und Verlängerungen"
     },
     "fact": {
       "version": "Version",
@@ -114,7 +117,16 @@
       "platform_wide": "Ganze Plattform",
       "communities": "Gemeinschaften im Wartungsmodus",
       "review_due": "Prüfung fällig",
-      "last_review_at": "Letzte Prüfung"
+      "last_review_at": "Letzte Prüfung",
+      "jobs_ok": "Läuft wie erwartet",
+      "jobs_late": "Verspätet",
+      "jobs_failing": "Schlägt fehl",
+      "jobs_no_record": "Noch nichts aufgezeichnet",
+      "newest_backup_at": "Neueste Sicherung erstellt",
+      "off_server_copy": "Kopie außerhalb des Servers",
+      "restore_test": "Letzter Wiederherstellungstest",
+      "agreements_entered": "Erfasste Vereinbarungen",
+      "agreements_renewing_soon": "Bald fällig oder überfällig"
     },
     "value": {
       "yes": "Ja",
@@ -122,6 +134,9 @@
       "not_known": "Nicht bekannt",
       "browser_same": "Dieser Browser hat dieselbe Version.",
       "browser_other": "Dieser Browser hat eine andere Version. Bitte die Seite neu laden."
+    },
+    "note": {
+      "backup": "Hier wird nur die neueste Sicherung auf dem Server selbst geprüft. Ob eine Kopie außerhalb des Servers aufbewahrt wird und wann zuletzt eine Wiederherstellung getestet wurde, ist nirgends aufgezeichnet, wo diese Seite es lesen kann."
     }
   },
   "failed_jobs": {
@@ -153,7 +168,17 @@
     "intro": "Wer die Handy-App hat, in jeder Gemeinschaft auf der Plattform. Mitglieder werden mit Namen genannt; ihre E-Mail-Adressen werden nicht angezeigt.",
     "not_downloads": "Das sind Mitglieder, die in der App angemeldet sind, keine Downloads aus den App-Stores.",
     "loading": "Zahlen zur Handy-App werden geladen",
-    "load_error_title": "Wir konnten die Zahlen zur Handy-App gerade nicht laden"
+    "load_error_title": "Wir konnten die Zahlen zur Handy-App gerade nicht laden",
+    "versions": {
+      "title": "Verwendete App-Versionen",
+      "coverage": "Diese Zahlen umfassen nur Telefone, die sich angemeldet haben, seit die App-Version erfasst wird. Anfangs werden daher die meisten Anmeldungen als „nicht erfasst“ gezählt.",
+      "version": "App-Version {{version}}",
+      "sign_ins_one": "{{count}} Anmeldung",
+      "sign_ins_other": "{{count}} Anmeldungen",
+      "not_recorded_one": "{{count}} Anmeldung ohne erfasste Version",
+      "not_recorded_other": "{{count}} Anmeldungen ohne erfasste Version",
+      "none_yet": "Bisher wurde für kein Telefon eine App-Version erfasst."
+    }
   },
   "senior_accounts": {
     "title": "Leitende Konten",
@@ -728,6 +753,209 @@
       "consent_types": "Einwilligungsarten finden Sie im Admin-Bereich",
       "identity_fee": "Die Gebühr für die Identitätsprüfung finden Sie im Admin-Bereich unter Module",
       "secrets_replaced": "Die alte Liste der Serverschlüssel wurde durch diese Seite ersetzt."
+    }
+  },
+  "translations": {
+    "title": "Übersetzungen",
+    "intro": "Wie viel vom Wortlaut in jede Sprache übersetzt ist.",
+    "recount": "Neu zählen",
+    "loading": "Übersetzungszahlen werden geladen",
+    "website_title": "Wortlaut der Website",
+    "website_intro": "Die Texte auf der Website und in den Verwaltungsbereichen. Gezählt, als diese Version der Website erstellt wurde.",
+    "website_unavailable": "Die Zahlen zur Website sind auf diesem Server nicht verfügbar.",
+    "server_title": "Wortlaut des Servers: E-Mails und Nachrichten",
+    "server_intro": "Die Texte in den E-Mails und Nachrichten, die der Server verschickt. Aus den Dateien auf dem Server gezählt und eine Stunde lang aufbewahrt.",
+    "server_unavailable": "Die Zahlen zum Server sind nicht verfügbar: Der englische Wortlaut konnte nicht gelesen werden.",
+    "server_load_error": "Die Zahlen zum Server konnten nicht geladen werden",
+    "counted_at": "Gezählt: {{date}}",
+    "column": {
+      "language": "Sprache",
+      "phrases": "Texte",
+      "missing": "Fehlend",
+      "same": "Noch wie im Englischen",
+      "translated": "Übersetzt"
+    },
+    "same_note": "Manche Texte sollen in jeder Sprache gleich sein, etwa Namen und Einheiten. „Noch wie im Englischen“ ist daher eine Obergrenze, keine genaue Zahl.",
+    "not_measured": "Die Handy-App und die barrierefreie Website werden hier nicht gemessen."
+  },
+  "clean_up_jobs": {
+    "title": "Aufräumaufgaben",
+    "intro": "Die geplanten Aufgaben, die alte Daten löschen. Für jede: was sie löscht, wie oft sie läuft, wann sie zuletzt erfolgreich lief und wann sie zuletzt fehlschlug. Zeiten werden in Ihrer eigenen Zeitzone angezeigt.",
+    "records_note": "Für die meisten dieser Aufgaben beginnen die Aufzeichnungen erst mit dem Tag, an dem diese Seite online ging. Bis eine Aufgabe das nächste Mal läuft, steht dort „Noch nichts aufgezeichnet“: Das kann bis zu einem Tag dauern, bei einer wöchentlichen Aufgabe bis zu einer Woche. Aufgaben, die der minütliche Ablauf ausführt, behalten ihre Aufzeichnung nur 30 Tage.",
+    "loading": "Die Aufräumaufgaben werden geladen",
+    "load_error_title": "Die Aufräumaufgaben konnten nicht geladen werden",
+    "runs": "Läuft",
+    "last_ok": "Zuletzt erfolgreich gelaufen",
+    "last_failed": "Zuletzt fehlgeschlagen",
+    "not_recorded": "Nicht aufgezeichnet",
+    "never_failed": "Kein Fehler aufgezeichnet",
+    "how_often": {
+      "hourly": "Jede Stunde",
+      "daily": "Jeden Tag",
+      "weekly": "Jede Woche"
+    },
+    "status": {
+      "ok": "Läuft wie erwartet",
+      "late": "Verspätet",
+      "failing": "Schlägt fehl",
+      "unknown": "Noch nichts aufgezeichnet",
+      "unreadable": "Konnte nicht gelesen werden"
+    },
+    "job": {
+      "performance_prune": {
+        "name": "Geschwindigkeitsmessungen",
+        "deletes": "Löscht die eigenen Geschwindigkeitsmessungen der Plattform, sobald sie älter als die eingestellte Anzahl Tage sind."
+      },
+      "retention_enforce": {
+        "name": "Aufbewahrungsregeln der Gemeinschaften",
+        "deletes": "Löscht oder anonymisiert Daten, die älter sind, als es die Aufbewahrungseinstellungen der jeweiligen Gemeinschaft erlauben."
+      },
+      "prune_logs": {
+        "name": "Alte Protokolleinträge",
+        "deletes": "Löscht alte Zeilen aus den Protokollen der Plattform, etwa Läufe geplanter Aufgaben, nicht gefundene Seiten, Aktivitäten und Partnerverbindungen."
+      },
+      "prune_match_notifications": {
+        "name": "Aufzeichnungen zu Treffer-E-Mails",
+        "deletes": "Löscht die Aufzeichnungen darüber, welche Treffer-E-Mails verschickt wurden, sobald sie älter als 30 Tage sind."
+      },
+      "purge_message_copies": {
+        "name": "Für den Schutz aufbewahrte Nachrichtenkopien",
+        "deletes": "Löscht die für die Schutzprüfung aufbewahrten Nachrichtenkopien, sobald die Aufbewahrungsfrist der jeweiligen Gemeinschaft abgelaufen ist."
+      },
+      "federation_purge_external_logs": {
+        "name": "Protokolle von Partneranfragen",
+        "deletes": "Löscht die Protokolle von Anfragen an und von Partnerplattformen, sobald sie ihre Altersgrenze überschreiten."
+      },
+      "federation_prune_aggregate_logs": {
+        "name": "Protokoll geteilter Zahlen",
+        "deletes": "Löscht die Aufzeichnungen über Anfragen von Partnern nach geteilten Zahlen, sobald sie älter als 12 Monate sind."
+      },
+      "groups_prune_exports": {
+        "name": "Download-Dateien von Gruppen",
+        "deletes": "Entfernt Download-Dateien von Gruppen, sobald sie ablaufen, und löscht alte Aufzeichnungen dazu."
+      },
+      "cleanup": {
+        "name": "Tägliches Aufräumen",
+        "deletes": "Löscht abgelaufene Links zum Zurücksetzen, Anmeldeschlüssel und Newsletter-Sperren, versendete Benachrichtigungen und Aufzeichnungen geplanter Aufgaben, die älter als 30 Tage sind, sowie alte Trefferergebnisse."
+      },
+      "cleanup_sessions": {
+        "name": "Alte Anmeldungen",
+        "deletes": "Löscht Anmeldungen, die seit mehr als einem Tag nicht genutzt wurden, und abgelaufene Anmeldeaufzeichnungen."
+      },
+      "story_cleanup": {
+        "name": "Abgelaufene Storys",
+        "deletes": "Blendet abgelaufene Storys aus und löscht ihre Bilder und Videos."
+      },
+      "gdpr_export_cleanup": {
+        "name": "Download-Dateien mit persönlichen Daten",
+        "deletes": "Löscht die Dateien mit den persönlichen Daten eines Mitglieds, sobald der Download-Link abgelaufen ist."
+      },
+      "abuse_cleanup": {
+        "name": "Abgeschlossene Missbrauchswarnungen",
+        "deletes": "Löscht Missbrauchswarnungen, die vor mehr als 90 Tagen erledigt oder verworfen wurden."
+      },
+      "gamification_cleanup": {
+        "name": "Alte Punkte- und Abzeichen-Aufzeichnungen",
+        "deletes": "Löscht Punktehinweise, die älter als 7 Tage sind, Kampagnenauszeichnungen, die älter als ein Jahr sind, und Abzeichenzahlen, die älter als zwei Jahre sind."
+      },
+      "purge_verification_sessions": {
+        "name": "Alte Identitätsprüfungen",
+        "deletes": "Löscht abgeschlossene oder abgelaufene Identitätsprüfungen, die älter als 180 Tage sind. Die Aufzeichnung dessen, was bei jeder Prüfung geschah, bleibt erhalten."
+      }
+    }
+  },
+  "search_rebuild": {
+    "title": "Suche neu aufbauen",
+    "intro": "Sendet die Angebote, Mitglieder, kommenden Veranstaltungen, Gruppen und Marktplatz-Artikel einer Gemeinschaft erneut an den Suchdienst. Nutzen Sie das, wenn die Suche Dinge nicht findet, die sie finden sollte.",
+    "loading": "Die Gemeinschaften werden geladen",
+    "load_error_title": "Die Liste der Gemeinschaften konnte nicht geladen werden",
+    "available": "Der Suchdienst ist erreichbar.",
+    "unavailable": "Der Suchdienst ist gerade nicht erreichbar. Ein Neuaufbau kann erst gestartet werden, wenn er wieder erreichbar ist.",
+    "does": {
+      "adds": "Er fügt die Sucheinträge der Gemeinschaft hinzu und aktualisiert sie.",
+      "not_removed": "Einträge für gelöschte Dinge werden dadurch nicht entfernt.",
+      "keep_searching": "Mitglieder können weiter suchen, während er läuft."
+    },
+    "auto_refresh": "Diese Liste aktualisiert sich alle 10 Sekunden selbst, solange ein Neuaufbau wartet oder läuft.",
+    "switched_off": "Ausgeschaltet",
+    "rebuild": "Neu aufbauen",
+    "cancel": "Abbrechen",
+    "confirm_title": "Suche für {{name}} neu aufbauen?",
+    "confirm_message": "Dadurch werden die Sucheinträge der Gemeinschaft hinzugefügt und aktualisiert. Einträge für gelöschte Dinge werden dadurch nicht entfernt. Mitglieder können weiter suchen, während er läuft.",
+    "started": "Der Neuaufbau wartet auf den Start. Diese Liste aktualisiert sich selbst.",
+    "action_failed": "Der Neuaufbau konnte nicht gestartet werden.",
+    "busy": "Für diese Gemeinschaft wartet oder läuft bereits ein Neuaufbau.",
+    "last": {
+      "never": "Noch nie von dieser Seite aus gestartet",
+      "queued": "Wartet auf den Start",
+      "running": "Läuft seit {{time}}",
+      "done_one": "Abgeschlossen {{time}}: {{count}} Eintrag aktualisiert",
+      "done_other": "Abgeschlossen {{time}}: {{count}} Einträge aktualisiert",
+      "done_with_errors_one": "Abgeschlossen {{time}}, {{count}} Eintrag konnte nicht aktualisiert werden",
+      "done_with_errors_other": "Abgeschlossen {{time}}, {{count}} Einträge konnten nicht aktualisiert werden",
+      "failed": "Fehlgeschlagen"
+    }
+  },
+  "agreements": {
+    "title": "Vereinbarungen und Verlängerungen",
+    "intro": "Die Vereinbarungen der Plattform mit Gemeinschaften und anderen. Die nächste Verlängerung steht oben. Jede Vereinbarung, die in {{days}} Tagen oder früher verlängert wird oder deren Verlängerungsdatum vorbei ist, wird markiert, und die Startseite zeigt eine Erinnerung.",
+    "private_note": "Namen und E-Mail-Adressen von Kontaktpersonen werden nur auf dieser Seite und nur dem Plattform-Team gezeigt. Im Aktivitätsprotokoll werden sie nicht gespeichert.",
+    "new": "Vereinbarung hinzufügen",
+    "loading": "Die Vereinbarungen werden geladen",
+    "load_error_title": "Die Vereinbarungen konnten gerade nicht geladen werden",
+    "empty_title": "Noch keine Vereinbarungen erfasst",
+    "empty_text": "Fügen Sie eine hinzu, um vor der Verlängerung erinnert zu werden.",
+    "not_entered": "Nicht eingetragen",
+    "community_none": "Keiner Gemeinschaft zugeordnet",
+    "community_gone": "Gemeinschaft gibt es nicht mehr (#{{id}})",
+    "chip_soon": "Bald zu verlängern",
+    "chip_passed": "Verlängerungsdatum vorbei",
+    "chip_ended": "Beendet",
+    "renews_today": "Wird heute verlängert",
+    "field": {
+      "community": "Gemeinschaft",
+      "renews_on": "Verlängerungsdatum",
+      "days_left": "Tage bis zur Verlängerung",
+      "days_since": "Tage seit dem Verlängerungsdatum",
+      "starts_on": "Beginndatum",
+      "ends_on": "Enddatum",
+      "contact_name": "Name der Kontaktperson",
+      "contact_email": "E-Mail der Kontaktperson",
+      "notes": "Notizen"
+    },
+    "change": "Ändern",
+    "end": "Beenden",
+    "ended_title": "Beendete Vereinbarungen",
+    "ended_text": "Beendete Vereinbarungen bleiben gespeichert. Löschen ist nicht möglich: Eine versehentlich erfasste Vereinbarung wird ebenfalls beendet.",
+    "end_title": "Diese Vereinbarung beenden?",
+    "end_message": "Sie wird in die Liste der beendeten Vereinbarungen verschoben und bleibt gespeichert. Sie kann nicht zurückgeholt werden. Löschen ist nicht möglich, deshalb entfernen Sie so auch eine versehentlich erfasste Vereinbarung.",
+    "end_confirm": "Beenden",
+    "keep": "Behalten",
+    "saved": "Vereinbarung gespeichert",
+    "ended_toast": "Vereinbarung beendet",
+    "save_failed": "Das konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+    "form": {
+      "title_new": "Vereinbarung hinzufügen",
+      "title_edit": "Vereinbarung ändern",
+      "hint": "Nötig sind nur der Name und mit wem sie besteht. Lassen Sie alles leer, was Sie nicht wissen: Es wird nichts für Sie ausgefüllt.",
+      "title": "Name der Vereinbarung",
+      "with_whom": "Mit wem sie besteht",
+      "community": "Gemeinschaft",
+      "starts_on": "Beginndatum",
+      "renews_on": "Verlängerungsdatum",
+      "ends_on": "Enddatum",
+      "contact_name": "Name der Kontaktperson",
+      "contact_email": "E-Mail der Kontaktperson",
+      "notes": "Notizen",
+      "required": "Bitte ausfüllen, mit höchstens 160 Zeichen.",
+      "date_invalid": "Verwenden Sie ein gültiges Datum oder lassen Sie das Feld leer.",
+      "ends_before_start": "Das Enddatum darf nicht vor dem Beginndatum liegen.",
+      "renews_before_start": "Das Verlängerungsdatum darf nicht vor dem Beginndatum liegen.",
+      "email_invalid": "Geben Sie eine gültige E-Mail-Adresse ein oder lassen Sie das Feld leer.",
+      "too_long": "Das ist zu lang.",
+      "community_unknown": "Diese Gemeinschaft gibt es nicht.",
+      "save": "Speichern",
+      "cancel": "Abbrechen"
     }
   }
 }

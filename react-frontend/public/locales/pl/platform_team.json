@@ -89,7 +89,10 @@
       "search": "Wyszukiwanie",
       "snapshots": "Strony zapisane dla wyszukiwarek",
       "maintenance": "Tryb konserwacji",
-      "access_review": "Przegląd dostępu"
+      "access_review": "Przegląd dostępu",
+      "clean_up": "Zadania porządkowe",
+      "backup": "Kopia zapasowa bazy danych",
+      "agreements": "Umowy i odnowienia"
     },
     "fact": {
       "version": "Wersja",
@@ -114,7 +117,16 @@
       "platform_wide": "Cała platforma",
       "communities": "Społeczności w trybie konserwacji",
       "review_due": "Czas na przegląd",
-      "last_review_at": "Ostatni przegląd"
+      "last_review_at": "Ostatni przegląd",
+      "jobs_ok": "Działa zgodnie z oczekiwaniami",
+      "jobs_late": "Opóźnione",
+      "jobs_failing": "Nie działa",
+      "jobs_no_record": "Jeszcze brak zapisu",
+      "newest_backup_at": "Najnowsza kopia wykonana",
+      "off_server_copy": "Kopia przechowywana poza serwerem",
+      "restore_test": "Ostatni test przywracania",
+      "agreements_entered": "Wprowadzone umowy",
+      "agreements_renewing_soon": "Odnowienie wkrótce lub po terminie"
     },
     "value": {
       "yes": "Tak",
@@ -122,6 +134,9 @@
       "not_known": "Nie wiadomo",
       "browser_same": "Ta przeglądarka ma tę samą wersję.",
       "browser_other": "Ta przeglądarka ma inną wersję. Odśwież stronę."
+    },
+    "note": {
+      "backup": "Sprawdzana jest tylko najnowsza kopia na samym serwerze. To, czy kopia jest przechowywana poza serwerem i kiedy ostatnio sprawdzono przywracanie, nie jest nigdzie zapisane w miejscu, które ta strona może odczytać."
     }
   },
   "failed_jobs": {
@@ -153,7 +168,21 @@
     "intro": "Kto ma aplikację na telefon, w każdej społeczności na platformie. Członkowie są wymienieni z imienia i nazwiska; ich adresy e-mail nie są pokazywane.",
     "not_downloads": "To członkowie zalogowani w aplikacji, a nie pobrania ze sklepów z aplikacjami.",
     "loading": "Wczytywanie danych o aplikacji na telefon",
-    "load_error_title": "Nie udało się teraz wczytać danych o aplikacji na telefon"
+    "load_error_title": "Nie udało się teraz wczytać danych o aplikacji na telefon",
+    "versions": {
+      "title": "Używane wersje aplikacji",
+      "coverage": "Te dane obejmują tylko telefony, które zalogowały się po tym, jak zaczęto zapisywać wersję aplikacji, więc na początku większość logowań będzie liczona jako „niezapisane”.",
+      "version": "Wersja {{version}}",
+      "sign_ins_one": "{{count}} logowanie",
+      "sign_ins_few": "{{count}} logowania",
+      "sign_ins_many": "{{count}} logowań",
+      "sign_ins_other": "{{count}} logowania",
+      "not_recorded_one": "{{count}} logowanie bez zapisanej wersji",
+      "not_recorded_few": "{{count}} logowania bez zapisanej wersji",
+      "not_recorded_many": "{{count}} logowań bez zapisanej wersji",
+      "not_recorded_other": "{{count}} logowania bez zapisanej wersji",
+      "none_yet": "Żaden telefon nie zapisał jeszcze wersji aplikacji."
+    }
   },
   "senior_accounts": {
     "title": "Konta wysokiego szczebla",
@@ -732,6 +761,213 @@
       "consent_types": "Rodzaje zgód są w panelu administracyjnym",
       "identity_fee": "Opłata za weryfikację tożsamości jest w panelu administracyjnym, w sekcji Moduły",
       "secrets_replaced": "Dawna lista kluczy serwera została zastąpiona tą stroną."
+    }
+  },
+  "translations": {
+    "title": "Tłumaczenia",
+    "intro": "Jaka część tekstów jest przetłumaczona na każdy język.",
+    "recount": "Policz ponownie",
+    "loading": "Wczytywanie danych o tłumaczeniach",
+    "website_title": "Teksty strony internetowej",
+    "website_intro": "Teksty na stronie internetowej i w panelach. Policzone podczas budowania tej wersji strony.",
+    "website_unavailable": "Dane strony internetowej nie są dostępne na tym serwerze.",
+    "server_title": "Teksty serwera: e-maile i wiadomości",
+    "server_intro": "Teksty w e-mailach i wiadomościach wysyłanych przez serwer. Policzone z plików na serwerze i przechowywane przez godzinę.",
+    "server_unavailable": "Dane serwera nie są dostępne: nie udało się odczytać tekstów angielskich.",
+    "server_load_error": "Nie udało się wczytać danych serwera",
+    "counted_at": "Policzono: {{date}}",
+    "column": {
+      "language": "Język",
+      "phrases": "Frazy",
+      "missing": "Brakujące",
+      "same": "Nadal jak po angielsku",
+      "translated": "Przetłumaczono"
+    },
+    "same_note": "Niektóre frazy mają być takie same w każdym języku, na przykład nazwy i jednostki. Dlatego „nadal jak po angielsku” to górna granica, a nie dokładna liczba.",
+    "not_measured": "Aplikacja na telefon i strona dostępna nie są tu mierzone."
+  },
+  "clean_up_jobs": {
+    "title": "Zadania porządkowe",
+    "intro": "Zaplanowane zadania, które usuwają stare dane. Przy każdym: co usuwa, jak często działa, kiedy ostatnio zakończyło się powodzeniem i kiedy ostatnio się nie powiodło. Godziny są podane w Twojej strefie czasowej.",
+    "records_note": "Dla większości tych zadań zapisy zaczynają się dopiero od dnia, w którym ta strona została uruchomiona. Dopóki zadanie nie uruchomi się ponownie, widnieje przy nim „Jeszcze brak zapisu”: może to potrwać do jednego dnia, a przy zadaniu cotygodniowym do tygodnia. Zadania uruchamiane co minutę przechowują swój zapis tylko przez 30 dni.",
+    "loading": "Wczytywanie zadań porządkowych",
+    "load_error_title": "Nie udało się wczytać zadań porządkowych",
+    "runs": "Uruchamiane",
+    "last_ok": "Ostatnio zakończone powodzeniem",
+    "last_failed": "Ostatnio nieudane",
+    "not_recorded": "Brak zapisu",
+    "never_failed": "Nie zapisano żadnego niepowodzenia",
+    "how_often": {
+      "hourly": "Co godzinę",
+      "daily": "Codziennie",
+      "weekly": "Co tydzień"
+    },
+    "status": {
+      "ok": "Działa zgodnie z oczekiwaniami",
+      "late": "Opóźnione",
+      "failing": "Nie działa",
+      "unknown": "Jeszcze brak zapisu",
+      "unreadable": "Nie udało się odczytać"
+    },
+    "job": {
+      "performance_prune": {
+        "name": "Pomiary szybkości",
+        "deletes": "Usuwa własne pomiary szybkości platformy, gdy są starsze niż ustawiona liczba dni."
+      },
+      "retention_enforce": {
+        "name": "Zasady przechowywania społeczności",
+        "deletes": "Usuwa lub anonimizuje dane starsze, niż pozwalają ustawienia przechowywania danej społeczności."
+      },
+      "prune_logs": {
+        "name": "Stare wpisy w dziennikach",
+        "deletes": "Usuwa stare wiersze z dzienników platformy, np. uruchomienia zaplanowanych zadań, nieznalezione strony, aktywność i połączenia partnerów."
+      },
+      "prune_match_notifications": {
+        "name": "Zapisy e-maili o dopasowaniach",
+        "deletes": "Usuwa zapis tego, które e-maile o dopasowaniach wysłano, gdy jest starszy niż 30 dni."
+      },
+      "purge_message_copies": {
+        "name": "Kopie wiadomości przechowywane dla ochrony",
+        "deletes": "Usuwa kopie wiadomości przechowywane do przeglądu ochronnego po upływie okresu przechowywania danej społeczności."
+      },
+      "federation_purge_external_logs": {
+        "name": "Dzienniki zapytań partnerów",
+        "deletes": "Usuwa dzienniki zapytań do platform partnerskich i od nich, gdy przekroczą dopuszczalny wiek."
+      },
+      "federation_prune_aggregate_logs": {
+        "name": "Dziennik udostępnianych liczb",
+        "deletes": "Usuwa zapis próśb partnerów o udostępniane liczby, gdy jest starszy niż 12 miesięcy."
+      },
+      "groups_prune_exports": {
+        "name": "Pliki do pobrania grup",
+        "deletes": "Usuwa pliki do pobrania grup, gdy wygasną, oraz stare zapisy o nich."
+      },
+      "cleanup": {
+        "name": "Codzienne porządki",
+        "deletes": "Usuwa wygasłe linki do resetowania, klucze logowania i blokady newslettera, wysłane powiadomienia i zapisy zaplanowanych zadań starsze niż 30 dni oraz stare wyniki dopasowań."
+      },
+      "cleanup_sessions": {
+        "name": "Stare logowania",
+        "deletes": "Usuwa logowania nieużywane od ponad doby i wygasłe zapisy logowania."
+      },
+      "story_cleanup": {
+        "name": "Wygasłe relacje",
+        "deletes": "Ukrywa wygasłe relacje i usuwa ich zdjęcia oraz filmy."
+      },
+      "gdpr_export_cleanup": {
+        "name": "Pliki do pobrania z danymi osobowymi",
+        "deletes": "Usuwa pliki z danymi osobowymi członka, gdy wygaśnie link do ich pobrania."
+      },
+      "abuse_cleanup": {
+        "name": "Zamknięte zgłoszenia nadużyć",
+        "deletes": "Usuwa zgłoszenia nadużyć rozwiązane lub odrzucone ponad 90 dni temu."
+      },
+      "gamification_cleanup": {
+        "name": "Stare zapisy punktów i odznak",
+        "deletes": "Usuwa powiadomienia o punktach starsze niż 7 dni, nagrody kampanii starsze niż rok i liczby odznak starsze niż dwa lata."
+      },
+      "purge_verification_sessions": {
+        "name": "Stare weryfikacje tożsamości",
+        "deletes": "Usuwa zakończone lub wygasłe weryfikacje tożsamości starsze niż 180 dni. Zapis przebiegu każdej weryfikacji zostaje zachowany."
+      }
+    }
+  },
+  "search_rebuild": {
+    "title": "Odbuduj wyszukiwanie",
+    "intro": "Ponownie wysyła do usługi wyszukiwania ogłoszenia, członków, nadchodzące wydarzenia, grupy i przedmioty z targowiska jednej społeczności. Użyj tego, gdy wyszukiwanie nie znajduje rzeczy, które powinno znaleźć.",
+    "loading": "Wczytywanie społeczności",
+    "load_error_title": "Nie udało się wczytać listy społeczności",
+    "available": "Usługa wyszukiwania jest osiągalna.",
+    "unavailable": "Usługa wyszukiwania jest teraz nieosiągalna. Odbudowy nie można rozpocząć, dopóki nie będzie osiągalna.",
+    "does": {
+      "adds": "Dodaje i aktualizuje wpisy wyszukiwania społeczności.",
+      "not_removed": "Wpisy dotyczące usuniętych rzeczy nie są przez to usuwane.",
+      "keep_searching": "Członkowie mogą dalej wyszukiwać w trakcie jej działania."
+    },
+    "auto_refresh": "Ta lista odświeża się sama co 10 sekund, dopóki odbudowa czeka lub trwa.",
+    "switched_off": "Wyłączona",
+    "rebuild": "Odbuduj",
+    "cancel": "Anuluj",
+    "confirm_title": "Odbudować wyszukiwanie dla {{name}}?",
+    "confirm_message": "To dodaje i aktualizuje wpisy wyszukiwania społeczności. Wpisy dotyczące usuniętych rzeczy nie są przez to usuwane. Członkowie mogą dalej wyszukiwać w trakcie jej działania.",
+    "started": "Odbudowa czeka na rozpoczęcie. Ta lista odświeża się sama.",
+    "action_failed": "Nie udało się rozpocząć odbudowy.",
+    "busy": "Odbudowa dla tej społeczności już czeka lub trwa.",
+    "last": {
+      "never": "Nigdy nie uruchomiono z tej strony",
+      "queued": "Czeka na rozpoczęcie",
+      "running": "Trwa od {{time}}",
+      "done_one": "Zakończono {{time}}: zaktualizowano {{count}} wpis",
+      "done_few": "Zakończono {{time}}: zaktualizowano {{count}} wpisy",
+      "done_many": "Zakończono {{time}}: zaktualizowano {{count}} wpisów",
+      "done_other": "Zakończono {{time}}: zaktualizowano {{count}} wpisu",
+      "done_with_errors_one": "Zakończono {{time}}: {{count}} wpisu nie udało się zaktualizować",
+      "done_with_errors_few": "Zakończono {{time}}: {{count}} wpisów nie udało się zaktualizować",
+      "done_with_errors_many": "Zakończono {{time}}: {{count}} wpisów nie udało się zaktualizować",
+      "done_with_errors_other": "Zakończono {{time}}: {{count}} wpisu nie udało się zaktualizować",
+      "failed": "Niepowodzenie"
+    }
+  },
+  "agreements": {
+    "title": "Umowy i odnowienia",
+    "intro": "Umowy platformy ze społecznościami i innymi stronami. Najbliższe odnowienie jest na górze. Każda umowa, która odnawia się w ciągu {{days}} dni lub której data odnowienia minęła, jest oznaczona, a strona główna pokazuje przypomnienie.",
+    "private_note": "Imiona, nazwiska i adresy e-mail osób kontaktowych są pokazywane tylko na tej stronie, zespołowi platformy. Nie są zapisywane w dzienniku aktywności.",
+    "new": "Dodaj umowę",
+    "loading": "Wczytywanie umów",
+    "load_error_title": "Nie udało się teraz wczytać umów",
+    "empty_title": "Nie wprowadzono jeszcze żadnej umowy",
+    "empty_text": "Dodaj umowę, aby dostać przypomnienie przed jej odnowieniem.",
+    "not_entered": "Nie podano",
+    "community_none": "Bez powiązanej społeczności",
+    "community_gone": "Społeczność już nie istnieje (#{{id}})",
+    "chip_soon": "Wkrótce odnowienie",
+    "chip_passed": "Data odnowienia minęła",
+    "chip_ended": "Zakończona",
+    "renews_today": "Odnawia się dzisiaj",
+    "field": {
+      "community": "Społeczność",
+      "renews_on": "Data odnowienia",
+      "days_left": "Dni do odnowienia",
+      "days_since": "Dni od daty odnowienia",
+      "starts_on": "Data rozpoczęcia",
+      "ends_on": "Data zakończenia",
+      "contact_name": "Osoba kontaktowa",
+      "contact_email": "E-mail osoby kontaktowej",
+      "notes": "Notatki"
+    },
+    "change": "Zmień",
+    "end": "Zakończ",
+    "ended_title": "Zakończone umowy",
+    "ended_text": "Zakończone umowy pozostają w rejestrze. Nie można ich usunąć: umowę wprowadzoną przez pomyłkę też się kończy.",
+    "end_title": "Zakończyć tę umowę?",
+    "end_message": "Trafi na listę zakończonych umów i pozostanie w rejestrze. Nie można jej przywrócić. Umowy nie da się usunąć, więc w ten sam sposób usuwa się umowę wprowadzoną przez pomyłkę.",
+    "end_confirm": "Zakończ ją",
+    "keep": "Zostaw ją",
+    "saved": "Umowa zapisana",
+    "ended_toast": "Umowa zakończona",
+    "save_failed": "Nie udało się zapisać. Spróbuj ponownie.",
+    "form": {
+      "title_new": "Dodaj umowę",
+      "title_edit": "Zmień umowę",
+      "hint": "Potrzebne są tylko nazwa i druga strona umowy. Zostaw puste to, czego nie wiesz: nic nie jest uzupełniane za ciebie.",
+      "title": "Nazwa umowy",
+      "with_whom": "Z kim zawarta",
+      "community": "Społeczność",
+      "starts_on": "Data rozpoczęcia",
+      "renews_on": "Data odnowienia",
+      "ends_on": "Data zakończenia",
+      "contact_name": "Osoba kontaktowa",
+      "contact_email": "E-mail osoby kontaktowej",
+      "notes": "Notatki",
+      "required": "Wypełnij to pole, maksymalnie 160 znaków.",
+      "date_invalid": "Użyj prawdziwej daty albo zostaw pole puste.",
+      "ends_before_start": "Data zakończenia nie może być wcześniejsza niż data rozpoczęcia.",
+      "renews_before_start": "Data odnowienia nie może być wcześniejsza niż data rozpoczęcia.",
+      "email_invalid": "Wpisz prawidłowy adres e-mail albo zostaw pole puste.",
+      "too_long": "To jest za długie.",
+      "community_unknown": "Taka społeczność nie istnieje.",
+      "save": "Zapisz",
+      "cancel": "Anuluj"
     }
   }
 }

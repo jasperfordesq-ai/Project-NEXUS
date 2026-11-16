@@ -89,7 +89,10 @@
       "search": "Cuardach",
       "snapshots": "Leathanaigh a sábháladh d’innill chuardaigh",
       "maintenance": "Mód cothabhála",
-      "access_review": "Athbhreithniú rochtana"
+      "access_review": "Athbhreithniú rochtana",
+      "clean_up": "Jabanna glantacháin",
+      "backup": "Cúltaca an bhunachair sonraí",
+      "agreements": "Comhaontuithe agus athnuachan"
     },
     "fact": {
       "version": "Leagan",
@@ -114,7 +117,16 @@
       "platform_wide": "An t-ardán iomlán",
       "communities": "Pobail i mód cothabhála",
       "review_due": "Athbhreithniú dlite",
-      "last_review_at": "An t-athbhreithniú deireanach"
+      "last_review_at": "An t-athbhreithniú deireanach",
+      "jobs_ok": "Ag rith mar a bhíothas ag súil",
+      "jobs_late": "Déanach",
+      "jobs_failing": "Ag teip",
+      "jobs_no_record": "Gan taifead fós",
+      "newest_backup_at": "An cúltaca is déanaí a rinneadh",
+      "off_server_copy": "Cóip a choinnítear lasmuigh den fhreastalaí",
+      "restore_test": "An tástáil athchóirithe dheireanach",
+      "agreements_entered": "Comhaontuithe curtha isteach",
+      "agreements_renewing_soon": "Le hathnuachan go luath nó thar dáta"
     },
     "value": {
       "yes": "Tá",
@@ -122,6 +134,9 @@
       "not_known": "Ní fios",
       "browser_same": "Tá an brabhsálaí seo ar an leagan céanna.",
       "browser_other": "Tá an brabhsálaí seo ar leagan eile. Athlódáil an leathanach."
+    },
+    "note": {
+      "backup": "Ní sheiceáiltear anseo ach an cúltaca is déanaí ar an bhfreastalaí féin. Níl sé taifeadta in aon áit ar féidir leis an leathanach seo é a léamh an gcoinnítear cóip lasmuigh den fhreastalaí, ná cathain a tástáladh athchóiriú go deireanach."
     }
   },
   "failed_jobs": {
@@ -153,7 +168,23 @@
     "intro": "Cé aige a bhfuil an aip fóin, i ngach pobal ar an ardán. Ainmnítear na baill; ní thaispeántar a seoltaí ríomhphoist.",
     "not_downloads": "Is baill iad seo atá sínithe isteach san aip, ní íoslódálacha ó na siopaí aipeanna.",
     "loading": "Figiúirí na haipe fóin á lódáil",
-    "load_error_title": "Níorbh fhéidir linn figiúirí na haipe fóin a lódáil faoi láthair"
+    "load_error_title": "Níorbh fhéidir linn figiúirí na haipe fóin a lódáil faoi láthair",
+    "versions": {
+      "title": "Leaganacha den aip in úsáid",
+      "coverage": "Ní chlúdaíonn na figiúirí seo ach fóin a shínigh isteach tar éis tosú ar leagan na haipe a thaifeadadh, mar sin ar dtús beidh formhór na sínithe isteach marcáilte «gan taifeadadh».",
+      "version": "Leagan {{version}}",
+      "sign_ins_one": "{{count}} síniú isteach",
+      "sign_ins_two": "{{count}} shíniú isteach",
+      "sign_ins_few": "{{count}} shíniú isteach",
+      "sign_ins_many": "{{count}} síniú isteach",
+      "sign_ins_other": "{{count}} síniú isteach",
+      "not_recorded_one": "{{count}} síniú isteach gan leagan taifeadta",
+      "not_recorded_two": "{{count}} shíniú isteach gan leagan taifeadta",
+      "not_recorded_few": "{{count}} shíniú isteach gan leagan taifeadta",
+      "not_recorded_many": "{{count}} síniú isteach gan leagan taifeadta",
+      "not_recorded_other": "{{count}} síniú isteach gan leagan taifeadta",
+      "none_yet": "Níl leagan aipe taifeadta ag aon fhón fós."
+    }
   },
   "senior_accounts": {
     "title": "Cuntais shinsearacha",
@@ -734,6 +765,209 @@
       "consent_types": "Tá na cineálacha toilithe sa phainéal riaracháin",
       "identity_fee": "Tá an táille don seiceáil aitheantais sa phainéal riaracháin, faoi Mhodúil",
       "secrets_replaced": "Tá an seanliosta d’eochracha an fhreastalaí curtha in ionad ag an leathanach seo."
+    }
+  },
+  "translations": {
+    "title": "Aistriúcháin",
+    "intro": "An méid den fhoclaíocht atá aistrithe go gach teanga.",
+    "recount": "Comhair arís",
+    "loading": "Figiúirí aistriúcháin á lódáil",
+    "website_title": "Foclaíocht an tsuímh ghréasáin",
+    "website_intro": "Na focail ar an suíomh gréasáin agus sna painéil. Comhairthe nuair a tógadh an leagan seo den suíomh.",
+    "website_unavailable": "Níl figiúirí an tsuímh ghréasáin ar fáil ar an bhfreastalaí seo.",
+    "server_title": "Foclaíocht an fhreastalaí: ríomhphoist agus teachtaireachtaí",
+    "server_intro": "Na focail sna ríomhphoist agus sna teachtaireachtaí a sheolann an freastalaí. Comhairthe ó na comhaid ar an bhfreastalaí, agus coinnithe ar feadh uair an chloig.",
+    "server_unavailable": "Níl figiúirí an fhreastalaí ar fáil: níorbh fhéidir an fhoclaíocht Bhéarla a léamh.",
+    "server_load_error": "Níorbh fhéidir figiúirí an fhreastalaí a lódáil",
+    "counted_at": "Comhairthe: {{date}}",
+    "column": {
+      "language": "Teanga",
+      "phrases": "Frásaí",
+      "missing": "Ar iarraidh",
+      "same": "Fós mar an gcéanna leis an mBéarla",
+      "translated": "Aistrithe"
+    },
+    "same_note": "Tá roinnt frásaí le bheith mar an gcéanna i ngach teanga, mar shampla ainmneacha agus aonaid. Mar sin is uasteorainn é “fós mar an gcéanna leis an mBéarla”, ní líon beacht.",
+    "not_measured": "Ní thomhaistear an aip fóin ná an suíomh inrochtana anseo."
+  },
+  "clean_up_jobs": {
+    "title": "Jabanna glantacháin",
+    "intro": "Na jabanna sceidealaithe a scriosann sean-sonraí. I gcás gach ceann: cad a scriosann sé, cé chomh minic a ritheann sé, cathain a d'éirigh leis go deireanach agus cathain a theip air go deireanach. Taispeántar na hamanna i do chrios ama féin.",
+    "records_note": "I gcás fhormhór na jabanna seo, ní thosaíonn na taifid ach ón lá a cuireadh an leathanach seo beo. Go dtí go ritheann jab arís taispeántar \"Gan taifead fós\": d'fhéadfadh suas le lá a thógáil, nó seachtain i gcás jab seachtainiúil. Ní choinníonn na jabanna a ritheann an rith gach nóiméid a dtaifead ach ar feadh 30 lá.",
+    "loading": "Na jabanna glantacháin á lódáil",
+    "load_error_title": "Níorbh fhéidir na jabanna glantacháin a lódáil",
+    "runs": "Ritheann",
+    "last_ok": "D'éirigh leis go deireanach",
+    "last_failed": "Theip air go deireanach",
+    "not_recorded": "Níl sé taifeadta",
+    "never_failed": "Níl aon teip taifeadta",
+    "how_often": {
+      "hourly": "Gach uair an chloig",
+      "daily": "Gach lá",
+      "weekly": "Gach seachtain"
+    },
+    "status": {
+      "ok": "Ag rith mar a bhíothas ag súil",
+      "late": "Déanach",
+      "failing": "Ag teip",
+      "unknown": "Gan taifead fós",
+      "unreadable": "Níorbh fhéidir é a léamh"
+    },
+    "job": {
+      "performance_prune": {
+        "name": "Tomhais luais",
+        "deletes": "Scriosann sé tomhais luais an ardáin féin nuair a bhíonn siad níos sine ná an líon laethanta socraithe."
+      },
+      "retention_enforce": {
+        "name": "Rialacha coinneála na bpobal",
+        "deletes": "Scriosann nó anaithnidíonn sé sonraí atá níos sine ná mar a cheadaíonn socruithe coinneála gach pobail."
+      },
+      "prune_logs": {
+        "name": "Sean-taifid loga",
+        "deletes": "Scriosann sé sean-sraitheanna as logaí an ardáin, mar shampla ritheanna jabanna sceidealaithe, leathanaigh nach bhfuarthas, gníomhaíocht agus naisc le comhpháirtithe."
+      },
+      "prune_match_notifications": {
+        "name": "Taifid ríomhphoist meaitseála",
+        "deletes": "Scriosann sé an taifead ar na ríomhphoist meaitseála a seoladh nuair a bhíonn sé níos sine ná 30 lá."
+      },
+      "purge_message_copies": {
+        "name": "Cóipeanna teachtaireachtaí a coinníodh le haghaidh cosanta",
+        "deletes": "Scriosann sé na cóipeanna teachtaireachtaí a coinníodh le haghaidh athbhreithniú cosanta nuair a bhíonn tréimhse choinneála gach pobail caite."
+      },
+      "federation_purge_external_logs": {
+        "name": "Logaí iarratas comhpháirtithe",
+        "deletes": "Scriosann sé logaí na n-iarratas chuig ardáin chomhpháirtíochta agus uathu nuair a théann siad thar a dteorainn aoise."
+      },
+      "federation_prune_aggregate_logs": {
+        "name": "Loga na bhfigiúirí comhroinnte",
+        "deletes": "Scriosann sé an taifead ar iarratais ó chomhpháirtithe ar fhigiúirí comhroinnte nuair a bhíonn sé níos sine ná 12 mhí."
+      },
+      "groups_prune_exports": {
+        "name": "Comhaid íoslódála grúpaí",
+        "deletes": "Baineann sé comhaid íoslódála grúpaí nuair a théann siad as feidhm, agus scriosann sé sean-taifid fúthu."
+      },
+      "cleanup": {
+        "name": "Glantachán laethúil",
+        "deletes": "Scriosann sé naisc athshocraithe, eochracha sínithe isteach agus coscanna nuachtlitreach atá as feidhm, fógraí seolta agus taifid jabanna sceidealaithe níos sine ná 30 lá, agus sean-torthaí meaitseála."
+      },
+      "cleanup_sessions": {
+        "name": "Sean-shínithe isteach",
+        "deletes": "Scriosann sé sínithe isteach nár úsáideadh le breis agus lá agus taifid sínithe isteach atá as feidhm."
+      },
+      "story_cleanup": {
+        "name": "Scéalta atá as feidhm",
+        "deletes": "Folaíonn sé scéalta atá as feidhm agus scriosann sé a bpictiúir agus a bhfíseáin."
+      },
+      "gdpr_export_cleanup": {
+        "name": "Comhaid íoslódála sonraí pearsanta",
+        "deletes": "Scriosann sé na comhaid ina bhfuil sonraí pearsanta baill nuair a théann a nasc íoslódála as feidhm."
+      },
+      "abuse_cleanup": {
+        "name": "Foláirimh mhí-úsáide dúnta",
+        "deletes": "Scriosann sé foláirimh mhí-úsáide a réitíodh nó a díbheadh breis agus 90 lá ó shin."
+      },
+      "gamification_cleanup": {
+        "name": "Sean-taifid pointí agus suaitheantas",
+        "deletes": "Scriosann sé fógraí pointí níos sine ná 7 lá, duaiseanna feachtais níos sine ná bliain agus figiúirí suaitheantas níos sine ná dhá bhliain."
+      },
+      "purge_verification_sessions": {
+        "name": "Sean-seiceálacha aitheantais",
+        "deletes": "Scriosann sé seiceálacha aitheantais críochnaithe nó as feidhm atá níos sine ná 180 lá. Coinnítear an taifead ar a tharla i ngach seiceáil."
+      }
+    }
+  },
+  "search_rebuild": {
+    "title": "Atóg an cuardach",
+    "intro": "Seol fógraí, baill, imeachtaí atá le teacht, grúpaí agus earraí margaidh pobail chuig an tseirbhís cuardaigh arís. Úsáid é nuair nach n-aimsíonn an cuardach rudaí ba cheart dó a aimsiú.",
+    "loading": "Na pobail á lódáil",
+    "load_error_title": "Níorbh fhéidir liosta na bpobal a lódáil",
+    "available": "Is féidir teacht ar an tseirbhís cuardaigh.",
+    "unavailable": "Ní féidir teacht ar an tseirbhís cuardaigh faoi láthair. Ní féidir atógáil a thosú go dtí gur féidir.",
+    "does": {
+      "adds": "Cuireann sé iontrálacha cuardaigh an phobail leis agus nuashonraíonn sé iad.",
+      "not_removed": "Ní bhaintear iontrálacha do rudaí a scriosadh leis seo.",
+      "keep_searching": "Is féidir le baill leanúint ar aghaidh ag cuardach fad is atá sé ag rith."
+    },
+    "auto_refresh": "Nuashonraíonn an liosta seo é féin gach 10 soicind fad is atá atógáil ag fanacht nó ag rith.",
+    "switched_off": "Múchta",
+    "rebuild": "Atóg",
+    "cancel": "Cealaigh",
+    "confirm_title": "An bhfuil tú ag iarraidh an cuardach do {{name}} a atógáil?",
+    "confirm_message": "Cuireann sé seo iontrálacha cuardaigh an phobail leis agus nuashonraíonn sé iad. Ní bhaintear iontrálacha do rudaí a scriosadh leis seo. Is féidir le baill leanúint ar aghaidh ag cuardach fad is atá sé ag rith.",
+    "started": "Tá an atógáil ag fanacht le tosú. Nuashonraíonn an liosta seo é féin.",
+    "action_failed": "Níorbh fhéidir an atógáil a thosú.",
+    "busy": "Tá atógáil don phobal seo ag fanacht nó ag rith cheana féin.",
+    "last": {
+      "never": "Níor ritheadh riamh ón leathanach seo",
+      "queued": "Ag fanacht le tosú",
+      "running": "Ag rith ó {{time}}",
+      "done_one": "Críochnaithe {{time}}: {{count}} iontráil nuashonraithe",
+      "done_other": "Críochnaithe {{time}}: {{count}} iontráil nuashonraithe",
+      "done_with_errors_one": "Críochnaithe {{time}} le {{count}} iontráil nárbh fhéidir a nuashonrú",
+      "done_with_errors_other": "Críochnaithe {{time}} le {{count}} iontráil nárbh fhéidir a nuashonrú",
+      "failed": "Theip air"
+    }
+  },
+  "agreements": {
+    "title": "Comhaontuithe agus athnuachan",
+    "intro": "Na comhaontuithe atá ag an ardán le pobail agus le daoine eile. Tá an chéad athnuachan eile ar dtús. Marcáiltear aon chomhaontú a athnuafar laistigh de {{days}} lá, nó a bhfuil a dháta athnuachana caite, agus taispeánann an leathanach baile meabhrúchán.",
+    "private_note": "Ní thaispeántar ainmneacha agus seoltaí ríomhphoist teagmhálaithe ach ar an leathanach seo, d'fhoireann an ardáin. Ní choinnítear iad sa taifead gníomhaíochta.",
+    "new": "Cuir comhaontú leis",
+    "loading": "Na comhaontuithe á lódáil",
+    "load_error_title": "Níorbh fhéidir na comhaontuithe a lódáil faoi láthair",
+    "empty_title": "Níl aon chomhaontú curtha isteach fós",
+    "empty_text": "Cuir ceann leis chun meabhrúchán a fháil sula n-athnuafar é.",
+    "not_entered": "Gan iontráil",
+    "community_none": "Níl sé nasctha le pobal",
+    "community_gone": "Níl an pobal ann a thuilleadh (#{{id}})",
+    "chip_soon": "Le hathnuachan go luath",
+    "chip_passed": "Dáta athnuachana caite",
+    "chip_ended": "Críochnaithe",
+    "renews_today": "Athnuafar inniu é",
+    "field": {
+      "community": "Pobal",
+      "renews_on": "Dáta athnuachana",
+      "days_left": "Laethanta go dtí an athnuachan",
+      "days_since": "Laethanta ón dáta athnuachana",
+      "starts_on": "Dáta tosaigh",
+      "ends_on": "Dáta deiridh",
+      "contact_name": "Ainm an teagmhálaí",
+      "contact_email": "Ríomhphost an teagmhálaí",
+      "notes": "Nótaí"
+    },
+    "change": "Athraigh",
+    "end": "Críochnaigh",
+    "ended_title": "Comhaontuithe críochnaithe",
+    "ended_text": "Fanann comhaontuithe críochnaithe sa taifead. Ní féidir iad a scriosadh: críochnaítear comhaontú a cuireadh isteach trí dhearmad freisin.",
+    "end_title": "An comhaontú seo a chríochnú?",
+    "end_message": "Bogfar é chuig liosta na gcomhaontuithe críochnaithe agus fanfaidh sé sa taifead. Ní féidir é a thabhairt ar ais. Ní féidir comhaontú a scriosadh, mar sin is é seo an bealach freisin chun ceann a cuireadh isteach trí dhearmad a bhaint.",
+    "end_confirm": "Críochnaigh é",
+    "keep": "Coinnigh é",
+    "saved": "Comhaontú sábháilte",
+    "ended_toast": "Comhaontú críochnaithe",
+    "save_failed": "Níorbh fhéidir é sin a shábháil. Bain triail eile as.",
+    "form": {
+      "title_new": "Cuir comhaontú leis",
+      "title_edit": "Athraigh an comhaontú",
+      "hint": "Níl ag teastáil ach an t-ainm agus cé leis a bhfuil sé. Fág folamh aon rud nach bhfuil ar eolas agat: ní líontar aon rud isteach duit.",
+      "title": "Ainm an chomhaontaithe",
+      "with_whom": "Cé leis a bhfuil sé",
+      "community": "Pobal",
+      "starts_on": "Dáta tosaigh",
+      "renews_on": "Dáta athnuachana",
+      "ends_on": "Dáta deiridh",
+      "contact_name": "Ainm an teagmhálaí",
+      "contact_email": "Ríomhphost an teagmhálaí",
+      "notes": "Nótaí",
+      "required": "Líon isteach é seo, suas le 160 carachtar.",
+      "date_invalid": "Úsáid dáta fíor, nó fág folamh é.",
+      "ends_before_start": "Ní féidir leis an dáta deiridh a bheith roimh an dáta tosaigh.",
+      "renews_before_start": "Ní féidir leis an dáta athnuachana a bheith roimh an dáta tosaigh.",
+      "email_invalid": "Cuir isteach seoladh ríomhphoist bailí, nó fág folamh é.",
+      "too_long": "Tá sé seo rófhada.",
+      "community_unknown": "Níl an pobal sin ann.",
+      "save": "Sábháil",
+      "cancel": "Cealaigh"
     }
   }
 }

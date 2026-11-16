@@ -89,7 +89,10 @@
       "search": "Recherche",
       "snapshots": "Pages enregistrées pour les moteurs de recherche",
       "maintenance": "Mode maintenance",
-      "access_review": "Revue des accès"
+      "access_review": "Revue des accès",
+      "clean_up": "Tâches de nettoyage",
+      "backup": "Sauvegarde de la base de données",
+      "agreements": "Accords et renouvellements"
     },
     "fact": {
       "version": "Version",
@@ -114,7 +117,16 @@
       "platform_wide": "Toute la plateforme",
       "communities": "Communautés en maintenance",
       "review_due": "Revue à faire",
-      "last_review_at": "Dernière revue"
+      "last_review_at": "Dernière revue",
+      "jobs_ok": "Fonctionne comme prévu",
+      "jobs_late": "En retard",
+      "jobs_failing": "En échec",
+      "jobs_no_record": "Rien d'enregistré pour l'instant",
+      "newest_backup_at": "Dernière sauvegarde faite",
+      "off_server_copy": "Copie gardée hors du serveur",
+      "restore_test": "Dernier test de restauration",
+      "agreements_entered": "Accords enregistrés",
+      "agreements_renewing_soon": "Renouvellement proche ou dépassé"
     },
     "value": {
       "yes": "Oui",
@@ -122,6 +134,9 @@
       "not_known": "Non connu",
       "browser_same": "Ce navigateur utilise la même version.",
       "browser_other": "Ce navigateur utilise une autre version. Rechargez la page."
+    },
+    "note": {
+      "backup": "Seule la sauvegarde la plus récente sur le serveur lui-même est vérifiée. L'existence d'une copie gardée hors du serveur et la date du dernier test de restauration ne sont enregistrées nulle part où cette page peut les lire."
     }
   },
   "failed_jobs": {
@@ -153,7 +168,17 @@
     "intro": "Qui a l'application mobile, dans chaque communauté de la plateforme. Les membres sont nommés ; leurs adresses e-mail ne sont pas affichées.",
     "not_downloads": "Il s'agit des membres connectés dans l'application, pas des téléchargements depuis les boutiques d'applications.",
     "loading": "Chargement des chiffres de l'application mobile",
-    "load_error_title": "Nous n'avons pas pu charger les chiffres de l'application pour le moment"
+    "load_error_title": "Nous n'avons pas pu charger les chiffres de l'application pour le moment",
+    "versions": {
+      "title": "Versions de l’application utilisées",
+      "coverage": "Ces chiffres ne concernent que les téléphones connectés depuis que la version de l’application est enregistrée. Au début, la plupart des connexions seront donc comptées comme « non enregistrées ».",
+      "version": "Version de l’application {{version}}",
+      "sign_ins_one": "{{count}} connexion",
+      "sign_ins_other": "{{count}} connexions",
+      "not_recorded_one": "{{count}} connexion sans version enregistrée",
+      "not_recorded_other": "{{count}} connexions sans version enregistrée",
+      "none_yet": "Aucun téléphone n’a encore enregistré sa version de l’application."
+    }
   },
   "senior_accounts": {
     "title": "Comptes à haut niveau",
@@ -728,6 +753,209 @@
       "consent_types": "Les types de consentement sont dans le panneau d’administration",
       "identity_fee": "Le tarif de la vérification d’identité est dans le panneau d’administration, sous Modules",
       "secrets_replaced": "L’ancienne liste des clés du serveur a été remplacée par cette page."
+    }
+  },
+  "translations": {
+    "title": "Traductions",
+    "intro": "Quelle part des textes est traduite dans chaque langue.",
+    "recount": "Recompter",
+    "loading": "Chargement des chiffres de traduction",
+    "website_title": "Textes du site web",
+    "website_intro": "Les textes du site web et des panneaux. Comptés lors de la construction de cette version du site.",
+    "website_unavailable": "Les chiffres du site web ne sont pas disponibles sur ce serveur.",
+    "server_title": "Textes du serveur : e-mails et messages",
+    "server_intro": "Les textes des e-mails et des messages envoyés par le serveur. Comptés à partir des fichiers du serveur et conservés une heure.",
+    "server_unavailable": "Les chiffres du serveur ne sont pas disponibles : les textes anglais n’ont pas pu être lus.",
+    "server_load_error": "Les chiffres du serveur n’ont pas pu être chargés",
+    "counted_at": "Comptés : {{date}}",
+    "column": {
+      "language": "Langue",
+      "phrases": "Textes",
+      "missing": "Manquants",
+      "same": "Encore identiques à l’anglais",
+      "translated": "Traduits"
+    },
+    "same_note": "Certains textes doivent rester identiques dans toutes les langues, comme les noms et les unités. « Encore identiques à l’anglais » est donc un maximum, pas un chiffre exact.",
+    "not_measured": "L’application mobile et le site accessible ne sont pas mesurés ici."
+  },
+  "clean_up_jobs": {
+    "title": "Tâches de nettoyage",
+    "intro": "Les tâches planifiées qui suppriment des données anciennes. Pour chacune : ce qu'elle supprime, à quelle fréquence elle tourne, quand elle a réussi pour la dernière fois et quand elle a échoué pour la dernière fois. Les heures sont affichées dans votre fuseau horaire.",
+    "records_note": "Pour la plupart de ces tâches, les relevés ne commencent qu'au jour de la mise en ligne de cette page. Jusqu'à sa prochaine exécution, une tâche affiche « Rien d'enregistré pour l'instant » : cela peut prendre jusqu'à un jour, ou une semaine pour une tâche hebdomadaire. Les tâches lancées par le passage de chaque minute ne gardent leur relevé que 30 jours.",
+    "loading": "Chargement des tâches de nettoyage",
+    "load_error_title": "Les tâches de nettoyage n'ont pas pu être chargées",
+    "runs": "Fréquence",
+    "last_ok": "Dernière réussite",
+    "last_failed": "Dernier échec",
+    "not_recorded": "Non enregistré",
+    "never_failed": "Aucun échec enregistré",
+    "how_often": {
+      "hourly": "Toutes les heures",
+      "daily": "Tous les jours",
+      "weekly": "Toutes les semaines"
+    },
+    "status": {
+      "ok": "Fonctionne comme prévu",
+      "late": "En retard",
+      "failing": "En échec",
+      "unknown": "Rien d'enregistré pour l'instant",
+      "unreadable": "Lecture impossible"
+    },
+    "job": {
+      "performance_prune": {
+        "name": "Mesures de vitesse",
+        "deletes": "Supprime les mesures de vitesse de la plateforme une fois qu'elles dépassent le nombre de jours fixé."
+      },
+      "retention_enforce": {
+        "name": "Règles de conservation des communautés",
+        "deletes": "Supprime ou anonymise les données plus anciennes que ne le permettent les réglages de conservation de chaque communauté."
+      },
+      "prune_logs": {
+        "name": "Anciennes lignes de journal",
+        "deletes": "Supprime les anciennes lignes des journaux de la plateforme : exécutions de tâches planifiées, pages introuvables, activité, connexions des partenaires."
+      },
+      "prune_match_notifications": {
+        "name": "Relevés des e-mails de correspondance",
+        "deletes": "Supprime le relevé des e-mails de correspondance envoyés une fois qu'il a plus de 30 jours."
+      },
+      "purge_message_copies": {
+        "name": "Copies de messages gardées pour la protection",
+        "deletes": "Supprime les copies de messages gardées pour l'examen de protection une fois la durée de conservation de chaque communauté écoulée."
+      },
+      "federation_purge_external_logs": {
+        "name": "Journaux des demandes des partenaires",
+        "deletes": "Supprime les journaux des demandes vers et depuis les plateformes partenaires une fois leur âge limite dépassé."
+      },
+      "federation_prune_aggregate_logs": {
+        "name": "Journal des chiffres partagés",
+        "deletes": "Supprime le relevé des demandes de chiffres partagés faites par les partenaires une fois qu'il a plus de 12 mois."
+      },
+      "groups_prune_exports": {
+        "name": "Fichiers de téléchargement des groupes",
+        "deletes": "Retire les fichiers de téléchargement des groupes à leur expiration et supprime leurs anciens relevés."
+      },
+      "cleanup": {
+        "name": "Nettoyage quotidien",
+        "deletes": "Supprime les liens de réinitialisation, clés de connexion et blocages de lettres d'information expirés, les notifications envoyées et relevés de tâches planifiées de plus de 30 jours, et les anciens résultats de correspondance."
+      },
+      "cleanup_sessions": {
+        "name": "Anciennes connexions",
+        "deletes": "Supprime les connexions inutilisées depuis plus d'un jour et les relevés de connexion expirés."
+      },
+      "story_cleanup": {
+        "name": "Stories expirées",
+        "deletes": "Masque les stories expirées et supprime leurs photos et vidéos."
+      },
+      "gdpr_export_cleanup": {
+        "name": "Fichiers de téléchargement des données personnelles",
+        "deletes": "Supprime les fichiers contenant les données personnelles d'un membre une fois leur lien de téléchargement expiré."
+      },
+      "abuse_cleanup": {
+        "name": "Alertes d'abus closes",
+        "deletes": "Supprime les alertes d'abus résolues ou écartées il y a plus de 90 jours."
+      },
+      "gamification_cleanup": {
+        "name": "Anciens relevés de points et de badges",
+        "deletes": "Supprime les avis de points de plus de 7 jours, les récompenses de campagne de plus d'un an et les chiffres de badges de plus de deux ans."
+      },
+      "purge_verification_sessions": {
+        "name": "Anciennes vérifications d'identité",
+        "deletes": "Supprime les vérifications d'identité terminées ou expirées de plus de 180 jours. Le relevé de ce qui s'est passé pour chacune est conservé."
+      }
+    }
+  },
+  "search_rebuild": {
+    "title": "Reconstruire la recherche",
+    "intro": "Renvoie au service de recherche les annonces, membres, événements à venir, groupes et articles du marché d'une communauté. À utiliser quand la recherche ne trouve pas ce qu'elle devrait trouver.",
+    "loading": "Chargement des communautés",
+    "load_error_title": "La liste des communautés n'a pas pu être chargée",
+    "available": "Le service de recherche est joignable.",
+    "unavailable": "Le service de recherche n'est pas joignable pour le moment. Une reconstruction ne peut pas être lancée tant qu'il ne l'est pas.",
+    "does": {
+      "adds": "Elle ajoute et met à jour les entrées de recherche de la communauté.",
+      "not_removed": "Les entrées des éléments supprimés ne sont pas retirées par cette opération.",
+      "keep_searching": "Les membres peuvent continuer à chercher pendant son exécution."
+    },
+    "auto_refresh": "Cette liste se met à jour toute seule toutes les 10 secondes tant qu'une reconstruction attend ou est en cours.",
+    "switched_off": "Désactivée",
+    "rebuild": "Reconstruire",
+    "cancel": "Annuler",
+    "confirm_title": "Reconstruire la recherche de {{name}} ?",
+    "confirm_message": "Cela ajoute et met à jour les entrées de recherche de la communauté. Les entrées des éléments supprimés ne sont pas retirées par cette opération. Les membres peuvent continuer à chercher pendant son exécution.",
+    "started": "La reconstruction attend de démarrer. Cette liste se met à jour toute seule.",
+    "action_failed": "La reconstruction n'a pas pu être lancée.",
+    "busy": "Une reconstruction pour cette communauté est déjà en attente ou en cours.",
+    "last": {
+      "never": "Jamais lancée depuis cette page",
+      "queued": "En attente de démarrage",
+      "running": "En cours depuis {{time}}",
+      "done_one": "Terminée {{time}} : {{count}} entrée mise à jour",
+      "done_other": "Terminée {{time}} : {{count}} entrées mises à jour",
+      "done_with_errors_one": "Terminée {{time}} avec {{count}} entrée qui n'a pas pu être mise à jour",
+      "done_with_errors_other": "Terminée {{time}} avec {{count}} entrées qui n'ont pas pu être mises à jour",
+      "failed": "Échec"
+    }
+  },
+  "agreements": {
+    "title": "Accords et renouvellements",
+    "intro": "Les accords que la plateforme a conclus avec des communautés et d'autres partenaires. Le prochain renouvellement vient en premier. Tout accord qui se renouvelle dans {{days}} jours ou moins, ou dont la date de renouvellement est passée, est signalé, et la page d'accueil affiche un rappel.",
+    "private_note": "Les noms et adresses e-mail des contacts ne sont affichés que sur cette page, à l'équipe de la plateforme. Ils ne sont pas conservés dans le journal d'activité.",
+    "new": "Ajouter un accord",
+    "loading": "Chargement des accords",
+    "load_error_title": "Impossible de charger les accords pour le moment",
+    "empty_title": "Aucun accord enregistré pour l'instant",
+    "empty_text": "Ajoutez-en un pour recevoir un rappel avant son renouvellement.",
+    "not_entered": "Non renseigné",
+    "community_none": "Lié à aucune communauté",
+    "community_gone": "Cette communauté n'existe plus (#{{id}})",
+    "chip_soon": "Renouvellement proche",
+    "chip_passed": "Date de renouvellement passée",
+    "chip_ended": "Terminé",
+    "renews_today": "Se renouvelle aujourd'hui",
+    "field": {
+      "community": "Communauté",
+      "renews_on": "Date de renouvellement",
+      "days_left": "Jours avant le renouvellement",
+      "days_since": "Jours depuis la date de renouvellement",
+      "starts_on": "Date de début",
+      "ends_on": "Date de fin",
+      "contact_name": "Nom du contact",
+      "contact_email": "E-mail du contact",
+      "notes": "Notes"
+    },
+    "change": "Modifier",
+    "end": "Terminer",
+    "ended_title": "Accords terminés",
+    "ended_text": "Les accords terminés restent enregistrés. Il n'y a pas de suppression : un accord saisi par erreur est lui aussi terminé.",
+    "end_title": "Terminer cet accord ?",
+    "end_message": "Il passe dans la liste des accords terminés et reste enregistré. Il ne peut pas être rétabli. Il n'y a pas de suppression : c'est aussi la façon de retirer un accord saisi par erreur.",
+    "end_confirm": "Le terminer",
+    "keep": "Le garder",
+    "saved": "Accord enregistré",
+    "ended_toast": "Accord terminé",
+    "save_failed": "L'enregistrement n'a pas abouti. Veuillez réessayer.",
+    "form": {
+      "title_new": "Ajouter un accord",
+      "title_edit": "Modifier l'accord",
+      "hint": "Seuls le nom et le partenaire sont nécessaires. Laissez vide ce que vous ne savez pas : rien n'est rempli à votre place.",
+      "title": "Nom de l'accord",
+      "with_whom": "Avec qui",
+      "community": "Communauté",
+      "starts_on": "Date de début",
+      "renews_on": "Date de renouvellement",
+      "ends_on": "Date de fin",
+      "contact_name": "Nom du contact",
+      "contact_email": "E-mail du contact",
+      "notes": "Notes",
+      "required": "Remplissez ce champ, en 160 caractères au plus.",
+      "date_invalid": "Utilisez une date réelle ou laissez le champ vide.",
+      "ends_before_start": "La date de fin ne peut pas être antérieure à la date de début.",
+      "renews_before_start": "La date de renouvellement ne peut pas être antérieure à la date de début.",
+      "email_invalid": "Saisissez une adresse e-mail valide ou laissez le champ vide.",
+      "too_long": "C'est trop long.",
+      "community_unknown": "Cette communauté n'existe pas.",
+      "save": "Enregistrer",
+      "cancel": "Annuler"
     }
   }
 }

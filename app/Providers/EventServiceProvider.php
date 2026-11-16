@@ -269,6 +269,20 @@ class EventServiceProvider extends ServiceProvider
         GroupChatroomMessagePosted::class => [
             NotifyGroupChatroomMessage::class,
         ],
+
+        // Scheduled commands: stamp when each last finished, for the Platform
+        // team's Clean-up jobs page. Registered HERE, not in the schedule
+        // definition, because a runInBackground() task reports its end from a
+        // separate `schedule:finish` process, which boots this provider.
+        \Illuminate\Console\Events\ScheduledTaskFinished::class => [
+            \App\Listeners\StampScheduledCommandOutcome::class,
+        ],
+        \Illuminate\Console\Events\ScheduledTaskFailed::class => [
+            \App\Listeners\StampScheduledCommandOutcome::class,
+        ],
+        \Illuminate\Console\Events\ScheduledBackgroundTaskFinished::class => [
+            \App\Listeners\StampScheduledCommandOutcome::class,
+        ],
     ];
 
     /**

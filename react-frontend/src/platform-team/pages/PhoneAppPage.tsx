@@ -25,11 +25,64 @@ import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import Info from 'lucide-react/icons/info';
 
+interface AppVersionRow {
+  version: string;
+  sign_ins: number;
+}
+
+/**
+ * The page's reply: the all-communities block plus, from 16 Nov 2026, the
+ * app versions in use. An older server sends no `versions`; the section is
+ * then left out, not shown as an error.
+ */
+type PhoneAppReply = NativeAppPlatformStats & {
+  versions?: AppVersionRow[];
+  version_not_recorded?: number;
+};
+
+/**
+ * Live phone-app sign-ins counted by app version, newest first (the server
+ * orders them). Counts only: no member, no device.
+ */
+function AppVersionsInUse({ versions, notRecorded }: { versions: AppVersionRow[]; notRecorded: number }) {
+  const { t } = useTranslation('platform_team');
+
+  return (
+    <section aria-labelledby="phone-app-versions-title" className="mt-8">
+      <h2 id="phone-app-versions-title" className="text-lg font-semibold text-foreground">
+        {t('phone_app.versions.title')}
+      </h2>
+      <p className="mt-1 max-w-2xl text-sm text-muted">{t('phone_app.versions.coverage')}</p>
+
+      {versions.length === 0 ? (
+        <p className="mt-3 text-sm text-foreground">{t('phone_app.versions.none_yet')}</p>
+      ) : (
+        <ul className="mt-3 max-w-md divide-y divide-divider rounded-lg border border-divider">
+          {versions.map((row) => (
+            <li key={row.version} className="flex items-center justify-between gap-4 px-4 py-2 text-sm">
+              <span className="font-medium text-foreground">
+                {t('phone_app.versions.version', { version: row.version })}
+              </span>
+              <span className="text-muted">
+                {t('phone_app.versions.sign_ins', { count: row.sign_ins })}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <p className="mt-3 text-sm text-muted">
+        {t('phone_app.versions.not_recorded', { count: notRecorded })}
+      </p>
+    </section>
+  );
+}
+
 export function PhoneAppPage() {
   const { t } = useTranslation('platform_team');
   usePageTitle(t('phone_app.title'));
 
-  const [stats, setStats] = useState<NativeAppPlatformStats | null>(null);
+  const [stats, setStats] = useState<PhoneAppReply | null>(null);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
 
@@ -37,7 +90,7 @@ export function PhoneAppPage() {
     setLoading(true);
     setFailed(false);
     try {
-      const res = await api.get<NativeAppPlatformStats>('/v2/platform-team/phone-app');
+      const res = await api.get<PhoneAppReply>('/v2/platform-team/phone-app');
       if (res.success && res.data && Array.isArray(res.data.by_tenant)) {
         setStats(res.data);
       } else {
@@ -75,7 +128,12 @@ export function PhoneAppPage() {
       ) : failed || !stats ? (
         <LoadError title={t('phone_app.load_error_title')} onRetry={() => void load()} />
       ) : (
-        <PhoneAppAllCommunities platform={stats} />
+        <>
+          <PhoneAppAllCommunities platform={stats} />
+          {Array.isArray(stats.versions) ? (
+            <AppVersionsInUse versions={stats.versions} notRecorded={Number(stats.version_not_recorded ?? 0)} />
+          ) : null}
+        </>
       )}
     </section>
   );

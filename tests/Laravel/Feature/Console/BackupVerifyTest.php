@@ -7,6 +7,7 @@
 namespace Tests\Laravel\Feature\Console;
 
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Tests\Laravel\TestCase;
 
@@ -107,6 +108,97 @@ class BackupVerifyTest extends TestCase
 
         $this->assertSame(0, $exit, $output);
         $this->assertStringContainsString('Backup healthy', $output);
+    }
+
+    /**
+     * Every run, healthy or not, leaves its verdict in the cache for the
+     * Platform team's home page (`backup:verify:status`, kept three days).
+     */
+    public function test_a_healthy_run_records_its_verdict(): void
+    {
+        Cache::forget('backup:verify:status');
+        $this->writeBackup('nexus_db_2026-06-21.sql.gz', 'gzipped-bytes', ageHours: 2);
+
+        $this->assertSame(0, Artisan::call('backup:verify', ['--dir' => $this->dir]));
+
+        $verdict = Cache::get('backup:verify:status');
+        $this->assertIsArray($verdict);
+        $this->assertSame(['age_hours', 'checked_at', 'newest_at', 'size_bytes', 'state'], $this->sortedKeys($verdict));
+        $this->assertSame('healthy', $verdict['state']);
+        $this->assertSame(strlen('gzipped-bytes'), $verdict['size_bytes']);
+        $this->assertEqualsWithDelta(2.0, $verdict['age_hours'], 0.2);
+        $this->assertNotFalse(strtotime((string) $verdict['newest_at']));
+        $this->assertNotFalse(strtotime((string) $verdict['checked_at']));
+        // Never the server's folder or the file name.
+        $this->assertStringNotContainsString($this->dir, json_encode($verdict, JSON_THROW_ON_ERROR));
+    }
+
+    public function test_every_alarm_records_its_verdict_too(): void
+    {
+        $cases = [
+            'missing' => fn () => Artisan::call('backup:verify', ['--dir' => $this->dir . DIRECTORY_SEPARATOR . 'nope']),
+            'missing ' => fn () => Artisan::call('backup:verify', ['--dir' => $this->dir]),
+            'empty' => function () {
+                $this->writeBackup('nexus_db_2026-06-21.sql.gz', '', ageHours: 1);
+
+                return Artisan::call('backup:verify', ['--dir' => $this->dir]);
+            },
+            'stale' => function () {
+                $this->writeBackup('nexus_db_2026-06-21.sql.gz', 'bytes', ageHours: 40);
+
+                return Artisan::call('backup:verify', ['--dir' => $this->dir]);
+            },
+        ];
+
+        foreach ($cases as $expected => $run) {
+            Cache::forget('backup:verify:status');
+            foreach (glob($this->dir . DIRECTORY_SEPARATOR . '*') ?: [] as $f) {
+                @unlink($f);
+            }
+
+            $this->assertSame(1, $run(), "{$expected}: the alarm still fires");
+            $verdict = Cache::get('backup:verify:status');
+            $this->assertIsArray($verdict, $expected);
+            $this->assertSame(trim($expected), $verdict['state']);
+            $this->assertNotFalse(strtotime((string) $verdict['checked_at']));
+        }
+
+        $this->assertSame(40.0, round((float) Cache::get('backup:verify:status')['age_hours']));
+    }
+
+    public function test_a_broken_cache_does_not_change_the_check_or_its_exit_code(): void
+    {
+        Cache::extend('pt-broken', fn () => Cache::repository(new class extends \Illuminate\Cache\ArrayStore {
+            public function put($key, $value, $seconds)
+            {
+                throw new \RuntimeException('cache is down');
+            }
+        }));
+        config(['cache.stores.pt-broken' => ['driver' => 'pt-broken']]);
+        $previous = Cache::getDefaultDriver();
+        Cache::setDefaultDriver('pt-broken');
+
+        try {
+            $this->writeBackup('nexus_db_2026-06-21.sql.gz', 'gzipped-bytes', ageHours: 2);
+            $this->assertSame(0, Artisan::call('backup:verify', ['--dir' => $this->dir]));
+
+            $this->writeBackup('nexus_db_2026-06-21.sql.gz', 'gzipped-bytes', ageHours: 40);
+            $this->assertSame(1, Artisan::call('backup:verify', ['--dir' => $this->dir]));
+        } finally {
+            Cache::setDefaultDriver($previous);
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $array
+     * @return list<string>
+     */
+    private function sortedKeys(array $array): array
+    {
+        $keys = array_keys($array);
+        sort($keys);
+
+        return $keys;
     }
 
     private function writeBackup(string $name, string $contents, int $ageHours): void

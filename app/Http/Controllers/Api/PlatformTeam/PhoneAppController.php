@@ -36,9 +36,14 @@ final class PhoneAppController extends BaseApiController
     {
         $this->requireGodPlatformAdmin();
 
+        $service = new NativeAppInstallStatsService();
+
+        // `versions` / `version_not_recorded`: live phone-app sign-ins by app
+        // version, counts only (16 Nov 2026).
         return $this->respondWithData(
-            (new NativeAppInstallStatsService())->platformStats()
+            $service->platformStats()
             + ['disclaimer_key' => 'app_members_not_store_installs']
+            + $service->platformAppVersions()
         );
     }
 }

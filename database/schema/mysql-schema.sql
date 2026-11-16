@@ -16586,6 +16586,33 @@ CREATE TABLE `pilot_inquiries` (
   KEY `pilot_inquiries_tenant_id_index` (`tenant_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `platform_agreements`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `platform_agreements` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `community_id` int(11) DEFAULT NULL,
+  `title` varchar(160) NOT NULL,
+  `with_whom` varchar(160) NOT NULL,
+  `starts_on` date DEFAULT NULL,
+  `renews_on` date DEFAULT NULL,
+  `ends_on` date DEFAULT NULL,
+  `contact_name` varchar(160) DEFAULT NULL,
+  `contact_email` varchar(255) DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  `is_ended` tinyint(1) NOT NULL DEFAULT 0,
+  `created_by` int(11) DEFAULT NULL,
+  `updated_by` int(11) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_platform_agreements_renewal` (`is_ended`,`renews_on`),
+  KEY `fk_platform_agreements_created_by` (`created_by`),
+  KEY `fk_platform_agreements_updated_by` (`updated_by`),
+  CONSTRAINT `fk_platform_agreements_created_by` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_platform_agreements_updated_by` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `platform_capability_overrides`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -17422,6 +17449,7 @@ CREATE TABLE `refresh_session_activity` (
   `from_phone_app` tinyint(1) NOT NULL DEFAULT 0,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
+  `app_version` varchar(20) DEFAULT NULL,
   PRIMARY KEY (`family_hash`),
   KEY `idx_refresh_activity_tenant_user` (`tenant_id`,`user_id`),
   KEY `fk_refresh_activity_user_tenant` (`user_id`,`tenant_id`),

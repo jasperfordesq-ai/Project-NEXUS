@@ -379,7 +379,12 @@ community, with the newest members named by display name and username and no
 email addresses. Those figures used to be sent to any `is_god` account inside
 the community admin's own request
 (`GET /v2/admin/config/native-app/install-stats`); since 16 November 2026 that
-request answers for the one community only, whoever asks. The fourth is Senior
+request answers for the one community only, whoever asks. Since 16 November 2026
+the Phone app reply also counts live phone-app sign-ins by app version
+(`versions`, `version_not_recorded`): counts only, no member and no device. The
+version is kept on the sign-in's `refresh_session_activity` row, taken from the
+`X-Nexus-Mobile-Version` header only when it is a plain `1.2.3` version, and is
+deleted with that row when a member is erased. The fourth is Senior
 accounts (`GET /v2/platform-team/senior-accounts`; `SeniorAccountsService`):
 every account that can administer more than one community, with its level
 (platform team, global super admin, tenant super admin, or "platform-wide but
@@ -544,6 +549,23 @@ unreadable file answers `available: false` ("this server keeps no record"),
 never an empty list; lines that are not JSON objects are counted in
 `skipped_lines`.
 
+Rebuild search (`GET` and `POST /v2/platform-team/search-rebuild`;
+`SearchRebuildController`, `PlatformTeam\SearchRebuildService`, 16 November
+2026). The list covers every community (id, name, slug, switched on or off)
+with the last rebuild started from the page, and whether the search service
+answers now. `POST {tenant_id}` queues `ReindexTenantSearchJob` (queue
+`search`, one try) for that community: 404 for a community that does not
+exist, 409 while one is waiting or running for it, 503 (nothing queued) when
+the search service does not answer; 6 a minute per caller; no second sign-in
+step (it changes no member data). The job runs
+`SearchReindexService::reindexTenant()`, the same loops
+`scripts/sync_search_index.php` runs on every deployment, and keeps its state
+in the cache (`search_rebuild:<id>`, 7 days). It adds and updates entries and
+never empties the community's search first, so entries for deleted things
+stay. A waiting or running record not refreshed for 30 minutes no longer
+blocks a start and is shown as failed. Who started it is an `activity_log` row
+with `tenant_id` NULL, the community as the entity.
+
 Keys and connections (`GET /v2/platform-team/connections`; `ConnectionsService`,
 16 November 2026) is read-only: for a fixed list of outside services, whether
 the config key (or, where the code reads the environment directly, the same
@@ -552,6 +574,17 @@ configured` and nothing else: never a value, a masked value or a length. It
 replaces `GET /v2/admin/enterprise/config/secrets`, which sent the first and
 last two characters of real keys to any global super admin (F-626); that
 endpoint now answers the platform team only and sends `key, is_set, category`.
+
+Translations (`GET /v2/platform-team/translation-coverage`;
+`TranslationCoverageService`, 16 November 2026) is read-only: for each of the
+ten languages other than English, over `lang/<locale>/*.json` and `*.php`
+against `lang/en`, the number of phrases, how many are missing and how many are
+still word-for-word English. Kept in the cache for an hour; `?refresh=1`
+counts again. Unreadable English answers `available: false`, never zero. The
+website half of the page is a build-time file (`/translation-coverage.json`,
+`react-frontend/scripts/build-translation-coverage.mjs`), public like the
+locale files it is counted from. Wording files only: no member or community
+data is read.
 
 Unfinished features (`GET /v2/platform-team/unfinished-features`;
 `UnfinishedFeaturesService`, 16 November 2026) is read-only: every feature
@@ -598,6 +631,36 @@ community. 🔴 Counts only: no title, text, member id, IP address or user
 agent is selected. A figure that cannot be read is null and named in
 `unavailable`, never zero. Documents are still written and published in each
 community's own admin panel.
+
+Clean-up jobs (`GET /v2/platform-team/clean-up-jobs`; `CleanUpJobsService`,
+16 November 2026) is read-only: a fixed list of the scheduled jobs that delete
+data, each with how often it runs, the last success, the last failure and a
+state (`ok`, `late` when the last success is older than twice its period,
+`failing` when a failure is newer than the last success, `unknown` when nothing
+is recorded). Scheduled commands are read from cache stamps
+(`schedule:<command>:last_ok_at` / `:last_failed_at`, written for every
+scheduled artisan command by `StampScheduledCommandOutcome`); the every-minute
+runner's jobs from `cron_logs` (`job_id`, newest `success` and `error`);
+`retention:enforce` also from `tenant_retention_runs`. 🔴 A job's output and
+error text are never selected. A record that cannot be read gives
+`readable: false`, never "no record". Two home page cards read alongside it:
+`clean_up` (the worst state on the page) and `backup` (the verdict
+`backup:verify` now writes to `backup:verify:status`; older than 26 hours is
+`unknown`). Neither carries anything about a member or a community.
+
+Agreements and renewals (`/platform-team/agreements`;
+`PlatformAgreementService`, 16 November 2026): the platform team's own list
+of the platform's agreements (`GET`/`POST /v2/platform-team/agreements`,
+`PUT …/{id}`, `POST …/{id}/end`; there is no delete, so a mistake is ended).
+🔴 `platform_agreements` is platform-global (no `tenant_id`); `community_id`
+is a pointer with no foreign key, so removing a community never fails or
+changes an agreement. 🔴 Each row may hold the name and email address of a
+contact outside the platform, stored exactly as typed and sent to this page
+only; each write's `activity_log` row has `tenant_id` NULL and names the
+agreement by number only, never the contact. Nothing is filled in that was
+not typed. The home page card `agreements` is `warning` when an agreement that
+has not ended renews within 60 days or its renewal date has passed; there is
+no reminder email.
 
 **Left open on purpose.** An endpoint that a screen outside the panel still
 calls keeps its previous check, and a test pins that a community admin still
