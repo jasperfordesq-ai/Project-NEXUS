@@ -51,6 +51,7 @@ vi.mock('react-i18next', () => ({
 vi.mock('./pages/PlatformTeamHome', () => ({ default: () => <div>page:PlatformTeamHome</div> }));
 vi.mock('./pages/FailedJobsPage', () => ({ default: () => <div>page:FailedJobsPage</div> }));
 vi.mock('./pages/DeploymentsPage', () => ({ default: () => <div>page:DeploymentsPage</div> }));
+vi.mock('./pages/ConnectionsPage', () => ({ default: () => <div>page:ConnectionsPage</div> }));
 vi.mock('./pages/PhoneAppPage', () => ({ default: () => <div>page:PhoneAppPage</div> }));
 vi.mock('./pages/SeniorAccountsPage', () => ({ default: () => <div>page:SeniorAccountsPage</div> }));
 vi.mock('./pages/FindAccountPage', () => ({ default: () => <div>page:FindAccountPage</div> }));
@@ -247,6 +248,11 @@ describe('the Platform team panel mounts every moved page', () => {
   it('opens Deployments, a page of the panel\'s own', async () => {
     renderAt('/test/platform-team/deployments');
     expect(await screen.findByText('page:DeploymentsPage')).toBeInTheDocument();
+  });
+
+  it('opens Keys and connections, a page of the panel\'s own', async () => {
+    renderAt('/test/platform-team/connections');
+    expect(await screen.findByText('page:ConnectionsPage')).toBeInTheDocument();
   });
 
   it('opens the Notices page', async () => {

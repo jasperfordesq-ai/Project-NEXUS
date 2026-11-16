@@ -80,6 +80,7 @@ import UserCog from 'lucide-react/icons/user-cog';
 import UserSearch from 'lucide-react/icons/user-search';
 import ClipboardCheck from 'lucide-react/icons/clipboard-check';
 import Stethoscope from 'lucide-react/icons/stethoscope';
+import Plug from 'lucide-react/icons/plug';
 import Target from 'lucide-react/icons/target';
 import Timer from 'lucide-react/icons/timer';
 import UserCheck from 'lucide-react/icons/user-check';
@@ -224,6 +225,7 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
           key: 'keys',
           title: t('sidebar.group_keys'),
           items: [
+            { label: t('connections.title'), icon: Plug, path: `${P}/connections` },
             { label: tSuper('nav.platform_translation'), icon: Languages, path: `${P}/platform/translation` },
           ],
         },

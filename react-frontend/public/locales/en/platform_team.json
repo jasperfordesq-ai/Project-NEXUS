@@ -685,5 +685,49 @@
     "version": "Version code",
     "time_taken": "Time taken",
     "changes_label": "Changes it carried"
+  },
+  "connections": {
+    "title": "Keys and connections",
+    "intro": "Which outside services this server has a key for. \"Set up\" means a key is in place. It does not prove the service is working.",
+    "never_shown": "This page never shows a key or any part of one.",
+    "no_expiry": "Expiry dates for keys are not recorded anywhere, so none are shown.",
+    "count": "Set up: {{done}} of {{total}}",
+    "loading": "Loading keys and connections",
+    "load_error_title": "Keys and connections could not be loaded",
+    "status": {
+      "set_up": "Set up",
+      "not_set_up": "Not set up"
+    },
+    "group": {
+      "email": "Email",
+      "live_updates": "Live updates",
+      "notifications": "Phone and browser notifications",
+      "payments": "Payments",
+      "ai": "AI",
+      "maps_translation": "Maps and translation",
+      "search": "Search",
+      "error_reports": "Error reports",
+      "protection": "Protection",
+      "alerts": "Alerts",
+      "sign_in": "Sign in with another account",
+      "other": "Other"
+    },
+    "name": {
+      "web_push": "Web push notifications",
+      "file_storage": "File storage"
+    },
+    "detail": {
+      "stripe_webhook": "Key that checks payment messages really come from Stripe",
+      "cloudflare_origin": "Key that proves visits came through Cloudflare",
+      "slack_slo_alerts": "Alerts when the platform is slow or failing",
+      "slack_email_alerts": "Alerts when email sending has problems",
+      "file_storage": "Always set up: uploaded files are kept on this server or in the storage it is told to use."
+    },
+    "elsewhere": {
+      "title": "Where three other controls are",
+      "consent_types": "Consent types are in the admin panel",
+      "identity_fee": "The identity check fee is in the admin panel, under Modules",
+      "secrets_replaced": "The old list of server keys has been replaced by this page."
+    }
   }
 }

@@ -685,5 +685,49 @@
     "version": "Código de versión",
     "time_taken": "Tiempo empleado",
     "changes_label": "Cambios que incluía"
+  },
+  "connections": {
+    "title": "Claves y conexiones",
+    "intro": "Para qué servicios externos tiene una clave este servidor. «Configurado» significa que hay una clave. No demuestra que el servicio funcione.",
+    "never_shown": "Esta página nunca muestra una clave ni ninguna parte de ella.",
+    "no_expiry": "Las fechas de caducidad de las claves no se registran en ningún sitio, así que no se muestra ninguna.",
+    "count": "Configurados: {{done}} de {{total}}",
+    "loading": "Cargando claves y conexiones",
+    "load_error_title": "No se pudieron cargar las claves y conexiones",
+    "status": {
+      "set_up": "Configurado",
+      "not_set_up": "Sin configurar"
+    },
+    "group": {
+      "email": "Correo electrónico",
+      "live_updates": "Actualizaciones en directo",
+      "notifications": "Notificaciones en el teléfono y el navegador",
+      "payments": "Pagos",
+      "ai": "IA",
+      "maps_translation": "Mapas y traducción",
+      "search": "Búsqueda",
+      "error_reports": "Informes de errores",
+      "protection": "Protección",
+      "alerts": "Alertas",
+      "sign_in": "Iniciar sesión con otra cuenta",
+      "other": "Otros"
+    },
+    "name": {
+      "web_push": "Notificaciones push web",
+      "file_storage": "Almacenamiento de archivos"
+    },
+    "detail": {
+      "stripe_webhook": "Clave que comprueba que los mensajes de pago vienen de verdad de Stripe",
+      "cloudflare_origin": "Clave que demuestra que las visitas llegaron a través de Cloudflare",
+      "slack_slo_alerts": "Alertas cuando la plataforma va lenta o falla",
+      "slack_email_alerts": "Alertas cuando hay problemas con el envío de correo",
+      "file_storage": "Siempre configurado: los archivos subidos se guardan en este servidor o en el almacenamiento que se le indique."
+    },
+    "elsewhere": {
+      "title": "Dónde están otros tres controles",
+      "consent_types": "Los tipos de consentimiento están en el panel de administración",
+      "identity_fee": "La tarifa de la verificación de identidad está en el panel de administración, en Módulos",
+      "secrets_replaced": "La antigua lista de claves del servidor se ha sustituido por esta página."
+    }
   }
 }

@@ -544,6 +544,15 @@ unreadable file answers `available: false` ("this server keeps no record"),
 never an empty list; lines that are not JSON objects are counted in
 `skipped_lines`.
 
+Keys and connections (`GET /v2/platform-team/connections`; `ConnectionsService`,
+16 November 2026) is read-only: for a fixed list of outside services, whether
+the config key (or, where the code reads the environment directly, the same
+environment value) that the service needs is set. 🔴 Each row is `key, group,
+configured` and nothing else: never a value, a masked value or a length. It
+replaces `GET /v2/admin/enterprise/config/secrets`, which sent the first and
+last two characters of real keys to any global super admin (F-626); that
+endpoint now answers the platform team only and sends `key, is_set, category`.
+
 Unfinished features (`GET /v2/platform-team/unfinished-features`;
 `UnfinishedFeaturesService`, 16 November 2026) is read-only: every feature
 marked alpha or beta in the admin Features page's registry

@@ -41,6 +41,7 @@ const SEGMENT_LABEL_KEYS: Record<string, string> = {
   'legal-documents': 'legal_documents.title',
   'push-notifications': 'push_notifications.title',
   deployments: 'deployments.title',
+  connections: 'connections.title',
   // Pages that came from the super admin panel, or whose admin breadcrumb
   // wording would mislead: named with the wording their own menu entry uses.
   translation: 'super_admin:breadcrumbs.translation',

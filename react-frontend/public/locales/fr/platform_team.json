@@ -685,5 +685,49 @@
     "version": "Code de version",
     "time_taken": "Durée",
     "changes_label": "Modifications incluses"
+  },
+  "connections": {
+    "title": "Clés et connexions",
+    "intro": "Les services externes pour lesquels ce serveur dispose d’une clé. « Configuré » signifie qu’une clé est en place. Cela ne prouve pas que le service fonctionne.",
+    "never_shown": "Cette page n’affiche jamais une clé, ni aucune partie d’une clé.",
+    "no_expiry": "Les dates d’expiration des clés ne sont enregistrées nulle part, aucune n’est donc affichée.",
+    "count": "Configurés : {{done}} sur {{total}}",
+    "loading": "Chargement des clés et connexions",
+    "load_error_title": "Impossible de charger les clés et connexions",
+    "status": {
+      "set_up": "Configuré",
+      "not_set_up": "Non configuré"
+    },
+    "group": {
+      "email": "E-mail",
+      "live_updates": "Mises à jour en direct",
+      "notifications": "Notifications sur téléphone et navigateur",
+      "payments": "Paiements",
+      "ai": "IA",
+      "maps_translation": "Cartes et traduction",
+      "search": "Recherche",
+      "error_reports": "Rapports d’erreurs",
+      "protection": "Protection des accès",
+      "alerts": "Alertes",
+      "sign_in": "Se connecter avec un autre compte",
+      "other": "Autres"
+    },
+    "name": {
+      "web_push": "Notifications push web",
+      "file_storage": "Stockage des fichiers"
+    },
+    "detail": {
+      "stripe_webhook": "Clé qui vérifie que les messages de paiement viennent bien de Stripe",
+      "cloudflare_origin": "Clé qui prouve que les visites sont passées par Cloudflare",
+      "slack_slo_alerts": "Alertes quand la plateforme est lente ou en panne",
+      "slack_email_alerts": "Alertes quand l’envoi des e-mails pose problème",
+      "file_storage": "Toujours configuré : les fichiers envoyés sont conservés sur ce serveur ou dans le stockage qui lui est indiqué."
+    },
+    "elsewhere": {
+      "title": "Où se trouvent trois autres réglages",
+      "consent_types": "Les types de consentement sont dans le panneau d’administration",
+      "identity_fee": "Le tarif de la vérification d’identité est dans le panneau d’administration, sous Modules",
+      "secrets_replaced": "L’ancienne liste des clés du serveur a été remplacée par cette page."
+    }
   }
 }

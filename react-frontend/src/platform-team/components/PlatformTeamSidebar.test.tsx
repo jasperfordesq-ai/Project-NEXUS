@@ -55,6 +55,7 @@ const PLATFORM_ZONE = [
   'deployments',
   'legal-documents',
   'push-notifications',
+  'connections',
 ];
 const COMMUNITY_ZONE = [
   'email-settings', 'email-deliverability', 'deliverability', 'settings/registration-policy', 'enterprise/roles',

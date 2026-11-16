@@ -685,5 +685,49 @@
     "version": "Versiecode",
     "time_taken": "Duur",
     "changes_label": "Meegenomen wijzigingen"
+  },
+  "connections": {
+    "title": "Sleutels en koppelingen",
+    "intro": "Voor welke externe diensten deze server een sleutel heeft. ‘Ingesteld’ betekent dat er een sleutel is. Het bewijst niet dat de dienst werkt.",
+    "never_shown": "Deze pagina toont nooit een sleutel of een deel ervan.",
+    "no_expiry": "Vervaldatums van sleutels worden nergens vastgelegd, dus er wordt er geen getoond.",
+    "count": "Ingesteld: {{done}} van {{total}}",
+    "loading": "Sleutels en koppelingen laden",
+    "load_error_title": "Sleutels en koppelingen konden niet worden geladen",
+    "status": {
+      "set_up": "Ingesteld",
+      "not_set_up": "Niet ingesteld"
+    },
+    "group": {
+      "email": "E-mail",
+      "live_updates": "Live-updates",
+      "notifications": "Meldingen op telefoon en in de browser",
+      "payments": "Betalingen",
+      "ai": "AI-functies",
+      "maps_translation": "Kaarten en vertaling",
+      "search": "Zoeken",
+      "error_reports": "Foutmeldingen",
+      "protection": "Beveiliging",
+      "alerts": "Waarschuwingen",
+      "sign_in": "Inloggen met een ander account",
+      "other": "Overig"
+    },
+    "name": {
+      "web_push": "Webpushmeldingen",
+      "file_storage": "Bestandsopslag"
+    },
+    "detail": {
+      "stripe_webhook": "Sleutel die controleert of betalingsberichten echt van Stripe komen",
+      "cloudflare_origin": "Sleutel die aantoont dat bezoeken via Cloudflare kwamen",
+      "slack_slo_alerts": "Waarschuwingen als het platform traag is of uitvalt",
+      "slack_email_alerts": "Waarschuwingen als er problemen zijn met het versturen van e-mail",
+      "file_storage": "Altijd ingesteld: geüploade bestanden staan op deze server of in de opslag die hij moet gebruiken."
+    },
+    "elsewhere": {
+      "title": "Waar drie andere instellingen staan",
+      "consent_types": "Toestemmingssoorten staan in het beheerpaneel",
+      "identity_fee": "De kosten voor de identiteitscontrole staan in het beheerpaneel, onder Modules",
+      "secrets_replaced": "De oude lijst met serversleutels is vervangen door deze pagina."
+    }
   }
 }

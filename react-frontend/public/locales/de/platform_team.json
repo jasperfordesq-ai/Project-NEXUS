@@ -685,5 +685,49 @@
     "version": "Versionskennung",
     "time_taken": "Dauer",
     "changes_label": "Enthaltene Änderungen"
+  },
+  "connections": {
+    "title": "Schlüssel und Verbindungen",
+    "intro": "Für welche externen Dienste dieser Server einen Schlüssel hat. „Eingerichtet“ heißt, dass ein Schlüssel vorhanden ist. Es beweist nicht, dass der Dienst funktioniert.",
+    "never_shown": "Diese Seite zeigt nie einen Schlüssel oder einen Teil davon.",
+    "no_expiry": "Ablaufdaten von Schlüsseln werden nirgends festgehalten, daher wird keines angezeigt.",
+    "count": "Eingerichtet: {{done}} von {{total}}",
+    "loading": "Schlüssel und Verbindungen werden geladen",
+    "load_error_title": "Schlüssel und Verbindungen konnten nicht geladen werden",
+    "status": {
+      "set_up": "Eingerichtet",
+      "not_set_up": "Nicht eingerichtet"
+    },
+    "group": {
+      "email": "E-Mail",
+      "live_updates": "Live-Aktualisierungen",
+      "notifications": "Benachrichtigungen auf Telefon und im Browser",
+      "payments": "Zahlungen",
+      "ai": "KI",
+      "maps_translation": "Karten und Übersetzung",
+      "search": "Suche",
+      "error_reports": "Fehlerberichte",
+      "protection": "Schutz",
+      "alerts": "Warnungen",
+      "sign_in": "Mit einem anderen Konto anmelden",
+      "other": "Sonstiges"
+    },
+    "name": {
+      "web_push": "Web-Push-Benachrichtigungen",
+      "file_storage": "Dateispeicher"
+    },
+    "detail": {
+      "stripe_webhook": "Schlüssel, der prüft, ob Zahlungsnachrichten wirklich von Stripe kommen",
+      "cloudflare_origin": "Schlüssel, der belegt, dass Besuche über Cloudflare kamen",
+      "slack_slo_alerts": "Warnungen, wenn die Plattform langsam ist oder ausfällt",
+      "slack_email_alerts": "Warnungen, wenn es beim E-Mail-Versand Probleme gibt",
+      "file_storage": "Immer eingerichtet: Hochgeladene Dateien liegen auf diesem Server oder in dem Speicher, den er nutzen soll."
+    },
+    "elsewhere": {
+      "title": "Wo drei weitere Einstellungen zu finden sind",
+      "consent_types": "Einwilligungsarten finden Sie im Admin-Bereich",
+      "identity_fee": "Die Gebühr für die Identitätsprüfung finden Sie im Admin-Bereich unter Module",
+      "secrets_replaced": "Die alte Liste der Serverschlüssel wurde durch diese Seite ersetzt."
+    }
   }
 }

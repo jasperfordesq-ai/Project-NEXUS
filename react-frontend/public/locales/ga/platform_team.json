@@ -691,5 +691,49 @@
     "version": "Cód leagain",
     "time_taken": "Am a tógadh",
     "changes_label": "Athruithe a bhí ann"
+  },
+  "connections": {
+    "title": "Eochracha agus naisc",
+    "intro": "Na seirbhísí seachtracha a bhfuil eochair ag an bhfreastalaí seo dóibh. Ciallaíonn « Socraithe » go bhfuil eochair ann. Ní chruthaíonn sé go bhfuil an tseirbhís ag obair.",
+    "never_shown": "Ní thaispeánann an leathanach seo eochair ná aon chuid d’eochair riamh.",
+    "no_expiry": "Ní thaifeadtar dátaí éaga na n-eochracha áit ar bith, mar sin ní thaispeántar ceann ar bith.",
+    "count": "Socraithe: {{done}} as {{total}}",
+    "loading": "Eochracha agus naisc á lódáil",
+    "load_error_title": "Níorbh fhéidir na heochracha agus na naisc a lódáil",
+    "status": {
+      "set_up": "Socraithe",
+      "not_set_up": "Gan socrú"
+    },
+    "group": {
+      "email": "Ríomhphost",
+      "live_updates": "Nuashonruithe beo",
+      "notifications": "Fógraí ar an bhfón agus sa bhrabhsálaí",
+      "payments": "Íocaíochtaí",
+      "ai": "IS",
+      "maps_translation": "Léarscáileanna agus aistriúchán",
+      "search": "Cuardach",
+      "error_reports": "Tuairiscí earráide",
+      "protection": "Cosaint",
+      "alerts": "Foláirimh",
+      "sign_in": "Sínigh isteach le cuntas eile",
+      "other": "Eile"
+    },
+    "name": {
+      "web_push": "Fógraí brú gréasáin",
+      "file_storage": "Stóráil comhad"
+    },
+    "detail": {
+      "stripe_webhook": "Eochair a sheiceálann gur ó Stripe i ndáiríre a thagann teachtaireachtaí íocaíochta",
+      "cloudflare_origin": "Eochair a chruthaíonn gur trí Cloudflare a tháinig cuairteanna",
+      "slack_slo_alerts": "Foláirimh nuair atá an t-ardán mall nó ag teip",
+      "slack_email_alerts": "Foláirimh nuair atá fadhbanna le seoladh ríomhphoist",
+      "file_storage": "Socraithe i gcónaí: coinnítear comhaid uaslódáilte ar an bhfreastalaí seo nó sa stóráil a deirtear leis a úsáid."
+    },
+    "elsewhere": {
+      "title": "Cá bhfuil trí rialú eile",
+      "consent_types": "Tá na cineálacha toilithe sa phainéal riaracháin",
+      "identity_fee": "Tá an táille don seiceáil aitheantais sa phainéal riaracháin, faoi Mhodúil",
+      "secrets_replaced": "Tá an seanliosta d’eochracha an fhreastalaí curtha in ionad ag an leathanach seo."
+    }
   }
 }

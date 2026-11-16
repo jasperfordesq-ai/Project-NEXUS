@@ -685,5 +685,49 @@
     "version": "Código da versão",
     "time_taken": "Tempo gasto",
     "changes_label": "Mudanças incluídas"
+  },
+  "connections": {
+    "title": "Chaves e conexões",
+    "intro": "Para quais serviços externos este servidor tem uma chave. \"Configurado\" significa que há uma chave. Isso não prova que o serviço está funcionando.",
+    "never_shown": "Esta página nunca mostra uma chave nem qualquer parte dela.",
+    "no_expiry": "As datas de validade das chaves não são registradas em lugar nenhum, então nenhuma é mostrada.",
+    "count": "Configurados: {{done}} de {{total}}",
+    "loading": "Carregando chaves e conexões",
+    "load_error_title": "Não foi possível carregar as chaves e conexões",
+    "status": {
+      "set_up": "Configurado",
+      "not_set_up": "Não configurado"
+    },
+    "group": {
+      "email": "E-mail",
+      "live_updates": "Atualizações ao vivo",
+      "notifications": "Notificações no celular e no navegador",
+      "payments": "Pagamentos",
+      "ai": "IA",
+      "maps_translation": "Mapas e tradução",
+      "search": "Busca",
+      "error_reports": "Relatórios de erros",
+      "protection": "Proteção",
+      "alerts": "Alertas",
+      "sign_in": "Entrar com outra conta",
+      "other": "Outros"
+    },
+    "name": {
+      "web_push": "Notificações push na web",
+      "file_storage": "Armazenamento de arquivos"
+    },
+    "detail": {
+      "stripe_webhook": "Chave que confere se as mensagens de pagamento vêm mesmo da Stripe",
+      "cloudflare_origin": "Chave que comprova que as visitas passaram pela Cloudflare",
+      "slack_slo_alerts": "Alertas quando a plataforma está lenta ou falhando",
+      "slack_email_alerts": "Alertas quando há problemas no envio de e-mails",
+      "file_storage": "Sempre configurado: os arquivos enviados ficam neste servidor ou no armazenamento que ele deve usar."
+    },
+    "elsewhere": {
+      "title": "Onde ficam outros três controles",
+      "consent_types": "Os tipos de consentimento ficam no painel de administração",
+      "identity_fee": "A taxa da verificação de identidade fica no painel de administração, em Módulos",
+      "secrets_replaced": "A antiga lista de chaves do servidor foi substituída por esta página."
+    }
   }
 }

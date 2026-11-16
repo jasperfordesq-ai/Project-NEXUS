@@ -4511,6 +4511,8 @@ Route::middleware(['auth:sanctum', 'platform-team'])->group(function () {
     Route::delete('/v2/platform-team/failed-jobs/{uuid}', [\App\Http\Controllers\Api\PlatformTeam\FailedJobsController::class, 'destroy'])->whereUuid('uuid');
     // Deployments: the last deployments and rollbacks this server recorded (tail of the deploy record file). Read-only.
     Route::get('/v2/platform-team/deployments', [\App\Http\Controllers\Api\PlatformTeam\DeploymentsController::class, 'index']);
+    // Keys and connections: which outside services this server has a key for. Yes / no only, never any part of a key. Read-only.
+    Route::get('/v2/platform-team/connections', [\App\Http\Controllers\Api\PlatformTeam\ConnectionsController::class, 'index']);
     // Phone app: who has the app across every community (moved out of the community admin's request).
     Route::get('/v2/platform-team/phone-app', [\App\Http\Controllers\Api\PlatformTeam\PhoneAppController::class, 'index']);
     // Push notifications: per day and per community, pushes accepted / partly accepted / failed / with nobody to send to. Read-only; counts only.

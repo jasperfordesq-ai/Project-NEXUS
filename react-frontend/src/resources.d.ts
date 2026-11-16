@@ -57400,6 +57400,50 @@ export default interface Resources {
       "unavailable_note": "Some steps could not be read just now. They say \"Not available\". That does not mean they are not done.",
       "yes_no_only": "Done or not done only. No person is named on this page."
     },
+    "connections": {
+      "count": "Set up: {{done}} of {{total}}",
+      "detail": {
+        "cloudflare_origin": "Key that proves visits came through Cloudflare",
+        "file_storage": "Always set up: uploaded files are kept on this server or in the storage it is told to use.",
+        "slack_email_alerts": "Alerts when email sending has problems",
+        "slack_slo_alerts": "Alerts when the platform is slow or failing",
+        "stripe_webhook": "Key that checks payment messages really come from Stripe"
+      },
+      "elsewhere": {
+        "consent_types": "Consent types are in the admin panel",
+        "identity_fee": "The identity check fee is in the admin panel, under Modules",
+        "secrets_replaced": "The old list of server keys has been replaced by this page.",
+        "title": "Where three other controls are"
+      },
+      "group": {
+        "ai": "AI",
+        "alerts": "Alerts",
+        "email": "Email",
+        "error_reports": "Error reports",
+        "live_updates": "Live updates",
+        "maps_translation": "Maps and translation",
+        "notifications": "Phone and browser notifications",
+        "other": "Other",
+        "payments": "Payments",
+        "protection": "Protection",
+        "search": "Search",
+        "sign_in": "Sign in with another account"
+      },
+      "intro": "Which outside services this server has a key for. \"Set up\" means a key is in place. It does not prove the service is working.",
+      "load_error_title": "Keys and connections could not be loaded",
+      "loading": "Loading keys and connections",
+      "name": {
+        "file_storage": "File storage",
+        "web_push": "Web push notifications"
+      },
+      "never_shown": "This page never shows a key or any part of one.",
+      "no_expiry": "Expiry dates for keys are not recorded anywhere, so none are shown.",
+      "status": {
+        "not_set_up": "Not set up",
+        "set_up": "Set up"
+      },
+      "title": "Keys and connections"
+    },
     "data_requests": {
       "column": {
         "community": "Community",

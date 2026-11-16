@@ -685,5 +685,49 @@
     "version": "Codice di versione",
     "time_taken": "Tempo impiegato",
     "changes_label": "Modifiche incluse"
+  },
+  "connections": {
+    "title": "Chiavi e collegamenti",
+    "intro": "Per quali servizi esterni questo server ha una chiave. «Configurato» significa che c’è una chiave. Non dimostra che il servizio funzioni.",
+    "never_shown": "Questa pagina non mostra mai una chiave né alcuna sua parte.",
+    "no_expiry": "Le date di scadenza delle chiavi non sono registrate da nessuna parte, quindi non ne viene mostrata nessuna.",
+    "count": "Configurati: {{done}} su {{total}}",
+    "loading": "Caricamento di chiavi e collegamenti",
+    "load_error_title": "Impossibile caricare chiavi e collegamenti",
+    "status": {
+      "set_up": "Configurato",
+      "not_set_up": "Non configurato"
+    },
+    "group": {
+      "email": "Posta elettronica",
+      "live_updates": "Aggiornamenti in tempo reale",
+      "notifications": "Notifiche su telefono e browser",
+      "payments": "Pagamenti",
+      "ai": "IA",
+      "maps_translation": "Mappe e traduzione",
+      "search": "Ricerca",
+      "error_reports": "Segnalazioni di errori",
+      "protection": "Protezione",
+      "alerts": "Avvisi",
+      "sign_in": "Accedi con un altro account",
+      "other": "Altro"
+    },
+    "name": {
+      "web_push": "Notifiche push web",
+      "file_storage": "Archiviazione dei file"
+    },
+    "detail": {
+      "stripe_webhook": "Chiave che verifica che i messaggi di pagamento arrivino davvero da Stripe",
+      "cloudflare_origin": "Chiave che dimostra che le visite sono passate da Cloudflare",
+      "slack_slo_alerts": "Avvisi quando la piattaforma è lenta o non funziona",
+      "slack_email_alerts": "Avvisi quando ci sono problemi con l’invio delle email",
+      "file_storage": "Sempre configurato: i file caricati sono conservati su questo server o nello spazio di archiviazione indicato."
+    },
+    "elsewhere": {
+      "title": "Dove si trovano altri tre controlli",
+      "consent_types": "I tipi di consenso sono nel pannello di amministrazione",
+      "identity_fee": "Il costo della verifica dell’identità è nel pannello di amministrazione, sotto Moduli",
+      "secrets_replaced": "Il vecchio elenco delle chiavi del server è stato sostituito da questa pagina."
+    }
   }
 }

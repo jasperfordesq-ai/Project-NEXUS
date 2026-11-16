@@ -685,5 +685,49 @@
     "version": "バージョンコード",
     "time_taken": "所要時間",
     "changes_label": "含まれる変更の数"
+  },
+  "connections": {
+    "title": "キーと接続",
+    "intro": "このサーバーがキーを持っている外部サービスの一覧です。「設定済み」はキーがあることを意味します。サービスが動作していることを示すものではありません。",
+    "never_shown": "このページにキーやその一部が表示されることはありません。",
+    "no_expiry": "キーの有効期限はどこにも記録されていないため、表示されません。",
+    "count": "設定済み: {{total}} 件中 {{done}} 件",
+    "loading": "キーと接続を読み込んでいます",
+    "load_error_title": "キーと接続を読み込めませんでした",
+    "status": {
+      "set_up": "設定済み",
+      "not_set_up": "未設定"
+    },
+    "group": {
+      "email": "メール",
+      "live_updates": "リアルタイム更新",
+      "notifications": "スマートフォンとブラウザーへの通知",
+      "payments": "支払い",
+      "ai": "AI 機能",
+      "maps_translation": "地図と翻訳",
+      "search": "検索",
+      "error_reports": "エラー報告",
+      "protection": "保護",
+      "alerts": "アラート",
+      "sign_in": "別のアカウントでサインイン",
+      "other": "その他"
+    },
+    "name": {
+      "web_push": "Web プッシュ通知",
+      "file_storage": "ファイルの保存先"
+    },
+    "detail": {
+      "stripe_webhook": "支払いのメッセージが本当に Stripe から来たかを確認するキー",
+      "cloudflare_origin": "アクセスが Cloudflare を経由したことを証明するキー",
+      "slack_slo_alerts": "プラットフォームが遅いときや停止したときのアラート",
+      "slack_email_alerts": "メール送信に問題があるときのアラート",
+      "file_storage": "常に設定済み: アップロードされたファイルはこのサーバー、または指定された保存先に保管されます。"
+    },
+    "elsewhere": {
+      "title": "ほかの 3 つの設定の場所",
+      "consent_types": "同意の種類は管理パネルにあります",
+      "identity_fee": "本人確認の手数料は管理パネルの「モジュール」にあります",
+      "secrets_replaced": "以前のサーバーキーの一覧は、このページに置き換えられました。"
+    }
   }
 }

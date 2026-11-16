@@ -689,5 +689,49 @@
     "version": "Kod wersji",
     "time_taken": "Czas trwania",
     "changes_label": "Zawarte zmiany"
+  },
+  "connections": {
+    "title": "Klucze i połączenia",
+    "intro": "Do których usług zewnętrznych ten serwer ma klucz. „Skonfigurowane” oznacza, że klucz jest na miejscu. Nie dowodzi to, że usługa działa.",
+    "never_shown": "Ta strona nigdy nie pokazuje klucza ani żadnej jego części.",
+    "no_expiry": "Daty wygaśnięcia kluczy nie są nigdzie zapisywane, więc żadna nie jest pokazywana.",
+    "count": "Skonfigurowane: {{done}} z {{total}}",
+    "loading": "Wczytywanie kluczy i połączeń",
+    "load_error_title": "Nie udało się wczytać kluczy i połączeń",
+    "status": {
+      "set_up": "Skonfigurowane",
+      "not_set_up": "Nieskonfigurowane"
+    },
+    "group": {
+      "email": "Poczta e-mail",
+      "live_updates": "Aktualizacje na żywo",
+      "notifications": "Powiadomienia na telefonie i w przeglądarce",
+      "payments": "Płatności",
+      "ai": "Funkcje AI",
+      "maps_translation": "Mapy i tłumaczenia",
+      "search": "Wyszukiwanie",
+      "error_reports": "Raporty o błędach",
+      "protection": "Ochrona",
+      "alerts": "Alerty",
+      "sign_in": "Logowanie innym kontem",
+      "other": "Inne"
+    },
+    "name": {
+      "web_push": "Powiadomienia push w przeglądarce",
+      "file_storage": "Przechowywanie plików"
+    },
+    "detail": {
+      "stripe_webhook": "Klucz, który sprawdza, czy wiadomości o płatnościach naprawdę pochodzą ze Stripe",
+      "cloudflare_origin": "Klucz, który potwierdza, że odwiedziny przeszły przez Cloudflare",
+      "slack_slo_alerts": "Alerty, gdy platforma działa wolno lub nie działa",
+      "slack_email_alerts": "Alerty, gdy są problemy z wysyłaniem e-maili",
+      "file_storage": "Zawsze skonfigurowane: przesłane pliki są przechowywane na tym serwerze lub w magazynie, którego ma używać."
+    },
+    "elsewhere": {
+      "title": "Gdzie są trzy inne ustawienia",
+      "consent_types": "Rodzaje zgód są w panelu administracyjnym",
+      "identity_fee": "Opłata za weryfikację tożsamości jest w panelu administracyjnym, w sekcji Moduły",
+      "secrets_replaced": "Dawna lista kluczy serwera została zastąpiona tą stroną."
+    }
   }
 }
