@@ -165,9 +165,12 @@ export function TeamChatrooms({ groupId, isGroupAdmin }: TeamChatroomsProps) {
       if (response.success && response.data) {
         const rooms = Array.isArray(response.data) ? response.data : [];
         setChatrooms(rooms);
-        if (rooms.length > 0 && !activeChatroomId) {
-          setActiveChatroomId(rooms[0]?.id ?? null);
-        }
+        // Pick the first channel only when none is chosen. Asked of the state
+        // itself (not read from this closure) so that this loader does NOT
+        // depend on the chosen channel: when it did, choosing the first
+        // channel changed the loader, re-ran the effect below, loaded the
+        // list a second time and put the whole chat back behind the spinner.
+        setActiveChatroomId((current) => current ?? rooms[0]?.id ?? null);
       }
     } catch (err) {
       if (controller.signal.aborted) return;
@@ -177,7 +180,7 @@ export function TeamChatrooms({ groupId, isGroupAdmin }: TeamChatroomsProps) {
         setIsLoading(false);
       }
     }
-  }, [groupId, activeChatroomId]);
+  }, [groupId]);
 
   const fetchMessages = useCallback(async (chatroomId: number) => {
     try {

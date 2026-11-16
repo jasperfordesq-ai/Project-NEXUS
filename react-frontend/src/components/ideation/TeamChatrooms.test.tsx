@@ -308,6 +308,70 @@ describe('TeamChatrooms', () => {
     });
   });
 
+  // 16 Nov 2026: opening the chat asked for the channel list TWICE. Choosing the
+  // first channel changed the loader's identity, which re-ran the effect that
+  // calls it, and the second load put the whole chat back behind the loading
+  // spinner for a moment. Anything done in that moment was lost: the message
+  // box a person had just clicked into was thrown away, and a translation they
+  // had just asked for went back to the original. It also made the two tests
+  // below ("sends a message", "offers Translate") fail now and then.
+  it('asks for the channel list once when it opens, and never puts the chat back behind the spinner', async () => {
+    let listRequests = 0;
+    let releaseSecondList: (() => void) | undefined;
+    mockApi.get.mockImplementation((url: string) => {
+      if (url.includes('/messages')) return Promise.resolve(emptyMessages);
+      if (url.includes('/pinned')) return Promise.resolve(emptyPinned);
+      listRequests += 1;
+      // A second request, if one is ever made, is held open so the spinner it
+      // would cause stays on screen long enough to be seen by the test.
+      if (listRequests > 1) return new Promise((resolve) => { releaseSecondList = () => resolve(okChatrooms); });
+      return Promise.resolve(okChatrooms);
+    });
+
+    const { TeamChatrooms } = await import('./TeamChatrooms');
+    render(<TeamChatrooms groupId={5} isGroupAdmin={false} />);
+
+    await waitForChatroom();
+    await waitFor(() => expect(mockApi.get).toHaveBeenCalledWith('/v2/group-chatrooms/10/messages'));
+    // Give a follow-up effect every chance to run.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(listRequests).toBe(1);
+    expect(screen.getAllByRole('textbox').length).toBeGreaterThan(0);
+    releaseSecondList?.();
+  });
+
+  // Deleting the open channel used to land on a remaining one only because of
+  // the accidental second load above. It must still do so now that the second
+  // load is gone.
+  it('opens a remaining channel after the open one is deleted', async () => {
+    let deleted = false;
+    mockApi.delete.mockImplementation(() => {
+      deleted = true;
+      return Promise.resolve({ success: true });
+    });
+    mockApi.get.mockImplementation((url: string) => {
+      if (url.includes('/messages')) return Promise.resolve(emptyMessages);
+      if (url.includes('/pinned')) return Promise.resolve(emptyPinned);
+      return Promise.resolve({
+        success: true,
+        data: deleted
+          ? [makeChatroom({ id: 11, name: 'planning', is_default: false })]
+          : [makeChatroom(), makeChatroom({ id: 11, name: 'planning', is_default: false })],
+      });
+    });
+
+    const { TeamChatrooms } = await import('./TeamChatrooms');
+    render(<TeamChatrooms groupId={5} isGroupAdmin={true} />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete Channel' }));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete Channel' }));
+
+    await waitFor(() => expect(mockApi.delete).toHaveBeenCalledWith('/v2/group-chatrooms/10'));
+    await waitFor(() => expect(mockApi.get).toHaveBeenCalledWith('/v2/group-chatrooms/11/messages'));
+  });
+
   it('sends a message via POST when user submits', async () => {
     mockApi.post.mockResolvedValue({ success: true });
 

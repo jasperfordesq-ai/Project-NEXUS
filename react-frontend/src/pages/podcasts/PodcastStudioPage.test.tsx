@@ -635,25 +635,41 @@ describe('PodcastStudioPage', () => {
 
   it('renders listener stats for the selected show when analytics are enabled', async () => {
     mockPodcastsApi.authored.mockResolvedValue({ success: true, data: [makeShow()] });
-    mockPodcastsApi.showStats.mockResolvedValue({
-      success: true,
-      data: {
-        enabled: true,
-        days: 30,
-        totals: { listens: 12, completed_listens: 6, completion_rate: 50, unique_listeners: 9, subscribers: 3, episodes: 2 },
-        listens_over_time: [{ date: '2026-07-01', listens: 12 }],
-        top_episodes: [{ id: 10, show_id: 1, title: 'Episode One', slug: 'ep-1', listen_count: 12 }],
-        retention: [],
-        client_breakdown: [],
-      },
-    });
+    // The figures arrive a moment after the panel does, as they do for a real
+    // person: the panel shows its heading and a spinner first. Answering on a
+    // short delay keeps this test honest about that order.
+    mockPodcastsApi.showStats.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(
+            () =>
+              resolve({
+                success: true,
+                data: {
+                  enabled: true,
+                  days: 30,
+                  totals: { listens: 12, completed_listens: 6, completion_rate: 50, unique_listeners: 9, subscribers: 3, episodes: 2 },
+                  listens_over_time: [{ date: '2026-07-01', listens: 12 }],
+                  top_episodes: [{ id: 10, show_id: 1, title: 'Episode One', slug: 'ep-1', listen_count: 12 }],
+                  retention: [],
+                  client_breakdown: [],
+                },
+              }),
+            40,
+          );
+        }),
+    );
 
     const { default: PodcastStudioPage } = await import('./PodcastStudioPage');
     render(<PodcastStudioPage />);
 
-    await waitFor(() => expect(screen.getByText('Listener stats')).toBeInTheDocument());
+    // The heading is there while the figures are still loading, so waiting
+    // for the heading and then reading the figures straight away was a race
+    // (it failed now and then on a busy machine, 16 Nov 2026). Wait for a
+    // figure; once one is there, they all are.
+    expect(await screen.findByText('Listener stats')).toBeInTheDocument();
+    expect(await screen.findByText('12 listens')).toBeInTheDocument();
     expect(screen.getByText('Unique listeners')).toBeInTheDocument();
-    expect(screen.getByText('12 listens')).toBeInTheDocument();
   });
 
   describe('audio links that open a web page', () => {
