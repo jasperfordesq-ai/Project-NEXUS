@@ -13,8 +13,11 @@ vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, options?: Record<string, unknown>) =>
-      options && 'count' in options ? `${key}|${String(options.count)}|${String(options.total)}` : key,
+    t: (key: string, options?: Record<string, unknown>) => {
+      if (options && 'count' in options) return `${key}|${String(options.count)}|${String(options.total)}`;
+      if (options && 'names' in options) return `${key}|${String(options.names)}`;
+      return key;
+    },
     i18n: {
       language: 'en',
       // The admin panel names every switch except a few; `maps` is one it does not.
@@ -126,7 +129,8 @@ describe('CommunitiesAtAGlancePage', () => {
 
     const events = within(list).getByTestId('glance-item-events');
     expect(events).toHaveTextContent('glance.on_in|2|3');
-    expect(events).toHaveTextContent('Gamma Circle');
+    // One sentence with the names inside it, so each language can order it.
+    expect(events).toHaveTextContent('glance.off_in|Gamma Circle');
     expect(events).not.toHaveTextContent('Alpha Timebank');
     expect(within(list).getByTestId('glance-item-maps')).toHaveTextContent('glance.off_everywhere');
   });

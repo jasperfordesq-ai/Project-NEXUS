@@ -57285,7 +57285,7 @@ export default interface Resources {
       "not_active": "Not active",
       "off": "Off",
       "off_everywhere": "Off in every community.",
-      "off_in": "Off in:",
+      "off_in": "Off in: {{names}}",
       "on": "On",
       "on_everywhere": "On in every community.",
       "on_in": "On in {{count}} of {{total}}",

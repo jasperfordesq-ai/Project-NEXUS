@@ -262,7 +262,7 @@
     "on_in": "{{total}}件中{{count}}件で有効",
     "on_everywhere": "すべてのコミュニティで有効です。",
     "off_everywhere": "すべてのコミュニティで無効です。",
-    "off_in": "無効のコミュニティ：",
+    "off_in": "無効のコミュニティ：{{names}}",
     "feature_name": {
       "fadp_compliance": "スイスのデータ保護（FADP）",
       "local_advertising": "地域広告",

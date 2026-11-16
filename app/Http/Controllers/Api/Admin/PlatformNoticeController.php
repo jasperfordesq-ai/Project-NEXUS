@@ -46,7 +46,7 @@ final class PlatformNoticeController extends BaseApiController
             'not_found' => $this->respondNotFound(),
             'not_dismissible' => $this->respondWithError(
                 ApiErrorCodes::VALIDATION_INVALID_VALUE,
-                __('api.site_announcement_flag_invalid'),
+                __('api.platform_notice_cannot_be_closed'),
                 null,
                 422,
             ),

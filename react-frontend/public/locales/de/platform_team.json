@@ -262,7 +262,7 @@
     "on_in": "An in {{count}} von {{total}}",
     "on_everywhere": "In jeder Gemeinschaft an.",
     "off_everywhere": "In jeder Gemeinschaft aus.",
-    "off_in": "Aus in:",
+    "off_in": "Aus in: {{names}}",
     "feature_name": {
       "fadp_compliance": "Schweizer Datenschutz (DSG)",
       "local_advertising": "Lokale Werbung",

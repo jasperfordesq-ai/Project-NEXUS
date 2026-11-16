@@ -3063,4 +3063,6 @@ XP: :xp | المستوى: :level | التبادلات المكتملة: :complet
     'site_announcement_date_invalid' => 'أدخل تاريخًا ووقتًا صالحين.',
     'site_announcement_ends_before_starts' => 'يجب أن يكون وقت الانتهاء بعد وقت البدء.',
     'site_announcement_flag_invalid' => 'يجب أن يكون هذا الإعداد مفعّلًا أو معطّلًا.',
+    'platform_notice_cannot_be_closed' => 'لا يمكن إغلاق هذا الإشعار.',
+    'platform_notice_link_must_be_https' => 'يجب أن يكون الرابط عنوانًا كاملًا يبدأ بـ "https://".',
 ];

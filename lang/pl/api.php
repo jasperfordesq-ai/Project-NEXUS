@@ -3063,4 +3063,6 @@ KANDYDACI::candidates',
     'site_announcement_date_invalid' => 'Podaj prawidłową datę i godzinę.',
     'site_announcement_ends_before_starts' => 'Koniec musi być późniejszy niż początek.',
     'site_announcement_flag_invalid' => 'To ustawienie musi być włączone albo wyłączone.',
+    'platform_notice_cannot_be_closed' => 'Tego komunikatu nie można zamknąć.',
+    'platform_notice_link_must_be_https' => 'Link musi być pełnym adresem zaczynającym się od „https://”.',
 ];

@@ -15975,7 +15975,8 @@ CREATE TABLE `org_audit_log` (
   PRIMARY KEY (`id`),
   KEY `idx_org_audit` (`tenant_id`,`organization_id`,`created_at`),
   KEY `idx_user_audit` (`tenant_id`,`user_id`,`created_at`),
-  KEY `idx_action` (`tenant_id`,`action`,`created_at`)
+  KEY `idx_action` (`tenant_id`,`action`,`created_at`),
+  KEY `idx_org_audit_action_created` (`action`,`created_at`)
 ) ENGINE=InnoDB AUTO_INCREMENT=14673 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `org_balance_alerts`;

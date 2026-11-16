@@ -262,7 +262,7 @@
     "on_in": "Aan in {{count}} van {{total}}",
     "on_everywhere": "Aan in elke gemeenschap.",
     "off_everywhere": "Uit in elke gemeenschap.",
-    "off_in": "Uit in:",
+    "off_in": "Uit in: {{names}}",
     "feature_name": {
       "fadp_compliance": "Zwitserse gegevensbescherming (FADP)",
       "local_advertising": "Lokale advertenties",

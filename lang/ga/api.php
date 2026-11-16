@@ -3063,4 +3063,6 @@ IARRTHÓIRÍ: :candidates',
     'site_announcement_date_invalid' => 'Cuir isteach dáta agus am bailí.',
     'site_announcement_ends_before_starts' => 'Ní mór don deireadh a bheith níos déanaí ná an tús.',
     'site_announcement_flag_invalid' => 'Ní mór an socrú seo a bheith ar siúl nó as.',
+    'platform_notice_cannot_be_closed' => 'Ní féidir an fógra seo a dhúnadh.',
+    'platform_notice_link_must_be_https' => 'Caithfidh an nasc a bheith ina sheoladh iomlán a thosaíonn le "https://".',
 ];

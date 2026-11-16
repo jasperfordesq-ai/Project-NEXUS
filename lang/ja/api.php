@@ -3063,4 +3063,6 @@ XP: :xp |レベル: :level |完了した交換: :completed_exchanges
     'site_announcement_date_invalid' => '有効な日付と時刻を入力してください。',
     'site_announcement_ends_before_starts' => '終了日時は開始日時より後にしてください。',
     'site_announcement_flag_invalid' => 'この設定はオンかオフのどちらかにしてください。',
+    'platform_notice_cannot_be_closed' => 'このお知らせは閉じることができません。',
+    'platform_notice_link_must_be_https' => 'リンクは「https://」で始まる完全なアドレスにしてください。',
 ];

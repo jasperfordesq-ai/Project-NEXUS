@@ -3063,4 +3063,6 @@ CANDIDATI::candidates',
     'site_announcement_date_invalid' => 'Inserisci una data e un\'ora valide.',
     'site_announcement_ends_before_starts' => 'La fine deve essere successiva all\'inizio.',
     'site_announcement_flag_invalid' => 'Questa impostazione deve essere attiva o disattivata.',
+    'platform_notice_cannot_be_closed' => 'Questo avviso non può essere chiuso.',
+    'platform_notice_link_must_be_https' => 'Il link deve essere un indirizzo completo che inizia con «https://».',
 ];

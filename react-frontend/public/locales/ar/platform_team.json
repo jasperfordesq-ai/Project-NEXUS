@@ -262,7 +262,7 @@
     "on_in": "مفعّل في {{count}} من {{total}}",
     "on_everywhere": "مفعّل في كل المجتمعات.",
     "off_everywhere": "متوقف في كل المجتمعات.",
-    "off_in": "متوقف في:",
+    "off_in": "متوقف في: {{names}}",
     "feature_name": {
       "fadp_compliance": "حماية البيانات السويسرية (FADP)",
       "local_advertising": "الإعلانات المحلية",

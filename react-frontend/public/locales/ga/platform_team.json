@@ -262,7 +262,7 @@
     "on_in": "Ar siúl i {{count}} as {{total}}",
     "on_everywhere": "Ar siúl i ngach pobal.",
     "off_everywhere": "Múchta i ngach pobal.",
-    "off_in": "Múchta i:",
+    "off_in": "Múchta i: {{names}}",
     "feature_name": {
       "fadp_compliance": "Cosaint sonraí na hEilvéise (FADP)",
       "local_advertising": "Fógraíocht áitiúil",

@@ -25,6 +25,7 @@ import { Button, Card, CardBody, Chip, Spinner } from '@/components/ui';
 import { LoadError } from '@/components/feedback/LoadError';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
+import { joinList } from '@/lib/listFormat';
 import { logError } from '@/lib/logger';
 import Check from 'lucide-react/icons/check';
 import Eye from 'lucide-react/icons/eye';
@@ -55,7 +56,7 @@ type OwnName = (typeof OWN_NAMES)[number];
 type Kind = 'features' | 'modules';
 
 export function CommunitiesAtAGlancePage() {
-  const { t } = useTranslation('platform_team');
+  const { t, i18n: teamI18n } = useTranslation('platform_team');
   // The names admins already see for each switch, in every language.
   const { t: tConfig, i18n } = useTranslation('admin_config');
   usePageTitle(t('glance.title'));
@@ -193,7 +194,7 @@ export function CommunitiesAtAGlancePage() {
                     ? t('glance.on_everywhere')
                     : on === 0
                       ? t('glance.off_everywhere')
-                      : `${t('glance.off_in')} ${off.map((c) => c.name).join(', ')}`}
+                      : t('glance.off_in', { names: joinList(off.map((c) => c.name), teamI18n.language) })}
                 </p>
               </CardBody>
             </Card>

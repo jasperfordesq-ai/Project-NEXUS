@@ -3063,4 +3063,6 @@ KANDIDATEN::candidates',
     'site_announcement_date_invalid' => 'Vul een geldige datum en tijd in.',
     'site_announcement_ends_before_starts' => 'Het einde moet later zijn dan het begin.',
     'site_announcement_flag_invalid' => 'Deze instelling moet aan of uit staan.',
+    'platform_notice_cannot_be_closed' => 'Deze mededeling kan niet worden gesloten.',
+    'platform_notice_link_must_be_https' => 'De link moet een volledig adres zijn dat begint met "https://".',
 ];

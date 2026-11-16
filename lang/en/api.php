@@ -3572,4 +3572,6 @@ return [
     'site_announcement_date_invalid' => 'Enter a valid date and time.',
     'site_announcement_ends_before_starts' => 'The end must be later than the start.',
     'site_announcement_flag_invalid' => 'This setting must be either on or off.',
+    'platform_notice_cannot_be_closed' => 'This notice cannot be closed.',
+    'platform_notice_link_must_be_https' => 'The link must be a full address that starts with "https://".',
 ];

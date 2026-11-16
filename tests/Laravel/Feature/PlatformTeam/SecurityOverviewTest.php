@@ -362,6 +362,48 @@ class SecurityOverviewTest extends TestCase
         }
     }
 
+    /**
+     * The page reads `org_audit_log` by action across every community. Every
+     * index on that table used to lead with tenant_id, so each page load read
+     * the whole table (review, 16 Nov 2026).
+     */
+    public function test_the_log_lookups_have_an_index_that_does_not_start_with_a_community(): void
+    {
+        $this->assertTrue(
+            \Illuminate\Support\Facades\Schema::hasIndex('org_audit_log', 'idx_org_audit_action_created'),
+            'org_audit_log needs an (action, created_at) index for the cross-community lookups',
+        );
+
+        $plan = DB::select(
+            "EXPLAIN SELECT id FROM org_audit_log
+             WHERE action IN ('admin_user_impersonated') AND created_at >= (NOW() - INTERVAL 90 DAY)
+             ORDER BY created_at DESC LIMIT 51"
+        );
+        // "Could use", not "did use": on a near-empty table the planner may
+        // pick anything, and which it picks is not what this test is about.
+        $this->assertStringContainsString('idx_org_audit_action_created', (string) ($plan[0]->possible_keys ?? ''));
+    }
+
+    /**
+     * Failed sign-ins are windowed with the database's NOW() (that is the
+     * clock that wrote them); every other section uses PHP's now(). The page
+     * is only right while the two agree, so that is pinned here rather than
+     * left as an assumption in a comment.
+     */
+    public function test_the_database_clock_and_the_application_clock_agree(): void
+    {
+        $database = \Illuminate\Support\Carbon::parse(
+            (string) DB::selectOne('SELECT NOW() AS n')->n,
+            (string) config('app.timezone', 'UTC'),
+        );
+
+        $this->assertLessThanOrEqual(
+            5,
+            abs($database->getTimestamp() - now()->getTimestamp()),
+            'The database session clock and app.timezone disagree: the failed sign-in windows would be wrong.',
+        );
+    }
+
     /** A record that cannot be read is "could not be checked", never an empty list. */
     public function test_a_section_that_cannot_be_read_says_so_and_keeps_its_reason_on_the_server(): void
     {

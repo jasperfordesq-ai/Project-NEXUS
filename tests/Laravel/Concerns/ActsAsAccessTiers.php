@@ -85,6 +85,10 @@ trait ActsAsAccessTiers
             'a community admin' => fn () => $this->actAsCommunityAdmin(),
             'a global super admin who is not on the platform team' => fn () => $this->actAsGlobalSuperAdminNotOnTeam(),
             'an account with is_god but not super admin' => fn () => $this->actAsGodWithoutSuperAdmin(),
+            // Added 16 Nov 2026 (review): the logic refused these, but no test said so.
+            'a tenant super admin' => fn () => $this->actAsTier(['role' => 'admin', 'is_tenant_super_admin' => true]),
+            'a broker' => fn () => $this->actAsTier(['role' => 'broker']),
+            'a member' => fn () => $this->actAsTier(['role' => 'member']),
         ];
 
         foreach ($refused as $who => $become) {

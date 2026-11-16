@@ -61,4 +61,58 @@ class PlatformNoticeDismissalErasureTest extends TestCase
             TenantContext::reset();
         }
     }
+
+    /**
+     * The table has no tenant_id, so the erasure step takes the community
+     * from the account itself. An erasure run for one community must not
+     * delete the rows of an account that belongs to another.
+     */
+    public function test_an_erasure_run_for_one_community_leaves_another_communitys_account_alone(): void
+    {
+        $tenantId = $this->testTenantId;
+        $otherTenantId = (int) DB::table('tenants')->insertGetId([
+            'name' => 'Notice erasure isolation community',
+            'slug' => 'notice-erasure-' . uniqid(),
+            'is_active' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $otherCommunitysAdmin = User::factory()->forTenant($otherTenantId)->create(['role' => 'admin']);
+        TenantContext::setById($tenantId);
+
+        $noticeId = (int) DB::table('platform_notices')->insertGetId([
+            'message' => 'Erasure isolation notice',
+            'kind' => 'info',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('platform_notice_dismissals')->insert([
+            'notice_id' => $noticeId, 'user_id' => $otherCommunitysAdmin->id, 'dismissed_at' => now(),
+        ]);
+
+        try {
+            $service = new class($tenantId) extends GdprService {
+                public function generateDataExport(int $userId, int $requestId = null): string
+                {
+                    return '';
+                }
+            };
+            // The wrong community's service is handed the other community's account id.
+            try {
+                $service->executeAccountDeletion($otherCommunitysAdmin->id);
+            } catch (\Throwable) {
+                // Refusing outright is fine too; what matters is the row below.
+            }
+
+            $this->assertDatabaseHas('platform_notice_dismissals', [
+                'notice_id' => $noticeId,
+                'user_id' => $otherCommunitysAdmin->id,
+            ]);
+        } finally {
+            foreach (glob(storage_path("exports/nexus_data_export_{$otherCommunitysAdmin->id}_*.zip")) ?: [] as $export) {
+                @unlink($export);
+            }
+            TenantContext::reset();
+        }
+    }
 }

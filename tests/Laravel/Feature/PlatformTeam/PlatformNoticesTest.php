@@ -301,6 +301,63 @@ class PlatformNoticesTest extends TestCase
         $this->assertSame(0, DB::table('platform_notice_dismissals')->where('notice_id', $id)->count());
     }
 
+    /** An admin cannot close in advance a notice they have not been shown yet. */
+    public function test_a_notice_that_has_not_started_cannot_be_closed_in_advance(): void
+    {
+        $id = $this->notice(['starts_at' => now()->addDay()]);
+        $this->actAsCommunityAdmin();
+
+        $this->apiPost(self::ADMIN . "/{$id}/dismiss")->assertStatus(404);
+
+        $this->assertSame(0, DB::table('platform_notice_dismissals')->where('notice_id', $id)->count());
+    }
+
+    /**
+     * The band can still be showing a notice for up to a minute after it
+     * ended. Closing it then is not an error, and there is nothing to record:
+     * it is already gone for everyone.
+     *
+     * @dataProvider noticesThatAreOver
+     * @param array<string, mixed> $state
+     */
+    public function test_closing_a_notice_that_is_already_over_is_fine_and_records_nothing(array $state): void
+    {
+        $id = $this->notice(array_map(static fn (mixed $v): mixed => $v instanceof \Closure ? $v() : $v, $state));
+        $this->actAsCommunityAdmin();
+
+        $this->apiPost(self::ADMIN . "/{$id}/dismiss")->assertStatus(200);
+
+        $this->assertSame(0, DB::table('platform_notice_dismissals')->where('notice_id', $id)->count());
+    }
+
+    /** @return array<string, array{0: array<string, mixed>}> */
+    public static function noticesThatAreOver(): array
+    {
+        return [
+            'ended early' => [['is_active' => 0, 'ended_at' => static fn () => now()]],
+            'past its end time' => [['ends_at' => static fn () => now()->subMinute()]],
+        ];
+    }
+
+    /** The refusals are about a notice, in words that are true of a notice. */
+    public function test_the_refusals_use_wording_written_for_notices(): void
+    {
+        foreach (['api.platform_notice_cannot_be_closed', 'api.platform_notice_link_must_be_https'] as $key) {
+            $this->assertNotSame($key, __($key), "{$key} has no wording");
+        }
+
+        $id = $this->notice(['is_dismissible' => 0]);
+        $this->actAsCommunityAdmin();
+        $closed = $this->apiPost(self::ADMIN . "/{$id}/dismiss")->assertStatus(422);
+        $this->assertStringContainsString(__('api.platform_notice_cannot_be_closed'), $closed->getContent());
+
+        $this->actAsPlatformTeam();
+        $link = $this->apiPost(self::TEAM, ['message' => 'x', 'link_url' => '/admin', 'link_label' => 'Go'])->assertStatus(422);
+        $messages = array_column($link->json('errors'), 'message', 'field');
+        // Not the community banner's message, which offers "a page on this site".
+        $this->assertSame(__('api.platform_notice_link_must_be_https'), $messages['link_url'] ?? null);
+    }
+
     public function test_closing_a_notice_that_does_not_exist_is_not_found(): void
     {
         $this->actAsCommunityAdmin();

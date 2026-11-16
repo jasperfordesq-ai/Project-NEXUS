@@ -247,13 +247,29 @@ final class PlatformNoticeService
     /**
      * Close a notice for one person. Closing it twice is fine.
      *
+     * Only a notice that is showing can be closed:
+     *   - not started yet: the person has not been shown it, so for them it
+     *     does not exist ('not_found'); it cannot be closed in advance;
+     *   - already over (ended early, or past its end time): the band may
+     *     still be drawing it for up to a minute, so this is not an error,
+     *     and there is nothing to record ('ok', no row).
+     *
      * @return 'ok'|'not_found'|'not_dismissible'
      */
     public function dismiss(int $id, int $userId): string
     {
-        $notice = DB::table('platform_notices')->where('id', $id)->first(['id', 'is_dismissible']);
+        $notice = DB::table('platform_notices')
+            ->where('id', $id)
+            ->first(['id', 'is_dismissible', 'is_active', 'starts_at', 'ends_at']);
         if ($notice === null) {
             return 'not_found';
+        }
+        $state = self::state($notice);
+        if ($state === 'scheduled') {
+            return 'not_found';
+        }
+        if ($state !== 'live') {
+            return 'ok';
         }
         if (empty($notice->is_dismissible)) {
             return 'not_dismissible';
@@ -307,10 +323,21 @@ final class PlatformNoticeService
             unset($values['link_url']);
             $errors[] = [
                 'code' => ApiErrorCodes::VALIDATION_INVALID_FORMAT,
-                'message' => __('api.site_announcement_link_url_invalid'),
+                'message' => __('api.platform_notice_link_must_be_https'),
                 'field' => 'link_url',
             ];
         }
+
+        // The shared check words a bad link as the community banner's rule
+        // ("a page on this site, or https://"). For a notice only https is
+        // allowed, so say that, whichever check refused it.
+        $errors = array_map(static function (array $error): array {
+            if ($error['field'] === 'link_url') {
+                $error['message'] = __('api.platform_notice_link_must_be_https');
+            }
+
+            return $error;
+        }, $errors);
 
         return [$values, $errors];
     }

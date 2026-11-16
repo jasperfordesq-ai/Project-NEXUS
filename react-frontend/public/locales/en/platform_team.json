@@ -262,7 +262,7 @@
     "on_in": "On in {{count}} of {{total}}",
     "on_everywhere": "On in every community.",
     "off_everywhere": "Off in every community.",
-    "off_in": "Off in:",
+    "off_in": "Off in: {{names}}",
     "feature_name": {
       "fadp_compliance": "Swiss data protection (FADP)",
       "local_advertising": "Local advertising",

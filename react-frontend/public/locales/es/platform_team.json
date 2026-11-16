@@ -262,7 +262,7 @@
     "on_in": "Activado en {{count}} de {{total}}",
     "on_everywhere": "Activado en todas las comunidades.",
     "off_everywhere": "Desactivado en todas las comunidades.",
-    "off_in": "Desactivado en:",
+    "off_in": "Desactivado en: {{names}}",
     "feature_name": {
       "fadp_compliance": "Protección de datos suiza (LPD)",
       "local_advertising": "Publicidad local",
