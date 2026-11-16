@@ -541,6 +541,23 @@ one, and those completed in the last 90 days (`processed_at`, falling back to
 A figure that cannot be read is null and named in `unavailable`, never zero.
 Requests are still answered in each community's own admin panel.
 
+Legal documents (`GET /v2/platform-team/legal-documents`;
+`LegalDocumentsService`, 16 November 2026) is read-only: per community (every
+community), its `terms` and `privacy` documents (always listed, `exists: false`
+when missing) and any other `legal_documents` row it has, each with whether it
+is published (`LegalDocumentPublication::publishedSql()`: switched on and the
+current version is not a draft; the Community setup page uses the same
+helper), the published version's number and date, `requires_acceptance`, and,
+only for a published document that requires acceptance, members asked and
+members who have not accepted the current version. Members asked is the
+population of `LegalDocumentService::eligibleMemberQuery()` (active,
+not an administrator of any kind), as a grouped copy pinned by
+`LegalDocumentsTest` to `getComplianceSummary()`. Plus `no_privacy_notice` per
+community. 🔴 Counts only: no title, text, member id, IP address or user
+agent is selected. A figure that cannot be read is null and named in
+`unavailable`, never zero. Documents are still written and published in each
+community's own admin panel.
+
 **Left open on purpose.** An endpoint that a screen outside the panel still
 calls keeps its previous check, and a test pins that a community admin still
 gets an answer:

@@ -845,6 +845,12 @@
   "stripe_account": "Account Stripe",
   "listings_digest": "Riepilogo email",
   "email_preview": "Cosa ricevono i tuoi membri",
+  "whats_new": {
+    "region_label": "Novità",
+    "message": "La versione {{version}} della piattaforma è ora disponibile.",
+    "link": "Scopri cosa è cambiato",
+    "close": "Chiudi questo messaggio"
+  },
   "platform_notice": {
     "region_label": "Avvisi dal team della piattaforma",
     "close": "Chiudi questo avviso",

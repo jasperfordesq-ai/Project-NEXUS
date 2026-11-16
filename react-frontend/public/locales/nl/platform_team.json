@@ -558,6 +558,46 @@
       "objection": "Een bezwaar"
     }
   },
+  "legal_documents": {
+    "title": "Juridische documenten",
+    "nav": "Juridische documenten",
+    "intro": "De voorwaarden, privacyverklaring en andere juridische documenten van elke gemeenschap: welke gepubliceerd zijn en hoeveel leden de huidige versie nog niet hebben geaccepteerd.",
+    "where_changed": "Elke gemeenschap schrijft en publiceert haar eigen documenten in haar eigen beheeromgeving. Op deze pagina kan niets worden gewijzigd.",
+    "counts_only": "Alleen aantallen. Op deze pagina wordt geen lid genoemd.",
+    "loading": "Juridische documenten laden",
+    "load_error_title": "We konden de juridische documenten nu niet laden",
+    "community_count": "Gemeenschappen: {{count}}",
+    "no_privacy_count": "Gemeenschappen zonder gepubliceerde privacyverklaring: {{count}}",
+    "no_privacy_names": "Zonder: {{names}}",
+    "all_have_privacy": "Elke gemeenschap heeft een gepubliceerde privacyverklaring.",
+    "privacy_unknown": "We kunnen nu niet zien welke gemeenschappen een privacyverklaring hebben.",
+    "who_is_asked": "Gevraagde leden zijn actieve leden die geen beheerder zijn. Beheerders wordt nooit gevraagd te accepteren.",
+    "no_privacy_flag": "Geen privacyverklaring",
+    "terms_seeded": "Voorwaarden worden automatisch toegevoegd wanneer een gemeenschap wordt aangemaakt.",
+    "version": "Versie {{version}}, gepubliceerd op {{date}}",
+    "date_unknown": "datum niet vastgelegd",
+    "no_acceptance_needed": "Leden wordt niet gevraagd dit document te accepteren.",
+    "members_not_available": "Wie heeft geaccepteerd: niet beschikbaar",
+    "members_not_accepted": "Nog niet geaccepteerd: {{count}} van {{asked}} gevraagde leden",
+    "all_accepted": "Geaccepteerd door alle gevraagde leden ({{count}})",
+    "status": {
+      "published": "Gepubliceerd",
+      "not_published": "Niet gepubliceerd",
+      "missing": "Geen"
+    },
+    "type": {
+      "terms": "Voorwaarden",
+      "privacy": "Privacyverklaring",
+      "cookies": "Cookieverklaring",
+      "accessibility": "Toegankelijkheidsverklaring",
+      "community_guidelines": "Gemeenschapsrichtlijnen",
+      "acceptable_use": "Beleid voor aanvaardbaar gebruik"
+    },
+    "empty": "Er zijn nog geen gemeenschappen.",
+    "not_active": "Niet actief",
+    "not_available": "Niet beschikbaar",
+    "unavailable_note": "Sommige cijfers konden nu niet worden gelezen. Daar staat \"Niet beschikbaar\". Ze zijn niet nul."
+  },
   "access_review": {
     "title": "Toegangscontrole",
     "intro": "Loop elk account met verhoogde rechten na en geef aan of het zijn toegang moet houden. Minstens elke 90 dagen is een controle nodig.",

@@ -857,6 +857,12 @@
   "stripe_account": "حساب Stripe",
   "listings_digest": "ملخص البريد",
   "email_preview": "ما يصل إلى أعضائك",
+  "whats_new": {
+    "region_label": "ما الجديد",
+    "message": "الإصدار {{version}} من المنصة متاح الآن.",
+    "link": "اطّلع على ما تغيّر",
+    "close": "إغلاق هذه الرسالة"
+  },
   "platform_notice": {
     "region_label": "إشعارات من فريق المنصة",
     "close": "إغلاق هذا الإشعار",

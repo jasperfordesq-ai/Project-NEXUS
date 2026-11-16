@@ -558,6 +558,46 @@
       "objection": "Une opposition"
     }
   },
+  "legal_documents": {
+    "title": "Documents juridiques",
+    "nav": "Documents juridiques",
+    "intro": "Les conditions d’utilisation, la politique de confidentialité et les autres documents juridiques de chaque communauté : lesquels sont publiés, et combien de membres n’ont pas accepté la version actuelle.",
+    "where_changed": "Chaque communauté rédige et publie ses propres documents dans son propre panneau d’administration. Rien ne peut être modifié depuis cette page.",
+    "counts_only": "Des chiffres uniquement. Aucun membre n’est nommé sur cette page.",
+    "loading": "Chargement des documents juridiques",
+    "load_error_title": "Nous n’avons pas pu charger les documents juridiques pour le moment",
+    "community_count": "Communautés : {{count}}",
+    "no_privacy_count": "Communautés sans politique de confidentialité publiée : {{count}}",
+    "no_privacy_names": "Sans politique : {{names}}",
+    "all_have_privacy": "Chaque communauté a une politique de confidentialité publiée.",
+    "privacy_unknown": "Nous ne pouvons pas savoir pour le moment quelles communautés ont une politique de confidentialité.",
+    "who_is_asked": "Les membres sollicités sont les membres actifs qui ne sont pas administrateurs. Les administrateurs ne sont jamais invités à accepter.",
+    "no_privacy_flag": "Pas de politique de confidentialité",
+    "terms_seeded": "Les conditions d’utilisation sont ajoutées automatiquement à la création d’une communauté.",
+    "version": "Version {{version}}, publiée le {{date}}",
+    "date_unknown": "date non enregistrée",
+    "no_acceptance_needed": "Les membres ne sont pas invités à accepter ce document.",
+    "members_not_available": "Qui l’a accepté : non disponible",
+    "members_not_accepted": "Pas encore accepté : {{count}} sur {{asked}} membres sollicités",
+    "all_accepted": "Accepté par tous les membres sollicités ({{count}})",
+    "status": {
+      "published": "Publié",
+      "not_published": "Non publié",
+      "missing": "Aucun"
+    },
+    "type": {
+      "terms": "Conditions d’utilisation",
+      "privacy": "Politique de confidentialité",
+      "cookies": "Politique relative aux cookies",
+      "accessibility": "Déclaration d’accessibilité",
+      "community_guidelines": "Règles de la communauté",
+      "acceptable_use": "Politique d’utilisation acceptable"
+    },
+    "empty": "Il n'y a pas encore de communauté.",
+    "not_active": "Non active",
+    "not_available": "Non disponible",
+    "unavailable_note": "Certains chiffres n'ont pas pu être lus pour le moment. Ils indiquent \"Non disponible\". Ce ne sont pas des zéros."
+  },
   "access_review": {
     "title": "Revue des accès",
     "intro": "Passez en revue chaque compte à accès étendu et indiquez s’il doit garder son accès. Une revue est à faire au moins tous les 90 jours.",

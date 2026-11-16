@@ -54,6 +54,7 @@ import Handshake from 'lucide-react/icons/handshake';
 import Heart from 'lucide-react/icons/heart';
 import HeartPulse from 'lucide-react/icons/heart-pulse';
 import Inbox from 'lucide-react/icons/inbox';
+import Scale from 'lucide-react/icons/scale';
 import KeyIcon from 'lucide-react/icons/key';
 import Landmark from 'lucide-react/icons/landmark';
 import Languages from 'lucide-react/icons/languages';
@@ -173,6 +174,7 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
           title: t('sidebar.group_data'),
           items: [
             { label: t('data_requests.nav'), icon: Inbox, path: `${P}/data-requests` },
+            { label: t('legal_documents.nav'), icon: Scale, path: `${P}/legal-documents` },
           ],
         },
         {

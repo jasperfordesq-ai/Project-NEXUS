@@ -841,6 +841,12 @@
   "stripe_account": "Stripe-Konto",
   "listings_digest": "E-Mail-Übersicht",
   "email_preview": "Was Ihre Mitglieder erhalten",
+  "whats_new": {
+    "region_label": "Neuigkeiten",
+    "message": "Version {{version}} der Plattform ist jetzt verfügbar.",
+    "link": "Ansehen, was sich geändert hat",
+    "close": "Diese Meldung schließen"
+  },
   "platform_notice": {
     "region_label": "Hinweise vom Plattform-Team",
     "close": "Diesen Hinweis schließen",

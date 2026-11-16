@@ -558,6 +558,46 @@
       "objection": "Agóid"
     }
   },
+  "legal_documents": {
+    "title": "Doiciméid dhlíthiúla",
+    "nav": "Doiciméid dhlíthiúla",
+    "intro": "Téarmaí, fógra príobháideachais agus doiciméid dhlíthiúla eile gach pobail: cé acu atá foilsithe, agus cé mhéad ball nár ghlac leis an leagan reatha.",
+    "where_changed": "Scríobhann agus foilsíonn gach pobal a chuid doiciméad féin ina phainéal riaracháin féin. Ní féidir aon rud a athrú ón leathanach seo.",
+    "counts_only": "Líon amháin. Ní ainmnítear aon bhall ar an leathanach seo.",
+    "loading": "Doiciméid dhlíthiúla á lódáil",
+    "load_error_title": "Níorbh fhéidir linn na doiciméid dhlíthiúla a lódáil faoi láthair",
+    "community_count": "Pobail: {{count}}",
+    "no_privacy_count": "Pobail gan fógra príobháideachais foilsithe: {{count}}",
+    "no_privacy_names": "Gan é: {{names}}",
+    "all_have_privacy": "Tá fógra príobháideachais foilsithe ag gach pobal.",
+    "privacy_unknown": "Ní féidir linn a rá faoi láthair cé na pobail a bhfuil fógra príobháideachais acu.",
+    "who_is_asked": "Is iad na baill a iarrtar ná baill ghníomhacha nach riarthóirí iad. Ní iarrtar riamh ar riarthóirí glacadh leis.",
+    "no_privacy_flag": "Gan fógra príobháideachais",
+    "terms_seeded": "Cuirtear téarmaí leis go huathoibríoch nuair a chruthaítear pobal.",
+    "version": "Leagan {{version}}, foilsithe {{date}}",
+    "date_unknown": "dáta gan taifeadadh",
+    "no_acceptance_needed": "Ní iarrtar ar bhaill glacadh leis an gceann seo.",
+    "members_not_available": "Cé a ghlac leis: níl sé ar fáil",
+    "members_not_accepted": "Gan glacadh leis fós: {{count}} as {{asked}} ball a iarradh",
+    "all_accepted": "Ghlac gach ball a iarradh leis ({{count}})",
+    "status": {
+      "published": "Foilsithe",
+      "not_published": "Gan foilsiú",
+      "missing": "Dada"
+    },
+    "type": {
+      "terms": "Téarmaí",
+      "privacy": "Fógra príobháideachais",
+      "cookies": "Fógra fianán",
+      "accessibility": "Ráiteas inrochtaineachta",
+      "community_guidelines": "Treoirlínte an phobail",
+      "acceptable_use": "Polasaí úsáide inghlactha"
+    },
+    "empty": "Níl aon phobal ann fós.",
+    "not_active": "Gan a bheith gníomhach",
+    "not_available": "Níl sé ar fáil",
+    "unavailable_note": "Níorbh fhéidir roinnt figiúirí a léamh faoi láthair. Deir siad \"Níl sé ar fáil\". Ní nialas iad."
+  },
   "access_review": {
     "title": "Athbhreithniú rochtana",
     "intro": "Téigh trí gach cuntas sinsearach agus abair ar chóir dó a rochtain a choinneáil. Bíonn athbhreithniú dlite uair sa 90 lá ar a laghad.",

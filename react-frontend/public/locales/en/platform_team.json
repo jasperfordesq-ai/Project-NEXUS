@@ -558,6 +558,46 @@
       "objection": "An objection"
     }
   },
+  "legal_documents": {
+    "title": "Legal documents",
+    "nav": "Legal documents",
+    "intro": "The terms, privacy notice and other legal documents of every community: which are published, and how many members have not accepted the current version.",
+    "where_changed": "Each community writes and publishes its own documents in its own admin panel. Nothing can be changed from this page.",
+    "counts_only": "Counts only. No member is named on this page.",
+    "loading": "Loading legal documents",
+    "load_error_title": "We couldn't load legal documents just now",
+    "community_count": "Communities: {{count}}",
+    "no_privacy_count": "Communities without a published privacy notice: {{count}}",
+    "no_privacy_names": "Without one: {{names}}",
+    "all_have_privacy": "Every community has a published privacy notice.",
+    "privacy_unknown": "We can't tell just now which communities have a privacy notice.",
+    "who_is_asked": "Members asked means active members who are not administrators. Administrators are never asked to accept.",
+    "no_privacy_flag": "No privacy notice",
+    "terms_seeded": "Terms are added automatically when a community is created.",
+    "version": "Version {{version}}, published {{date}}",
+    "date_unknown": "date not recorded",
+    "no_acceptance_needed": "Members are not asked to accept this one.",
+    "members_not_available": "Who has accepted: not available",
+    "members_not_accepted": "Not accepted yet: {{count}} of {{asked}} members asked",
+    "all_accepted": "Accepted by every member asked ({{count}})",
+    "status": {
+      "published": "Published",
+      "not_published": "Not published",
+      "missing": "None"
+    },
+    "type": {
+      "terms": "Terms",
+      "privacy": "Privacy notice",
+      "cookies": "Cookie notice",
+      "accessibility": "Accessibility statement",
+      "community_guidelines": "Community guidelines",
+      "acceptable_use": "Acceptable use policy"
+    },
+    "empty": "There are no communities yet.",
+    "not_active": "Not active",
+    "not_available": "Not available",
+    "unavailable_note": "Some figures could not be read just now. They say \"Not available\". They are not zero."
+  },
   "access_review": {
     "title": "Access review",
     "intro": "Go through every senior account and say whether it should keep its access. A review is due at least every 90 days.",

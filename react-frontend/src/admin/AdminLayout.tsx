@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { AdminSidebar } from './components/AdminSidebar';
 import { AdminHeader } from './components/AdminHeader';
 import { PlatformNoticeBand } from './components/PlatformNoticeBand';
+import { WhatsNewBand } from './components/WhatsNewBand';
 import { AdminBreadcrumbs } from './components/AdminBreadcrumbs';
 import { AdminMetaProvider, AdminMetaTags } from './AdminMetaContext';
 import { adminVetting } from './api/adminApi';
@@ -171,6 +172,8 @@ function AdminLayoutShell() {
         <div className="mx-auto w-full max-w-[1600px] p-3 sm:p-4 md:p-6">
           {/* A notice from the platform team to every community's admins. */}
           <PlatformNoticeBand />
+          {/* One line when a new version of the platform has been released. */}
+          <WhatsNewBand />
           <AdminBreadcrumbs />
           {jurisdictionConfigured === false && <JurisdictionNotice canSet={isAdminTierUser(user)} />}
           <Outlet />

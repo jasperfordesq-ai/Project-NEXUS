@@ -558,6 +558,46 @@
       "objection": "異議"
     }
   },
+  "legal_documents": {
+    "title": "法的文書",
+    "nav": "法的文書",
+    "intro": "各コミュニティの利用規約、プライバシー通知、その他の法的文書：どれが公開されているか、現在の版をまだ承諾していないメンバーが何人いるか。",
+    "where_changed": "各コミュニティは自分の管理画面で自分の文書を作成し公開します。このページからは何も変更できません。",
+    "counts_only": "数のみです。このページにメンバーの名前は表示されません。",
+    "loading": "法的文書を読み込んでいます",
+    "load_error_title": "現在、法的文書を読み込めませんでした",
+    "community_count": "コミュニティ数：{{count}}",
+    "no_privacy_count": "プライバシー通知が公開されていないコミュニティ：{{count}}",
+    "no_privacy_names": "未公開：{{names}}",
+    "all_have_privacy": "すべてのコミュニティでプライバシー通知が公開されています。",
+    "privacy_unknown": "どのコミュニティにプライバシー通知があるか、今は確認できません。",
+    "who_is_asked": "承諾を求められるメンバーとは、管理者ではない有効なメンバーです。管理者が承諾を求められることはありません。",
+    "no_privacy_flag": "プライバシー通知なし",
+    "terms_seeded": "利用規約はコミュニティの作成時に自動で追加されます。",
+    "version": "第{{version}}版、{{date}}公開",
+    "date_unknown": "日付の記録なし",
+    "no_acceptance_needed": "この文書はメンバーに承諾を求めていません。",
+    "members_not_available": "承諾した人：表示できません",
+    "members_not_accepted": "未承諾：承諾を求められた{{asked}}人中{{count}}人",
+    "all_accepted": "承諾を求められた全員が承諾済み（{{count}}人）",
+    "status": {
+      "published": "公開済み",
+      "not_published": "未公開",
+      "missing": "なし"
+    },
+    "type": {
+      "terms": "利用規約",
+      "privacy": "プライバシー通知",
+      "cookies": "Cookieに関する通知",
+      "accessibility": "アクセシビリティ声明",
+      "community_guidelines": "コミュニティガイドライン",
+      "acceptable_use": "利用規定"
+    },
+    "empty": "まだコミュニティがありません。",
+    "not_active": "無効",
+    "not_available": "利用できません",
+    "unavailable_note": "いま読み取れなかった数があります。そこには「利用できません」と表示されます。ゼロではありません。"
+  },
   "access_review": {
     "title": "アクセスの見直し",
     "intro": "上位権限を持つ各アカウントを確認し、そのアクセスを残すべきかどうかを決めます。見直しは少なくとも 90 日ごとに必要です。",

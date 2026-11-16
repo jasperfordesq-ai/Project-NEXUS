@@ -853,6 +853,12 @@
   "stripe_account": "Cuntas Stripe",
   "listings_digest": "Achoimre ríomhphoist",
   "email_preview": "A bhfaigheann do bhaill",
+  "whats_new": {
+    "region_label": "Cad atá nua",
+    "message": "Tá leagan {{version}} den ardán beo anois.",
+    "link": "Féach cad a d'athraigh",
+    "close": "Dún an teachtaireacht seo"
+  },
   "platform_notice": {
     "region_label": "Fógraí ó fhoireann an ardáin",
     "close": "Dún an fógra seo",

@@ -62,6 +62,7 @@ vi.mock('./pages/PlatformNoticesPage', () => ({ default: () => <div>page:Platfor
 vi.mock('./pages/UsagePage', () => ({ default: () => <div>page:UsagePage</div> }));
 vi.mock('./pages/UnfinishedFeaturesPage', () => ({ default: () => <div>page:UnfinishedFeaturesPage</div> }));
 vi.mock('./pages/DataRequestsPage', () => ({ default: () => <div>page:DataRequestsPage</div> }));
+vi.mock('./pages/LegalDocumentsPage', () => ({ default: () => <div>page:LegalDocumentsPage</div> }));
 vi.mock('@/admin/modules/content/MenusAdmin', () => ({ default: () => <div>page:MenusAdmin</div> }));
 vi.mock('@/admin/modules/content/MenuBuilder', () => ({ default: () => <div>page:MenuBuilder</div> }));
 vi.mock('@/admin/modules/advanced/EmailSettings', () => ({ default: () => <div>page:EmailSettings</div> }));
@@ -274,6 +275,11 @@ describe('the Platform team panel mounts every moved page', () => {
   it('opens the Data requests page', async () => {
     renderAt('/test/platform-team/data-requests');
     expect(await screen.findByText('page:DataRequestsPage')).toBeInTheDocument();
+  });
+
+  it('opens the Legal documents page', async () => {
+    renderAt('/test/platform-team/legal-documents');
+    expect(await screen.findByText('page:LegalDocumentsPage')).toBeInTheDocument();
   });
 
   it('opens the Security page', async () => {

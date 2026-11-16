@@ -558,6 +558,46 @@
       "objection": "Un’opposizione"
     }
   },
+  "legal_documents": {
+    "title": "Documenti legali",
+    "nav": "Documenti legali",
+    "intro": "I termini, l'informativa sulla privacy e gli altri documenti legali di ogni comunità: quali sono pubblicati e quanti membri non hanno accettato la versione attuale.",
+    "where_changed": "Ogni comunità scrive e pubblica i propri documenti nel proprio pannello di amministrazione. Da questa pagina non si può cambiare nulla.",
+    "counts_only": "Solo numeri. In questa pagina non viene nominato nessun membro.",
+    "loading": "Caricamento dei documenti legali",
+    "load_error_title": "Non siamo riusciti a caricare i documenti legali in questo momento",
+    "community_count": "Comunità: {{count}}",
+    "no_privacy_count": "Comunità senza un'informativa sulla privacy pubblicata: {{count}}",
+    "no_privacy_names": "Senza: {{names}}",
+    "all_have_privacy": "Ogni comunità ha un'informativa sulla privacy pubblicata.",
+    "privacy_unknown": "Al momento non possiamo dire quali comunità abbiano un'informativa sulla privacy.",
+    "who_is_asked": "I membri interpellati sono i membri attivi che non sono amministratori. Agli amministratori non viene mai chiesto di accettare.",
+    "no_privacy_flag": "Nessuna informativa sulla privacy",
+    "terms_seeded": "I termini vengono aggiunti automaticamente quando si crea una comunità.",
+    "version": "Versione {{version}}, pubblicata il {{date}}",
+    "date_unknown": "data non registrata",
+    "no_acceptance_needed": "Ai membri non viene chiesto di accettare questo documento.",
+    "members_not_available": "Chi ha accettato: non disponibile",
+    "members_not_accepted": "Non ancora accettato: {{count}} su {{asked}} membri interpellati",
+    "all_accepted": "Accettato da tutti i membri interpellati ({{count}})",
+    "status": {
+      "published": "Pubblicato",
+      "not_published": "Non pubblicato",
+      "missing": "Nessuno"
+    },
+    "type": {
+      "terms": "Termini",
+      "privacy": "Informativa sulla privacy",
+      "cookies": "Informativa sui cookie",
+      "accessibility": "Dichiarazione di accessibilità",
+      "community_guidelines": "Linee guida della comunità",
+      "acceptable_use": "Politica di utilizzo accettabile"
+    },
+    "empty": "Non ci sono ancora comunità.",
+    "not_active": "Non attiva",
+    "not_available": "Non disponibile",
+    "unavailable_note": "Alcuni numeri non sono stati letti in questo momento. Riportano \"Non disponibile\". Non sono zero."
+  },
   "access_review": {
     "title": "Revisione degli accessi",
     "intro": "Esamina ogni account con accesso esteso e indica se deve mantenerlo. Una revisione va fatta almeno ogni 90 giorni.",

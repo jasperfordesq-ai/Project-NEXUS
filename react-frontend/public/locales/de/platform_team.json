@@ -558,6 +558,46 @@
       "objection": "Ein Widerspruch"
     }
   },
+  "legal_documents": {
+    "title": "Rechtliche Dokumente",
+    "nav": "Rechtliche Dokumente",
+    "intro": "Die Nutzungsbedingungen, Datenschutzhinweise und weiteren rechtlichen Dokumente jeder Gemeinschaft: welche veröffentlicht sind und wie viele Mitglieder die aktuelle Version noch nicht akzeptiert haben.",
+    "where_changed": "Jede Gemeinschaft schreibt und veröffentlicht ihre eigenen Dokumente in ihrem eigenen Admin-Bereich. Auf dieser Seite lässt sich nichts ändern.",
+    "counts_only": "Nur Zahlen. Auf dieser Seite wird kein Mitglied genannt.",
+    "loading": "Rechtliche Dokumente werden geladen",
+    "load_error_title": "Wir konnten die rechtlichen Dokumente gerade nicht laden",
+    "community_count": "Gemeinschaften: {{count}}",
+    "no_privacy_count": "Gemeinschaften ohne veröffentlichte Datenschutzhinweise: {{count}}",
+    "no_privacy_names": "Ohne: {{names}}",
+    "all_have_privacy": "Jede Gemeinschaft hat veröffentlichte Datenschutzhinweise.",
+    "privacy_unknown": "Wir können gerade nicht feststellen, welche Gemeinschaften Datenschutzhinweise haben.",
+    "who_is_asked": "Gefragte Mitglieder sind aktive Mitglieder, die keine Administratoren sind. Administratoren werden nie um Zustimmung gebeten.",
+    "no_privacy_flag": "Keine Datenschutzhinweise",
+    "terms_seeded": "Nutzungsbedingungen werden automatisch hinzugefügt, wenn eine Gemeinschaft angelegt wird.",
+    "version": "Version {{version}}, veröffentlicht am {{date}}",
+    "date_unknown": "Datum nicht erfasst",
+    "no_acceptance_needed": "Mitglieder werden nicht gebeten, diesem Dokument zuzustimmen.",
+    "members_not_available": "Wer zugestimmt hat: nicht verfügbar",
+    "members_not_accepted": "Noch nicht zugestimmt: {{count}} von {{asked}} gefragten Mitgliedern",
+    "all_accepted": "Alle gefragten Mitglieder haben zugestimmt ({{count}})",
+    "status": {
+      "published": "Veröffentlicht",
+      "not_published": "Nicht veröffentlicht",
+      "missing": "Keines"
+    },
+    "type": {
+      "terms": "Nutzungsbedingungen",
+      "privacy": "Datenschutzhinweise",
+      "cookies": "Cookie-Hinweis",
+      "accessibility": "Erklärung zur Barrierefreiheit",
+      "community_guidelines": "Gemeinschaftsrichtlinien",
+      "acceptable_use": "Richtlinie zur zulässigen Nutzung"
+    },
+    "empty": "Es gibt noch keine Gemeinschaften.",
+    "not_active": "Nicht aktiv",
+    "not_available": "Nicht verfügbar",
+    "unavailable_note": "Einige Zahlen konnten gerade nicht gelesen werden. Dort steht \"Nicht verfügbar\". Sie sind nicht null."
+  },
   "access_review": {
     "title": "Zugriffsprüfung",
     "intro": "Gehen Sie jedes Konto mit erweiterten Rechten durch und entscheiden Sie, ob es seinen Zugriff behalten soll. Eine Prüfung ist mindestens alle 90 Tage fällig.",

@@ -841,6 +841,12 @@
   "stripe_account": "Stripe アカウント",
   "listings_digest": "メールダイジェスト",
   "email_preview": "メンバーに届くメール",
+  "whats_new": {
+    "region_label": "新着情報",
+    "message": "プラットフォームのバージョン {{version}} が公開されました。",
+    "link": "変更内容を見る",
+    "close": "このメッセージを閉じる"
+  },
   "platform_notice": {
     "region_label": "プラットフォームチームからのお知らせ",
     "close": "このお知らせを閉じる",

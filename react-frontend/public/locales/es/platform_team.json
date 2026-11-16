@@ -558,6 +558,46 @@
       "objection": "Una oposición"
     }
   },
+  "legal_documents": {
+    "title": "Documentos legales",
+    "nav": "Documentos legales",
+    "intro": "Los términos, el aviso de privacidad y otros documentos legales de cada comunidad: cuáles están publicados y cuántos miembros no han aceptado la versión actual.",
+    "where_changed": "Cada comunidad redacta y publica sus propios documentos en su propio panel de administración. Desde esta página no se puede cambiar nada.",
+    "counts_only": "Solo cifras. En esta página no se nombra a ningún miembro.",
+    "loading": "Cargando documentos legales",
+    "load_error_title": "No hemos podido cargar los documentos legales en este momento",
+    "community_count": "Comunidades: {{count}}",
+    "no_privacy_count": "Comunidades sin aviso de privacidad publicado: {{count}}",
+    "no_privacy_names": "Sin él: {{names}}",
+    "all_have_privacy": "Todas las comunidades tienen un aviso de privacidad publicado.",
+    "privacy_unknown": "Ahora mismo no podemos saber qué comunidades tienen aviso de privacidad.",
+    "who_is_asked": "Los miembros a los que se pide son los miembros activos que no son administradores. A los administradores nunca se les pide que acepten.",
+    "no_privacy_flag": "Sin aviso de privacidad",
+    "terms_seeded": "Los términos se añaden automáticamente al crear una comunidad.",
+    "version": "Versión {{version}}, publicada el {{date}}",
+    "date_unknown": "fecha no registrada",
+    "no_acceptance_needed": "No se pide a los miembros que acepten este documento.",
+    "members_not_available": "Quién lo ha aceptado: no disponible",
+    "members_not_accepted": "Aún sin aceptar: {{count}} de {{asked}} miembros a los que se pide",
+    "all_accepted": "Aceptado por todos los miembros a los que se pide ({{count}})",
+    "status": {
+      "published": "Publicado",
+      "not_published": "No publicado",
+      "missing": "Ninguno"
+    },
+    "type": {
+      "terms": "Términos",
+      "privacy": "Aviso de privacidad",
+      "cookies": "Aviso de cookies",
+      "accessibility": "Declaración de accesibilidad",
+      "community_guidelines": "Normas de la comunidad",
+      "acceptable_use": "Política de uso aceptable"
+    },
+    "empty": "Todavía no hay comunidades.",
+    "not_active": "No activa",
+    "not_available": "No disponible",
+    "unavailable_note": "Algunas cifras no se han podido leer ahora mismo. Indican \"No disponible\". No son cero."
+  },
   "access_review": {
     "title": "Revisión de accesos",
     "intro": "Revisa cada cuenta con acceso superior y decide si debe conservarlo. Hay que hacer una revisión al menos cada 90 días.",

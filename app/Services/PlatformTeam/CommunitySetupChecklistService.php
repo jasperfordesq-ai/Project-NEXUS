@@ -212,8 +212,8 @@ final class CommunitySetupChecklistService
             ->join('legal_document_versions as ldv', 'ldv.id', '=', 'ld.current_version_id')
             ->whereIn('ld.tenant_id', $ids)
             ->whereIn('ld.document_type', ['privacy', 'terms'])
-            ->where('ld.is_active', 1)
-            ->where('ldv.is_draft', 0)
+            // The rule the Legal documents page uses too (one helper, so they agree).
+            ->whereRaw(LegalDocumentPublication::publishedSql('ld', 'ldv'))
             ->distinct()
             ->get(['ld.tenant_id', 'ld.document_type']);
         foreach ($rows as $row) {

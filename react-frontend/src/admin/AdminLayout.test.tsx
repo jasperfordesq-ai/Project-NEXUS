@@ -107,6 +107,11 @@ vi.mock('./components/PlatformNoticeBand', () => ({
   PlatformNoticeBand: () => <div data-testid="platform-notice-band" />,
 }));
 
+// Likewise: its own tests cover what it shows and when.
+vi.mock('./components/WhatsNewBand', () => ({
+  WhatsNewBand: () => <div data-testid="whats-new-band" />,
+}));
+
 // ─────────────────────────────────────────────────────────────────────────────
 describe('AdminLayout', () => {
   beforeEach(() => {
@@ -123,6 +128,19 @@ describe('AdminLayout', () => {
     // Above the breadcrumbs, so it is the first thing an admin reads.
     const breadcrumbs = screen.getByTestId('admin-breadcrumbs');
     expect(band.compareDocumentPosition(breadcrumbs) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('shows the "what\'s new" line under the platform team\'s notices and above the page', async () => {
+    const { AdminLayout } = await import('./AdminLayout');
+    render(<AdminLayout />);
+
+    const whatsNew = await screen.findByTestId('whats-new-band');
+    expect(whatsNew.closest('main')).not.toBeNull();
+    // A notice from the platform team matters more than a release note: it comes first.
+    const notices = screen.getByTestId('platform-notice-band');
+    expect(notices.compareDocumentPosition(whatsNew) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const breadcrumbs = screen.getByTestId('admin-breadcrumbs');
+    expect(whatsNew.compareDocumentPosition(breadcrumbs) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it('renders the admin header', async () => {

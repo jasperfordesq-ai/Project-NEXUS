@@ -558,6 +558,46 @@
       "objection": "Sprzeciw"
     }
   },
+  "legal_documents": {
+    "title": "Dokumenty prawne",
+    "nav": "Dokumenty prawne",
+    "intro": "Regulamin, informacja o prywatności i inne dokumenty prawne każdej społeczności: które są opublikowane i ilu członków nie zaakceptowało bieżącej wersji.",
+    "where_changed": "Każda społeczność pisze i publikuje własne dokumenty we własnym panelu administracyjnym. Na tej stronie nie można niczego zmienić.",
+    "counts_only": "Tylko liczby. Na tej stronie nie pada imię żadnego członka.",
+    "loading": "Wczytywanie dokumentów prawnych",
+    "load_error_title": "Nie udało się teraz wczytać dokumentów prawnych",
+    "community_count": "Społeczności: {{count}}",
+    "no_privacy_count": "Społeczności bez opublikowanej informacji o prywatności: {{count}}",
+    "no_privacy_names": "Bez niej: {{names}}",
+    "all_have_privacy": "Każda społeczność ma opublikowaną informację o prywatności.",
+    "privacy_unknown": "Nie możemy teraz ustalić, które społeczności mają informację o prywatności.",
+    "who_is_asked": "Proszeni członkowie to aktywni członkowie, którzy nie są administratorami. Administratorzy nigdy nie są proszeni o akceptację.",
+    "no_privacy_flag": "Brak informacji o prywatności",
+    "terms_seeded": "Regulamin jest dodawany automatycznie podczas tworzenia społeczności.",
+    "version": "Wersja {{version}}, opublikowana {{date}}",
+    "date_unknown": "data nie została zapisana",
+    "no_acceptance_needed": "Członkowie nie są proszeni o akceptację tego dokumentu.",
+    "members_not_available": "Kto zaakceptował: niedostępne",
+    "members_not_accepted": "Jeszcze nie zaakceptowano: {{count}} z {{asked}} proszonych członków",
+    "all_accepted": "Zaakceptowane przez wszystkich proszonych członków ({{count}})",
+    "status": {
+      "published": "Opublikowany",
+      "not_published": "Nieopublikowany",
+      "missing": "Brak"
+    },
+    "type": {
+      "terms": "Regulamin",
+      "privacy": "Informacja o prywatności",
+      "cookies": "Informacja o plikach cookie",
+      "accessibility": "Deklaracja dostępności",
+      "community_guidelines": "Zasady społeczności",
+      "acceptable_use": "Zasady dopuszczalnego użytkowania"
+    },
+    "empty": "Nie ma jeszcze żadnych społeczności.",
+    "not_active": "Nieaktywna",
+    "not_available": "Niedostępne",
+    "unavailable_note": "Niektórych liczb nie udało się teraz odczytać. Widnieje przy nich \"Niedostępne\". To nie są zera."
+  },
   "access_review": {
     "title": "Przegląd dostępu",
     "intro": "Przejrzyj każde konto z rozszerzonym dostępem i zdecyduj, czy ma go zachować. Przegląd trzeba robić co najmniej co 90 dni.",

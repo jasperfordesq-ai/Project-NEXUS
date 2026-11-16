@@ -841,6 +841,12 @@
   "listings_digest": "Email Digest",
   "email_preview": "What your members receive",
   "platform_team_panel": "Platform team",
+  "whats_new": {
+    "region_label": "What's new",
+    "message": "Version {{version}} of the platform is live.",
+    "link": "See what changed",
+    "close": "Close this message"
+  },
   "platform_notice": {
     "region_label": "Notices from the platform team",
     "close": "Close this notice",

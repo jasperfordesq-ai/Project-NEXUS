@@ -845,6 +845,12 @@
   "stripe_account": "Cuenta de Stripe",
   "listings_digest": "Resumen por correo",
   "email_preview": "Lo que reciben tus miembros",
+  "whats_new": {
+    "region_label": "Novedades",
+    "message": "La versión {{version}} de la plataforma ya está disponible.",
+    "link": "Ver qué ha cambiado",
+    "close": "Cerrar este mensaje"
+  },
   "platform_notice": {
     "region_label": "Avisos del equipo de la plataforma",
     "close": "Cerrar este aviso",

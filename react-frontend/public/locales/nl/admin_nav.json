@@ -841,6 +841,12 @@
   "stripe_account": "Stripe-account",
   "listings_digest": "E-mailoverzicht",
   "email_preview": "Wat je leden ontvangen",
+  "whats_new": {
+    "region_label": "Nieuw",
+    "message": "Versie {{version}} van het platform is nu beschikbaar.",
+    "link": "Bekijk wat er is veranderd",
+    "close": "Dit bericht sluiten"
+  },
   "platform_notice": {
     "region_label": "Mededelingen van het platformteam",
     "close": "Deze mededeling sluiten",

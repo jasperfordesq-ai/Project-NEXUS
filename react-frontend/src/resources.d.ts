@@ -23171,6 +23171,12 @@ export default interface Resources {
       "wellbeing": "Wellbeing alerts"
     },
     "warmth_pass": "Warmth Pass",
+    "whats_new": {
+      "close": "Close this message",
+      "link": "See what changed",
+      "message": "Version {{version}} of the platform is live.",
+      "region_label": "What's new"
+    },
     "zone_commerce": "Commerce",
     "zone_communications": "Communications",
     "zone_community": "Community",
@@ -57575,6 +57581,46 @@ export default interface Resources {
       "loading": "Opening the platform team panel",
       "navigation": "Platform team menu",
       "skip_to_main": "Skip to main content"
+    },
+    "legal_documents": {
+      "all_accepted": "Accepted by every member asked ({{count}})",
+      "all_have_privacy": "Every community has a published privacy notice.",
+      "community_count": "Communities: {{count}}",
+      "counts_only": "Counts only. No member is named on this page.",
+      "date_unknown": "date not recorded",
+      "empty": "There are no communities yet.",
+      "intro": "The terms, privacy notice and other legal documents of every community: which are published, and how many members have not accepted the current version.",
+      "load_error_title": "We couldn't load legal documents just now",
+      "loading": "Loading legal documents",
+      "members_not_accepted": "Not accepted yet: {{count}} of {{asked}} members asked",
+      "members_not_available": "Who has accepted: not available",
+      "nav": "Legal documents",
+      "no_acceptance_needed": "Members are not asked to accept this one.",
+      "no_privacy_count": "Communities without a published privacy notice: {{count}}",
+      "no_privacy_flag": "No privacy notice",
+      "no_privacy_names": "Without one: {{names}}",
+      "not_active": "Not active",
+      "not_available": "Not available",
+      "privacy_unknown": "We can't tell just now which communities have a privacy notice.",
+      "status": {
+        "missing": "None",
+        "not_published": "Not published",
+        "published": "Published"
+      },
+      "terms_seeded": "Terms are added automatically when a community is created.",
+      "title": "Legal documents",
+      "type": {
+        "acceptable_use": "Acceptable use policy",
+        "accessibility": "Accessibility statement",
+        "community_guidelines": "Community guidelines",
+        "cookies": "Cookie notice",
+        "privacy": "Privacy notice",
+        "terms": "Terms"
+      },
+      "unavailable_note": "Some figures could not be read just now. They say \"Not available\". They are not zero.",
+      "version": "Version {{version}}, published {{date}}",
+      "where_changed": "Each community writes and publishes its own documents in its own admin panel. Nothing can be changed from this page.",
+      "who_is_asked": "Members asked means active members who are not administrators. Administrators are never asked to accept."
     },
     "nav": {
       "back_to_admin": "Back to the admin panel",

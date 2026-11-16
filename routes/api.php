@@ -4533,6 +4533,8 @@ Route::middleware(['auth:sanctum', 'platform-team'])->group(function () {
     Route::get('/v2/platform-team/unfinished-features', [\App\Http\Controllers\Api\PlatformTeam\UnfinishedFeaturesController::class, 'index']);
     // Data requests: per community, open / overdue (more than 30 days) / nearly due data requests and those completed in 90 days. Read-only; counts only.
     Route::get('/v2/platform-team/data-requests', [\App\Http\Controllers\Api\PlatformTeam\DataRequestsController::class, 'index']);
+    // Legal documents: per community, whether terms / privacy notice / other legal documents are published, and how many members have not accepted. Read-only; counts only.
+    Route::get('/v2/platform-team/legal-documents', [\App\Http\Controllers\Api\PlatformTeam\LegalDocumentsController::class, 'index']);
     // Platform-wide notices: written here once, shown to every community's admins (see /v2/admin/platform-notices).
     Route::get('/v2/platform-team/notices', [\App\Http\Controllers\Api\PlatformTeam\PlatformNoticesController::class, 'index']);
     Route::post('/v2/platform-team/notices', [\App\Http\Controllers\Api\PlatformTeam\PlatformNoticesController::class, 'store']);
