@@ -853,6 +853,7 @@
       "info": "Información:",
       "planned_work": "Trabajos programados:",
       "important": "Importante:"
-    }
+    },
+    "load_failed": "No se han podido cargar los avisos del equipo de la plataforma."
   }
 }

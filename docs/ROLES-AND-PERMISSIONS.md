@@ -382,21 +382,30 @@ the community admin's own request
 request answers for the one community only, whoever asks. The fourth is Senior
 accounts (`GET /v2/platform-team/senior-accounts`; `SeniorAccountsService`):
 every account that can administer more than one community, with its level
-(platform team, global super admin, tenant super admin, or the `is_god` flag
-without super admin, which is not platform team membership), home community,
+(platform team, global super admin, tenant super admin, or "platform-wide but
+not on the team": the `is_god` flag or the old role string `god` without super
+admin. 🔴 That last kind is not platform team membership and cannot open the
+panel, but `SuperPanelAccess` and `CrossTenantEntry` both treat either mark as
+platform-wide, so the page says so), home community,
 last sign-in date, two-step on or off and whether it has a passkey. 🔴 It is
 read-only and must stay so: no request grants or removes platform team
 membership, which is set in the database on purpose. The fifth is Security
 (`GET /v2/platform-team/security`; `SecurityOverviewService`), also read-only:
-senior access given and removed (`super_admin_audit_log`, and `org_audit_log`
-rows `grant_tenant_super_admin` / `revoke_tenant_super_admin`), admins signing
+senior access given and removed (`super_admin_audit_log`: the four grant and
+revoke actions, plus `user_created` / `user_updated` / `user_moved` rows whose
+before and after values show a super admin flag changing; `org_audit_log`:
+`grant_` / `revoke_tenant_super_admin`, `grant_` / `revoke_global_super_admin`
+and `admin_role_changed` to or from a platform role), admins signing
 in as another member (`org_audit_log` rows `admin_user_impersonated`), counts
 of failed sign-ins (`login_attempts`) and how many senior accounts have
 two-step off. 🔴 It sends names and counts only: email addresses, IP
 addresses, user agents and stored descriptions are never selected into the
 response, and a section that cannot be read answers `available: false`
-instead of an empty list. 🔴 Changes to `users.is_god` are not recorded
-anywhere, so no page can show them. The sixth is Communities at a glance
+instead of an empty list. 🔴 Names are the account's name today, joined from
+`users`, never the copy `super_admin_audit_log` keeps as text: erasure does
+not scrub that copy. 🔴 Changes to `users.is_god` are not recorded
+anywhere, so no page can show them; nor is tenant super admin removed in bulk
+when a community stops being a hub (`hub_toggled` names the community only). The sixth is Communities at a glance
 (`GET /v2/platform-team/communities`; `CommunitiesAtAGlanceService`), also
 read-only: every community against every optional feature and core module, on
 or off, computed as `TenantContext::hasFeature()` / `hasModule()` compute it,

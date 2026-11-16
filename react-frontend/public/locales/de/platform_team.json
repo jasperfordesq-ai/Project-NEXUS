@@ -165,21 +165,21 @@
       "platform_team": "Plattform-Team",
       "global_super_admin": "Globale Super-Admins",
       "tenant_super_admin": "Super-Admins einer Gemeinschaft",
-      "platform_flag_only": "Nur Plattform-Team-Kennzeichen"
+      "platform_flag_only": "Plattformweiter Zugriff, aber nicht im Plattform-Team"
     },
     "level_note": {
       "platform_team": "Können alles, in jeder Gemeinschaft, auch diesen Bereich öffnen.",
       "global_super_admin": "Können jede Gemeinschaft verwalten, aber diesen Bereich nicht öffnen.",
       "tenant_super_admin": "Können ihre eigene Gemeinschaft und jede Gemeinschaft darunter verwalten.",
-      "platform_flag_only": "Diese Konten tragen das Plattform-Team-Kennzeichen, sind aber keine Super-Admins und gehören deshalb nicht zum Plattform-Team."
+      "platform_flag_only": "Diese Konten tragen das Plattform-Team-Kennzeichen oder die alte Rolle „god“, ohne Super-Admins zu sein. Sie können diesen Bereich nicht öffnen, aber andere Teile der Plattform behandeln sie weiterhin als plattformweit. Jedes davon sollte in Ordnung gebracht werden."
     },
     "two_step_on": "Zwei Schritte: an",
     "two_step_off": "Zwei Schritte: aus",
     "passkey": "Hat einen Passkey",
-    "incomplete": "Plattform-Team-Kennzeichen, kein Super-Admin",
+    "incomplete": "Anderswo plattformweit, nicht im Plattform-Team",
     "community": "Gemeinschaft:",
     "no_community": "Keine",
-    "unnamed_community": "Gemeinschaft {{id}}",
+    "unnamed_community": "Gemeinschaft #{{id}}",
     "last_sign_in": "Zuletzt angemeldet:",
     "never": "Noch nie",
     "unnamed": "Kein Name hinterlegt",
@@ -211,7 +211,7 @@
     },
     "failed": {
       "title": "Fehlgeschlagene Anmeldungen in den letzten 24 Stunden",
-      "note": "Die fehlgeschlagenen Versuche eines Kontos werden gelöscht, sobald es sich wieder erfolgreich anmeldet. Sie werden hier deshalb nicht mitgezählt.",
+      "note": "Die fehlgeschlagenen Versuche eines Kontos werden gelöscht, sobald es sich wieder erfolgreich anmeldet, ebenso die einer Adresse. Sie werden hier deshalb nicht mitgezählt. Anmeldungen über die barrierefreie Website kommen alle von einer einzigen Adresse.",
       "last_hour": "In der letzten Stunde",
       "last_24h": "In den letzten 24 Stunden",
       "addresses": "Verschiedene Internetadressen",
@@ -224,7 +224,7 @@
     },
     "access": {
       "title": "Leitender Zugriff: vergeben und entzogen",
-      "note": "Die Mitgliedschaft im Plattform-Team wird in der Datenbank gesetzt. Änderungen daran werden nicht aufgezeichnet und können hier deshalb nicht angezeigt werden.",
+      "note": "Hier nicht angezeigt: Änderungen an der Mitgliedschaft im Plattform-Team, die in der Datenbank gesetzt und nicht aufgezeichnet wird, und der Super-Admin-Zugriff einer Gemeinschaft, der allen auf einmal entzogen wird, wenn eine Gemeinschaft kein Hub mehr ist.",
       "empty": "In den letzten {{days}} Tagen wurde kein leitender Zugriff vergeben oder entzogen.",
       "change": {
         "tenant_super_admin_granted": "Super-Admin einer Gemeinschaft vergeben",

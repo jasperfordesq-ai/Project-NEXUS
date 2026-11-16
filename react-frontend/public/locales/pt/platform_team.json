@@ -165,21 +165,21 @@
       "platform_team": "Equipe da plataforma",
       "global_super_admin": "Superadministradores globais",
       "tenant_super_admin": "Superadministradores de comunidade",
-      "platform_flag_only": "Apenas a marca da equipe da plataforma"
+      "platform_flag_only": "Acesso a toda a plataforma, mas fora da equipe da plataforma"
     },
     "level_note": {
       "platform_team": "Podem fazer tudo, em todas as comunidades, inclusive abrir este painel.",
       "global_super_admin": "Podem administrar todas as comunidades, mas não podem abrir este painel.",
       "tenant_super_admin": "Podem administrar a própria comunidade e todas as comunidades abaixo dela.",
-      "platform_flag_only": "Estas contas têm a marca da equipe da plataforma, mas não são superadministradores; por isso não fazem parte da equipe."
+      "platform_flag_only": "Estas contas têm a marca da equipe da plataforma, ou o antigo papel \"god\", sem serem superadministradores. Elas não podem abrir este painel, mas outras partes da plataforma ainda as tratam como contas de toda a plataforma. Cada uma deve ser corrigida."
     },
     "two_step_on": "Duas etapas: ativada",
     "two_step_off": "Duas etapas: desativada",
     "passkey": "Tem uma chave de acesso",
-    "incomplete": "Marca da equipe, sem ser superadministrador",
+    "incomplete": "Acesso a toda a plataforma em outros lugares, fora da equipe",
     "community": "Comunidade:",
     "no_community": "Nenhuma",
-    "unnamed_community": "Comunidade {{id}}",
+    "unnamed_community": "Comunidade n.º {{id}}",
     "last_sign_in": "Última entrada:",
     "never": "Nunca",
     "unnamed": "Nenhum nome registrado",
@@ -211,7 +211,7 @@
     },
     "failed": {
       "title": "Entradas que falharam nas últimas 24 horas",
-      "note": "As tentativas que falharam em uma conta são apagadas quando ela volta a entrar com sucesso; por isso não são contadas aqui.",
+      "note": "As tentativas que falharam em uma conta são apagadas quando ela volta a entrar com sucesso, assim como as de um endereço; por isso não são contadas aqui. As entradas pelo site acessível chegam todas de um único endereço.",
       "last_hour": "Na última hora",
       "last_24h": "Nas últimas 24 horas",
       "addresses": "Endereços de internet diferentes",
@@ -224,7 +224,7 @@
     },
     "access": {
       "title": "Acesso de alto nível concedido e retirado",
-      "note": "A participação na equipe da plataforma é definida no banco de dados. As mudanças nela não são registradas e, por isso, não podem ser mostradas aqui.",
+      "note": "Não aparece aqui: mudanças na participação na equipe da plataforma, que é definida no banco de dados e não é registrada; nem o acesso de superadministrador de comunidade retirado de todos de uma vez quando uma comunidade deixa de ser um polo.",
       "empty": "Nenhum acesso de alto nível foi concedido ou retirado nos últimos {{days}} dias.",
       "change": {
         "tenant_super_admin_granted": "Superadministrador de comunidade concedido",

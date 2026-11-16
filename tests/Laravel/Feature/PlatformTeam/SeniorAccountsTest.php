@@ -176,6 +176,36 @@ class SeniorAccountsTest extends TestCase
         $this->assertFalse($data['truncated']);
     }
 
+    /**
+     * Review finding, 16 Nov 2026: the role string `god` is not platform team
+     * membership, but `SuperPanelAccess` and `CrossTenantEntry` both treat it
+     * as platform-wide. An account that can reach every community must be on
+     * this page, and must not be described as harmless.
+     */
+    public function test_an_account_with_the_old_god_role_is_listed_as_platform_wide_but_not_on_the_team(): void
+    {
+        $account = $this->account(['role' => 'admin']);
+        // Written straight to the column: no screen and no request writes this role.
+        DB::table('users')->where('id', $account->id)->update(['role' => 'god']);
+        $this->actAsPlatformTeam();
+
+        $rows = $this->rows();
+
+        $this->assertArrayHasKey($account->id, $rows);
+        $this->assertSame('platform_flag_only', $rows[$account->id]['level']);
+        $this->assertTrue($rows[$account->id]['incomplete_platform_team']);
+    }
+
+    /** `users.status` may be NULL; "is not a stand-in" must not drop such an account. */
+    public function test_a_senior_account_with_no_status_recorded_is_still_listed(): void
+    {
+        $account = $this->account(['is_super_admin' => true, 'role' => 'super_admin']);
+        DB::table('users')->where('id', $account->id)->update(['status' => null]);
+        $this->actAsPlatformTeam();
+
+        $this->assertArrayHasKey($account->id, $this->rows());
+    }
+
     /** No request here changes anything: the way to the top tier is not a web button. */
     public function test_nothing_can_be_changed_through_it(): void
     {

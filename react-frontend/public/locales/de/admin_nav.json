@@ -849,6 +849,7 @@
       "info": "Information:",
       "planned_work": "Geplante Arbeiten:",
       "important": "Wichtig:"
-    }
+    },
+    "load_failed": "Die Hinweise des Plattform-Teams konnten nicht geladen werden."
   }
 }

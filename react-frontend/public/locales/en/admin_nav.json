@@ -849,6 +849,7 @@
       "info": "Information:",
       "planned_work": "Planned work:",
       "important": "Important:"
-    }
+    },
+    "load_failed": "Notices from the platform team could not be loaded."
   }
 }

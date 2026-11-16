@@ -861,6 +861,7 @@
       "info": "Eolas:",
       "planned_work": "Obair phleanáilte:",
       "important": "Tábhachtach:"
-    }
+    },
+    "load_failed": "Níorbh fhéidir fógraí fhoireann an ardáin a lódáil."
   }
 }

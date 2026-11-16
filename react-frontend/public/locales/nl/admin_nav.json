@@ -849,6 +849,7 @@
       "info": "Informatie:",
       "planned_work": "Gepland werk:",
       "important": "Belangrijk:"
-    }
+    },
+    "load_failed": "De mededelingen van het platformteam konden niet worden geladen."
   }
 }

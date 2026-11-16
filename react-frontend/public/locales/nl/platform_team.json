@@ -165,21 +165,21 @@
       "platform_team": "Platformteam",
       "global_super_admin": "Globale superbeheerders",
       "tenant_super_admin": "Superbeheerders van een gemeenschap",
-      "platform_flag_only": "Alleen het kenmerk van het platformteam"
+      "platform_flag_only": "Toegang tot het hele platform, maar niet in het platformteam"
     },
     "level_note": {
       "platform_team": "Kunnen alles doen, in elke gemeenschap, ook dit paneel openen.",
       "global_super_admin": "Kunnen elke gemeenschap beheren, maar kunnen dit paneel niet openen.",
       "tenant_super_admin": "Kunnen hun eigen gemeenschap en elke gemeenschap daaronder beheren.",
-      "platform_flag_only": "Deze accounts hebben het kenmerk van het platformteam maar zijn geen superbeheerder, dus ze horen niet bij het platformteam."
+      "platform_flag_only": "Deze accounts hebben het kenmerk van het platformteam, of de oude rol \"god\", zonder superbeheerder te zijn. Ze kunnen dit paneel niet openen, maar andere delen van het platform behandelen ze nog steeds als accounts voor het hele platform. Elk ervan moet worden rechtgezet."
     },
     "two_step_on": "Twee stappen: aan",
     "two_step_off": "Twee stappen: uit",
     "passkey": "Heeft een passkey",
-    "incomplete": "Kenmerk van het team, geen superbeheerder",
+    "incomplete": "Elders toegang tot het hele platform, niet in het team",
     "community": "Gemeenschap:",
     "no_community": "Geen",
-    "unnamed_community": "Gemeenschap {{id}}",
+    "unnamed_community": "Gemeenschap #{{id}}",
     "last_sign_in": "Laatst ingelogd:",
     "never": "Nooit",
     "unnamed": "Geen naam vastgelegd",
@@ -211,7 +211,7 @@
     },
     "failed": {
       "title": "Mislukte inlogpogingen in de afgelopen 24 uur",
-      "note": "De mislukte pogingen van een account worden gewist zodra het weer met succes inlogt. Die worden hier dus niet meegeteld.",
+      "note": "De mislukte pogingen van een account worden gewist zodra het weer met succes inlogt, en die van een adres ook. Die worden hier dus niet meegeteld. Inlogpogingen via de toegankelijke site komen allemaal van één adres.",
       "last_hour": "In het afgelopen uur",
       "last_24h": "In de afgelopen 24 uur",
       "addresses": "Verschillende internetadressen",
@@ -224,7 +224,7 @@
     },
     "access": {
       "title": "Toegang op hoog niveau gegeven en ingetrokken",
-      "note": "Lidmaatschap van het platformteam wordt in de database ingesteld. Wijzigingen daarin worden niet vastgelegd en kunnen hier dus niet worden getoond.",
+      "note": "Hier niet getoond: wijzigingen in het lidmaatschap van het platformteam, dat in de database wordt ingesteld en niet wordt vastgelegd; en superbeheerderstoegang van een gemeenschap die in één keer bij iedereen wordt ingetrokken wanneer een gemeenschap geen hub meer is.",
       "empty": "In de afgelopen {{days}} dagen is geen toegang op hoog niveau gegeven of ingetrokken.",
       "change": {
         "tenant_super_admin_granted": "Superbeheerder van een gemeenschap gegeven",

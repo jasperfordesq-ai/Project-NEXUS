@@ -34,11 +34,18 @@ use Illuminate\Support\Facades\DB;
  *   platform_team       is_god AND (is_super_admin OR role 'super_admin')
  *   global_super_admin  is_super_admin OR role 'super_admin', without is_god
  *   tenant_super_admin  is_tenant_super_admin
- *   platform_flag_only  is_god with none of the above: NOT on the platform
- *                       team, listed because a half-set flag is worth seeing
+ *   platform_flag_only  `is_god`, or the old role string `god`, with none of
+ *                       the above. NOT on the platform team, and it cannot
+ *                       open this panel. 🔴 But it is NOT harmless:
+ *                       App\Core\SuperPanelAccess and
+ *                       App\Support\Authorization\CrossTenantEntry both treat
+ *                       either mark as platform-wide, so such an account can
+ *                       reach every community. The page says exactly that
+ *                       (review, 16 Nov 2026: the first wording called it
+ *                       "not on the platform team" and stopped there).
  *
- * A row is `incomplete_platform_team` when it has `is_god` without super
- * admin, whatever its level.
+ * A row is `incomplete_platform_team` when it carries either god mark
+ * without being a super admin, whatever its level.
  */
 final class SeniorAccountsService
 {
@@ -67,12 +74,15 @@ final class SeniorAccountsService
             ->where(function ($q): void {
                 $q->where('u.is_god', 1)
                     ->orWhere('u.is_super_admin', 1)
-                    ->orWhere('u.role', 'super_admin')
+                    ->orWhereIn('u.role', ['super_admin', 'god'])
                     ->orWhere('u.is_tenant_super_admin', 1);
             })
             // A manager's stand-in in a community below never signs in and is
-            // not an account anyone holds.
-            ->where('u.status', '!=', 'delegate')
+            // not an account anyone holds. `status` may be NULL, and NULL is
+            // not a stand-in: a bare "!= 'delegate'" would drop it.
+            ->where(static function ($q): void {
+                $q->whereNull('u.status')->orWhere('u.status', '!=', 'delegate');
+            })
             ->whereNull('u.deleted_at')
             ->orderBy('u.id')
             ->limit(self::LIMIT + 1)
@@ -99,10 +109,14 @@ final class SeniorAccountsService
         $accounts = [];
 
         foreach ($rows as $row) {
-            $isGod = !empty($row->is_god);
-            $isGlobal = !empty($row->is_super_admin) || ($row->role ?? 'member') === 'super_admin';
+            $role = (string) ($row->role ?? 'member');
+            $isGlobal = !empty($row->is_super_admin) || $role === 'super_admin';
+            // Platform team membership needs the is_god COLUMN (PlatformTeam::includes()).
+            $onTeam = !empty($row->is_god) && $isGlobal;
+            // Either god mark is read as platform-wide elsewhere in the code.
+            $hasGodMark = !empty($row->is_god) || $role === 'god';
             $level = match (true) {
-                $isGod && $isGlobal => 'platform_team',
+                $onTeam => 'platform_team',
                 $isGlobal => 'global_super_admin',
                 !empty($row->is_tenant_super_admin) => 'tenant_super_admin',
                 default => 'platform_flag_only',
@@ -119,7 +133,7 @@ final class SeniorAccountsService
                 'name' => $name !== '' ? $name : null,
                 'email' => (string) $row->email,
                 'level' => $level,
-                'incomplete_platform_team' => $isGod && !$isGlobal,
+                'incomplete_platform_team' => $hasGodMark && !$isGlobal,
                 'community' => $row->tenant_id === null ? null : [
                     'id' => (int) $row->tenant_id,
                     'name' => $row->tenant_name !== null ? (string) $row->tenant_name : null,

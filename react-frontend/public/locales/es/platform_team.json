@@ -165,21 +165,21 @@
       "platform_team": "Equipo de la plataforma",
       "global_super_admin": "Superadministradores globales",
       "tenant_super_admin": "Superadministradores de comunidad",
-      "platform_flag_only": "Solo la marca de equipo de la plataforma"
+      "platform_flag_only": "Acceso a toda la plataforma, pero fuera del equipo de la plataforma"
     },
     "level_note": {
       "platform_team": "Pueden hacerlo todo, en todas las comunidades, incluido este panel.",
       "global_super_admin": "Pueden administrar todas las comunidades, pero no pueden abrir este panel.",
       "tenant_super_admin": "Pueden administrar su propia comunidad y todas las que dependen de ella.",
-      "platform_flag_only": "Estas cuentas llevan la marca de equipo de la plataforma pero no son superadministradores, así que no forman parte del equipo."
+      "platform_flag_only": "Estas cuentas llevan la marca de equipo de la plataforma, o el antiguo rol «god», sin ser superadministradores. No pueden abrir este panel, pero otras partes de la plataforma las siguen tratando como cuentas de toda la plataforma. Conviene corregir cada una."
     },
     "two_step_on": "Dos pasos: activado",
     "two_step_off": "Dos pasos: desactivado",
     "passkey": "Tiene una llave de acceso",
-    "incomplete": "Marca de equipo, sin ser superadministrador",
+    "incomplete": "Acceso a toda la plataforma en otras partes, fuera del equipo",
     "community": "Comunidad:",
     "no_community": "Ninguna",
-    "unnamed_community": "Comunidad {{id}}",
+    "unnamed_community": "Comunidad n.º {{id}}",
     "last_sign_in": "Último inicio de sesión:",
     "never": "Nunca",
     "unnamed": "Sin nombre registrado",
@@ -211,7 +211,7 @@
     },
     "failed": {
       "title": "Inicios de sesión fallidos en las últimas 24 horas",
-      "note": "Los intentos fallidos de una cuenta se borran cuando vuelve a iniciar sesión correctamente, así que esos no se cuentan aquí.",
+      "note": "Los intentos fallidos de una cuenta se borran cuando vuelve a iniciar sesión correctamente, y también los de una dirección, así que esos no se cuentan aquí. Los inicios de sesión a través del sitio accesible llegan todos desde una sola dirección.",
       "last_hour": "En la última hora",
       "last_24h": "En las últimas 24 horas",
       "addresses": "Direcciones de internet distintas",
@@ -224,7 +224,7 @@
     },
     "access": {
       "title": "Acceso de alto nivel concedido y retirado",
-      "note": "La pertenencia al equipo de la plataforma se establece en la base de datos. Sus cambios no se registran, así que no pueden mostrarse aquí.",
+      "note": "No se muestra aquí: los cambios en la pertenencia al equipo de la plataforma, que se establece en la base de datos y no se registra; ni el acceso de superadministrador de comunidad que se retira a todos a la vez cuando una comunidad deja de ser un centro.",
       "empty": "No se ha concedido ni retirado ningún acceso de alto nivel en los últimos {{days}} días.",
       "change": {
         "tenant_super_admin_granted": "Superadministrador de comunidad concedido",

@@ -56,12 +56,32 @@ describe('PlatformNoticeBand', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('takes up no room, and records why, when the notices cannot be loaded', async () => {
-    apiGet.mockRejectedValue(new Error('network'));
-    const { container } = render(<PlatformNoticeBand />);
+  // Review finding, 16 Nov 2026: the API client answers `{ success: false }`
+  // for a 403 or a 500; it does not throw. The first version logged only a
+  // thrown error, so a refused or broken request looked exactly like "no
+  // notice" and left no trace.
+  it.each([
+    ['the request is refused or the server errors', () => apiGet.mockResolvedValue({ success: false, error: 'Server error', code: 'SERVER_ERROR' })],
+    ['the network fails', () => apiGet.mockRejectedValue(new Error('network'))],
+    ['the reply is not the shape expected', () => apiGet.mockResolvedValue({ success: true, data: [] })],
+  ])('says the notices could not be loaded, and records why, when %s', async (_why, arrange) => {
+    arrange();
+    render(<PlatformNoticeBand />);
+
+    expect(await screen.findByText('platform_notice.load_failed')).toBeInTheDocument();
+    expect(logError).toHaveBeenCalled();
+    // It is one quiet line, not an alarm on every admin page.
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('records it when closing a notice was not saved', async () => {
+    apiGet.mockResolvedValue(reply([notice()]));
+    apiPost.mockResolvedValue({ success: false, error: 'Server error' });
+    render(<PlatformNoticeBand />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'platform_notice.close' }));
 
     await waitFor(() => expect(logError).toHaveBeenCalled());
-    expect(container).toBeEmptyDOMElement();
   });
 
   it('shows the words as plain text, never as markup', async () => {

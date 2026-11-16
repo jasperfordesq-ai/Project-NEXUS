@@ -853,6 +853,7 @@
       "info": "Information :",
       "planned_work": "Travaux prévus :",
       "important": "Important :"
-    }
+    },
+    "load_failed": "Les avis de l'équipe de la plateforme n'ont pas pu être chargés."
   }
 }

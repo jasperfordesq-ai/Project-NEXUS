@@ -19,10 +19,15 @@ use Illuminate\Support\Facades\Log;
  *
  * Four things the platform already recorded and no page put side by side:
  *
- *   access_changes   who was given or lost senior access
- *                    (`super_admin_audit_log` from the super admin panel, and
- *                    `org_audit_log` rows `grant_/revoke_tenant_super_admin`
- *                    from a community's admin panel)
+ *   access_changes   who was given or lost senior access. Every recorded way:
+ *                    - super admin panel (`super_admin_audit_log`): the four
+ *                      grant/revoke actions, AND `user_created` /
+ *                      `user_updated` / `user_moved` rows whose before/after
+ *                      values show a super admin flag changing;
+ *                    - a community's admin panel (`org_audit_log`):
+ *                      `grant_/revoke_tenant_super_admin`,
+ *                      `grant_/revoke_global_super_admin`, and
+ *                      `admin_role_changed` to or from a platform role.
  *   impersonations   who signed in as another member
  *                    (`org_audit_log` rows `admin_user_impersonated`)
  *   failed_sign_ins  failed sign-in attempts, counted (`login_attempts`)
@@ -38,8 +43,16 @@ use Illuminate\Support\Facades\Log;
  * ever counted. `login_attempts` holds a digest of each email, never the
  * email; the digest is not sent either.
  *
- * 🔴 Not recorded anywhere, so not shown: changes to `users.is_god` (the
- * platform team flag). It is set in the database. The page says so.
+ * 🔴 Not recorded as a change to a person, so not shown: changes to
+ * `users.is_god` (the platform team flag; it is set in the database), and
+ * tenant super admin taken from everyone in a community at once when it stops
+ * being a hub (`hub_toggled` names the community, not the people). The page
+ * says so.
+ *
+ * 🔴 Names are the account's name NOW, joined from `users`, never the copy
+ * `super_admin_audit_log` keeps as text (`actor_name`, `target_name`).
+ * Erasure anonymises the account but does not scrub those copies, so showing
+ * them would bring an erased person's name back (review, 16 Nov 2026).
  *
  * 🔴 `login_attempts` deletes an account's failed rows when that account next
  * signs in successfully (App\Core\RateLimiter). So the counts are "failed
@@ -65,10 +78,27 @@ final class SecurityOverviewService
         'global_super_admin_revoked' => 'global_super_admin_removed',
     ];
 
+    /** Super admin panel actions that may carry a super admin flag in their before/after values. */
+    private const SUPER_PANEL_FLAG_ACTIONS = ['user_created', 'user_updated', 'user_moved'];
+
+    /** flag in old_values/new_values => the kind of access it is */
+    private const FLAGS = [
+        'is_super_admin' => 'global_super_admin',
+        'is_tenant_super_admin' => 'tenant_super_admin',
+    ];
+
     private const COMMUNITY_PANEL_CHANGES = [
         'grant_tenant_super_admin' => 'tenant_super_admin_granted',
         'revoke_tenant_super_admin' => 'tenant_super_admin_removed',
+        'grant_global_super_admin' => 'global_super_admin_granted',
+        'revoke_global_super_admin' => 'global_super_admin_removed',
     ];
+
+    /** Role strings that mean platform-wide access (App\Core\SuperPanelAccess, CrossTenantEntry). */
+    private const PLATFORM_ROLES = ['super_admin', 'god'];
+
+    /** How many candidate rows of the busy action types are looked through. */
+    private const SCAN_LIMIT = 500;
 
     /** @return array<string, mixed> */
     public function overview(): array
@@ -110,42 +140,69 @@ final class SecurityOverviewService
     private function accessChanges(): array
     {
         $since = now()->subDays(self::WINDOW_DAYS);
+        $all = collect();
 
-        $fromSuperPanel = DB::table('super_admin_audit_log as a')
+        // ---- The super admin panel's log.
+        $superPanel = static fn () => DB::table('super_admin_audit_log as a')
+            ->leftJoin('users as actor', 'actor.id', '=', 'a.actor_user_id')
+            ->leftJoin('users as target', static function ($join): void {
+                $join->on('target.id', '=', 'a.target_id')->where('a.target_type', '=', 'user');
+            })
             ->leftJoin('tenants as t', 't.id', '=', 'a.target_tenant_id')
-            ->whereIn('a.action_type', array_keys(self::SUPER_PANEL_CHANGES))
             ->where('a.created_at', '>=', $since)
             ->orderByDesc('a.created_at')
-            ->orderByDesc('a.id')
-            ->limit(self::LIST_LIMIT + 1)
-            ->get(['a.created_at', 'a.action_type', 'a.actor_name', 'a.target_name', 't.name as community'])
-            ->map(static fn (object $row): array => [
-                'at' => (string) $row->created_at,
-                'change' => self::SUPER_PANEL_CHANGES[$row->action_type],
-                'by' => self::nameOrNull($row->actor_name),
-                'account' => self::nameOrNull($row->target_name),
-                'community' => self::nameOrNull($row->community),
-            ]);
+            ->orderByDesc('a.id');
+        $superColumns = [
+            'a.created_at', 'a.action_type', 'a.old_values', 'a.new_values',
+            self::fullName('actor', 'actor_name'), self::fullName('target', 'target_name'), 't.name as community',
+        ];
 
-        $fromCommunityPanel = DB::table('org_audit_log as a')
+        foreach ($superPanel()->whereIn('a.action_type', array_keys(self::SUPER_PANEL_CHANGES))->limit(self::LIST_LIMIT + 1)->get($superColumns) as $row) {
+            $all->push(self::change($row, self::SUPER_PANEL_CHANGES[$row->action_type]));
+        }
+        // Creating, changing or moving an account can give or take the flag too.
+        foreach ($superPanel()->whereIn('a.action_type', self::SUPER_PANEL_FLAG_ACTIONS)->limit(self::SCAN_LIMIT)->get($superColumns) as $row) {
+            foreach (self::flagChanges($row->old_values, $row->new_values) as $change) {
+                $all->push(self::change($row, $change));
+            }
+        }
+
+        // ---- A community's own admin panel.
+        $communityPanel = static fn () => DB::table('org_audit_log as a')
             ->leftJoin('users as actor', 'actor.id', '=', 'a.user_id')
             ->leftJoin('users as target', 'target.id', '=', 'a.target_user_id')
             ->leftJoin('tenants as t', 't.id', '=', 'a.tenant_id')
-            ->whereIn('a.action', array_keys(self::COMMUNITY_PANEL_CHANGES))
             ->where('a.created_at', '>=', $since)
             ->orderByDesc('a.created_at')
-            ->orderByDesc('a.id')
-            ->limit(self::LIST_LIMIT + 1)
-            ->get(['a.created_at', 'a.action', self::fullName('actor', 'actor_name'), self::fullName('target', 'target_name'), 't.name as community'])
-            ->map(static fn (object $row): array => [
-                'at' => (string) $row->created_at,
-                'change' => self::COMMUNITY_PANEL_CHANGES[$row->action],
-                'by' => self::nameOrNull($row->actor_name),
-                'account' => self::nameOrNull($row->target_name),
-                'community' => self::nameOrNull($row->community),
-            ]);
+            ->orderByDesc('a.id');
+        $communityColumns = [
+            'a.created_at', 'a.action', 'a.details',
+            self::fullName('actor', 'actor_name'), self::fullName('target', 'target_name'), 't.name as community',
+        ];
 
-        $all = $fromSuperPanel->concat($fromCommunityPanel)->sortByDesc('at')->values();
+        foreach ($communityPanel()->whereIn('a.action', array_keys(self::COMMUNITY_PANEL_CHANGES))->limit(self::LIST_LIMIT + 1)->get($communityColumns) as $row) {
+            $all->push(self::change($row, self::COMMUNITY_PANEL_CHANGES[$row->action]));
+        }
+        // A role change to or from a platform role is the same grant by another door.
+        $roleChanges = $communityPanel()
+            ->where('a.action', 'admin_role_changed')
+            ->where(static function ($q): void {
+                foreach (self::PLATFORM_ROLES as $role) {
+                    $q->orWhere('a.details', 'like', '%"' . $role . '"%');
+                }
+            })
+            ->limit(self::SCAN_LIMIT)
+            ->get($communityColumns);
+        foreach ($roleChanges as $row) {
+            $details = self::decode($row->details);
+            $was = in_array($details['old_role'] ?? null, self::PLATFORM_ROLES, true);
+            $is = in_array($details['new_role'] ?? null, self::PLATFORM_ROLES, true);
+            if ($was !== $is) {
+                $all->push(self::change($row, $is ? 'global_super_admin_granted' : 'global_super_admin_removed'));
+            }
+        }
+
+        $all = $all->sortByDesc('at')->values();
 
         return [
             'items' => $all->take(self::LIST_LIMIT)
@@ -153,6 +210,55 @@ final class SecurityOverviewService
                 ->all(),
             'truncated' => $all->count() > self::LIST_LIMIT,
         ];
+    }
+
+    /** @return array{at: string, change: string, by: ?string, account: ?string, community: ?string} */
+    private static function change(object $row, string $change): array
+    {
+        return [
+            'at' => (string) $row->created_at,
+            'change' => $change,
+            'by' => self::nameOrNull($row->actor_name),
+            'account' => self::nameOrNull($row->target_name),
+            'community' => self::nameOrNull($row->community),
+        ];
+    }
+
+    /**
+     * The super admin flags that changed between an audit row's before and
+     * after values. A flag missing from the after values says nothing, so it
+     * is not read as "removed".
+     *
+     * @return list<string>
+     */
+    private static function flagChanges(mixed $oldJson, mixed $newJson): array
+    {
+        $old = self::decode($oldJson);
+        $new = self::decode($newJson);
+        $changes = [];
+        foreach (self::FLAGS as $flag => $kind) {
+            if (!array_key_exists($flag, $new)) {
+                continue;
+            }
+            $was = !empty($old[$flag]);
+            $is = !empty($new[$flag]);
+            if ($was !== $is) {
+                $changes[] = $kind . ($is ? '_granted' : '_removed');
+            }
+        }
+
+        return $changes;
+    }
+
+    /** @return array<string, mixed> */
+    private static function decode(mixed $json): array
+    {
+        if (!is_string($json) || $json === '') {
+            return [];
+        }
+        $decoded = json_decode($json, true);
+
+        return is_array($decoded) ? $decoded : [];
     }
 
     /** @return array{items: array<int, array<string, mixed>>, truncated: bool} */
@@ -186,6 +292,16 @@ final class SecurityOverviewService
      * Counts only. Every failed sign-in writes one `email` row (identifier
      * `tenant:<id>:email:<digest>`) and one `ip` row, so attempts are counted
      * on the `email` rows and addresses on the `ip` rows, never both.
+     *
+     * Two things make these numbers a floor, not a total, and the page says
+     * both: a successful sign-in deletes that account's failed `email` rows
+     * AND that address's failed `ip` rows (App\Core\RateLimiter); and every
+     * sign-in through the accessible site arrives from that site's one server
+     * address, so "most from one address" is often that server.
+     *
+     * The windows use the database's NOW(), as RateLimiter does when it writes
+     * `attempted_at`. The other sections compare against PHP's now(); both
+     * are UTC on this platform (`app.timezone` and the database session).
      *
      * @return array<string, mixed>
      */

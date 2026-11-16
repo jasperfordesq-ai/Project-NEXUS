@@ -165,21 +165,21 @@
       "platform_team": "Zespół platformy",
       "global_super_admin": "Globalni superadministratorzy",
       "tenant_super_admin": "Superadministratorzy społeczności",
-      "platform_flag_only": "Tylko oznaczenie zespołu platformy"
+      "platform_flag_only": "Dostęp do całej platformy, ale poza zespołem platformy"
     },
     "level_note": {
       "platform_team": "Mogą wszystko, w każdej społeczności, łącznie z tym panelem.",
       "global_super_admin": "Mogą administrować każdą społecznością, ale nie mogą otworzyć tego panelu.",
       "tenant_super_admin": "Mogą administrować własną społecznością i każdą społecznością poniżej niej.",
-      "platform_flag_only": "Te konta mają oznaczenie zespołu platformy, ale nie są superadministratorami, więc nie należą do zespołu platformy."
+      "platform_flag_only": "Te konta mają oznaczenie zespołu platformy albo starą rolę „god”, ale nie są superadministratorami. Nie mogą otworzyć tego panelu, lecz inne części platformy nadal traktują je jak konta z dostępem do całej platformy. Każde z nich należy uporządkować."
     },
     "two_step_on": "Dwa etapy: włączone",
     "two_step_off": "Dwa etapy: wyłączone",
     "passkey": "Ma klucz dostępu",
-    "incomplete": "Oznaczenie zespołu, bez uprawnień superadministratora",
+    "incomplete": "Gdzie indziej dostęp do całej platformy, poza zespołem",
     "community": "Społeczność:",
     "no_community": "Brak",
-    "unnamed_community": "Społeczność {{id}}",
+    "unnamed_community": "Społeczność #{{id}}",
     "last_sign_in": "Ostatnie logowanie:",
     "never": "Nigdy",
     "unnamed": "Brak zapisanej nazwy",
@@ -211,7 +211,7 @@
     },
     "failed": {
       "title": "Nieudane logowania w ciągu ostatnich 24 godzin",
-      "note": "Nieudane próby danego konta są usuwane, gdy konto ponownie zaloguje się poprawnie, więc nie są tu liczone.",
+      "note": "Nieudane próby danego konta są usuwane, gdy konto ponownie zaloguje się poprawnie, podobnie jak próby z danego adresu, więc nie są tu liczone. Logowania przez dostępną wersję serwisu przychodzą wszystkie z jednego adresu.",
       "last_hour": "W ciągu ostatniej godziny",
       "last_24h": "W ciągu ostatnich 24 godzin",
       "addresses": "Różne adresy internetowe",
@@ -224,7 +224,7 @@
     },
     "access": {
       "title": "Nadany i odebrany dostęp wysokiego szczebla",
-      "note": "Przynależność do zespołu platformy ustawia się w bazie danych. Jej zmiany nie są zapisywane, więc nie można ich tu pokazać.",
+      "note": "Nie jest tu pokazywane: zmiany przynależności do zespołu platformy, którą ustawia się w bazie danych i której się nie zapisuje; ani dostęp superadministratora społeczności odbierany wszystkim naraz, gdy społeczność przestaje być hubem.",
       "empty": "W ciągu ostatnich {{days}} dni nie nadano ani nie odebrano dostępu wysokiego szczebla.",
       "change": {
         "tenant_super_admin_granted": "Nadano superadministratora społeczności",

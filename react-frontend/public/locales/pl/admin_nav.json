@@ -857,6 +857,7 @@
       "info": "Informacja:",
       "planned_work": "Planowane prace:",
       "important": "Ważne:"
-    }
+    },
+    "load_failed": "Nie udało się wczytać komunikatów od zespołu platformy."
   }
 }

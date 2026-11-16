@@ -165,21 +165,21 @@
       "platform_team": "Foireann an ardáin",
       "global_super_admin": "Sár-riarthóirí domhanda",
       "tenant_super_admin": "Sár-riarthóirí pobail",
-      "platform_flag_only": "Marc fhoireann an ardáin amháin"
+      "platform_flag_only": "Rochtain ar an ardán ar fad, ach gan a bheith ar fhoireann an ardáin"
     },
     "level_note": {
       "platform_team": "Is féidir leo gach rud a dhéanamh, i ngach pobal, an painéal seo san áireamh.",
       "global_super_admin": "Is féidir leo gach pobal a riar, ach ní féidir leo an painéal seo a oscailt.",
       "tenant_super_admin": "Is féidir leo a bpobal féin agus gach pobal faoina bhun a riar.",
-      "platform_flag_only": "Tá marc fhoireann an ardáin ar na cuntais seo ach ní sár-riarthóirí iad, mar sin níl siad ar fhoireann an ardáin."
+      "platform_flag_only": "Tá marc fhoireann an ardáin, nó an seanról \"god\", ar na cuntais seo gan iad a bheith ina sár-riarthóirí. Ní féidir leo an painéal seo a oscailt, ach caitheann codanna eile den ardán leo fós mar chuntais don ardán ar fad. Ba cheart gach ceann acu a chur ina cheart."
     },
     "two_step_on": "Dhá chéim: ar siúl",
     "two_step_off": "Dhá chéim: múchta",
     "passkey": "Tá eochair rochtana aige",
-    "incomplete": "Marc na foirne, gan a bheith ina shár-riarthóir",
+    "incomplete": "Rochtain ar an ardán ar fad in áiteanna eile, gan a bheith ar an bhfoireann",
     "community": "Pobal:",
     "no_community": "Ceann ar bith",
-    "unnamed_community": "Pobal {{id}}",
+    "unnamed_community": "Pobal #{{id}}",
     "last_sign_in": "Sínithe isteach go deireanach:",
     "never": "Riamh",
     "unnamed": "Níl ainm taifeadta",
@@ -211,7 +211,7 @@
     },
     "failed": {
       "title": "Sínithe isteach ar theip orthu le 24 uair an chloig anuas",
-      "note": "Glantar iarrachtaí teipthe cuntais nuair a shíníonn sé isteach go rathúil arís, mar sin ní áirítear anseo iad.",
+      "note": "Glantar iarrachtaí teipthe cuntais nuair a shíníonn sé isteach go rathúil arís, agus iarrachtaí seolta chomh maith, mar sin ní áirítear anseo iad. Tagann gach síniú isteach tríd an suíomh inrochtana ó sheoladh amháin.",
       "last_hour": "San uair an chloig dheireanach",
       "last_24h": "Le 24 uair an chloig anuas",
       "addresses": "Seoltaí idirlín éagsúla",
@@ -224,7 +224,7 @@
     },
     "access": {
       "title": "Rochtain shinsearach a tugadh agus a baineadh",
-      "note": "Socraítear ballraíocht fhoireann an ardáin sa bhunachar sonraí. Ní thaifeadtar athruithe uirthi, mar sin ní féidir iad a thaispeáint anseo.",
+      "note": "Ní thaispeántar anseo: athruithe ar bhallraíocht fhoireann an ardáin, a shocraítear sa bhunachar sonraí agus nach dtaifeadtar; ná rochtain sár-riarthóra pobail a bhaintear de gach duine d’aon iarraidh nuair a stopann pobal de bheith ina mhol.",
       "empty": "Níor tugadh ná níor baineadh aon rochtain shinsearach le {{days}} lá anuas.",
       "change": {
         "tenant_super_admin_granted": "Sár-riarthóir pobail tugtha",

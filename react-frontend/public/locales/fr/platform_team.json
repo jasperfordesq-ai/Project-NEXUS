@@ -165,21 +165,21 @@
       "platform_team": "Équipe de la plateforme",
       "global_super_admin": "Super-administrateurs globaux",
       "tenant_super_admin": "Super-administrateurs de communauté",
-      "platform_flag_only": "Marque d'équipe de la plateforme seule"
+      "platform_flag_only": "Accès à toute la plateforme, mais hors de l'équipe de la plateforme"
     },
     "level_note": {
       "platform_team": "Peuvent tout faire, dans toutes les communautés, y compris ouvrir cet espace.",
       "global_super_admin": "Peuvent administrer toutes les communautés, mais ne peuvent pas ouvrir cet espace.",
       "tenant_super_admin": "Peuvent administrer leur propre communauté et toutes celles qui en dépendent.",
-      "platform_flag_only": "Ces comptes portent la marque d'équipe de la plateforme sans être super-administrateurs : ils ne font donc pas partie de l'équipe."
+      "platform_flag_only": "Ces comptes portent la marque d'équipe de la plateforme, ou l'ancien rôle « god », sans être super-administrateurs. Ils ne peuvent pas ouvrir cet espace, mais d'autres parties de la plateforme les traitent toujours comme des comptes à l'échelle de la plateforme. Chacun devrait être corrigé."
     },
     "two_step_on": "Deux étapes : activée",
     "two_step_off": "Deux étapes : désactivée",
     "passkey": "A une clé d'accès",
-    "incomplete": "Marque d'équipe, sans être super-administrateur",
+    "incomplete": "Accès à toute la plateforme ailleurs, hors de l'équipe",
     "community": "Communauté :",
     "no_community": "Aucune",
-    "unnamed_community": "Communauté {{id}}",
+    "unnamed_community": "Communauté n° {{id}}",
     "last_sign_in": "Dernière connexion :",
     "never": "Jamais",
     "unnamed": "Aucun nom enregistré",
@@ -211,7 +211,7 @@
     },
     "failed": {
       "title": "Connexions échouées au cours des dernières 24 heures",
-      "note": "Les tentatives échouées d'un compte sont effacées dès qu'il se connecte à nouveau avec succès ; elles ne sont donc pas comptées ici.",
+      "note": "Les tentatives échouées d'un compte sont effacées dès qu'il se connecte à nouveau avec succès, tout comme celles d'une adresse ; elles ne sont donc pas comptées ici. Les connexions via le site accessible arrivent toutes d'une seule adresse.",
       "last_hour": "Durant la dernière heure",
       "last_24h": "Durant les dernières 24 heures",
       "addresses": "Adresses internet différentes",
@@ -224,7 +224,7 @@
     },
     "access": {
       "title": "Accès à haut niveau accordés et retirés",
-      "note": "L'appartenance à l'équipe de la plateforme se règle dans la base de données. Ses changements ne sont pas enregistrés et ne peuvent donc pas être affichés ici.",
+      "note": "Non affiché ici : les changements d'appartenance à l'équipe de la plateforme, qui se règle dans la base de données et n'est pas enregistrée ; et l'accès de super-administrateur de communauté retiré à tout le monde d'un coup lorsqu'une communauté cesse d'être un pôle.",
       "empty": "Aucun accès à haut niveau n'a été accordé ou retiré au cours des {{days}} derniers jours.",
       "change": {
         "tenant_super_admin_granted": "Super-administrateur de communauté accordé",

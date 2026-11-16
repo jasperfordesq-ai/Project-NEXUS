@@ -12,9 +12,14 @@
  * 🔴 The words are plain text. They are put on the page as text, never as
  * markup, and a link is only drawn when it is a full https:// address.
  *
- * A band that cannot be loaded takes up no room and the reason is logged:
- * a notice is extra information, and an error card on every admin page
- * because one request failed would be worse than no notice.
+ * A band that cannot be loaded says so in one quiet line and the reason is
+ * logged. Not an error card: a notice is extra information, and an alarm on
+ * every admin page because one request failed would be worse than no notice.
+ * But not silence either: "could not be read" must never look like "nothing
+ * to read".
+ *
+ * 🔴 The API client answers `{ success: false }` for a 403 or a 500; it does
+ * not throw. Both failure shapes are handled, for loading and for closing.
  *
  * `PlatformNoticeView` is the band itself, also used as the live preview
  * where the platform team writes a notice, so what they see is the real thing.
@@ -89,17 +94,23 @@ export function PlatformNoticeView({ notice, onClose }: { notice: PlatformNotice
 export function PlatformNoticeBand() {
   const { t } = useTranslation('admin_nav');
   const [notices, setNotices] = useState<PlatformNotice[]>([]);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     void (async () => {
       try {
         const res = await api.get<{ notices: PlatformNotice[] }>('/v2/admin/platform-notices');
-        if (!cancelled && res.success && res.data && Array.isArray(res.data.notices)) {
+        if (cancelled) return;
+        if (res.success && res.data && Array.isArray(res.data.notices)) {
           setNotices(res.data.notices);
+        } else {
+          logError('Platform notices could not be loaded', { code: res.code, error: res.error });
+          setLoadFailed(true);
         }
       } catch (err) {
         logError('Platform notices could not be loaded', err);
+        if (!cancelled) setLoadFailed(true);
       }
     })();
     return () => {
@@ -110,10 +121,21 @@ export function PlatformNoticeBand() {
   const close = useCallback((id: number) => {
     // Gone from this page at once; the server remembers it for next time.
     setNotices((current) => current.filter((n) => n.id !== id));
-    void api.post(`/v2/admin/platform-notices/${id}/dismiss`).catch((err: unknown) => {
-      logError('Closing a platform notice was not saved', err);
-    });
+    void api
+      .post(`/v2/admin/platform-notices/${id}/dismiss`)
+      .then((res) => {
+        if (!res.success) {
+          logError('Closing a platform notice was not saved', { id, code: res.code, error: res.error });
+        }
+      })
+      .catch((err: unknown) => {
+        logError('Closing a platform notice was not saved', err);
+      });
   }, []);
+
+  if (loadFailed) {
+    return <p className="mb-4 text-xs text-muted">{t('platform_notice.load_failed')}</p>;
+  }
 
   if (notices.length === 0) return null;
 

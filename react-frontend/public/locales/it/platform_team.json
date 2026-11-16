@@ -165,21 +165,21 @@
       "platform_team": "Team della piattaforma",
       "global_super_admin": "Super amministratori globali",
       "tenant_super_admin": "Super amministratori di comunità",
-      "platform_flag_only": "Solo il contrassegno del team della piattaforma"
+      "platform_flag_only": "Accesso a tutta la piattaforma, ma fuori dal team della piattaforma"
     },
     "level_note": {
       "platform_team": "Possono fare tutto, in ogni comunità, compreso aprire questo pannello.",
       "global_super_admin": "Possono amministrare ogni comunità, ma non possono aprire questo pannello.",
       "tenant_super_admin": "Possono amministrare la propria comunità e tutte quelle sotto di essa.",
-      "platform_flag_only": "Questi account hanno il contrassegno del team della piattaforma ma non sono super amministratori, quindi non fanno parte del team."
+      "platform_flag_only": "Questi account hanno il contrassegno del team della piattaforma, o il vecchio ruolo «god», senza essere super amministratori. Non possono aprire questo pannello, ma altre parti della piattaforma li trattano ancora come account di tutta la piattaforma. Ognuno andrebbe sistemato."
     },
     "two_step_on": "Due passaggi: attivo",
     "two_step_off": "Due passaggi: disattivato",
     "passkey": "Ha una passkey",
-    "incomplete": "Contrassegno del team, senza essere super amministratore",
+    "incomplete": "Accesso a tutta la piattaforma altrove, fuori dal team",
     "community": "Comunità:",
     "no_community": "Nessuna",
-    "unnamed_community": "Comunità {{id}}",
+    "unnamed_community": "Comunità n. {{id}}",
     "last_sign_in": "Ultimo accesso:",
     "never": "Mai",
     "unnamed": "Nessun nome registrato",
@@ -211,7 +211,7 @@
     },
     "failed": {
       "title": "Accessi non riusciti nelle ultime 24 ore",
-      "note": "I tentativi non riusciti di un account vengono cancellati quando accede di nuovo correttamente, quindi qui non sono contati.",
+      "note": "I tentativi non riusciti di un account vengono cancellati quando accede di nuovo correttamente, e così quelli di un indirizzo, quindi qui non sono contati. Gli accessi tramite il sito accessibile arrivano tutti da un solo indirizzo.",
       "last_hour": "Nell’ultima ora",
       "last_24h": "Nelle ultime 24 ore",
       "addresses": "Indirizzi internet diversi",
@@ -224,7 +224,7 @@
     },
     "access": {
       "title": "Accessi di alto livello concessi e tolti",
-      "note": "L’appartenenza al team della piattaforma si imposta nel database. Le sue modifiche non vengono registrate, quindi non possono essere mostrate qui.",
+      "note": "Non mostrato qui: le modifiche all’appartenenza al team della piattaforma, che si imposta nel database e non viene registrata; e l’accesso da super amministratore di comunità tolto a tutti in una volta quando una comunità smette di essere un hub.",
       "empty": "Negli ultimi {{days}} giorni non è stato concesso né tolto alcun accesso di alto livello.",
       "change": {
         "tenant_super_admin_granted": "Super amministratore di comunità concesso",

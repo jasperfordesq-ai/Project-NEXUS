@@ -22915,6 +22915,7 @@ export default interface Resources {
         "info": "Information:",
         "planned_work": "Planned work:"
       },
+      "load_failed": "Notices from the platform team could not be loaded.",
       "new_tab": "(opens in a new tab)",
       "region_label": "Notices from the platform team"
     },
@@ -57457,7 +57458,7 @@ export default interface Resources {
           "tenant_super_admin_removed": "Tenant super admin removed"
         },
         "empty": "No senior access was given or removed in the last {{days}} days.",
-        "note": "Platform team membership is set in the database. Changes to it are not recorded, so they cannot be shown here.",
+        "note": "Not shown here: changes to platform team membership, which is set in the database and not recorded; and tenant super admin access taken from everyone at once when a community stops being a hub.",
         "title": "Senior access given and removed"
       },
       "by": "By:",
@@ -57471,7 +57472,7 @@ export default interface Resources {
         "last_24h": "In the last 24 hours",
         "last_hour": "In the last hour",
         "most_from_one": "Most from one address",
-        "note": "An account's failed attempts are cleared when it next signs in successfully, so those are not counted here.",
+        "note": "An account's failed attempts are cleared when it next signs in successfully, and so are an address's, so those are not counted here. Sign-ins through the accessible site all arrive from one address.",
         "title": "Failed sign-ins in the last 24 hours"
       },
       "impersonation": {
@@ -57499,18 +57500,18 @@ export default interface Resources {
     "senior_accounts": {
       "all_have_two_step": "Two-step sign-in is on for all {{total}} of these accounts.",
       "community": "Community:",
-      "incomplete": "Platform team mark, not a super admin",
+      "incomplete": "Platform-wide elsewhere, not on the platform team",
       "intro": "Every account that can manage more than one community, when it last signed in, and whether two-step sign-in is on.",
       "last_sign_in": "Last signed in:",
       "level": {
         "global_super_admin": "Global super admins",
-        "platform_flag_only": "Platform team mark only",
+        "platform_flag_only": "Platform-wide access, but not on the platform team",
         "platform_team": "Platform team",
         "tenant_super_admin": "Tenant super admins"
       },
       "level_note": {
         "global_super_admin": "Can administer every community, but cannot open this panel.",
-        "platform_flag_only": "These accounts carry the platform team mark but are not super admins, so they are not on the platform team.",
+        "platform_flag_only": "These accounts carry the platform team mark, or the old \"god\" role, without being super admins. They cannot open this panel, but other parts of the platform still treat them as platform-wide. Each one should be put right.",
         "platform_team": "Can do everything, in every community, including this panel.",
         "tenant_super_admin": "Can administer their own community and every community below it."
       },
@@ -57534,7 +57535,7 @@ export default interface Resources {
       "two_step_off": "Two-step off",
       "two_step_on": "Two-step on",
       "unnamed": "No name recorded",
-      "unnamed_community": "Community {{id}}",
+      "unnamed_community": "Community #{{id}}",
       "without_two_step": "Two-step sign-in is off for {{count}} of these {{total}} accounts."
     },
     "sidebar": {

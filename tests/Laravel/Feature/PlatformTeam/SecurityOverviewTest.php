@@ -233,6 +233,135 @@ class SecurityOverviewTest extends TestCase
         $this->assertGreaterThanOrEqual($section['without_two_step'], $section['senior_total']);
     }
 
+    /**
+     * Review finding, 16 Nov 2026: a community's admin panel can also give and
+     * remove GLOBAL super admin, and a role change can do the same. The first
+     * version read only the tenant super admin actions from that log, so the
+     * most powerful grant was the one the page left out.
+     */
+    public function test_global_super_admin_given_or_removed_from_a_community_admin_panel_is_listed(): void
+    {
+        $actor = $this->account(['is_super_admin' => true, 'role' => 'super_admin', 'first_name' => 'Granting', 'last_name' => 'Actor']);
+        $given = $this->account(['role' => 'admin', 'first_name' => 'Given', 'last_name' => 'Global']);
+        $removed = $this->account(['role' => 'admin', 'first_name' => 'Removed', 'last_name' => 'Global']);
+        $promoted = $this->account(['role' => 'admin', 'first_name' => 'Promoted', 'last_name' => 'ByRole']);
+        $demoted = $this->account(['role' => 'admin', 'first_name' => 'Demoted', 'last_name' => 'ByRole']);
+        $ordinary = $this->account(['role' => 'member', 'first_name' => 'Ordinary', 'last_name' => 'RoleChange']);
+
+        $row = fn (int $target, string $action, ?array $details = null): array => [
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $actor->id,
+            'target_user_id' => $target,
+            'action' => $action,
+            'details' => $details !== null ? json_encode($details) : null,
+            'created_at' => now()->subHour(),
+        ];
+        DB::table('org_audit_log')->insert([
+            $row($given->id, 'grant_global_super_admin'),
+            $row($removed->id, 'revoke_global_super_admin'),
+            $row($promoted->id, 'admin_role_changed', ['old_role' => 'admin', 'new_role' => 'super_admin']),
+            $row($demoted->id, 'admin_role_changed', ['old_role' => 'super_admin', 'new_role' => 'member']),
+            // A role change that has nothing to do with senior access is not listed.
+            $row($ordinary->id, 'admin_role_changed', ['old_role' => 'member', 'new_role' => 'admin']),
+        ]);
+        $this->actAsPlatformTeam();
+
+        $changes = [];
+        foreach ($this->data()['access_changes']['items'] as $item) {
+            $changes[$item['account']] = $item['change'];
+        }
+
+        $this->assertSame('global_super_admin_granted', $changes['Given Global'] ?? null);
+        $this->assertSame('global_super_admin_removed', $changes['Removed Global'] ?? null);
+        $this->assertSame('global_super_admin_granted', $changes['Promoted ByRole'] ?? null);
+        $this->assertSame('global_super_admin_removed', $changes['Demoted ByRole'] ?? null);
+        $this->assertArrayNotHasKey('Ordinary RoleChange', $changes);
+    }
+
+    /**
+     * The super admin panel can also give tenant super admin while creating an
+     * account, and gives or takes it while moving one. Those are recorded as
+     * `user_created` / `user_moved` with the flag in the before/after values.
+     */
+    public function test_senior_access_given_or_taken_while_creating_or_moving_an_account_is_listed(): void
+    {
+        $actor = $this->account(['is_super_admin' => true, 'role' => 'super_admin']);
+        $created = $this->account(['role' => 'admin', 'first_name' => 'Created', 'last_name' => 'Senior']);
+        $movedIn = $this->account(['role' => 'admin', 'first_name' => 'Moved', 'last_name' => 'Promoted']);
+        $movedOut = $this->account(['role' => 'admin', 'first_name' => 'Moved', 'last_name' => 'Stripped']);
+        $plain = $this->account(['role' => 'member', 'first_name' => 'Created', 'last_name' => 'Plain']);
+
+        $row = fn (int $target, string $action, ?array $old, ?array $new): array => [
+            'actor_user_id' => $actor->id,
+            'actor_tenant_id' => $this->testTenantId,
+            'actor_name' => 'x',
+            'actor_email' => 'x@example.test',
+            'action_type' => $action,
+            'target_type' => 'user',
+            'target_id' => $target,
+            'target_name' => 'x',
+            'target_tenant_id' => $this->testTenantId,
+            'old_values' => $old !== null ? json_encode($old) : null,
+            'new_values' => $new !== null ? json_encode($new) : null,
+            'created_at' => now()->subHour(),
+        ];
+        DB::table('super_admin_audit_log')->insert([
+            $row($created->id, 'user_created', null, ['role' => 'admin', 'is_tenant_super_admin' => true]),
+            $row($movedIn->id, 'user_moved', ['is_tenant_super_admin' => 0], ['is_tenant_super_admin' => 1]),
+            $row($movedOut->id, 'user_moved', ['is_tenant_super_admin' => 1], ['is_tenant_super_admin' => 0]),
+            $row($plain->id, 'user_created', null, ['role' => 'member', 'is_tenant_super_admin' => false]),
+        ]);
+        $this->actAsPlatformTeam();
+
+        $changes = [];
+        foreach ($this->data()['access_changes']['items'] as $item) {
+            $changes[$item['account']] = $item['change'];
+        }
+
+        $this->assertSame('tenant_super_admin_granted', $changes['Created Senior'] ?? null);
+        $this->assertSame('tenant_super_admin_granted', $changes['Moved Promoted'] ?? null);
+        $this->assertSame('tenant_super_admin_removed', $changes['Moved Stripped'] ?? null);
+        $this->assertArrayNotHasKey('Created Plain', $changes);
+    }
+
+    /**
+     * Review finding, 16 Nov 2026: `super_admin_audit_log` keeps a copy of each
+     * person's name as text, and erasure does not scrub it. The page must show
+     * the name the account has NOW (anonymised, for an erased account), never
+     * the stored copy.
+     */
+    public function test_names_come_from_the_account_as_it_is_now_never_from_the_copy_kept_in_the_log(): void
+    {
+        $actor = $this->account(['is_super_admin' => true, 'role' => 'super_admin', 'first_name' => 'Current', 'last_name' => 'Actor']);
+        $target = $this->account(['role' => 'admin', 'first_name' => 'Current', 'last_name' => 'Target']);
+        $base = [
+            'actor_user_id' => $actor->id,
+            'actor_tenant_id' => $this->testTenantId,
+            'actor_name' => 'Stored Actor Copy',
+            'actor_email' => 'x@example.test',
+            'action_type' => 'super_admin_granted',
+            'target_type' => 'user',
+            'target_tenant_id' => $this->testTenantId,
+            'created_at' => now()->subHour(),
+        ];
+        DB::table('super_admin_audit_log')->insert([
+            $base + ['target_id' => $target->id, 'target_name' => 'Stored Target Copy'],
+            // An account that no longer exists has no name to show.
+            $base + ['target_id' => 999999999, 'target_name' => 'Stored Gone Copy'],
+        ]);
+        $this->actAsPlatformTeam();
+
+        $response = $this->apiGet(self::URI)->assertStatus(200);
+        $items = $response->json('data.access_changes.items');
+
+        $this->assertContains('Current Target', array_column($items, 'account'));
+        $this->assertContains('Current Actor', array_column($items, 'by'));
+        $this->assertContains(null, array_column($items, 'account'));
+        foreach (['Stored Actor Copy', 'Stored Target Copy', 'Stored Gone Copy'] as $copy) {
+            $this->assertStringNotContainsString($copy, $response->getContent(), $copy);
+        }
+    }
+
     /** A record that cannot be read is "could not be checked", never an empty list. */
     public function test_a_section_that_cannot_be_read_says_so_and_keeps_its_reason_on_the_server(): void
     {
