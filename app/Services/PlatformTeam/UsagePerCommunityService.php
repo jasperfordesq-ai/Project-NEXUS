@@ -18,10 +18,15 @@ use Illuminate\Support\Facades\Log;
  * For one calendar month (app timezone), per community:
  *
  *   emails            `email_log` rows created in the month, by status.
- *                     sent    = `sent` + `delivered`: handed to the mail
- *                               service (`delivered` is the same row after the
- *                               service confirmed it, PostmarkWebhookController).
+ *                     sent    = `sent` + `delivered` + `bounced`: handed to
+ *                               the mail service (`delivered` is the same row
+ *                               after the service confirmed it,
+ *                               PostmarkWebhookController; `bounced` was handed
+ *                               over too, so it is in both figures).
  *                     failed  = `failed`: the platform could not hand it over.
+ *                     🔴 `email_log` rows are deleted after 90 days
+ *                     (CronJobRunner): a month starting before then is not
+ *                     available, `source_notes.emails` = 'kept_90_days'.
  *                     bounced = `bounced`: handed over, then reported bounced
  *                               (the webhook rewrites the row's status).
  *                     `suppressed` (never attempted: address on the
@@ -52,8 +57,15 @@ final class UsagePerCommunityService
 {
     public const NOT_RECORDED = ['maps', 'translation', 'other_storage'];
 
-    /** email_log statuses counted as "sent": handed to the mail service. */
-    private const SENT_STATUSES = ['sent', 'delivered'];
+    /**
+     * email_log statuses counted as "sent": handed to the mail service. A
+     * bounced email was handed over too, so it is in "sent" as well as in
+     * its own "bounced" figure (the page says so: never add the two).
+     */
+    private const SENT_STATUSES = ['sent', 'delivered', 'bounced'];
+
+    /** CronJobRunner deletes `email_log` rows older than this. */
+    public const EMAIL_LOG_KEPT_DAYS = 90;
 
     /**
      * The month asked for, or null when it is malformed, before 2000, or in
@@ -85,7 +97,14 @@ final class UsagePerCommunityService
         $from = $monthStart->copy()->startOfMonth();
         $until = $from->copy()->addMonthNoOverflow(); // exclusive
 
-        $emails = $this->guarded('emails', fn (): array => $this->emails($from, $until));
+        // `email_log` rows are deleted after 90 days (CronJobRunner), so a
+        // month that starts before then is not available, with the reason:
+        // otherwise it shows confident zeros. Nothing else read here is
+        // pruned by age (ai_usage, group_files and group_media are not).
+        $emailNote = $from->lessThan(now()->subDays(self::EMAIL_LOG_KEPT_DAYS)) ? 'kept_90_days' : null;
+        $emails = $emailNote !== null
+            ? ['available' => false]
+            : $this->guarded('emails', fn (): array => $this->emails($from, $until));
         $ai = $this->guarded('ai_chat', fn (): array => $this->aiChat($from, $until));
         $files = $this->guarded('group_files', fn (): array => $this->groupFiles());
 
@@ -114,6 +133,12 @@ final class UsagePerCommunityService
                 'emails' => $emails['available'],
                 'ai_chat' => $ai['available'],
                 'group_files' => $files['available'],
+            ],
+            // Why a source is not available, when the reason is known and
+            // safe to say: 'kept_90_days' = the records for that month are
+            // no longer kept. Null otherwise.
+            'source_notes' => [
+                'emails' => $emailNote,
             ],
             'communities' => $communities,
             'platform_mail' => $emails['available'] ? $emails['platform'] : null,
@@ -174,21 +199,33 @@ final class UsagePerCommunityService
         $rows = DB::table('email_log')
             ->where('created_at', '>=', $from)
             ->where('created_at', '<', $until)
-            ->whereIn('status', array_merge(self::SENT_STATUSES, ['failed', 'bounced']))
+            ->whereIn('status', array_merge(self::SENT_STATUSES, ['failed']))
             ->groupBy('tenant_id', 'status')
             ->get(['tenant_id', 'status', DB::raw('COUNT(*) as n')]);
 
         $byCommunity = [];
         $platform = self::noEmails();
         foreach ($rows as $row) {
-            $key = in_array($row->status, self::SENT_STATUSES, true) ? 'sent' : (string) $row->status;
+            // A bounced row counts twice on purpose: in "sent" (it was
+            // handed over) and in "bounced".
+            $keys = [];
+            if (in_array($row->status, self::SENT_STATUSES, true)) {
+                $keys[] = 'sent';
+            }
+            if ($row->status === 'failed' || $row->status === 'bounced') {
+                $keys[] = (string) $row->status;
+            }
             if ($row->tenant_id === null) {
-                $platform[$key] += (int) $row->n;
+                foreach ($keys as $key) {
+                    $platform[$key] += (int) $row->n;
+                }
                 continue;
             }
             $id = (int) $row->tenant_id;
             $byCommunity[$id] ??= self::noEmails();
-            $byCommunity[$id][$key] += (int) $row->n;
+            foreach ($keys as $key) {
+                $byCommunity[$id][$key] += (int) $row->n;
+            }
         }
 
         return ['by_community' => $byCommunity, 'platform' => $platform];

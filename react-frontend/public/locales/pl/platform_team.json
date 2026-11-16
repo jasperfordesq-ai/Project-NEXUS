@@ -300,17 +300,20 @@
     },
     "failed": {
       "title": "Nieudane logowania",
-      "note": "Każde nieudane logowanie jest liczone w chwili, gdy się zdarzy, osobno dla każdej społeczności i każdej godziny. Licznik przechowuje tylko liczbę: nic o osobie ani o tym, skąd próbowała się zalogować. Liczby są liczone w pełnych godzinach, więc każda może obejmować do godziny więcej.",
-      "counted_since": "Liczone od {{date}}",
+      "note": "Dwa osobne liczniki, według społeczności i według godziny. „Nieudane sprawdzenia hasła”: ktoś próbował się zalogować, a hasło było błędne. „Odrzucone przez blokadę”: po zbyt wielu próbach próba została odrzucona, zanim sprawdzono jakiekolwiek hasło. Tych dwóch liczb nigdy się nie sumuje. Każdy licznik przechowuje tylko liczbę, nic o osobie ani o tym, skąd się logowała. Liczby są liczone w pełnych godzinach, więc każda może obejmować do godziny więcej.",
+      "counted_since": "Najwcześniejsze zapisane nieudane logowanie: {{date}}",
       "nothing_counted": "Jeszcze niczego nie policzono. Nieudane logowania są liczone od dnia, w którym włączono to liczenie.",
       "last_hour": "W ciągu ostatniej godziny",
       "last_24h": "W ciągu ostatnich 24 godzin",
-      "empty": "Brak nieudanych logowań w ciągu ostatnich 24 godzin.",
-      "col_failed": "Nieudane w ciągu ostatnich 24 godzin:",
+      "empty": "Brak nieudanych lub odrzuconych logowań w ciągu ostatnich 24 godzin.",
+      "col_failed": "Nieudane sprawdzenia hasła w ciągu ostatnich 24 godzin:",
       "recent_title": "W ciągu ostatnich 15 minut",
       "recent_note": "Z jakich adresów internetowych właśnie próbuje się logować. Platforma przechowuje te dane tylko przez około 20 minut i zapomina nieudane próby z adresu, gdy z niego nastąpi udane logowanie. Logowania przez dostępną wersję serwisu przychodzą wszystkie z jednego adresu.",
       "addresses_15m": "Różne adresy internetowe w ciągu ostatnich 15 minut",
-      "most_from_one_15m": "Najwięcej z jednego adresu w ciągu ostatnich 15 minut"
+      "most_from_one_15m": "Najwięcej z jednego adresu w ciągu ostatnich 15 minut",
+      "checks_title": "Nieudane sprawdzenia hasła",
+      "refused_title": "Odrzucone przez blokadę",
+      "col_refused": "Odrzucone przez blokadę w ciągu ostatnich 24 godzin:"
     },
     "access": {
       "title": "Nadany i odebrany dostęp wysokiego szczebla",
@@ -430,7 +433,8 @@
     "unavailable": {
       "emails": "Nie udało się teraz odczytać danych o e-mailach. Nie wynoszą one zero.",
       "ai_chat": "Nie udało się teraz odczytać danych o czacie z AI. Nie wynoszą one zero.",
-      "group_files": "Nie udało się teraz odczytać rozmiaru plików grup. Nie wynosi on zero."
+      "group_files": "Nie udało się teraz odczytać rozmiaru plików grup. Nie wynosi on zero.",
+      "emails_kept_90_days": "Zapisy e-maili są przechowywane przez 90 dni, więc tego miesiąca nie można pokazać."
     },
     "totals_heading": "Wszystkie społeczności razem",
     "communities_heading": "Każda społeczność ({{count}})",
@@ -442,7 +446,7 @@
     "failed": "Nieudane",
     "bounced": "Odrzucone",
     "ai_requests": "Zapytania",
-    "ai_tokens": "Tokeny",
+    "ai_tokens": "Przetworzone fragmenty tekstu",
     "ai_cost": "Koszt",
     "files": "Miejsce zajęte teraz",
     "removed_community": "Społeczność #{{id}} (już nie istnieje)",
@@ -450,7 +454,7 @@
     "platform_mail": "Poczta platformy",
     "platform_mail_note": "E-maile wysłane przez platformę, które nie należą do żadnej konkretnej społeczności.",
     "notes_heading": "Co oznaczają liczby",
-    "sent_note": "„Wysłane” oznacza, że e-mail został przekazany usłudze pocztowej. Nie dowodzi to, że dotarł.",
+    "sent_note": "„Wysłane” oznacza, że e-mail został przekazany usłudze pocztowej. Nie dowodzi to, że dotarł. Odrzucone e-maile są wliczone w Wysłane, więc nie dodawaj tych dwóch liczb.",
     "ai_note": "Koszt AI to kwota zapisana dla każdego zapytania, w dolarach amerykańskich.",
     "files_note": "Pliki grup to miejsce, które zajmują dzisiaj, a nie to, co dodano w tym miesiącu.",
     "not_recorded_heading": "Obecnie nierejestrowane",
@@ -492,7 +496,8 @@
       "hours_this_month": "Godziny wymienione w tym miesiącu",
       "new_listings_this_month": "Nowe ogłoszenia w tym miesiącu",
       "last_sign_in": "Ostatnie logowanie"
-    }
+    },
+    "quiet_unknown_summary": "Nie udało się teraz ustalić, które społeczności są ciche."
   },
   "community_setup": {
     "title": "Konfiguracja społeczności",
@@ -586,7 +591,8 @@
       "restriction": "Ograniczenie wykorzystania",
       "portability": "Przeniesienie",
       "objection": "Sprzeciw"
-    }
+    },
+    "completed_without_date": "Zakończone wnioski bez daty zakończenia, więc nie ma ich w liczbie z 90 dni: {{count}}"
   },
   "legal_documents": {
     "title": "Dokumenty prawne",
@@ -659,7 +665,7 @@
     "open_intro": "Te konta oznaczono w ostatnim przeglądzie jako „Do usunięcia”, a nadal mają swój dostęp.",
     "history_title": "Ostatnie przeglądy",
     "history_none": "Nie ma jeszcze przeglądów.",
-    "history_by": "Zapisał(a)",
+    "history_by": "Zapisał(a): {{name}}",
     "history_accounts_one": "{{count}} konto",
     "history_accounts_other": "Kont: {{count}}",
     "history_removals_one": "{{count}} oznaczone do usunięcia",
@@ -668,7 +674,9 @@
     "history_accounts_few": "{{count}} konta",
     "history_accounts_many": "Kont: {{count}}",
     "history_removals_few": "{{count}} oznaczone do usunięcia",
-    "history_removals_many": "Oznaczonych do usunięcia: {{count}}"
+    "history_removals_many": "Oznaczonych do usunięcia: {{count}}",
+    "refresh_failed": "Nie udało się ponownie wczytać przeglądu. Widzisz wcześniejszy stan.",
+    "note_no_names": "Nie podawaj w notatce nazwisk ani imion osób. Notatka jest przechowywana razem z zapisem."
   },
   "push_notifications": {
     "title": "Powiadomienia push",
@@ -744,7 +752,9 @@
       "needed": "Usługa błędów podaje te liczby tylko własnemu kluczowi dostępu tylko do odczytu, zapisanemu na tym serwerze. Tego nie zrobiono.",
       "decision": "Czy to zrobić, decyduje właściciel platformy.",
       "meanwhile": "Do tego czasu warto zaglądać do nocnego raportu o błędach, który już otrzymujesz."
-    }
+    },
+    "check_refused": "Ponowne sprawdzenie odrzucono: zbyt wiele sprawdzeń w ciągu minuty. Liczby poniżej pochodzą z wcześniej.",
+    "could_not_read_any": "Usługa błędów odpowiedziała, ale nie udało się odczytać jej liczb. To nie znaczy, że nie ma błędów."
   },
   "connections": {
     "title": "Klucze i połączenia",
@@ -812,7 +822,9 @@
       "translated": "Przetłumaczono"
     },
     "same_note": "Niektóre frazy mają być takie same w każdym języku, na przykład nazwy i jednostki. Dlatego „nadal jak po angielsku” to górna granica, a nie dokładna liczba.",
-    "not_measured": "Aplikacja na telefon i strona dostępna nie są tu mierzone."
+    "not_measured": "Aplikacja na telefon i strona dostępna nie są tu mierzone.",
+    "website_load_error": "Nie udało się wczytać liczb dla strony internetowej",
+    "recount_refused": "Ponowne liczenie odrzucono: zbyt wiele żądań w krótkim czasie. Liczby poniżej pochodzą z wcześniej."
   },
   "clean_up_jobs": {
     "title": "Zadania porządkowe",
@@ -898,7 +910,8 @@
         "name": "Stare weryfikacje tożsamości",
         "deletes": "Usuwa zakończone lub wygasłe weryfikacje tożsamości starsze niż 180 dni. Zapis przebiegu każdej weryfikacji zostaje zachowany."
       }
-    }
+    },
+    "finished_only": "To zadanie zapisuje, że się zakończyło, a nie że każdy krok się udał."
   },
   "search_rebuild": {
     "title": "Odbuduj wyszukiwanie",
@@ -934,7 +947,8 @@
       "done_with_errors_many": "Zakończono {{time}}: {{count}} wpisów nie udało się zaktualizować",
       "done_with_errors_other": "Zakończono {{time}}: {{count}} wpisu nie udało się zaktualizować",
       "failed": "Niepowodzenie"
-    }
+    },
+    "check_failed": "Nie udało się sprawdzić ponownie o {{time}}"
   },
   "agreements": {
     "title": "Umowy i odnowienia",
@@ -996,7 +1010,8 @@
       "community_unknown": "Taka społeczność nie istnieje.",
       "save": "Zapisz",
       "cancel": "Anuluj"
-    }
+    },
+    "community_missing": "Społeczność już nie istnieje"
   },
   "assurance": {
     "title": "Zmierzone fakty",
@@ -1006,7 +1021,7 @@
     "read_at": "Odczytano {{time}}",
     "could_not_read": "Nie udało się odczytać",
     "not_recorded": "Nie zapisano",
-    "source_label": "Skąd to pochodzi",
+    "source_label": "Skąd to pochodzi:",
     "source_owner": "Wpisane przez właściciela platformy w ustawieniach serwera",
     "findings_note": "Otwarte ustalenia dotyczące bezpieczeństwa są prowadzone w prywatnym rejestrze, nie na tym serwerze, i nie są tu pokazywane.",
     "test_scope_note": "Niezależny test obejmuje wersję, którą testowano, a nie zmiany wprowadzone później.",
@@ -1050,7 +1065,7 @@
     },
     "failed_sign_ins": {
       "title": "Zapis nieudanych logowań",
-      "since": "Nieudane logowania są liczone od {{date}}",
+      "since": "Najwcześniejsze zapisane nieudane logowanie: {{date}}",
       "none": "Niczego jeszcze nie policzono",
       "note": "To mówi, kiedy zaczyna się zapis. Nie jest to liczba czegokolwiek."
     },
@@ -1085,7 +1100,8 @@
       "warning_other": "Certyfikat wygasa za {{count}} dnia",
       "failing": "Nie działa",
       "unknown": "Jeszcze nie sprawdzono",
-      "not_checkable": "To nie jest adres internetowy, który możemy sprawdzić"
+      "not_checkable": "To nie jest adres internetowy, który możemy sprawdzić",
+      "warning_days_unknown": "Certyfikat wkrótce wygasa. Nie udało się odczytać, ile dni zostało."
     },
     "reason": {
       "does_not_resolve": "Ta nazwa nigdzie nie prowadzi.",
@@ -1100,6 +1116,8 @@
     "check_now": "Sprawdź teraz",
     "checked": "Sprawdzono.",
     "check_failed": "Nie udało się wykonać sprawdzenia. Spróbuj ponownie.",
-    "too_many": "Za dużo sprawdzeń w ciągu minuty. Poczekaj chwilę i spróbuj ponownie."
+    "too_many": "Za dużo sprawdzeń w ciągu minuty. Poczekaj chwilę i spróbuj ponownie.",
+    "check_now_for": "Sprawdź teraz: {{name}}",
+    "check_platform_now": "Sprawdź teraz adresy platformy"
   }
 }

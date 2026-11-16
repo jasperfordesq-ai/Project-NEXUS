@@ -46,7 +46,7 @@ async function settle(): Promise<void> {
 
 describe('newestRelease', () => {
   it('is the first release that is not "Unreleased"', () => {
-    expect(newestRelease(INDEX)).toEqual({ version: '3.3.0', slug: '3.3.0' });
+    expect(newestRelease(INDEX)).toEqual({ version: '3.3.0', slug: '3.3.0', date: '2026-11-20' });
   });
 
   it.each([
@@ -65,12 +65,50 @@ describe('newestRelease', () => {
 describe('WhatsNewBand', () => {
   beforeEach(() => {
     window.localStorage.clear();
+    // Only the clock is fixed (waitFor still needs real timers): "today" is 21 November 2026.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 10, 21, 12, 0, 0));
   });
 
   afterEach(() => {
     cleanup();
+    vi.useRealTimers();
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
+  });
+
+  it('shows nothing for a release that came out more than 30 days ago, even to an admin who never closed it', async () => {
+    answer({ releases: [{ version: '3.0.0', slug: '3.0.0', date: '2026-09-01', isUnreleased: false }] });
+    await settle();
+
+    expect(screen.queryByTestId('whats-new-band')).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['no date', { version: '3.3.0', slug: '3.3.0', isUnreleased: false }],
+    ['an empty date', { version: '3.3.0', slug: '3.3.0', date: '', isUnreleased: false }],
+    ['a date that cannot be read', { version: '3.3.0', slug: '3.3.0', date: 'soon', isUnreleased: false }],
+  ])('shows nothing for a release with %s', async (_name, entry) => {
+    answer({ releases: [entry] });
+    await settle();
+
+    expect(screen.queryByTestId('whats-new-band')).not.toBeInTheDocument();
+  });
+
+  it('shows a release from 30 days ago', async () => {
+    answer({ releases: [{ version: '3.1.0', slug: '3.1.0', date: '2026-10-22', isUnreleased: false }] });
+    await settle();
+
+    expect(await screen.findByText('whats_new.message|3.1.0')).toBeInTheDocument();
+  });
+
+  it('closes and remembers the release when "See what changed" is followed', async () => {
+    answer(INDEX);
+    await settle();
+    fireEvent.click(await screen.findByRole('link', { name: 'whats_new.link' }));
+
+    expect(screen.queryByTestId('whats-new-band')).not.toBeInTheDocument();
+    expect(window.localStorage.getItem(WHATS_NEW_SEEN_KEY)).toBe('3.3.0');
   });
 
   it('names the newest released version and links to the changelog', async () => {

@@ -36,8 +36,9 @@ interface AppVersionRow {
  * then left out, not shown as an error.
  */
 type PhoneAppReply = NativeAppPlatformStats & {
-  versions?: AppVersionRow[];
-  version_not_recorded?: number;
+  /** null when the server could not read them; the section is then hidden. */
+  versions?: AppVersionRow[] | null;
+  version_not_recorded?: number | null;
 };
 
 /**

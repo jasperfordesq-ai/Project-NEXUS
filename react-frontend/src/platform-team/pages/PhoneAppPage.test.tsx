@@ -111,6 +111,17 @@ describe('PhoneAppPage', () => {
     expect(screen.queryByTestId('load-error')).not.toBeInTheDocument();
   });
 
+  // The server sends null when the versions could not be read: hide them, never "none yet".
+  it('shows no versions section, and no error, when the server could not read them', async () => {
+    apiGet.mockResolvedValue({ success: true, data: { ...STATS, versions: null, version_not_recorded: null } });
+    render(<PhoneAppPage />);
+
+    expect(await screen.findByTestId('all-communities')).toBeInTheDocument();
+    expect(screen.queryByText('phone_app.versions.title')).not.toBeInTheDocument();
+    expect(screen.queryByText('phone_app.versions.none_yet')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('load-error')).not.toBeInTheDocument();
+  });
+
   it('shows the error card when the request throws, and can try again', async () => {
     apiGet.mockRejectedValueOnce(new Error('network'));
     render(<PhoneAppPage />);

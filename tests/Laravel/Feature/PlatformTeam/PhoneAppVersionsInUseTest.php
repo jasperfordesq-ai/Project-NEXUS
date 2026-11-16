@@ -129,6 +129,30 @@ class PhoneAppVersionsInUseTest extends TestCase
         $this->assertSame(1, $figures['version_not_recorded']);
     }
 
+    /**
+     * Where the version cannot be read (for example the `app_version` column
+     * is missing), the versions are "not available": null, never an empty
+     * list or a zero, logged once with the exception's class. Nothing is
+     * thrown, so the rest of the Phone app reply still arrives.
+     */
+    public function test_versions_that_cannot_be_read_are_null_and_logged_and_nothing_is_thrown(): void
+    {
+        \Illuminate\Support\Facades\Log::spy();
+        $service = new class extends NativeAppInstallStatsService {
+            protected function appVersionRows(): \Illuminate\Support\Collection
+            {
+                throw new \PDOException('planted: Unknown column a.app_version');
+            }
+        };
+
+        $figures = $service->platformAppVersions();
+
+        $this->assertSame(['versions' => null, 'version_not_recorded' => null], $figures);
+        \Illuminate\Support\Facades\Log::shouldHaveReceived('error')
+            ->once()
+            ->withArgs(static fn (string $message, array $context = []): bool => ($context['exception'] ?? null) === \PDOException::class);
+    }
+
     public function test_nothing_recorded_yet_is_an_empty_list_and_a_count(): void
     {
         $this->signIn(null);

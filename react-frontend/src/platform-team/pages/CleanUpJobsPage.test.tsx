@@ -40,11 +40,12 @@ const report = (): CleanUpJobsReport => ({
     job({
       key: 'abuse_cleanup',
       how_often: 'weekly',
+      checked_by: 'finished_only',
       status: 'failing',
       last_ok_at: '2026-11-01T02:00:00+00:00',
       last_failed_at: '2026-11-15T02:00:00+00:00',
     }),
-    job({ key: 'cleanup_sessions', how_often: 'hourly', status: 'unknown' }),
+    job({ key: 'cleanup_sessions', how_often: 'hourly', status: 'unknown', checked_by: 'finished_only' }),
     job({ key: 'cleanup', status: 'unknown', readable: false }),
   ],
 });
@@ -105,6 +106,20 @@ describe('CleanUpJobsPage', () => {
     await screen.findByTestId('clean-up-job-performance_prune');
 
     expect(screen.getByText('clean_up_jobs.records_note')).toBeInTheDocument();
+  });
+
+  // The minute runner's jobs record success even when a step inside failed.
+  it('says under a job that records only that it finished that this is all it proves', async () => {
+    render(<CleanUpJobsPage />);
+
+    const runner = await screen.findByTestId('clean-up-job-abuse_cleanup');
+    expect(within(runner).getByText('clean_up_jobs.finished_only')).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('clean-up-job-cleanup_sessions')).getByText('clean_up_jobs.finished_only'),
+    ).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('clean-up-job-performance_prune')).queryByText('clean_up_jobs.finished_only'),
+    ).not.toBeInTheDocument();
   });
 
   it('shows an error with a retry when the request fails', async () => {

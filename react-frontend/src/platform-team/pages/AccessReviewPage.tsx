@@ -25,7 +25,7 @@
  * nothing was recorded; the choices stay as they were.
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Card, CardBody, Chip, Radio, RadioGroup, Spinner, Textarea } from '@/components/ui';
 import { LoadError } from '@/components/feedback/LoadError';
@@ -96,27 +96,41 @@ export function AccessReviewPage() {
   const [note, setNote] = useState('');
   const [recording, setRecording] = useState(false);
   const [recordError, setRecordError] = useState<RecordError | null>(null);
+  /** A refresh failed while a review was already on screen: the review stays, with a short line. */
+  const [refreshFailed, setRefreshFailed] = useState(false);
+  const hasData = useRef(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     setFailed(false);
+    setRefreshFailed(false);
     setRecordError(null);
+    let reply: AccessReview | null = null;
     try {
       const res = await api.get<AccessReview>(URL);
-      if (res.success && res.data && Array.isArray(res.data.accounts)) {
-        setData(res.data);
-        setDecisions({});
-      } else {
-        setData(null);
-        setFailed(true);
-      }
+      if (res.success && res.data && Array.isArray(res.data.accounts)) reply = res.data;
     } catch (err) {
       logError('Failed to load the access review', err);
+    }
+    if (reply !== null) {
+      const stillListed = new Set(reply.accounts.map((a) => a.id));
+      setData(reply);
+      hasData.current = true;
+      // Keep every choice already made for an account that is still on the list.
+      setDecisions((prev) => {
+        const kept: Record<number, Decision> = {};
+        for (const [id, decision] of Object.entries(prev)) {
+          if (stillListed.has(Number(id))) kept[Number(id)] = decision;
+        }
+        return kept;
+      });
+    } else if (hasData.current) {
+      setRefreshFailed(true);
+    } else {
       setData(null);
       setFailed(true);
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -201,6 +215,11 @@ export function AccessReviewPage() {
         <LoadError title={t('access_review.load_error_title')} onRetry={() => void load()} />
       ) : (
         <div className="flex flex-col gap-8">
+          {refreshFailed ? (
+            <p className="text-sm font-medium text-warning-soft-foreground" role="alert">
+              {t('access_review.refresh_failed')}
+            </p>
+          ) : null}
           <Card>
             <CardBody className="flex flex-row items-start gap-3 p-4">
               {data.due ? (
@@ -316,6 +335,7 @@ export function AccessReviewPage() {
                       maxLength={NOTE_MAX}
                       isDisabled={recording}
                     />
+                    <p className="-mt-2 text-sm text-muted">{t('access_review.note_no_names')}</p>
                     <p className="flex items-start gap-2 text-sm font-medium text-foreground" data-testid="nothing-changes">
                       <Info size={16} className="mt-0.5 shrink-0 text-muted" aria-hidden="true" />
                       {t('access_review.nothing_changes')}
@@ -393,10 +413,7 @@ export function AccessReviewPage() {
                         <div className="min-w-0">
                           <p className="font-semibold text-foreground">{day(item.at)}</p>
                           <p className="text-sm text-muted">
-                            {t('access_review.history_by')}{' '}
-                            <span className="font-medium text-foreground">
-                              {item.by_name ?? t('access_review.erased')}
-                            </span>
+                            {t('access_review.history_by', { name: item.by_name ?? t('access_review.erased') })}
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-2">

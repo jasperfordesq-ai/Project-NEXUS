@@ -161,6 +161,13 @@ export function AgreementsPage() {
     setIsFormOpen(true);
   };
 
+  const communities = overview?.communities ?? [];
+  /** The agreement being changed is linked to a community that is no longer in the list. */
+  const goneCommunityId =
+    editing?.community && !communities.some((c) => c.id === editing.community?.id)
+      ? String(editing.community.id)
+      : null;
+
   const title = form.title.trim();
   const withWhom = form.with_whom.trim();
   const email = form.contact_email.trim();
@@ -172,8 +179,28 @@ export function AgreementsPage() {
     && form.contact_name.trim().length <= MAX_NAME && form.notes.trim().length <= MAX_NOTES
     && endsOk && renewsOk && emailOk && !saving;
 
-  /** The server's refusal, in this page's own words, by the field it names. */
-  const refusal = (field: string | undefined): string => {
+  /**
+   * The server's refusal, in this page's own words: by the server's error code
+   * first (a date that is not a date is not "before the start"), by the field
+   * second. Codes: PlatformAgreementService::validate().
+   */
+  const refusal = (error: { code?: string; field?: string } | undefined): string => {
+    const field = error?.field;
+    switch (error?.code) {
+      case 'VALIDATION_REQUIRED_FIELD':
+        return t('agreements.form.required');
+      case 'VALIDATION_TOO_LONG':
+        return t('agreements.form.too_long');
+      case 'VALIDATION_INVALID_FORMAT':
+        return field === 'contact_email' ? t('agreements.form.email_invalid') : t('agreements.form.date_invalid');
+      case 'VALIDATION_INVALID_VALUE':
+        if (field === 'renews_on') return t('agreements.form.renews_before_start');
+        if (field === 'ends_on') return t('agreements.form.ends_before_start');
+        if (field === 'community_id') return t('agreements.form.community_unknown');
+        break;
+      default:
+        break;
+    }
     switch (field) {
       case 'title':
       case 'with_whom':
@@ -200,7 +227,7 @@ export function AgreementsPage() {
     if (!canSave) return;
     setSaving(true);
     setFormError(null);
-    const payload = {
+    const payload: Record<string, string | number | null> = {
       title,
       with_whom: withWhom,
       community_id: form.community_id ? Number(form.community_id) : null,
@@ -211,6 +238,8 @@ export function AgreementsPage() {
       contact_email: orNull(form.contact_email),
       notes: orNull(form.notes),
     };
+    // A community that no longer exists: leave the stored link alone unless another was picked.
+    if (goneCommunityId !== null && form.community_id === goneCommunityId) delete payload.community_id;
     try {
       const res = editing
         ? await api.put<{ agreement: Agreement }>(`/v2/platform-team/agreements/${editing.id}`, payload)
@@ -220,7 +249,7 @@ export function AgreementsPage() {
         setIsFormOpen(false);
         await load();
       } else {
-        setFormError(refusal(res.errors?.[0]?.field));
+        setFormError(refusal(res.errors?.[0]));
       }
     } catch (err) {
       logError('Saving a platform agreement did not complete', err);
@@ -231,7 +260,7 @@ export function AgreementsPage() {
   };
 
   const end = async () => {
-    if (!toEnd) return;
+    if (!toEnd || ending) return;
     setEnding(true);
     try {
       const res = await api.post<{ agreement: Agreement }>(`/v2/platform-team/agreements/${toEnd.id}/end`);
@@ -259,6 +288,8 @@ export function AgreementsPage() {
   };
 
   const text = (value: string | null): string => value ?? t('agreements.not_entered');
+
+  const count = (value: number): string => new Intl.NumberFormat(i18n.language).format(value);
 
   const communityName = (agreement: Agreement): string => {
     if (!agreement.community) return t('agreements.community_none');
@@ -313,10 +344,10 @@ export function AgreementsPage() {
               {fact(t('agreements.field.community'), communityName(agreement))}
               {fact(t('agreements.field.renews_on'), day(agreement.renews_on))}
               {!agreement.is_ended && days !== null && days > 0
-                ? fact(t('agreements.field.days_left'), String(days))
+                ? fact(t('agreements.field.days_left'), count(days))
                 : null}
               {!agreement.is_ended && days !== null && days < 0
-                ? fact(t('agreements.field.days_since'), String(-days))
+                ? fact(t('agreements.field.days_since'), count(-days))
                 : null}
               {fact(t('agreements.field.starts_on'), day(agreement.starts_on))}
               {fact(t('agreements.field.ends_on'), day(agreement.ends_on))}
@@ -330,7 +361,6 @@ export function AgreementsPage() {
     );
   };
 
-  const communities = overview?.communities ?? [];
 
   return (
     <section className="mx-auto max-w-5xl">
@@ -414,6 +444,13 @@ export function AgreementsPage() {
             >
               {[
                 <SelectItem key={NO_COMMUNITY} id={NO_COMMUNITY}>{t('agreements.community_none')}</SelectItem>,
+                ...(goneCommunityId !== null
+                  ? [
+                      <SelectItem key={goneCommunityId} id={goneCommunityId}>
+                        {t('agreements.community_missing')}
+                      </SelectItem>,
+                    ]
+                  : []),
                 ...communities.map((community) => (
                   <SelectItem key={String(community.id)} id={String(community.id)}>{community.name}</SelectItem>
                 )),

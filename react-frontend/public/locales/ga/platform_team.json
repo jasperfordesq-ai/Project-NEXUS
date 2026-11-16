@@ -302,17 +302,20 @@
     },
     "failed": {
       "title": "Sínithe isteach ar theip orthu",
-      "note": "Áirítear gach síniú isteach a dteipeann air nuair a tharlaíonn sé, de réir pobail agus de réir uaire. Ní choinníonn an comhaireamh ach uimhir: faic faoin duine ná faoin áit ar shínigh sé isteach uaidh. Áirítear na figiúirí in uaireanta iomlána, mar sin d’fhéadfadh suas le huair an chloig breise a bheith i ngach ceann.",
-      "counted_since": "Á n-áireamh ó {{date}}",
+      "note": "Dhá chomhaireamh ar leith, de réir pobail agus de réir uaire. “Seiceálacha pasfhocail ar theip orthu”: rinne duine iarracht síniú isteach agus bhí an pasfhocal mícheart. “Diúltaithe ag an nglasáil”: tar éis an iomarca iarrachtaí, diúltaíodh don iarracht sular seiceáladh aon phasfhocal. Ní chuirtear an dá cheann le chéile riamh. Ní choinníonn gach comhaireamh ach uimhir, gan faic faoin duine ná faoin áit ar shínigh sé isteach uaidh. Comhairtear na figiúirí in uaireanta iomlána, mar sin d’fhéadfadh suas le huair an chloig breise a bheith i ngach ceann.",
+      "counted_since": "An síniú isteach ar theip air is luaithe ar taifead: {{date}}",
       "nothing_counted": "Níor áiríodh aon rud fós. Áirítear sínithe isteach ar theip orthu ón lá a cuireadh an comhaireamh seo ar siúl.",
       "last_hour": "San uair an chloig dheireanach",
       "last_24h": "Le 24 uair an chloig anuas",
-      "empty": "Níor theip ar aon síniú isteach le 24 uair an chloig anuas.",
-      "col_failed": "Teipthe le 24 uair an chloig anuas:",
+      "empty": "Níor theip ar aon síniú isteach agus níor diúltaíodh d’aon cheann le 24 uair an chloig anuas.",
+      "col_failed": "Seiceálacha pasfhocail ar theip orthu le 24 uair an chloig anuas:",
       "recent_title": "Sa 15 nóiméad dheireanach",
       "recent_note": "Na seoltaí idirlín atá á dtriail anois díreach. Ní choinníonn an t-ardán na sonraí seo ach ar feadh timpeall 20 nóiméad, agus déanann sé dearmad ar iarrachtaí teipthe seolta nuair a shínítear isteach go rathúil uaidh arís. Tagann gach síniú isteach tríd an suíomh inrochtana ó sheoladh amháin.",
       "addresses_15m": "Seoltaí idirlín éagsúla sa 15 nóiméad dheireanach",
-      "most_from_one_15m": "An líon is mó ó sheoladh amháin sa 15 nóiméad dheireanach"
+      "most_from_one_15m": "An líon is mó ó sheoladh amháin sa 15 nóiméad dheireanach",
+      "checks_title": "Seiceálacha pasfhocail ar theip orthu",
+      "refused_title": "Diúltaithe ag an nglasáil",
+      "col_refused": "Diúltaithe ag an nglasáil le 24 uair an chloig anuas:"
     },
     "access": {
       "title": "Rochtain shinsearach a tugadh agus a baineadh",
@@ -432,7 +435,8 @@
     "unavailable": {
       "emails": "Níorbh fhéidir na figiúirí ríomhphoist a léamh faoi láthair. Ní nialas iad.",
       "ai_chat": "Níorbh fhéidir na figiúirí comhrá AI a léamh faoi láthair. Ní nialas iad.",
-      "group_files": "Níorbh fhéidir méid chomhaid na ngrúpaí a léamh faoi láthair. Ní nialas é."
+      "group_files": "Níorbh fhéidir méid chomhaid na ngrúpaí a léamh faoi láthair. Ní nialas é.",
+      "emails_kept_90_days": "Coinnítear taifid ríomhphoist ar feadh 90 lá, mar sin ní féidir an mhí seo a thaispeáint."
     },
     "totals_heading": "Na pobail go léir le chéile",
     "communities_heading": "Gach pobal ({{count}})",
@@ -444,7 +448,7 @@
     "failed": "Theip",
     "bounced": "Preabtha",
     "ai_requests": "Iarratais",
-    "ai_tokens": "Comharthaí",
+    "ai_tokens": "Píosaí téacs a próiseáladh",
     "ai_cost": "Costas",
     "files": "Spás in úsáid anois",
     "removed_community": "Pobal #{{id}} (níl sé ann a thuilleadh)",
@@ -452,7 +456,7 @@
     "platform_mail": "Post an ardáin",
     "platform_mail_note": "Ríomhphoist a sheol an t-ardán nach mbaineann le pobal ar bith ar leith.",
     "notes_heading": "Brí na bhfigiúirí",
-    "sent_note": "Ciallaíonn “Seolta” gur tugadh an ríomhphost don tseirbhís phoist. Ní chruthaíonn sé gur shroich sé.",
+    "sent_note": "Ciallaíonn “Seolta” gur tugadh an ríomhphost don tseirbhís phoist. Ní chruthaíonn sé gur shroich sé. Tá ríomhphoist phreabtha san áireamh in Seolta, mar sin ná cuir an dá cheann le chéile.",
     "ai_note": "Is é costas AI an méid a taifeadadh do gach iarratas, i ndollair SAM.",
     "files_note": "Is é Comhaid ghrúpa an spás a thógann siad inniu, ní an méid a cuireadh leis an mhí seo.",
     "not_recorded_heading": "Gan taifead faoi láthair",
@@ -494,7 +498,8 @@
       "hours_this_month": "Uaireanta a malartaíodh an mhí seo",
       "new_listings_this_month": "Liostuithe nua an mhí seo",
       "last_sign_in": "An síniú isteach is déanaí"
-    }
+    },
+    "quiet_unknown_summary": "Níorbh fhéidir linn a oibriú amach faoi láthair cé na pobail atá ciúin."
   },
   "community_setup": {
     "title": "Socrú na bpobal",
@@ -588,7 +593,8 @@
       "restriction": "Teorainn ar úsáid",
       "portability": "Aistriú",
       "objection": "Agóid"
-    }
+    },
+    "completed_without_date": "Iarratais chríochnaithe gan dáta críochnaithe, mar sin níl siad san fhigiúr 90 lá: {{count}}"
   },
   "legal_documents": {
     "title": "Doiciméid dhlíthiúla",
@@ -661,7 +667,7 @@
     "open_intro": "Marcáladh na cuntais seo «Ba chóir é a bhaint» san athbhreithniú deireanach, agus tá a rochtain fós acu.",
     "history_title": "Athbhreithnithe le déanaí",
     "history_none": "Níl aon athbhreithniú fós.",
-    "history_by": "Taifeadta ag",
+    "history_by": "Taifeadta ag {{name}}",
     "history_accounts_one": "{{count}} chuntas",
     "history_accounts_other": "{{count}} cuntas",
     "history_removals_one": "{{count}} marcáilte lena bhaint",
@@ -672,7 +678,9 @@
     "history_accounts_many": "{{count}} gcuntas",
     "history_removals_two": "{{count}} marcáilte lena mbaint",
     "history_removals_few": "{{count}} marcáilte lena mbaint",
-    "history_removals_many": "{{count}} marcáilte lena mbaint"
+    "history_removals_many": "{{count}} marcáilte lena mbaint",
+    "refresh_failed": "Níorbh fhéidir an t-athbhreithniú a lódáil arís. Is ó roimhe seo an méid a fheiceann tú.",
+    "note_no_names": "Ná hainmnigh daoine sa nóta. Coinnítear é leis an taifead."
   },
   "push_notifications": {
     "title": "Fógraí brú",
@@ -748,7 +756,9 @@
       "needed": "Ní thugann an tseirbhís earráidí na figiúirí seo ach d’eochair rochtana dá cuid féin, léamh amháin, atá stóráilte ar an bhfreastalaí seo. Níor rinneadh sin.",
       "decision": "Is é úinéir an ardáin a chinnfidh an ndéanfar é.",
       "meanwhile": "Go dtí sin, is í an tuairisc earráidí oíche a fhaigheann tú cheana féin an áit le féachaint."
-    }
+    },
+    "check_refused": "Diúltaíodh don athsheiceáil: an iomarca seiceálacha i nóiméad amháin. Is ó roimhe seo na figiúirí thíos.",
+    "could_not_read_any": "D’fhreagair an tseirbhís earráidí, ach níorbh fhéidir a figiúirí a léamh. Ní hionann sin agus gan earráid ar bith."
   },
   "connections": {
     "title": "Eochracha agus naisc",
@@ -816,7 +826,9 @@
       "translated": "Aistrithe"
     },
     "same_note": "Tá roinnt frásaí le bheith mar an gcéanna i ngach teanga, mar shampla ainmneacha agus aonaid. Mar sin is uasteorainn é “fós mar an gcéanna leis an mBéarla”, ní líon beacht.",
-    "not_measured": "Ní thomhaistear an aip fóin ná an suíomh inrochtana anseo."
+    "not_measured": "Ní thomhaistear an aip fóin ná an suíomh inrochtana anseo.",
+    "website_load_error": "Níorbh fhéidir figiúirí an tsuímh ghréasáin a lódáil",
+    "recount_refused": "Diúltaíodh don athchomhaireamh: an iomarca iarratas i mbeagán ama. Is ó roimhe seo na figiúirí thíos."
   },
   "clean_up_jobs": {
     "title": "Jabanna glantacháin",
@@ -902,7 +914,8 @@
         "name": "Sean-seiceálacha aitheantais",
         "deletes": "Scriosann sé seiceálacha aitheantais críochnaithe nó as feidhm atá níos sine ná 180 lá. Coinnítear an taifead ar a tharla i ngach seiceáil."
       }
-    }
+    },
+    "finished_only": "Taifeadann an jab seo gur chríochnaigh sé, ní gur oibrigh gach céim."
   },
   "search_rebuild": {
     "title": "Atóg an cuardach",
@@ -933,8 +946,15 @@
       "done_other": "Críochnaithe {{time}}: {{count}} iontráil nuashonraithe",
       "done_with_errors_one": "Críochnaithe {{time}} le {{count}} iontráil nárbh fhéidir a nuashonrú",
       "done_with_errors_other": "Críochnaithe {{time}} le {{count}} iontráil nárbh fhéidir a nuashonrú",
-      "failed": "Theip air"
-    }
+      "failed": "Theip air",
+      "done_two": "Críochnaithe {{time}}: {{count}} iontráil nuashonraithe",
+      "done_few": "Críochnaithe {{time}}: {{count}} iontráil nuashonraithe",
+      "done_many": "Críochnaithe {{time}}: {{count}} n-iontráil nuashonraithe",
+      "done_with_errors_two": "Críochnaithe {{time}} le {{count}} iontráil nárbh fhéidir a nuashonrú",
+      "done_with_errors_few": "Críochnaithe {{time}} le {{count}} iontráil nárbh fhéidir a nuashonrú",
+      "done_with_errors_many": "Críochnaithe {{time}} le {{count}} n-iontráil nárbh fhéidir a nuashonrú"
+    },
+    "check_failed": "Níorbh fhéidir seiceáil arís ag {{time}}"
   },
   "agreements": {
     "title": "Comhaontuithe agus athnuachan",
@@ -996,7 +1016,8 @@
       "community_unknown": "Níl an pobal sin ann.",
       "save": "Sábháil",
       "cancel": "Cealaigh"
-    }
+    },
+    "community_missing": "Níl an pobal ann a thuilleadh"
   },
   "assurance": {
     "title": "Fíricí tomhaiste",
@@ -1006,7 +1027,7 @@
     "read_at": "Léite {{time}}",
     "could_not_read": "Níorbh fhéidir é a léamh",
     "not_recorded": "Níl sé taifeadta",
-    "source_label": "Cad as a dtagann sé seo",
+    "source_label": "Cad as a dtagann sé seo:",
     "source_owner": "Curtha isteach ag úinéir an ardáin i socruithe an fhreastalaí",
     "findings_note": "Coinnítear torthaí slándála oscailte i dtaifead príobháideach, ní ar an bhfreastalaí seo, agus ní thaispeántar anseo iad.",
     "test_scope_note": "Clúdaíonn tástáil neamhspleách an leagan a thástáil sí, ní na hathruithe a rinneadh ó shin.",
@@ -1050,7 +1071,7 @@
     },
     "failed_sign_ins": {
       "title": "Taifead ar shínithe isteach a theip",
-      "since": "Tá sínithe isteach a theip á gcomhaireamh ó {{date}}",
+      "since": "An síniú isteach ar theip air is luaithe ar taifead: {{date}}",
       "none": "Níor comhaireadh aon rud fós",
       "note": "Insíonn sé seo cathain a thosaíonn an taifead. Ní comhaireamh ar rud ar bith é."
     },
@@ -1083,7 +1104,11 @@
       "warning_other": "Rachaidh an teastas in éag i gceann {{count}} lá",
       "failing": "Ní oibríonn sé",
       "unknown": "Gan seiceáil fós",
-      "not_checkable": "Ní seoladh gréasáin é ar féidir linn a sheiceáil"
+      "not_checkable": "Ní seoladh gréasáin é ar féidir linn a sheiceáil",
+      "warning_days_unknown": "Rachaidh an teastas in éag go luath. Níorbh fhéidir líon na laethanta atá fágtha a léamh.",
+      "warning_two": "Rachaidh an teastas in éag i gceann {{count}} lá",
+      "warning_few": "Rachaidh an teastas in éag i gceann {{count}} lá",
+      "warning_many": "Rachaidh an teastas in éag i gceann {{count}} lá"
     },
     "reason": {
       "does_not_resolve": "Ní théann an t-ainm áit ar bith.",
@@ -1098,6 +1123,8 @@
     "check_now": "Seiceáil anois",
     "checked": "Seiceáilte.",
     "check_failed": "Níorbh fhéidir an seiceáil a dhéanamh. Bain triail eile as.",
-    "too_many": "An iomarca seiceálacha in aon nóiméad amháin. Fan nóiméad agus bain triail eile as."
+    "too_many": "An iomarca seiceálacha in aon nóiméad amháin. Fan nóiméad agus bain triail eile as.",
+    "check_now_for": "Seiceáil {{name}} anois",
+    "check_platform_now": "Seiceáil seoltaí an ardáin anois"
   }
 }

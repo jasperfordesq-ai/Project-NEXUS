@@ -49,6 +49,26 @@ final class SearchRebuildService
         return 'search_rebuild:' . $tenantId;
     }
 
+    /**
+     * Held for a moment while a start checks "busy?" and marks "queued", so two
+     * starts close together cannot both pass the check (Cache::add is atomic).
+     */
+    public static function startLockKey(int $tenantId): string
+    {
+        return 'search_rebuild_start:' . $tenantId;
+    }
+
+    /** Put back the record as it was before a start whose job could not be queued. */
+    public function restore(int $tenantId, ?array $previous): void
+    {
+        if ($previous === null) {
+            Cache::forget(self::cacheKey($tenantId));
+
+            return;
+        }
+        Cache::put(self::cacheKey($tenantId), $previous, now()->addDays(self::KEEP_DAYS));
+    }
+
     /** @return array{search_available: bool, communities: list<array<string, mixed>>} */
     public function overview(): array
     {
@@ -149,8 +169,9 @@ final class SearchRebuildService
             Log::error('Search rebuild: the activity log entry could not be written', [
                 'tenant_id' => $tenantId,
                 'user_id' => $actorId,
+                // The kind of error only: a database error quotes the values
+                // of the failed statement.
                 'exception' => $e::class,
-                'message' => $e->getMessage(),
             ]);
         }
     }

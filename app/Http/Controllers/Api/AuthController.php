@@ -103,6 +103,7 @@ class AuthController extends BaseApiController
             $emailLimit = \App\Core\RateLimiter::check($email, 'email');
             if ($emailLimit['limited']) {
                 $message = \App\Core\RateLimiter::getRetryMessage($emailLimit['retry_after']);
+                \App\Core\RateLimiter::countRefusedSignIn($email);
                 return $this->authError(
                     $message,
                     ApiErrorCodes::RATE_LIMIT_EXCEEDED,
@@ -116,6 +117,7 @@ class AuthController extends BaseApiController
         $ipLimit = \App\Core\RateLimiter::check($ip, 'ip');
         if ($ipLimit['limited']) {
             $message = \App\Core\RateLimiter::getRetryMessage($ipLimit['retry_after']);
+            \App\Core\RateLimiter::countRefusedSignIn(null);
             return $this->authError(
                 $message,
                 ApiErrorCodes::RATE_LIMIT_EXCEEDED,

@@ -45,6 +45,11 @@ export interface CleanUpJob {
   status: CleanUpJobStatus;
   /** false when the record for this job could not be read. */
   readable: boolean;
+  /**
+   * What a success in the record proves. `finished_only`: the job catches its own
+   * steps' errors and still records success. Optional: an older server does not send it.
+   */
+  checked_by?: 'record' | 'finished_only';
 }
 
 export interface CleanUpJobsReport {
@@ -167,6 +172,9 @@ export function CleanUpJobsPage() {
                         `${id}-last-failed`,
                       )}
                     </dl>
+                    {job.checked_by === 'finished_only' ? (
+                      <p className="text-sm text-muted">{t('clean_up_jobs.finished_only')}</p>
+                    ) : null}
                   </CardBody>
                 </Card>
               </li>

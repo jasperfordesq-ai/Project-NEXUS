@@ -25,7 +25,12 @@ use Illuminate\Support\Facades\Schema;
  * 🔴 Append-only, enforced by the database (BEFORE UPDATE / BEFORE DELETE
  * signal triggers, the supporter_message_view_audits pattern): a review can be
  * written once and never altered, by anyone, including an administrator with
- * SQL access. For the same reason there is NO foreign key to `users`: a
+ * SQL access. One exception: the review's free-text `note` may be set to NULL
+ * while every other column stays the same, so the note can be erased
+ * (AccessReviewService::clearNote()). Any other update is refused, and so is
+ * any update to `senior_access_review_items`. 🔴 A column added to
+ * `senior_access_reviews` later must be added to that trigger's comparison,
+ * or it becomes changeable. For the same reason there is NO foreign key to `users`: a
  * cascade or SET NULL from `users` would be an UPDATE or DELETE here, which
  * the triggers refuse, and would block the change to `users`. A review
  * naming an account that no longer exists shows it as erased.
@@ -37,6 +42,22 @@ use Illuminate\Support\Facades\Schema;
  */
 return new class extends Migration
 {
+    /**
+     * Refuses every update except clearing the note: NEW.note IS NULL and
+     * every other column equal (NULL-safe) to its old value.
+     */
+    private const SAR_NO_UPDATE_BODY = "BEFORE UPDATE ON `senior_access_reviews` FOR EACH ROW\n"
+        . "BEGIN\n"
+        . "  IF NOT (NEW.`note` IS NULL\n"
+        . "      AND NEW.`id` <=> OLD.`id`\n"
+        . "      AND NEW.`reviewed_by` <=> OLD.`reviewed_by`\n"
+        . "      AND NEW.`account_count` <=> OLD.`account_count`\n"
+        . "      AND NEW.`remove_count` <=> OLD.`remove_count`\n"
+        . "      AND NEW.`created_at` <=> OLD.`created_at`) THEN\n"
+        . "    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'senior_access_review_immutable';\n"
+        . "  END IF;\n"
+        . "END";
+
     public function up(): void
     {
         if (! Schema::hasTable('senior_access_reviews')) {
@@ -69,7 +90,7 @@ return new class extends Migration
             });
         }
 
-        $this->createSignalTrigger('trg_sar_no_update', 'BEFORE UPDATE ON `senior_access_reviews` FOR EACH ROW');
+        $this->createTrigger('trg_sar_no_update', self::SAR_NO_UPDATE_BODY);
         $this->createSignalTrigger('trg_sar_no_delete', 'BEFORE DELETE ON `senior_access_reviews` FOR EACH ROW');
         $this->createSignalTrigger('trg_sari_no_update', 'BEFORE UPDATE ON `senior_access_review_items` FOR EACH ROW');
         $this->createSignalTrigger('trg_sari_no_delete', 'BEFORE DELETE ON `senior_access_review_items` FOR EACH ROW');
@@ -86,6 +107,14 @@ return new class extends Migration
 
     private function createSignalTrigger(string $name, string $timing): void
     {
+        $this->createTrigger(
+            $name,
+            "{$timing} SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'senior_access_review_immutable'",
+        );
+    }
+
+    private function createTrigger(string $name, string $definition): void
+    {
         $exists = DB::selectOne(
             'SELECT TRIGGER_NAME FROM information_schema.TRIGGERS WHERE TRIGGER_SCHEMA = DATABASE() AND TRIGGER_NAME = ?',
             [$name],
@@ -93,8 +122,6 @@ return new class extends Migration
         if ($exists !== null) {
             return;
         }
-        DB::unprepared(
-            "CREATE TRIGGER `{$name}` {$timing} SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'senior_access_review_immutable'",
-        );
+        DB::unprepared("CREATE TRIGGER `{$name}` {$definition}");
     }
 };

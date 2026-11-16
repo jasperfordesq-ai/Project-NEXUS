@@ -77,6 +77,8 @@ export function SearchRebuildPage() {
   const [failed, setFailed] = useState(false);
   const [busyId, setBusyId] = useState<number | null>(null);
   const [toRebuild, setToRebuild] = useState<CommunityRow | null>(null);
+  /** When a check made in the background last failed; cleared by the next good one. */
+  const [checkFailedAt, setCheckFailedAt] = useState<Date | null>(null);
 
   const load = useCallback(async (quiet = false) => {
     if (!quiet) {
@@ -88,15 +90,20 @@ export function SearchRebuildPage() {
       if (res.success && res.data && Array.isArray(res.data.communities)) {
         setOverview(res.data);
         setFailed(false);
+        setCheckFailedAt(null);
       } else if (!quiet) {
         setOverview(null);
         setFailed(true);
+      } else {
+        setCheckFailedAt(new Date());
       }
     } catch (err) {
       logError('Failed to load the search rebuild list', err);
       if (!quiet) {
         setOverview(null);
         setFailed(true);
+      } else {
+        setCheckFailedAt(new Date());
       }
     } finally {
       if (!quiet) setLoading(false);
@@ -202,6 +209,11 @@ export function SearchRebuildPage() {
             <li>{t('search_rebuild.does.keep_searching')}</li>
           </ul>
           {anyBusy && <p className="mb-3 text-sm text-muted">{t('search_rebuild.auto_refresh')}</p>}
+          {checkFailedAt !== null && (
+            <p className="mb-3 text-sm font-medium text-warning-soft-foreground" role="status">
+              {t('search_rebuild.check_failed', { time: checkFailedAt.toLocaleTimeString(i18n.language) })}
+            </p>
+          )}
 
           <ul className="flex flex-col gap-3">
             {overview.communities.map((community) => (
@@ -223,6 +235,7 @@ export function SearchRebuildPage() {
                       <Button
                         size="sm"
                         variant="secondary"
+                        isLoading={busyId === community.id}
                         isDisabled={busyId !== null || isBusy(community.last) || !overview.search_available}
                         onPress={() => setToRebuild(community)}
                       >

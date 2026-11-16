@@ -29,7 +29,8 @@ use Illuminate\Support\Facades\Log;
  *     LegalDocumentService uses to show one). Terms are seeded published when
  *     a community is created (TenantDefaultsSeeder::seedStandardLegalDocuments),
  *     so that tick means less than the others; the page says so;
- *   - first_admin_signed_in: an administrator of that community (role admin,
+ *   - first_admin_signed_in: an administrator of that community (role admin
+ *     or tenant_admin, as AdminTier counts them,
  *     legacy is_admin, or tenant super admin) has signed in at least once;
  *   - email_sender: `own` when App\Core\Mailer::loadTenantConfig() would send
  *     this community's mail through its own account, else `platform`.
@@ -251,7 +252,7 @@ final class CommunitySetupChecklistService
                 $q->whereNull('status')->orWhere('status', '!=', 'delegate');
             })
             ->where(static function ($q): void {
-                $q->where('role', 'admin')->orWhere('is_admin', 1)->orWhere('is_tenant_super_admin', 1);
+                $q->whereIn('role', ['admin', 'tenant_admin'])->orWhere('is_admin', 1)->orWhere('is_tenant_super_admin', 1);
             })
             ->where(static function ($q): void {
                 $q->whereNull('is_super_admin')->orWhere('is_super_admin', 0);

@@ -195,7 +195,7 @@ export function ConnectionsPage() {
       <Card className="mt-6" data-testid="connections-elsewhere">
         <CardBody className="gap-2 p-4">
           <h2 className="text-lg font-semibold text-foreground">{t('connections.elsewhere.title')}</h2>
-          <ul className="flex list-disc flex-col gap-1 pl-5 text-sm text-foreground">
+          <ul className="flex list-disc flex-col gap-1 ps-5 text-sm text-foreground">
             <li>
               <Link className="text-primary underline" to={tenantPath('/admin/enterprise/gdpr/consent-types')}>
                 {t('connections.elsewhere.consent_types')}

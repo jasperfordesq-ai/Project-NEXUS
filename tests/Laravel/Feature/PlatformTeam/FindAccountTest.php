@@ -737,4 +737,37 @@ class FindAccountTest extends TestCase
         $this->assertStringNotContainsString('Unrecorded Person', (string) $response->getContent());
         $this->assertStringNotContainsString('planted', (string) $response->getContent());
     }
+
+    /** A database error can quote the values of the failed statement, the typed reason among them. */
+    public function test_a_failed_sign_out_logs_the_kind_of_error_only_never_the_reason(): void
+    {
+        $target = $this->account(['email' => $this->address('target')]);
+        $this->signIn($target);
+        $caller = $this->platformTeamAccount();
+        $planted = 'PLANTED-SIGN-OUT-REASON-4417';
+
+        $lines = [];
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Log\Events\MessageLogged::class, function ($e) use (&$lines): void {
+            $lines[] = $e->message . ' ' . json_encode($e->context);
+        });
+        $broken = true;
+        DB::connection()->beforeExecuting(static function (string $sql, array $bindings) use (&$broken): void {
+            if ($broken && str_contains($sql, 'insert into `org_audit_log`')) {
+                // As the database would: the message quotes the statement's values.
+                throw new \Illuminate\Database\QueryException('mysql', $sql, $bindings, new \RuntimeException('planted'));
+            }
+        });
+
+        try {
+            $result = (new \App\Services\PlatformTeam\FindAccountService())->signOut((int) $caller->id, (int) $target->id, $planted);
+        } finally {
+            $broken = false;
+        }
+
+        $this->assertSame(\App\Services\PlatformTeam\FindAccountService::FAILED, $result);
+        $this->assertNotEmpty($lines, 'the failure was logged');
+        foreach ($lines as $line) {
+            $this->assertStringNotContainsString($planted, $line);
+        }
+    }
 }

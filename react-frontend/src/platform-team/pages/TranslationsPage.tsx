@@ -20,13 +20,17 @@
  * are not measured, and the page says so.
  *
  * 🔴 The file is checked to be the JSON we expect: a server without a rule for
- * it answers 200 with the app's own HTML (see useChangelog.ts). Missing,
- * unreadable or `available: false` all read "not available on this server".
+ * it answers 200 with the app's own HTML (see useChangelog.ts). Missing (404),
+ * not the expected JSON, or `available: false` all read "not available on this
+ * server". A request that did not complete (no answer, or a server error) is a
+ * failure, shown with the error card and a retry: it says nothing about the file.
+ *
+ * "Count again" refused (too many requests) keeps the figures on screen and says so.
  *
  * 🔴 Read-only. The only control asks for a fresh count.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Card, CardBody, Spinner } from '@/components/ui';
 import { LoadError } from '@/components/feedback/LoadError';
@@ -103,28 +107,55 @@ export function TranslationsPage() {
 
   const [website, setWebsite] = useState<Section>({ state: 'loading' });
   const [server, setServer] = useState<Section>({ state: 'loading' });
+  /** "Count again" is running while the old figures stay on screen. */
+  const [recounting, setRecounting] = useState(false);
+  /** "Count again" was refused (too many requests); the old figures stay. */
+  const [recountRefused, setRecountRefused] = useState(false);
+  const serverRef = useRef<Section>(server);
+  useEffect(() => {
+    serverRef.current = server;
+  }, [server]);
 
   const loadWebsite = useCallback(async () => {
     setWebsite({ state: 'loading' });
+    let response: Response;
     try {
-      const response = await fetch(TRANSLATION_COVERAGE_FILE, { headers: { Accept: 'application/json' } });
-      if (!response.ok) {
-        setWebsite({ state: 'unavailable' });
-        return;
-      }
+      response = await fetch(TRANSLATION_COVERAGE_FILE, { headers: { Accept: 'application/json' } });
+    } catch (err) {
+      // No answer at all: that says nothing about whether the file exists.
+      logError('Failed to fetch the website translation figures', err);
+      setWebsite({ state: 'failed' });
+      return;
+    }
+    if (response.status === 404 || response.status === 410) {
+      setWebsite({ state: 'unavailable' });
+      return;
+    }
+    if (!response.ok) {
+      setWebsite({ state: 'failed' });
+      return;
+    }
+    try {
       const report = usable(await response.json());
       setWebsite(report ? { state: 'ok', ...report } : { state: 'unavailable' });
     } catch {
-      // Not JSON (the app's own page) or no answer: the file is not here.
+      // Not JSON (the app's own page): the file is not on this server.
       setWebsite({ state: 'unavailable' });
     }
   }, []);
 
   const loadServer = useCallback(async (refresh = false) => {
-    setServer({ state: 'loading' });
+    const shown = serverRef.current.state === 'ok';
+    setRecountRefused(false);
+    if (refresh && shown) setRecounting(true);
+    else setServer({ state: 'loading' });
     try {
       const res = await api.get<CoverageReport>(refresh ? `${ENDPOINT}?refresh=1` : ENDPOINT);
       if (!res.success || !res.data || typeof res.data.available !== 'boolean') {
+        if (refresh && shown && res.code === 'RATE_LIMIT_EXCEEDED') {
+          setRecountRefused(true);
+          return;
+        }
         setServer({ state: 'failed' });
         return;
       }
@@ -133,6 +164,8 @@ export function TranslationsPage() {
     } catch (err) {
       logError('Failed to load the server translation figures', err);
       setServer({ state: 'failed' });
+    } finally {
+      setRecounting(false);
     }
   }, []);
 
@@ -156,12 +189,12 @@ export function TranslationsPage() {
         <table className="w-full border-collapse text-sm">
           <caption className="sr-only">{t(`translations.${prefix}_title`)}</caption>
           <thead>
-            <tr className="bg-surface-secondary text-left text-xs text-muted">
+            <tr className="bg-surface-secondary text-start text-xs text-muted">
               <th scope="col" className="px-3 py-2 font-medium">{t('translations.column.language')}</th>
-              <th scope="col" className="px-3 py-2 text-right font-medium">{t('translations.column.phrases')}</th>
-              <th scope="col" className="px-3 py-2 text-right font-medium">{t('translations.column.missing')}</th>
-              <th scope="col" className="px-3 py-2 text-right font-medium">{t('translations.column.same')}</th>
-              <th scope="col" className="px-3 py-2 text-right font-medium">{t('translations.column.translated')}</th>
+              <th scope="col" className="px-3 py-2 text-end font-medium">{t('translations.column.phrases')}</th>
+              <th scope="col" className="px-3 py-2 text-end font-medium">{t('translations.column.missing')}</th>
+              <th scope="col" className="px-3 py-2 text-end font-medium">{t('translations.column.same')}</th>
+              <th scope="col" className="px-3 py-2 text-end font-medium">{t('translations.column.translated')}</th>
             </tr>
           </thead>
           <tbody>
@@ -170,13 +203,13 @@ export function TranslationsPage() {
               const id = `${prefix}-row-${row.locale}`;
               return (
                 <tr key={row.locale} className="border-t border-divider" data-testid={id}>
-                  <th scope="row" className="px-3 py-2 text-left font-medium text-foreground">
+                  <th scope="row" className="px-3 py-2 text-start font-medium text-foreground">
                     <span lang={row.locale}>{own}</span> <span className="text-muted">({english})</span>
                   </th>
-                  <td className="px-3 py-2 text-right tabular-nums text-foreground" data-testid={`${id}-keys`}>{number(row.keys)}</td>
-                  <td className="px-3 py-2 text-right tabular-nums text-foreground" data-testid={`${id}-missing`}>{number(row.missing)}</td>
-                  <td className="px-3 py-2 text-right tabular-nums text-foreground" data-testid={`${id}-same`}>{number(row.same_as_english)}</td>
-                  <td className="px-3 py-2 text-right font-semibold tabular-nums text-foreground" data-testid={`${id}-percent`}>
+                  <td className="px-3 py-2 text-end tabular-nums text-foreground" data-testid={`${id}-keys`}>{number(row.keys)}</td>
+                  <td className="px-3 py-2 text-end tabular-nums text-foreground" data-testid={`${id}-missing`}>{number(row.missing)}</td>
+                  <td className="px-3 py-2 text-end tabular-nums text-foreground" data-testid={`${id}-same`}>{number(row.same_as_english)}</td>
+                  <td className="px-3 py-2 text-end font-semibold tabular-nums text-foreground" data-testid={`${id}-percent`}>
                     {percent(percentTranslated(row))}
                   </td>
                 </tr>
@@ -234,7 +267,7 @@ export function TranslationsPage() {
           <Spinner />
         </div>
       ) : section.state === 'failed' ? (
-        <LoadError title={t('translations.server_load_error')} onRetry={onRetry} />
+        <LoadError title={t(`translations.${prefix}_load_error`)} onRetry={onRetry} />
       ) : section.state === 'unavailable' ? (
         <Card>
           <CardBody className="p-4" role="status">
@@ -243,6 +276,11 @@ export function TranslationsPage() {
         </Card>
       ) : (
         <>
+          {prefix === 'server' && recountRefused ? (
+            <p className="text-sm font-medium text-warning-soft-foreground" role="status">
+              {t('translations.recount_refused')}
+            </p>
+          ) : null}
           {when(section.generatedAt) ? (
             <p className="text-xs text-muted">{t('translations.counted_at', { date: when(section.generatedAt) })}</p>
           ) : null}
@@ -266,7 +304,8 @@ export function TranslationsPage() {
             void loadWebsite();
             void loadServer(true);
           }}
-          isDisabled={server.state === 'loading'}
+          isDisabled={server.state === 'loading' || recounting}
+          isLoading={recounting}
         >
           <RefreshCw size={16} aria-hidden="true" />
           {t('translations.recount')}

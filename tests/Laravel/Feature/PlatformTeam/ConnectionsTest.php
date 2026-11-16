@@ -165,6 +165,37 @@ class ConnectionsTest extends TestCase
         $this->assertSame('email', $rows['gmail_api']['group']);
     }
 
+    /**
+     * SearchService::client() falls back to a built-in address and works
+     * with no key, so either value set means the search engine is set up.
+     */
+    public function test_search_is_set_up_with_either_the_address_or_the_key(): void
+    {
+        $host = getenv('MEILISEARCH_HOST');
+        $key = getenv('MEILISEARCH_KEY');
+        try {
+            $cases = [
+                [null, null, false],
+                ['http://search.example.test:7700', null, true],
+                [null, 'search-key-planted', true],
+                ['http://search.example.test:7700', 'search-key-planted', true],
+            ];
+            foreach ($cases as [$h, $k, $expected]) {
+                putenv($h === null ? 'MEILISEARCH_HOST' : "MEILISEARCH_HOST={$h}");
+                putenv($k === null ? 'MEILISEARCH_KEY' : "MEILISEARCH_KEY={$k}");
+
+                $this->assertSame(
+                    $expected,
+                    $this->rows()['meilisearch']['configured'],
+                    'host ' . ($h ?? 'unset') . ', key ' . ($k === null ? 'unset' : 'set'),
+                );
+            }
+        } finally {
+            putenv($host === false ? 'MEILISEARCH_HOST' : "MEILISEARCH_HOST={$host}");
+            putenv($key === false ? 'MEILISEARCH_KEY' : "MEILISEARCH_KEY={$key}");
+        }
+    }
+
     public function test_gmail_with_the_switch_off_is_not_set_up_even_with_all_three_values(): void
     {
         config([

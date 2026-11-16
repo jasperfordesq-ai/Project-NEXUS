@@ -34,7 +34,7 @@ class CleanUpJobsTest extends TestCase
     /** Exactly what the page shows. Anything else must not leave the server. */
     private const TOP_KEYS = ['jobs'];
 
-    private const ROW_KEYS = ['how_often', 'key', 'last_failed_at', 'last_ok_at', 'readable', 'status'];
+    private const ROW_KEYS = ['checked_by', 'how_often', 'key', 'last_failed_at', 'last_ok_at', 'readable', 'status'];
 
     /** The fixed list, in page order, with how often each runs. */
     private const JOBS = [
@@ -130,6 +130,22 @@ class CleanUpJobsTest extends TestCase
 
         // The job's own output (which can name members) never leaves the server.
         $this->assertStringNotContainsString('planted-cron-output-text', (string) $response->getContent());
+    }
+
+    /**
+     * The minute runner's jobs catch their own steps' errors and still record
+     * success, so their record says only that they finished. The page says so.
+     */
+    public function test_each_job_says_whether_its_record_covers_every_step_or_only_that_it_finished(): void
+    {
+        $runner = ['cleanup', 'cleanup_sessions', 'story_cleanup', 'gdpr_export_cleanup', 'abuse_cleanup', 'gamification_cleanup', 'purge_verification_sessions'];
+        foreach ($this->rows() as $key => $row) {
+            $this->assertSame(
+                in_array($key, $runner, true) ? 'finished_only' : 'record',
+                $row['checked_by'],
+                $key,
+            );
+        }
     }
 
     public function test_nothing_recorded_is_unknown_never_fine(): void

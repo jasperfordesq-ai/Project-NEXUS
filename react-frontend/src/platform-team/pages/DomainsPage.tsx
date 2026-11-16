@@ -205,7 +205,11 @@ export function DomainsPage() {
         break;
       case 'warning':
         icon = <AlertTriangle size={16} className="shrink-0 text-warning" aria-hidden="true" />;
-        words = t('domains.status.warning', { count: result.days_left ?? 0 });
+        // 🔴 Days left that could not be read are never shown as "0 days".
+        words =
+          result.days_left === null
+            ? t('domains.status.warning_days_unknown')
+            : t('domains.status.warning', { count: result.days_left });
         break;
       case 'failing':
         icon = <XCircle size={16} className="shrink-0 text-danger" aria-hidden="true" />;
@@ -265,7 +269,14 @@ export function DomainsPage() {
                 {t('domains.platform_heading')}
               </h2>
               {overview.platform.length > 0 && (
-                <Button size="sm" variant="secondary" isDisabled={busy !== null} onPress={() => void checkPlatform()}>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  aria-label={t('domains.check_platform_now')}
+                  isLoading={busy === 'platform'}
+                  isDisabled={busy !== null}
+                  onPress={() => void checkPlatform()}
+                >
                   <RefreshCw size={14} aria-hidden="true" />
                   {t('domains.check_now')}
                 </Button>
@@ -308,6 +319,8 @@ export function DomainsPage() {
                         <Button
                           size="sm"
                           variant="secondary"
+                          aria-label={t('domains.check_now_for', { name: community.name })}
+                          isLoading={busy === community.id}
                           isDisabled={busy !== null}
                           onPress={() => void checkCommunity(community)}
                         >

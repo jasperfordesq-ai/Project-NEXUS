@@ -164,11 +164,44 @@ describe('CommunityHealthPage', () => {
     expect(cards[1]).toHaveTextContent('community_health.quiet');
   });
 
-  it('names no member anywhere: counts only', async () => {
+  it('says the last sign-in could not be read, not that nobody signed in, when the server could not read it', async () => {
+    const data = health({ unavailable: ['last_sign_in_at'] });
+    data.communities = data.communities.map((c) => ({ ...c, last_sign_in_at: null }));
+    apiGet.mockResolvedValue({ success: true, data });
     render(<CommunityHealthPage />);
     await screen.findByTestId('community-health-table');
 
-    expect(screen.getByText('community_health.counts_only')).toBeInTheDocument();
+    for (const name of ['Alpha Timebank', 'Beta Exchange', 'Gamma Circle']) {
+      const cells = within(tableRow(name)).getAllByRole('cell');
+      expect(cells[cells.length - 1]).toHaveTextContent('community_health.not_available');
+      expect(cells[cells.length - 1]).not.toHaveTextContent('community_health.never_signed_in');
+    }
+    const cards = within(screen.getByTestId('community-health-list')).getAllByRole('listitem');
+    expect(cards[0]).not.toHaveTextContent('community_health.never_signed_in');
+  });
+
+  it('never says no community is quiet when it could not tell', async () => {
+    const data = health();
+    data.communities = data.communities.map((c) => ({ ...c, quiet: c.is_active ? null : false }));
+    data.totals.quiet = 0;
+    apiGet.mockResolvedValue({ success: true, data });
+    render(<CommunityHealthPage />);
+
+    const summary = await screen.findByTestId('community-health-quiet');
+    expect(summary).toHaveTextContent('community_health.quiet_unknown_summary');
+    expect(summary).not.toHaveTextContent('community_health.none_quiet');
+  });
+
+  it('draws only the figures it knows: a stray name in the reply never reaches the screen', async () => {
+    const data = health();
+    data.communities = data.communities.map(
+      (c) => ({ ...c, top_member: 'Mary Planted-Surname', owner: 'Seán Planted' }) as CommunityHealthRow,
+    );
+    apiGet.mockResolvedValue({ success: true, data });
+    const { container } = render(<CommunityHealthPage />);
+    await screen.findByTestId('community-health-table');
+
+    expect(container).not.toHaveTextContent('Planted');
   });
 
   it('shows the error card when the reply cannot be loaded, and tries again', async () => {

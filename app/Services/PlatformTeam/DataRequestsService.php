@@ -31,8 +31,10 @@ use Illuminate\Support\Facades\Log;
  * GdprService itself is not called: it is bound to one community.
  *
  * "Completed in the last 90 days" is dated by `processed_at`, which is what
- * GdprService stamps on completion; a completed row without one falls back to
- * `updated_at` rather than vanishing from the count.
+ * GdprService stamps on completion, and nothing else: `updated_at` moves
+ * whenever the row is touched, so it cannot date a completion. A completed
+ * row with no `processed_at` is counted on its own, platform-wide, as
+ * `totals.completed_without_date`.
  *
  * 🔴 Cross-community on purpose: no `tenant_id` filter, because the question
  * is "is any community leaving data requests unanswered". Correct only because
@@ -128,8 +130,16 @@ final class DataRequestsService
         $completed = $figure('completed_last_90_days', fn (): array => $this->countByCommunity(
             DB::table('gdpr_requests')
                 ->where('status', 'completed')
-                ->whereRaw('COALESCE(processed_at, updated_at) >= ?', [$completedSince])
+                ->where('processed_at', '>=', $completedSince)
         ));
+        // Completed with no completion date: not dated by `updated_at`, which
+        // moves whenever the row is touched. One platform-wide count.
+        $withoutDate = $figure('completed_without_date', fn (): array => [
+            'n' => (int) DB::table('gdpr_requests')
+                ->where('status', 'completed')
+                ->whereNull('processed_at')
+                ->count(),
+        ]);
 
         $communities = [];
         foreach (DB::table('tenants')->orderBy('name')->orderBy('id')->get(['id', 'name', 'slug', 'is_active']) as $tenant) {
@@ -166,7 +176,9 @@ final class DataRequestsService
             'completed_window_days' => self::COMPLETED_WINDOW_DAYS,
             'request_types' => self::REQUEST_TYPES,
             'unavailable' => $unavailable,
-            'totals' => self::totals($communities, $unavailable),
+            'totals' => self::totals($communities, $unavailable) + [
+                'completed_without_date' => $withoutDate === null ? null : $withoutDate['n'],
+            ],
             'communities' => $communities,
         ];
     }

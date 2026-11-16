@@ -70,8 +70,9 @@ final class ConnectionsService
             'google_maps' => ['maps_translation', fn () => $this->envSet('GOOGLE_MAPS_API_KEY')],
             'google_translate' => ['maps_translation', fn () => $set('services.google_translate.api_key')],
             // SearchService reads the environment directly, with a built-in host
-            // default: read the host without that default, and the key.
-            'meilisearch' => ['search', fn () => $this->envSet('MEILISEARCH_HOST') && $this->envSet('MEILISEARCH_KEY')],
+            // default, and works with no key: either value set means someone
+            // set the search engine up. Read the host without that default.
+            'meilisearch' => ['search', fn () => $this->envSet('MEILISEARCH_HOST') || $this->envSet('MEILISEARCH_KEY')],
             'sentry' => ['error_reports', fn () => $set('sentry.dsn')],
             // Reading counts back (Recent errors page): a separate read-only key,
             // the organisation and the server's project id, checked exactly as

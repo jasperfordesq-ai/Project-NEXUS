@@ -47,7 +47,7 @@ class DataRequestsTest extends TestCase
 
     private const TOTAL_KEYS = [
         'communities', 'open', 'open_by_type', 'overdue', 'nearly_due',
-        'oldest_open_days', 'completed_last_90_days',
+        'oldest_open_days', 'completed_last_90_days', 'completed_without_date',
     ];
 
     /** @param array<string, mixed> $attributes */
@@ -258,6 +258,29 @@ class DataRequestsTest extends TestCase
         $this->assertSame(2, $row['completed_last_90_days']);
         $this->assertSame(0, $row['open']);
         $this->assertNull($row['oldest_open_days']);
+    }
+
+    /**
+     * `updated_at` changes whenever the row is touched, so it cannot date a
+     * completion. A completed request with no completion date is counted on
+     * its own instead, platform-wide.
+     */
+    public function test_a_completed_request_with_no_completion_date_is_counted_apart_not_by_updated_at(): void
+    {
+        $id = $this->community();
+        $u = $this->member($id);
+        $this->actAsPlatformTeam();
+        $before = $this->data()['totals']['completed_without_date'];
+
+        // Completed long ago, touched yesterday: not "completed in the last 90 days".
+        $this->request($id, $u, ['status' => 'completed', 'processed_at' => null, 'updated_at' => now()->subDay()]);
+        $this->request($id, $u, ['status' => 'completed', 'processed_at' => null, 'updated_at' => now()->subYears(2)]);
+        $this->request($id, $u, ['status' => 'rejected', 'processed_at' => null]); // not completed
+
+        $data = $this->data();
+
+        $this->assertSame(0, $this->row($data, $id)['completed_last_90_days']);
+        $this->assertSame($before + 2, $data['totals']['completed_without_date']);
     }
 
     public function test_the_totals_add_up_the_rows(): void

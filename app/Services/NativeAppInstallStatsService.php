@@ -46,7 +46,10 @@ use Illuminate\Support\Facades\DB;
  *
  * Queries here deliberately do not swallow exceptions. A missing column must
  * surface as an error rather than a plausible-looking zero; see the
- * `catch (\Throwable)` note in AGENTS.md.
+ * `catch (\Throwable)` note in AGENTS.md. One exception:
+ * {@see platformAppVersions()} answers null ("not available", never a zero)
+ * and logs at error, so a missing `app_version` column cannot take down the
+ * whole Phone app page.
  */
 class NativeAppInstallStatsService
 {
@@ -172,15 +175,26 @@ class NativeAppInstallStatsService
      *
      * 🔴 Cross-community on purpose. Only call this for the platform team.
      *
-     * @return array{versions: list<array{version: string, sign_ins: int}>, version_not_recorded: int}
+     * Where the versions cannot be read (for example a database without the
+     * `app_version` column), both figures are null ("not available", never an
+     * empty list or a zero), the reason is logged at error with the
+     * exception's class, and nothing is thrown, so the rest of the Phone app
+     * reply is unaffected.
+     *
+     * @return array{versions: ?list<array{version: string, sign_ins: int}>, version_not_recorded: ?int}
      */
     public function platformAppVersions(): array
     {
-        $rows = DB::table('refresh_session_activity as a')
-            ->where('a.from_phone_app', 1)
-            ->whereRaw(self::LIVE_SIGN_IN_SQL, [now()])
-            ->groupBy('a.app_version')
-            ->get(['a.app_version', DB::raw('COUNT(*) AS sign_ins')]);
+        try {
+            $rows = $this->appVersionRows();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Phone app versions in use could not be read; shown as not available.', [
+                'exception' => $e::class,
+                'message' => $e->getMessage(),
+            ]);
+
+            return ['versions' => null, 'version_not_recorded' => null];
+        }
 
         $versions = [];
         $notRecorded = 0;
@@ -196,6 +210,21 @@ class NativeAppInstallStatsService
         usort($versions, static fn (array $a, array $b): int => version_compare($b['version'], $a['version']));
 
         return ['versions' => $versions, 'version_not_recorded' => $notRecorded];
+    }
+
+    /**
+     * Live phone-app sign-ins grouped by recorded app version. Its own method
+     * so a test can stand in a failing read.
+     *
+     * @return \Illuminate\Support\Collection<int, object>
+     */
+    protected function appVersionRows(): \Illuminate\Support\Collection
+    {
+        return DB::table('refresh_session_activity as a')
+            ->where('a.from_phone_app', 1)
+            ->whereRaw(self::LIVE_SIGN_IN_SQL, [now()])
+            ->groupBy('a.app_version')
+            ->get(['a.app_version', DB::raw('COUNT(*) AS sign_ins')]);
     }
 
     /**

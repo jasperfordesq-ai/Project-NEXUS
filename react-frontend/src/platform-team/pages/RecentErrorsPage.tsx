@@ -23,7 +23,7 @@
  * (`?refresh=1`, limited on the server to six a minute).
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Card, CardBody, Spinner } from '@/components/ui';
 import { LoadError } from '@/components/feedback/LoadError';
@@ -68,14 +68,21 @@ export function RecentErrorsPage() {
   const [report, setReport] = useState<RecentErrorsReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
+  /** "Check again" was refused (too many in a minute); the figures on screen stay. */
+  const [refused, setRefused] = useState(false);
+  const hasReport = useRef(false);
 
   const load = useCallback(async (askAgain = false) => {
     setLoading(true);
     setFailed(false);
+    setRefused(false);
     try {
       const res = await api.get<RecentErrorsReport>(askAgain ? `${ENDPOINT}?refresh=1` : ENDPOINT);
       if (res.success && res.data && typeof res.data.connected === 'boolean') {
         setReport(res.data);
+        hasReport.current = true;
+      } else if (askAgain && hasReport.current && res.code === 'RATE_LIMIT_EXCEEDED') {
+        setRefused(true);
       } else {
         setReport(null);
         setFailed(true);
@@ -83,6 +90,7 @@ export function RecentErrorsPage() {
     } catch (err) {
       logError('Failed to load recent errors', err);
       setReport(null);
+      hasReport.current = false;
       setFailed(true);
     } finally {
       setLoading(false);
@@ -103,7 +111,6 @@ export function RecentErrorsPage() {
     return date.toLocaleString(language, { dateStyle: 'medium', timeStyle: 'short' });
   })();
 
-  const projects = report?.projects ?? [];
 
   return (
     <section className="mx-auto max-w-5xl">
@@ -139,37 +146,50 @@ export function RecentErrorsPage() {
         </Card>
       ) : (
         <div className="flex flex-col gap-4">
+          {refused ? (
+            <p className="text-sm font-medium text-warning-soft-foreground" role="status">
+              {t('errors.check_refused')}
+            </p>
+          ) : null}
           {checkedAt ? <p className="text-sm text-muted">{t('errors.checked_at', { time: checkedAt })}</p> : null}
           <p className="text-sm text-muted">{t('errors.kept_note')}</p>
-          <div className="grid gap-4 md:grid-cols-3">
-            {projects.map((project) => (
-              <Card key={project.key} data-testid={`errors-project-${project.key}`}>
-                <CardBody className="gap-3 p-4">
-                  <h2 className="text-lg font-semibold text-foreground">{t(`errors.project.${project.key}`)}</h2>
-                  {project.available ? (
-                    <dl className="flex flex-col gap-2">
-                      {FIGURES.map(({ field, id }) => (
-                        <div key={id} className="min-w-0">
-                          <dt className="text-xs text-muted">{t(`errors.figure.${field}`)}</dt>
-                          <dd
-                            className="break-words text-xl font-semibold text-foreground"
-                            data-testid={`errors-${project.key}-${id}`}
-                          >
-                            {number(project[field])}
-                          </dd>
-                        </div>
-                      ))}
-                    </dl>
-                  ) : (
-                    <p className="inline-flex items-start gap-2 text-sm text-warning-soft-foreground" role="status">
-                      <CircleHelp size={16} aria-hidden="true" className="mt-0.5 shrink-0" />
-                      {t('errors.could_not_read')}
-                    </p>
-                  )}
-                </CardBody>
-              </Card>
-            ))}
-          </div>
+          {!Array.isArray(report.projects) ? (
+            // Connected, but no parts came back: say so, never an empty grid.
+            <p className="inline-flex items-start gap-2 text-sm text-warning-soft-foreground" role="status">
+              <CircleHelp size={16} aria-hidden="true" className="mt-0.5 shrink-0" />
+              {t('errors.could_not_read_any')}
+            </p>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-3">
+              {report.projects.map((project) => (
+                <Card key={project.key} data-testid={`errors-project-${project.key}`}>
+                  <CardBody className="gap-3 p-4">
+                    <h2 className="text-lg font-semibold text-foreground">{t(`errors.project.${project.key}`)}</h2>
+                    {project.available ? (
+                      <dl className="flex flex-col gap-2">
+                        {FIGURES.map(({ field, id }) => (
+                          <div key={id} className="min-w-0">
+                            <dt className="text-xs text-muted">{t(`errors.figure.${field}`)}</dt>
+                            <dd
+                              className="break-words text-xl font-semibold text-foreground"
+                              data-testid={`errors-${project.key}-${id}`}
+                            >
+                              {number(project[field])}
+                            </dd>
+                          </div>
+                        ))}
+                      </dl>
+                    ) : (
+                      <p className="inline-flex items-start gap-2 text-sm text-warning-soft-foreground" role="status">
+                        <CircleHelp size={16} aria-hidden="true" className="mt-0.5 shrink-0" />
+                        {t('errors.could_not_read')}
+                      </p>
+                    )}
+                  </CardBody>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </section>

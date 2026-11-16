@@ -18,8 +18,12 @@ vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/contexts', () => ({ useToast: () => toast }));
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, options?: Record<string, unknown>) =>
-      options && 'count' in options ? `${key}|${String(options.count)}` : key,
+    t: (key: string, options?: Record<string, unknown>) => {
+      if (options && 'count' in options) return `${key}|${String(options.count)}`;
+      if (options && 'name' in options) return `${key}|${String(options.name)}`;
+      if (options && 'days' in options) return `${key}|${String(options.days)}`;
+      return key;
+    },
     i18n: { language: 'en' },
   }),
 }));
@@ -63,13 +67,40 @@ describe('DomainsPage', () => {
     toast.error.mockReset();
   });
 
-  it('says what it shows and where the check is made from', async () => {
-    apiGet.mockResolvedValue(reply([]));
+  it('asks for the list once and says how many days ahead it warns, from the reply', async () => {
+    apiGet.mockResolvedValue(reply([community(1, [address()])]));
     render(<DomainsPage />);
 
-    expect(await screen.findByText('domains.intro')).toBeInTheDocument();
-    expect(screen.getByText('domains.seen_from_server')).toBeInTheDocument();
+    expect(await screen.findByText('domains.daily|21')).toBeInTheDocument();
+    expect(apiGet).toHaveBeenCalledTimes(1);
     expect(apiGet).toHaveBeenCalledWith('/v2/platform-team/domains');
+    expect(screen.queryByTestId('load-error')).toBeNull();
+  });
+
+  it('never says "0 days left" when the days left could not be read', async () => {
+    apiGet.mockResolvedValue(reply([community(1, [address({ status: 'warning', days_left: null })])]));
+    render(<DomainsPage />);
+    await waitFor(() => expect(row(1)).toBeInTheDocument());
+
+    expect(within(row(1)).getByText('domains.status.warning_days_unknown')).toBeInTheDocument();
+    expect(within(row(1)).queryByText('domains.status.warning|0')).toBeNull();
+  });
+
+  it('names the community on each "Check now" button, and shows it busy while the check runs', async () => {
+    let finish: (value: unknown) => void = () => {};
+    apiGet.mockResolvedValue(reply([community(2, [address()], 'River'), community(3, [address()], 'Hill')]));
+    apiPost.mockImplementation(() => new Promise((resolve) => { finish = resolve; }));
+    render(<DomainsPage />);
+    await waitFor(() => expect(row(2)).toBeInTheDocument());
+
+    const river = within(row(2)).getByRole('button', { name: 'domains.check_now_for|River' });
+    expect(within(row(3)).getByRole('button', { name: 'domains.check_now_for|Hill' })).toBeInTheDocument();
+    fireEvent.click(river);
+
+    await waitFor(() => expect(river).toHaveAttribute('data-pending', 'true'));
+    expect(within(row(3)).getByRole('button', { name: 'domains.check_now_for|Hill' })).not.toHaveAttribute('data-pending');
+    finish({ success: true, data: community(2, [address()], 'River') });
+    await waitFor(() => expect(river).not.toHaveAttribute('data-pending'));
   });
 
   it('puts each state into words', async () => {
@@ -129,7 +160,7 @@ describe('DomainsPage', () => {
     render(<DomainsPage />);
     await waitFor(() => expect(row(2)).toBeInTheDocument());
 
-    fireEvent.click(within(row(2)).getByRole('button', { name: 'domains.check_now' }));
+    fireEvent.click(within(row(2)).getByRole('button', { name: 'domains.check_now_for|Community 2' }));
 
     await waitFor(() => expect(apiPost).toHaveBeenCalledWith('/v2/platform-team/domains/check', { tenant_id: 2 }));
     expect(await within(row(2)).findByText('domains.status.warning|3')).toBeInTheDocument();
@@ -144,8 +175,8 @@ describe('DomainsPage', () => {
     render(<DomainsPage />);
     await waitFor(() => expect(row(7)).toBeInTheDocument());
 
-    expect(within(row(7)).queryByRole('button', { name: 'domains.check_now' })).toBeNull();
-    expect(within(row(8)).queryByRole('button', { name: 'domains.check_now' })).toBeNull();
+    expect(within(row(7)).queryByRole('button', { name: /domains\.check_now/ })).toBeNull();
+    expect(within(row(8)).queryByRole('button', { name: /domains\.check_now/ })).toBeNull();
   });
 
   it('re-checks the platform\'s own addresses', async () => {
@@ -154,7 +185,7 @@ describe('DomainsPage', () => {
     render(<DomainsPage />);
     const section = await screen.findByTestId('domains-platform');
 
-    fireEvent.click(within(section).getByRole('button', { name: 'domains.check_now' }));
+    fireEvent.click(within(section).getByRole('button', { name: 'domains.check_platform_now' }));
 
     await waitFor(() => expect(apiPost).toHaveBeenCalledWith('/v2/platform-team/domains/check', { platform: true }));
     expect(await within(section).findByText('domains.status.ok')).toBeInTheDocument();
@@ -169,7 +200,7 @@ describe('DomainsPage', () => {
     render(<DomainsPage />);
     await waitFor(() => expect(row(2)).toBeInTheDocument());
 
-    fireEvent.click(within(row(2)).getByRole('button', { name: 'domains.check_now' }));
+    fireEvent.click(within(row(2)).getByRole('button', { name: 'domains.check_now_for|Community 2' }));
 
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith(words));
     expect(toast.success).not.toHaveBeenCalled();

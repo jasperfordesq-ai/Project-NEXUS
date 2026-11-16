@@ -161,6 +161,29 @@ describe('TranslationsPage', () => {
     expect(await screen.findByTestId('server-row-de')).toBeInTheDocument();
   });
 
+  it('shows an error with a retry, not "not available", when the website file could not be fetched', async () => {
+    fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    render(<TranslationsPage />);
+
+    expect(await screen.findByText('translations.website_load_error')).toBeInTheDocument();
+    expect(screen.queryByText('translations.website_unavailable')).not.toBeInTheDocument();
+    await screen.findByTestId('server-row-de');
+    fireEvent.click(screen.getByRole('button', { name: /retry|try again/i }));
+    expect(await screen.findByTestId('website-row-fr')).toBeInTheDocument();
+  });
+
+  it('keeps the table on screen and says so when "Count again" is refused', async () => {
+    render(<TranslationsPage />);
+    await screen.findByTestId('server-row-de');
+    apiGet.mockResolvedValueOnce({ success: false, code: 'RATE_LIMIT_EXCEEDED', error: 'Too many' });
+
+    fireEvent.click(screen.getByRole('button', { name: 'translations.recount' }));
+
+    expect(await screen.findByText('translations.recount_refused')).toBeInTheDocument();
+    expect(screen.getByTestId('server-row-de')).toBeInTheDocument();
+    expect(screen.queryByText('translations.server_load_error')).not.toBeInTheDocument();
+  });
+
   it('counts the server figures again on request', async () => {
     render(<TranslationsPage />);
 

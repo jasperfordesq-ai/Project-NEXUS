@@ -73,10 +73,15 @@ interface SignOut {
   community: string | null;
 }
 
-/** Failed sign-ins in the last 24 hours for one community (`community: null` = not known). */
+/**
+ * Sign-ins in the last 24 hours for one community (`community: null` = not known):
+ * failed password checks, and attempts the lock-out refused before any check.
+ */
 interface CommunityFailures {
   community: { id: number; name: string | null } | null;
   failed: number;
+  /** Optional: a server that has not been updated yet does not send it. */
+  refused?: number;
 }
 
 /** A section the server could not read carries `available: false` and nothing else. */
@@ -88,8 +93,12 @@ export interface SecurityOverview {
   access_changes: Section<{ items: AccessChange[]; truncated: boolean }>;
   impersonations: Section<{ items: Impersonation[]; truncated: boolean }>;
   failed_sign_ins: Section<{
-    last_hour: number;
-    last_24h: number;
+    /** Null when nothing has been counted yet (`counted_since` null). */
+    last_hour: number | null;
+    last_24h: number | null;
+    /** Refused by the lock-out; optional (an older server does not send it). */
+    refused_last_hour?: number | null;
+    refused_last_24h?: number | null;
     /** The oldest hour counted; null when nothing has been counted yet. */
     counted_since: string | null;
     addresses_15m: number;
@@ -153,13 +162,19 @@ export function SecurityPage() {
       : date.toLocaleDateString(i18n.language, { dateStyle: 'medium' });
   };
 
-  const figure = (key: string, label: string, value: number) => (
-    <Card key={key}>
-      <CardBody className="p-4" data-testid={`failed-${key}`}>
-        <dt className="text-sm text-muted">{label}</dt>
-        <dd className="mt-1 text-2xl font-semibold text-foreground">{number(value)}</dd>
-      </CardBody>
-    </Card>
+  // One figure: a <dt>/<dd> pair in a <div> directly inside the <dl> (valid list
+  // structure), styled as a card. Null or not sent shows "not recorded", never 0.
+  const figure = (key: string, label: string, value: number | null | undefined) => (
+    <div
+      key={key}
+      className="rounded-2xl border border-border bg-surface p-4 shadow-sm"
+      data-testid={`failed-${key}`}
+    >
+      <dt className="text-sm text-muted">{label}</dt>
+      <dd className="mt-1 text-2xl font-semibold text-foreground">
+        {typeof value === 'number' ? number(value) : t('security.not_recorded')}
+      </dd>
+    </div>
   );
   const person = (name: string | null): string => name ?? t('security.not_recorded');
 
@@ -264,9 +279,23 @@ export function SecurityPage() {
                     <p className="text-sm text-muted">
                       {t('security.failed.counted_since', { date: day(overview.failed_sign_ins.counted_since) })}
                     </p>
+                    <h3 className="text-base font-semibold text-foreground">{t('security.failed.checks_title')}</h3>
                     <dl className="grid grid-cols-2 gap-3">
                       {figure('last_hour', t('security.failed.last_hour'), overview.failed_sign_ins.last_hour)}
                       {figure('last_24h', t('security.failed.last_24h'), overview.failed_sign_ins.last_24h)}
+                    </dl>
+                    <h3 className="text-base font-semibold text-foreground">{t('security.failed.refused_title')}</h3>
+                    <dl className="grid grid-cols-2 gap-3">
+                      {figure(
+                        'refused_last_hour',
+                        t('security.failed.last_hour'),
+                        overview.failed_sign_ins.refused_last_hour,
+                      )}
+                      {figure(
+                        'refused_last_24h',
+                        t('security.failed.last_24h'),
+                        overview.failed_sign_ins.refused_last_24h,
+                      )}
                     </dl>
 
                     {overview.failed_sign_ins.by_community.length === 0 ? (
@@ -283,8 +312,12 @@ export function SecurityPage() {
                                     : (row.community.name ??
                                       t('senior_accounts.unnamed_community', { id: row.community.id }))}
                                 </h3>
-                                <dl className="text-sm text-muted">
+                                <dl className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
                                   {fact(t('security.failed.col_failed'), number(row.failed))}
+                                  {fact(
+                                    t('security.failed.col_refused'),
+                                    typeof row.refused === 'number' ? number(row.refused) : t('security.not_recorded'),
+                                  )}
                                 </dl>
                               </CardBody>
                             </Card>

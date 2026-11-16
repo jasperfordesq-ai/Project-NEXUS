@@ -229,10 +229,10 @@ class SecurityOverviewTest extends TestCase
         $section = $this->data()['failed_sign_ins'];
 
         $this->assertSame(
-            ['addresses_15m', 'available', 'by_community', 'counted_since', 'last_24h', 'last_hour', 'most_from_one_address_15m'],
+            ['addresses_15m', 'available', 'by_community', 'counted_since', 'last_24h', 'last_hour', 'most_from_one_address_15m', 'refused_last_24h', 'refused_last_hour'],
             $this->sortedKeys($section),
         );
-        $this->assertSame(['community', 'failed'], $this->sortedKeys($section['by_community'][0]));
+        $this->assertSame(['community', 'failed', 'refused'], $this->sortedKeys($section['by_community'][0]));
         $this->assertSame(['id', 'name'], $this->sortedKeys($section['by_community'][0]['community']));
     }
 
@@ -250,6 +250,15 @@ class SecurityOverviewTest extends TestCase
         $this->plantHour('5 HOUR', $this->testTenantId, 5);
         $this->plantHour('30 HOUR', $this->testTenantId, 7);
         $this->plantHour('5 HOUR', 0, 1);
+        // Refused by the lock-out: counted beside the failed password checks,
+        // never inside them.
+        $this->plantHour('2 HOUR', $otherCommunity, 0, 40);
+        $this->plantHour('30 HOUR', $otherCommunity, 0, 900);
+        DB::update(
+            "UPDATE sign_in_failure_hours SET refused = 6
+             WHERE tenant_id = ? AND hour_start = DATE_FORMAT(NOW() - INTERVAL 30 MINUTE, '%Y-%m-%d %H:00:00')",
+            [$this->testTenantId],
+        );
         $this->actAsPlatformTeam();
 
         $section = $this->data()['failed_sign_ins'];
@@ -257,12 +266,15 @@ class SecurityOverviewTest extends TestCase
         $this->assertTrue($section['available']);
         $this->assertSame(5, $section['last_hour'], 'only the hour rows that touch the last 60 minutes');
         $this->assertSame(11, $section['last_24h'], 'not the row from 30 hours ago');
+        $this->assertSame(6, $section['refused_last_hour']);
+        $this->assertSame(46, $section['refused_last_24h'], 'not the refused row from 30 hours ago');
         $this->assertSame(
             [
-                ['community' => ['id' => $this->testTenantId, 'name' => $this->communityName()], 'failed' => 8],
-                ['community' => ['id' => $otherCommunity, 'name' => (string) DB::table('tenants')->where('id', $otherCommunity)->value('name')], 'failed' => 2],
+                // Most first, failed and refused counted together.
+                ['community' => ['id' => $otherCommunity, 'name' => (string) DB::table('tenants')->where('id', $otherCommunity)->value('name')], 'failed' => 2, 'refused' => 40],
+                ['community' => ['id' => $this->testTenantId, 'name' => $this->communityName()], 'failed' => 8, 'refused' => 6],
                 // 0 is "the community was not known".
-                ['community' => null, 'failed' => 1],
+                ['community' => null, 'failed' => 1, 'refused' => 0],
             ],
             $section['by_community'],
         );
@@ -282,6 +294,11 @@ class SecurityOverviewTest extends TestCase
         $this->assertTrue($section['available']);
         $this->assertNull($section['counted_since']);
         $this->assertSame([], $section['by_community']);
+        // Nothing counted is not the same as none: no total is sent as 0.
+        foreach (['last_hour', 'last_24h', 'refused_last_hour', 'refused_last_24h'] as $key) {
+            $this->assertArrayHasKey($key, $section);
+            $this->assertNull($section[$key], $key);
+        }
     }
 
     /**
@@ -520,12 +537,12 @@ class SecurityOverviewTest extends TestCase
     }
 
     /** One hour row, `$ago` before now, in the database's clock (the one the counter writes with). */
-    private function plantHour(string $ago, int $tenantId, int $failures): void
+    private function plantHour(string $ago, int $tenantId, int $failures, int $refused = 0): void
     {
         DB::insert(
-            "INSERT INTO sign_in_failure_hours (hour_start, tenant_id, failures)
-             VALUES (DATE_FORMAT(NOW() - INTERVAL {$ago}, '%Y-%m-%d %H:00:00'), ?, ?)",
-            [$tenantId, $failures],
+            "INSERT INTO sign_in_failure_hours (hour_start, tenant_id, failures, refused)
+             VALUES (DATE_FORMAT(NOW() - INTERVAL {$ago}, '%Y-%m-%d %H:00:00'), ?, ?, ?)",
+            [$tenantId, $failures, $refused],
         );
     }
 

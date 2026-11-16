@@ -221,8 +221,8 @@ export function CommunitySetupPage() {
             <table className="w-full border-collapse text-sm" data-testid="community-setup-table">
               <caption className="sr-only">{t('community_setup.title')}</caption>
               <thead>
-                <tr className="bg-surface-secondary text-left text-xs text-muted">
-                  <th scope="col" className="sticky left-0 z-10 min-w-48 bg-surface-secondary px-3 py-2 font-medium">
+                <tr className="bg-surface-secondary text-start text-xs text-muted">
+                  <th scope="col" className="sticky start-0 z-10 min-w-48 bg-surface-secondary px-3 py-2 font-medium">
                     {t('community_setup.column.community')}
                   </th>
                   <th scope="col" className="min-w-28 px-3 py-2 align-bottom font-medium">
@@ -241,7 +241,7 @@ export function CommunitySetupPage() {
               <tbody>
                 {setup.communities.map((community) => (
                   <tr key={community.id} className="border-t border-divider">
-                    <th scope="row" className="sticky left-0 z-10 bg-background px-3 py-2 text-left font-medium text-foreground">
+                    <th scope="row" className="sticky start-0 z-10 bg-background px-3 py-2 text-start font-medium text-foreground">
                       {header(community)}
                     </th>
                     <td className="px-3 py-2">{makeItYours(community.make_it_yours)}</td>

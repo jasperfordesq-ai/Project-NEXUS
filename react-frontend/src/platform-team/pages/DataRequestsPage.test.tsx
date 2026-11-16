@@ -63,6 +63,7 @@ const reply = (over: Partial<DataRequests> = {}): DataRequests => ({
     nearly_due: 1,
     oldest_open_days: 41,
     completed_last_90_days: 7,
+    completed_without_date: 0,
   },
   communities: [
     row({}),
@@ -170,6 +171,24 @@ describe('DataRequestsPage', () => {
     expect(alpha[1]).toHaveTextContent('data_requests.not_available');
     expect(alpha[1]).not.toHaveTextContent('0');
     expect(screen.getByTestId('data-requests-overdue')).toHaveTextContent('data_requests.overdue_unknown');
+  });
+
+  // Completed with no completion date: counted apart, said once, only when there are some.
+  it('says how many completed requests have no completion date, only when there are some', async () => {
+    const { unmount } = render(<DataRequestsPage />);
+    await screen.findByTestId('data-requests-table');
+    expect(screen.queryByTestId('data-requests-without-date')).not.toBeInTheDocument();
+    unmount();
+
+    apiGet.mockResolvedValue({
+      success: true,
+      data: reply({ totals: { ...reply().totals, completed_without_date: 3 } }),
+    });
+    render(<DataRequestsPage />);
+
+    expect(await screen.findByTestId('data-requests-without-date')).toHaveTextContent(
+      'data_requests.completed_without_date|3',
+    );
   });
 
   it('gives a narrow screen one card per community', async () => {

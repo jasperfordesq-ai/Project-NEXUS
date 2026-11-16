@@ -296,17 +296,20 @@
     },
     "failed": {
       "title": "Connexions échouées",
-      "note": "Chaque connexion échouée est comptée au moment où elle se produit, par communauté et par heure. Le décompte ne garde qu'un nombre : rien sur la personne ni sur l'endroit d'où elle a tenté de se connecter. Les chiffres sont comptés par heures entières, chacun peut donc inclure jusqu'à une heure de plus.",
-      "counted_since": "Compté depuis le {{date}}",
+      "note": "Deux décomptes séparés, par communauté et par heure. « Vérifications de mot de passe échouées » : quelqu’un a essayé de se connecter et le mot de passe était faux. « Refusées par le verrouillage » : après trop d’essais, la tentative a été refusée avant toute vérification du mot de passe. Les deux ne sont jamais additionnés. Chaque décompte ne garde qu’un nombre, rien sur la personne ni sur l’endroit d’où elle s’est connectée. Les chiffres sont comptés en heures entières, donc chacun peut inclure jusqu’à une heure de plus.",
+      "counted_since": "Première connexion échouée enregistrée : {{date}}",
       "nothing_counted": "Rien n'a encore été compté. Les connexions échouées sont comptées à partir du jour où ce décompte a été activé.",
       "last_hour": "Durant la dernière heure",
       "last_24h": "Durant les dernières 24 heures",
-      "empty": "Aucune connexion échouée au cours des dernières 24 heures.",
-      "col_failed": "Échecs au cours des dernières 24 heures :",
+      "empty": "Aucune connexion échouée ou refusée au cours des dernières 24 heures.",
+      "col_failed": "Vérifications de mot de passe échouées au cours des dernières 24 heures :",
       "recent_title": "Durant les 15 dernières minutes",
       "recent_note": "Les adresses internet essayées en ce moment. La plateforme ne garde ces détails qu'environ 20 minutes et oublie les échecs d'une adresse dès qu'une connexion réussit depuis celle-ci. Les connexions via le site accessible arrivent toutes d'une seule adresse.",
       "addresses_15m": "Adresses internet différentes durant les 15 dernières minutes",
-      "most_from_one_15m": "Le plus depuis une seule adresse durant les 15 dernières minutes"
+      "most_from_one_15m": "Le plus depuis une seule adresse durant les 15 dernières minutes",
+      "checks_title": "Vérifications de mot de passe échouées",
+      "refused_title": "Refusées par le verrouillage",
+      "col_refused": "Refusées par le verrouillage au cours des dernières 24 heures :"
     },
     "access": {
       "title": "Accès à haut niveau accordés et retirés",
@@ -426,7 +429,8 @@
     "unavailable": {
       "emails": "Les chiffres des e-mails n’ont pas pu être lus pour le moment. Ils ne sont pas nuls.",
       "ai_chat": "Les chiffres du chat IA n’ont pas pu être lus pour le moment. Ils ne sont pas nuls.",
-      "group_files": "La taille des fichiers de groupe n’a pas pu être lue pour le moment. Elle n’est pas nulle."
+      "group_files": "La taille des fichiers de groupe n’a pas pu être lue pour le moment. Elle n’est pas nulle.",
+      "emails_kept_90_days": "Les traces des e-mails sont conservées 90 jours, ce mois ne peut donc pas être affiché."
     },
     "totals_heading": "Toutes les communautés ensemble",
     "communities_heading": "Chaque communauté ({{count}})",
@@ -438,7 +442,7 @@
     "failed": "Échoués",
     "bounced": "Rejetés",
     "ai_requests": "Demandes",
-    "ai_tokens": "Jetons",
+    "ai_tokens": "Morceaux de texte traités",
     "ai_cost": "Coût",
     "files": "Espace utilisé aujourd’hui",
     "removed_community": "Communauté #{{id}} (n’existe plus)",
@@ -446,7 +450,7 @@
     "platform_mail": "E-mails de la plateforme",
     "platform_mail_note": "E-mails envoyés par la plateforme qui n’appartiennent à aucune communauté en particulier.",
     "notes_heading": "Ce que signifient les chiffres",
-    "sent_note": "« Envoyés » signifie que l’e-mail a été remis au service de messagerie. Cela ne prouve pas qu’il est arrivé.",
+    "sent_note": "« Envoyés » signifie que l’e-mail a été remis au service de messagerie. Cela ne prouve pas qu’il est arrivé. Les e-mails rejetés sont inclus dans Envoyés : n’additionnez donc pas les deux.",
     "ai_note": "Le coût de l’IA est ce qui a été enregistré pour chaque demande, en dollars américains.",
     "files_note": "Fichiers de groupe indique l’espace qu’ils occupent aujourd’hui, pas ce qui a été ajouté ce mois-ci.",
     "not_recorded_heading": "Non enregistré pour l’instant",
@@ -488,7 +492,8 @@
       "hours_this_month": "Heures échangées ce mois-ci",
       "new_listings_this_month": "Nouvelles annonces ce mois-ci",
       "last_sign_in": "Dernière connexion"
-    }
+    },
+    "quiet_unknown_summary": "Nous n’avons pas pu déterminer pour l’instant quelles communautés sont calmes."
   },
   "community_setup": {
     "title": "Mise en place des communautés",
@@ -582,7 +587,8 @@
       "restriction": "Une limitation de l’utilisation",
       "portability": "Un transfert",
       "objection": "Une opposition"
-    }
+    },
+    "completed_without_date": "Demandes traitées sans date de traitement, donc absentes du chiffre sur 90 jours : {{count}}"
   },
   "legal_documents": {
     "title": "Documents juridiques",
@@ -655,12 +661,14 @@
     "open_intro": "Ces comptes ont été marqués « À retirer » lors de la dernière revue et ont toujours leur accès.",
     "history_title": "Revues récentes",
     "history_none": "Pas encore de revue.",
-    "history_by": "Enregistrée par",
+    "history_by": "Enregistrée par {{name}}",
     "history_accounts_one": "{{count}} compte",
     "history_accounts_other": "{{count}} comptes",
     "history_removals_one": "{{count}} marqué à retirer",
     "history_removals_other": "{{count}} marqués à retirer",
-    "erased": "Compte effacé"
+    "erased": "Compte effacé",
+    "refresh_failed": "La revue n’a pas pu être rechargée. Ce que vous voyez date d’avant.",
+    "note_no_names": "Ne nommez personne dans la note. Elle est conservée avec l’enregistrement."
   },
   "push_notifications": {
     "title": "Notifications push",
@@ -736,7 +744,9 @@
       "needed": "Le service d’erreurs ne donne ces chiffres qu’à une clé d’accès à lui, en lecture seule, enregistrée sur ce serveur. Cela n’a pas été fait.",
       "decision": "Le faire ou non est une décision du propriétaire de la plateforme.",
       "meanwhile": "D’ici là, le rapport d’erreurs que vous recevez déjà chaque nuit est l’endroit où regarder."
-    }
+    },
+    "check_refused": "La nouvelle vérification a été refusée : trop de vérifications en une minute. Les chiffres ci-dessous datent d’avant.",
+    "could_not_read_any": "Le service d’erreurs a répondu, mais ses chiffres n’ont pas pu être lus. Cela ne veut pas dire qu’il n’y a aucune erreur."
   },
   "connections": {
     "title": "Clés et connexions",
@@ -804,7 +814,9 @@
       "translated": "Traduits"
     },
     "same_note": "Certains textes doivent rester identiques dans toutes les langues, comme les noms et les unités. « Encore identiques à l’anglais » est donc un maximum, pas un chiffre exact.",
-    "not_measured": "L’application mobile et le site accessible ne sont pas mesurés ici."
+    "not_measured": "L’application mobile et le site accessible ne sont pas mesurés ici.",
+    "website_load_error": "Les chiffres du site web n’ont pas pu être chargés",
+    "recount_refused": "Le nouveau comptage a été refusé : trop de demandes en peu de temps. Les chiffres ci-dessous datent d’avant."
   },
   "clean_up_jobs": {
     "title": "Tâches de nettoyage",
@@ -890,7 +902,8 @@
         "name": "Anciennes vérifications d'identité",
         "deletes": "Supprime les vérifications d'identité terminées ou expirées de plus de 180 jours. Le relevé de ce qui s'est passé pour chacune est conservé."
       }
-    }
+    },
+    "finished_only": "Cette tâche enregistre qu’elle s’est terminée, pas que chaque étape a fonctionné."
   },
   "search_rebuild": {
     "title": "Reconstruire la recherche",
@@ -922,7 +935,8 @@
       "done_with_errors_one": "Terminée {{time}} avec {{count}} entrée qui n'a pas pu être mise à jour",
       "done_with_errors_other": "Terminée {{time}} avec {{count}} entrées qui n'ont pas pu être mises à jour",
       "failed": "Échec"
-    }
+    },
+    "check_failed": "Impossible de vérifier à nouveau à {{time}}"
   },
   "agreements": {
     "title": "Accords et renouvellements",
@@ -984,7 +998,8 @@
       "community_unknown": "Cette communauté n'existe pas.",
       "save": "Enregistrer",
       "cancel": "Annuler"
-    }
+    },
+    "community_missing": "La communauté n’existe plus"
   },
   "assurance": {
     "title": "Faits mesurés",
@@ -994,7 +1009,7 @@
     "read_at": "Lu {{time}}",
     "could_not_read": "N'a pas pu être lu",
     "not_recorded": "Non enregistré",
-    "source_label": "D'où cela vient",
+    "source_label": "D'où cela vient :",
     "source_owner": "Saisi par le propriétaire de la plateforme dans les réglages du serveur",
     "findings_note": "Les constats de sécurité ouverts sont tenus dans un registre privé, pas sur ce serveur, et ne sont pas affichés ici.",
     "test_scope_note": "Un test indépendant porte sur la version testée, pas sur les changements faits depuis.",
@@ -1038,7 +1053,7 @@
     },
     "failed_sign_ins": {
       "title": "Relevé des connexions échouées",
-      "since": "Les connexions échouées sont comptées depuis {{date}}",
+      "since": "Première connexion échouée enregistrée : {{date}}",
       "none": "Rien n'a encore été compté",
       "note": "Ceci indique quand le relevé commence. Ce n'est le décompte de rien."
     },
@@ -1071,7 +1086,8 @@
       "warning_other": "Le certificat expire dans {{count}} jours",
       "failing": "Ne fonctionne pas",
       "unknown": "Pas encore vérifiée",
-      "not_checkable": "Pas une adresse web que nous pouvons vérifier"
+      "not_checkable": "Pas une adresse web que nous pouvons vérifier",
+      "warning_days_unknown": "Le certificat expire bientôt. Le nombre de jours restants n’a pas pu être lu."
     },
     "reason": {
       "does_not_resolve": "Le nom ne mène nulle part.",
@@ -1086,6 +1102,8 @@
     "check_now": "Vérifier maintenant",
     "checked": "Vérifiée.",
     "check_failed": "La vérification n'a pas pu être faite. Réessayez.",
-    "too_many": "Trop de vérifications en une minute. Attendez un instant et réessayez."
+    "too_many": "Trop de vérifications en une minute. Attendez un instant et réessayez.",
+    "check_now_for": "Vérifier {{name}} maintenant",
+    "check_platform_now": "Vérifier maintenant les adresses de la plateforme"
   }
 }

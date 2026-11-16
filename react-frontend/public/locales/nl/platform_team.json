@@ -296,17 +296,20 @@
     },
     "failed": {
       "title": "Mislukte inlogpogingen",
-      "note": "Elke mislukte inlogpoging wordt geteld zodra die gebeurt, per community en per uur. De telling bewaart alleen een getal: niets over de persoon en niets over waar vandaan werd ingelogd. Er wordt in hele uren geteld, dus elk getal kan tot een uur extra bevatten.",
-      "counted_since": "Geteld sinds {{date}}",
+      "note": "Twee aparte tellingen, per gemeenschap en per uur. ‘Mislukte wachtwoordcontroles’: iemand probeerde in te loggen en het wachtwoord was fout. ‘Geweigerd door de blokkering’: na te veel pogingen werd de poging geweigerd voordat er een wachtwoord werd gecontroleerd. De twee worden nooit bij elkaar opgeteld. Elke telling bewaart alleen een getal, niets over de persoon of waarvandaan die inlogde. Er wordt in hele uren geteld, dus elk getal kan tot een uur meer bevatten.",
+      "counted_since": "Vroegste mislukte inlogpoging in de registratie: {{date}}",
       "nothing_counted": "Er is nog niets geteld. Mislukte inlogpogingen worden geteld vanaf de dag waarop deze telling is aangezet.",
       "last_hour": "In het afgelopen uur",
       "last_24h": "In de afgelopen 24 uur",
-      "empty": "Geen mislukte inlogpogingen in de afgelopen 24 uur.",
-      "col_failed": "Mislukt in de afgelopen 24 uur:",
+      "empty": "Geen mislukte of geweigerde inlogpogingen in de afgelopen 24 uur.",
+      "col_failed": "Mislukte wachtwoordcontroles in de afgelopen 24 uur:",
       "recent_title": "In de afgelopen 15 minuten",
       "recent_note": "Welke internetadressen het nu proberen. Het platform bewaart deze gegevens maar ongeveer 20 minuten en vergeet de mislukte pogingen van een adres zodra daarvandaan weer met succes wordt ingelogd. Inlogpogingen via de toegankelijke site komen allemaal van één adres.",
       "addresses_15m": "Verschillende internetadressen in de afgelopen 15 minuten",
-      "most_from_one_15m": "De meeste vanaf één adres in de afgelopen 15 minuten"
+      "most_from_one_15m": "De meeste vanaf één adres in de afgelopen 15 minuten",
+      "checks_title": "Mislukte wachtwoordcontroles",
+      "refused_title": "Geweigerd door de blokkering",
+      "col_refused": "Geweigerd door de blokkering in de afgelopen 24 uur:"
     },
     "access": {
       "title": "Toegang op hoog niveau gegeven en ingetrokken",
@@ -426,7 +429,8 @@
     "unavailable": {
       "emails": "De e-mailcijfers konden nu niet worden gelezen. Ze zijn niet nul.",
       "ai_chat": "De AI-chatcijfers konden nu niet worden gelezen. Ze zijn niet nul.",
-      "group_files": "De grootte van de groepsbestanden kon nu niet worden gelezen. Die is niet nul."
+      "group_files": "De grootte van de groepsbestanden kon nu niet worden gelezen. Die is niet nul.",
+      "emails_kept_90_days": "E-mailgegevens worden 90 dagen bewaard, dus deze maand kan niet worden getoond."
     },
     "totals_heading": "Alle gemeenschappen samen",
     "communities_heading": "Elke gemeenschap ({{count}})",
@@ -438,7 +442,7 @@
     "failed": "Mislukt",
     "bounced": "Teruggestuurd",
     "ai_requests": "Verzoeken",
-    "ai_tokens": "Tokens",
+    "ai_tokens": "Verwerkte stukjes tekst",
     "ai_cost": "Kosten",
     "files": "Nu gebruikte ruimte",
     "removed_community": "Gemeenschap #{{id}} (bestaat niet meer)",
@@ -446,7 +450,7 @@
     "platform_mail": "Platformmail",
     "platform_mail_note": "E-mails die het platform verstuurde en die bij geen enkele gemeenschap horen.",
     "notes_heading": "Wat de cijfers betekenen",
-    "sent_note": "“Verzonden” betekent dat de e-mail aan de maildienst is overgedragen. Het bewijst niet dat hij is aangekomen.",
+    "sent_note": "“Verzonden” betekent dat de e-mail aan de maildienst is overgedragen. Het bewijst niet dat hij is aangekomen. Teruggestuurde e-mails zitten ook in Verzonden, tel de twee dus niet bij elkaar op.",
     "ai_note": "De AI-kosten zijn wat voor elk verzoek is vastgelegd, in Amerikaanse dollars.",
     "files_note": "Groepsbestanden is de ruimte die ze vandaag innemen, niet wat er deze maand bij kwam.",
     "not_recorded_heading": "Nu nog niet vastgelegd",
@@ -488,7 +492,8 @@
       "hours_this_month": "Geruilde uren deze maand",
       "new_listings_this_month": "Nieuwe advertenties deze maand",
       "last_sign_in": "Meest recente inlog"
-    }
+    },
+    "quiet_unknown_summary": "We konden nu niet bepalen welke gemeenschappen stil zijn."
   },
   "community_setup": {
     "title": "Inrichting van gemeenschappen",
@@ -582,7 +587,8 @@
       "restriction": "Een beperking van het gebruik",
       "portability": "Een overdracht",
       "objection": "Een bezwaar"
-    }
+    },
+    "completed_without_date": "Afgehandelde verzoeken zonder afhandeldatum, dus niet in het 90-dagengetal: {{count}}"
   },
   "legal_documents": {
     "title": "Juridische documenten",
@@ -655,12 +661,14 @@
     "open_intro": "Deze accounts zijn bij de laatste controle als \"Moet weg\" gemarkeerd en hebben hun toegang nog.",
     "history_title": "Recente controles",
     "history_none": "Nog geen controles.",
-    "history_by": "Vastgelegd door",
+    "history_by": "Vastgelegd door {{name}}",
     "history_accounts_one": "{{count}} gebruikersaccount",
     "history_accounts_other": "{{count}} gebruikersaccounts",
     "history_removals_one": "{{count}} gemarkeerd als moet weg",
     "history_removals_other": "{{count}} gemarkeerd als moet weg",
-    "erased": "Gewist account"
+    "erased": "Gewist account",
+    "refresh_failed": "De beoordeling kon niet opnieuw worden geladen. Wat je ziet is van eerder.",
+    "note_no_names": "Noem geen mensen bij naam in de notitie. Die wordt bij het verslag bewaard."
   },
   "push_notifications": {
     "title": "Pushmeldingen",
@@ -736,7 +744,9 @@
       "needed": "De foutendienst geeft deze cijfers alleen aan een eigen toegangssleutel die alleen mag lezen, opgeslagen op deze server. Dat is niet gebeurd.",
       "decision": "Of dat gebeurt, beslist de eigenaar van het platform.",
       "meanwhile": "Tot die tijd is het nachtelijke foutenrapport dat u al ontvangt de plek om te kijken."
-    }
+    },
+    "check_refused": "Opnieuw controleren werd geweigerd: te veel controles in een minuut. De cijfers hieronder zijn van eerder.",
+    "could_not_read_any": "De foutendienst antwoordde, maar de cijfers konden niet worden gelezen. Dat is niet hetzelfde als geen fouten."
   },
   "connections": {
     "title": "Sleutels en koppelingen",
@@ -804,7 +814,9 @@
       "translated": "Vertaald"
     },
     "same_note": "Sommige zinnen horen in elke taal gelijk te zijn, zoals namen en eenheden. „Nog gelijk aan het Engels” is dus een bovengrens, geen exact aantal.",
-    "not_measured": "De telefoonapp en de toegankelijke site worden hier niet gemeten."
+    "not_measured": "De telefoonapp en de toegankelijke site worden hier niet gemeten.",
+    "website_load_error": "De cijfers van de website konden niet worden geladen",
+    "recount_refused": "Opnieuw tellen werd geweigerd: te veel verzoeken in korte tijd. De cijfers hieronder zijn van eerder."
   },
   "clean_up_jobs": {
     "title": "Opruimtaken",
@@ -890,7 +902,8 @@
         "name": "Oude identiteitscontroles",
         "deletes": "Verwijdert afgeronde of verlopen identiteitscontroles ouder dan 180 dagen. Wat er bij elke controle gebeurde, blijft bewaard."
       }
-    }
+    },
+    "finished_only": "Deze taak legt vast dat hij klaar is, niet dat elke stap gelukt is."
   },
   "search_rebuild": {
     "title": "Zoekfunctie opnieuw opbouwen",
@@ -922,7 +935,8 @@
       "done_with_errors_one": "Klaar {{time}} met {{count}} item dat niet kon worden bijgewerkt",
       "done_with_errors_other": "Klaar {{time}} met {{count}} items die niet konden worden bijgewerkt",
       "failed": "Mislukt"
-    }
+    },
+    "check_failed": "Kon om {{time}} niet opnieuw controleren"
   },
   "agreements": {
     "title": "Overeenkomsten en verlengingen",
@@ -984,7 +998,8 @@
       "community_unknown": "Die gemeenschap bestaat niet.",
       "save": "Opslaan",
       "cancel": "Annuleren"
-    }
+    },
+    "community_missing": "Gemeenschap bestaat niet meer"
   },
   "assurance": {
     "title": "Gemeten feiten",
@@ -994,7 +1009,7 @@
     "read_at": "Gelezen {{time}}",
     "could_not_read": "Kon niet worden gelezen",
     "not_recorded": "Niet vastgelegd",
-    "source_label": "Waar dit vandaan komt",
+    "source_label": "Waar dit vandaan komt:",
     "source_owner": "Ingevuld door de eigenaar van het platform in de instellingen van de server",
     "findings_note": "Openstaande beveiligingsbevindingen worden bijgehouden in een privéregister, niet op deze server, en worden hier niet getoond.",
     "test_scope_note": "Een onafhankelijke test geldt voor de versie die is getest, niet voor wijzigingen sindsdien.",
@@ -1038,7 +1053,7 @@
     },
     "failed_sign_ins": {
       "title": "Overzicht van mislukte aanmeldingen",
-      "since": "Mislukte aanmeldingen worden geteld sinds {{date}}",
+      "since": "Vroegste mislukte inlogpoging in de registratie: {{date}}",
       "none": "Er is nog niets geteld",
       "note": "Dit zegt wanneer het overzicht begint. Het is geen telling van iets."
     },
@@ -1071,7 +1086,8 @@
       "warning_other": "Certificaat verloopt over {{count}} dagen",
       "failing": "Werkt niet",
       "unknown": "Nog niet gecontroleerd",
-      "not_checkable": "Geen webadres dat we kunnen controleren"
+      "not_checkable": "Geen webadres dat we kunnen controleren",
+      "warning_days_unknown": "Het certificaat verloopt binnenkort. Hoeveel dagen er nog zijn, kon niet worden gelezen."
     },
     "reason": {
       "does_not_resolve": "De naam leidt nergens naartoe.",
@@ -1086,6 +1102,8 @@
     "check_now": "Nu controleren",
     "checked": "Gecontroleerd.",
     "check_failed": "De controle kon niet worden uitgevoerd. Probeer het opnieuw.",
-    "too_many": "Te veel controles in een minuut. Wacht even en probeer het opnieuw."
+    "too_many": "Te veel controles in een minuut. Wacht even en probeer het opnieuw.",
+    "check_now_for": "{{name}} nu controleren",
+    "check_platform_now": "De adressen van het platform nu controleren"
   }
 }

@@ -31,7 +31,7 @@ class UsagePerCommunityTest extends TestCase
 
     /** Exactly what the page shows. Anything else must not leave the server. */
     private const TOP_KEYS = [
-        'communities', 'is_current_month', 'month', 'not_recorded', 'platform_mail', 'sources', 'totals',
+        'communities', 'is_current_month', 'month', 'not_recorded', 'platform_mail', 'source_notes', 'sources', 'totals',
     ];
 
     private const ROW_KEYS = ['ai_chat', 'emails', 'group_file_bytes', 'id', 'is_active', 'name', 'slug'];
@@ -165,6 +165,7 @@ class UsagePerCommunityTest extends TestCase
         $this->assertSame(['bounced', 'failed', 'sent'], $this->sortedKeys($this->row($data, $id)['emails']));
         $this->assertSame(['cost_usd', 'requests', 'tokens'], $this->sortedKeys($this->row($data, $id)['ai_chat']));
         $this->assertSame(['ai_chat', 'emails', 'group_files'], $this->sortedKeys($data['sources']));
+        $this->assertSame(['emails'], $this->sortedKeys($data['source_notes']));
         $this->assertSame(['ai_chat', 'emails', 'group_file_bytes'], $this->sortedKeys($data['totals']));
 
         // Nothing about a person or a message: no address, subject, error or file name.
@@ -187,8 +188,10 @@ class UsagePerCommunityTest extends TestCase
 
         $emails = $this->row($this->data(), $id)['emails'];
 
-        // "Sent" = handed to the mail service: sent, plus the ones it later confirmed delivered.
-        $this->assertSame(['sent' => 3, 'failed' => 1, 'bounced' => 3], $emails);
+        // "Sent" = handed to the mail service: sent, plus the ones it later
+        // confirmed delivered, plus the ones that later bounced (they were
+        // handed over too). Bounced is also shown on its own.
+        $this->assertSame(['sent' => 6, 'failed' => 1, 'bounced' => 3], $emails);
         $this->assertSame(['sent' => 0, 'failed' => 1, 'bounced' => 0], $this->row($this->data(), $other)['emails']);
     }
 
@@ -302,6 +305,35 @@ class UsagePerCommunityTest extends TestCase
         $this->assertSame(['emails' => true, 'ai_chat' => true, 'group_files' => true], $data['sources']);
     }
 
+    /**
+     * Email records are deleted after 90 days (CronJobRunner), so a month
+     * that starts before then would show confident zeros. It says why
+     * instead, and every email figure is null.
+     */
+    public function test_emails_for_a_month_older_than_the_90_day_record_are_not_available_with_the_reason(): void
+    {
+        $id = $this->community();
+        $old = now()->startOfMonth()->subMonthsNoOverflow(4);
+        $this->email($id, 'sent', $old->copy()->addDays(2));
+        $this->aiUse($id, 10, 5, '0.010000', $old->copy()->addDays(2));
+        $this->actAsPlatformTeam();
+
+        $data = $this->data('?month=' . $old->format('Y-m'));
+
+        $this->assertFalse($data['sources']['emails']);
+        $this->assertSame(['emails' => 'kept_90_days'], $data['source_notes']);
+        $this->assertNull($this->row($data, $id)['emails']);
+        $this->assertNull($data['platform_mail']);
+        $this->assertNull($data['totals']['emails']);
+        // The other sources are not affected.
+        $this->assertTrue($data['sources']['ai_chat']);
+        $this->assertSame(1, $this->row($data, $id)['ai_chat']['requests']);
+
+        // A recent month carries no note.
+        $this->assertSame(['emails' => null], $this->data()['source_notes']);
+        $this->assertTrue($this->data()['sources']['emails']);
+    }
+
     public function test_totals_add_up_every_community(): void
     {
         $id = $this->community();
@@ -314,6 +346,7 @@ class UsagePerCommunityTest extends TestCase
         $after = $this->data()['totals'];
 
         $this->assertSame($before['emails']['bounced'] + 1, $after['emails']['bounced']);
+        $this->assertSame($before['emails']['sent'] + 1, $after['emails']['sent'], 'a bounced email was handed over');
         $this->assertSame($before['ai_chat']['requests'] + 1, $after['ai_chat']['requests']);
         $this->assertSame($before['ai_chat']['tokens'] + 10, $after['ai_chat']['tokens']);
         $this->assertSame($before['group_file_bytes'] + 4096, $after['group_file_bytes']);

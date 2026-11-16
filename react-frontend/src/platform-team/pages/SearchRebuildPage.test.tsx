@@ -178,6 +178,63 @@ describe('SearchRebuildPage', () => {
     expect(apiGet).toHaveBeenCalledTimes(2);
   });
 
+  it('says when a background check failed, and clears it on the next good one', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const running = reply([community(2, { state: 'running', started_at: '2026-11-16T10:00:00+00:00', finished_at: null, counts: null, errors: 0 })]);
+    apiGet
+      .mockResolvedValueOnce(running)
+      .mockRejectedValueOnce(new Error('offline'))
+      .mockResolvedValue(running);
+    render(<SearchRebuildPage />);
+    await waitFor(() => expect(row(2)).toBeInTheDocument());
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10_000);
+    });
+    expect(await screen.findByText('search_rebuild.check_failed')).toBeInTheDocument();
+    expect(row(2)).toBeInTheDocument();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10_000);
+    });
+    await waitFor(() => expect(screen.queryByText('search_rebuild.check_failed')).not.toBeInTheDocument());
+  });
+
+  it('shows the row\'s Rebuild button as busy from the yes until the new list arrives', async () => {
+    let finish: (value: unknown) => void = () => {};
+    apiGet
+      .mockResolvedValueOnce(reply([community(2, null)]))
+      .mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }));
+    render(<SearchRebuildPage />);
+    await waitFor(() => expect(row(2)).toBeInTheDocument());
+
+    fireEvent.click(within(row(2)).getByRole('button', { name: /search_rebuild\.rebuild/ }));
+    fireEvent.click(within(screen.getByRole('dialog')).getByText('confirm'));
+
+    await waitFor(() => expect(apiGet).toHaveBeenCalledTimes(2));
+    expect(within(row(2)).getByRole('button', { name: /search_rebuild\.rebuild/ })).toHaveAttribute('data-pending', 'true');
+
+    await act(async () => {
+      finish(reply([community(2, { state: 'queued', started_at: null, finished_at: null, counts: null, errors: 0 })]));
+    });
+    await waitFor(() =>
+      expect(within(row(2)).getByRole('button', { name: /search_rebuild\.rebuild/ })).not.toHaveAttribute('data-pending'),
+    );
+  });
+
+  it('stops checking again once the page is left', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    apiGet.mockResolvedValue(reply([community(2, { state: 'running', started_at: '2026-11-16T10:00:00+00:00', finished_at: null, counts: null, errors: 0 })]));
+    const { unmount } = render(<SearchRebuildPage />);
+    await waitFor(() => expect(row(2)).toBeInTheDocument());
+    unmount();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(30_000);
+    });
+    expect(apiGet).toHaveBeenCalledTimes(1);
+  });
+
   it('shows the error card, not an empty list, when the list cannot be loaded', async () => {
     apiGet.mockResolvedValue({ success: false, error: 'Forbidden' });
     render(<SearchRebuildPage />);

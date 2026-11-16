@@ -309,7 +309,14 @@ final class SecurityOverviewService
      * one before, "last 24 hours" the 24 hours before this one plus this one.
      * A figure can include up to an hour more than its label; the page says
      * so. `counted_since` is the oldest hour held (null = nothing counted
-     * yet), so a quiet first day is not read as a quiet week.
+     * yet, and then every total is null too, not 0), so a quiet first day is
+     * not read as a quiet week.
+     *
+     * Two counts per row: `failures` (the password check failed) and
+     * `refused` (the lock-out turned the attempt away before any password
+     * check, RateLimiter::countRefusedSignIn()). Sent side by side, never
+     * added together: an attacker hammering a locked account shows in
+     * `refused`, not in `failures`.
      *
      * The address figures still come from `login_attempts` `ip` rows, and
      * cover 15 minutes: RateLimiter deletes those rows after 20 minutes, and
@@ -329,7 +336,9 @@ final class SecurityOverviewService
         $totals = DB::selectOne(
             "SELECT
                 COALESCE(SUM(CASE WHEN hour_start >= DATE_FORMAT(NOW() - INTERVAL 1 HOUR, '%Y-%m-%d %H:00:00') THEN failures ELSE 0 END), 0) AS last_hour,
-                COALESCE(SUM(failures), 0) AS last_24h
+                COALESCE(SUM(failures), 0) AS last_24h,
+                COALESCE(SUM(CASE WHEN hour_start >= DATE_FORMAT(NOW() - INTERVAL 1 HOUR, '%Y-%m-%d %H:00:00') THEN refused ELSE 0 END), 0) AS refused_last_hour,
+                COALESCE(SUM(refused), 0) AS refused_last_24h
              FROM sign_in_failure_hours
              WHERE hour_start >= DATE_FORMAT(NOW() - INTERVAL 24 HOUR, '%Y-%m-%d %H:00:00')"
         );
@@ -337,12 +346,12 @@ final class SecurityOverviewService
         $countedSince = DB::selectOne('SELECT MIN(hour_start) AS since FROM sign_in_failure_hours');
 
         $byCommunity = DB::select(
-            "SELECT tenant_id, SUM(failures) AS failed
+            "SELECT tenant_id, SUM(failures) AS failed, SUM(refused) AS refused
              FROM sign_in_failure_hours
              WHERE hour_start >= DATE_FORMAT(NOW() - INTERVAL 24 HOUR, '%Y-%m-%d %H:00:00')
              GROUP BY tenant_id
-             HAVING failed > 0
-             ORDER BY failed DESC, tenant_id ASC
+             HAVING failed > 0 OR refused > 0
+             ORDER BY SUM(failures) + SUM(refused) DESC, tenant_id ASC
              LIMIT 100"
         );
 
@@ -361,10 +370,14 @@ final class SecurityOverviewService
             ->pluck('name', 'id');
 
         $since = $countedSince->since ?? null;
+        // Nothing ever counted: the totals are unknown, not zero.
+        $total = static fn (string $key): ?int => $since === null ? null : (int) ($totals->{$key} ?? 0);
 
         return [
-            'last_hour' => (int) ($totals->last_hour ?? 0),
-            'last_24h' => (int) ($totals->last_24h ?? 0),
+            'last_hour' => $total('last_hour'),
+            'last_24h' => $total('last_24h'),
+            'refused_last_hour' => $total('refused_last_hour'),
+            'refused_last_24h' => $total('refused_last_24h'),
             'counted_since' => $since !== null ? self::iso((string) $since) : null,
             'addresses_15m' => (int) ($addresses->addresses ?? 0),
             'most_from_one_address_15m' => (int) ($addresses->most ?? 0),
@@ -377,6 +390,7 @@ final class SecurityOverviewService
                         ? ['id' => $tenantId, 'name' => self::nameOrNull($names[$tenantId] ?? null)]
                         : null,
                     'failed' => (int) $row->failed,
+                    'refused' => (int) $row->refused,
                 ];
             }, $byCommunity),
         ];

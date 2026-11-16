@@ -536,4 +536,99 @@ class AccessReviewTest extends TestCase
         $this->assertSame(1, DB::table('senior_access_reviews')->where('id', $reviewId)->count());
         $this->assertSame(1, DB::table('senior_access_review_items')->where('id', $itemId)->count());
     }
+
+    // ------------------------------------------------------- the note can be erased
+
+    /**
+     * Review 16 Nov: the note is free text in a table that refuses every
+     * change, so it could never be erased. The database now allows exactly one
+     * change: setting the note to NULL with every other column unchanged.
+     */
+    public function test_the_note_can_be_cleared_and_nothing_else_about_the_review_changes(): void
+    {
+        $this->actAsPlatformTeam();
+        $this->apiPost(self::URI, ['decisions' => $this->decisionsFor(), 'note' => 'A note to erase later.'])->assertStatus(200);
+        $reviewId = (int) DB::table('senior_access_reviews')->max('id');
+        $before = (array) DB::table('senior_access_reviews')->where('id', $reviewId)->first();
+        $this->assertSame('A note to erase later.', $before['note']);
+
+        $this->assertTrue((new AccessReviewService())->clearNote($reviewId));
+
+        $after = (array) DB::table('senior_access_reviews')->where('id', $reviewId)->first();
+        $this->assertNull($after['note']);
+        unset($before['note'], $after['note']);
+        $this->assertSame($before, $after, 'only the note changed');
+
+        // Clearing an already-cleared note is fine; a review that is not there is not.
+        $this->assertTrue((new AccessReviewService())->clearNote($reviewId));
+        $this->assertFalse((new AccessReviewService())->clearNote($reviewId + 100000));
+    }
+
+    public function test_the_database_refuses_any_other_change_to_a_review_even_beside_clearing_the_note(): void
+    {
+        $this->actAsPlatformTeam();
+        $this->apiPost(self::URI, ['decisions' => $this->decisionsFor(), 'note' => 'Original note.'])->assertStatus(200);
+        $reviewId = (int) DB::table('senior_access_reviews')->max('id');
+
+        $attempts = [
+            'change the note to other text' => ['note' => 'Rewritten note.'],
+            'change who reviewed' => ['reviewed_by' => 1],
+            'change the count' => ['account_count' => 999],
+            'change the removals' => ['remove_count' => 99],
+            'change the date' => ['created_at' => now()->subYear()],
+            'clear the note and change the removals' => ['note' => null, 'remove_count' => 99],
+            'clear the note and change the date' => ['note' => null, 'created_at' => now()->subYear()],
+        ];
+
+        foreach ($attempts as $label => $change) {
+            try {
+                DB::table('senior_access_reviews')->where('id', $reviewId)->update($change);
+                $this->fail("the database let me {$label}");
+            } catch (QueryException $e) {
+                $this->assertStringContainsString('senior_access_review_immutable', $e->getMessage(), $label);
+            }
+        }
+
+        $this->assertSame('Original note.', DB::table('senior_access_reviews')->where('id', $reviewId)->value('note'));
+
+        try {
+            DB::table('senior_access_reviews')->where('id', $reviewId)->delete();
+            $this->fail('the database let me delete a review');
+        } catch (QueryException $e) {
+            $this->assertStringContainsString('senior_access_review_immutable', $e->getMessage());
+        }
+    }
+
+    // ------------------------------------------------------- logging
+
+    /** A database error can quote the values of the failed statement, the note among them. */
+    public function test_a_failed_review_logs_the_kind_of_error_only_never_the_note(): void
+    {
+        $this->actAsPlatformTeam();
+        $decisions = $this->decisionsFor();
+        $planted = 'PLANTED-REVIEW-NOTE-5521';
+
+        $lines = [];
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Log\Events\MessageLogged::class, function ($e) use (&$lines): void {
+            $lines[] = $e->message . ' ' . json_encode($e->context);
+        });
+        $broken = true;
+        DB::connection()->beforeExecuting(static function (string $sql, array $bindings) use (&$broken): void {
+            if ($broken && str_contains($sql, 'insert into `senior_access_reviews`')) {
+                // As the database would: the message quotes the statement's values.
+                throw new QueryException('mysql', $sql, $bindings, new \RuntimeException('planted'));
+            }
+        });
+
+        try {
+            $this->apiPost(self::URI, ['decisions' => $decisions, 'note' => $planted])->assertStatus(500);
+        } finally {
+            $broken = false;
+        }
+
+        $this->assertNotEmpty($lines, 'the failure was logged');
+        foreach ($lines as $line) {
+            $this->assertStringNotContainsString($planted, $line);
+        }
+    }
 }

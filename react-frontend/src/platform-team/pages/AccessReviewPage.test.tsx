@@ -245,11 +245,46 @@ describe('AccessReviewPage', () => {
     const rows = within(history).getAllByRole('listitem');
     expect(rows).toHaveLength(2);
     const [newest, older] = rows as [HTMLElement, HTMLElement];
-    expect(within(newest).getByText('Erased account')).toBeInTheDocument();
+    // The words and the name come from one wording, never joined in code.
+    expect(within(newest).getByText('Recorded by Erased account')).toBeInTheDocument();
     expect(within(newest).getByText('4 accounts')).toBeInTheDocument();
-    expect(within(older).getByText('Casey Reviewer')).toBeInTheDocument();
+    expect(within(older).getByText('Recorded by Casey Reviewer')).toBeInTheDocument();
     expect(within(older).getByText('2 marked for removal')).toBeInTheDocument();
     expect(screen.getByTestId('last-review')).toHaveTextContent('recorded by an erased account');
+  });
+
+  it('keeps the choices for accounts still listed when the review is refreshed', async () => {
+    render(<AccessReviewPage />);
+    await screen.findByTestId('review-account-1');
+    choose(1, 'Keep');
+    choose(2, 'Should be removed');
+    apiGet.mockResolvedValue(ok(review({ accounts: [ACCOUNTS[0]!, ACCOUNTS[2]!] })));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Check again' }));
+    await waitFor(() => expect(screen.queryByTestId('review-account-2')).not.toBeInTheDocument());
+
+    expect(within(screen.getByTestId('review-account-1')).getByRole('radio', { name: 'Keep' })).toBeChecked();
+    expect(screen.getByText('Decided: 1 of 2 accounts.')).toBeInTheDocument();
+  });
+
+  it('keeps the review on screen and says so when a refresh fails', async () => {
+    render(<AccessReviewPage />);
+    await screen.findByTestId('review-account-1');
+    choose(1, 'Keep');
+    apiGet.mockResolvedValue({ success: false, code: 'SERVER_ERROR' });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Check again' }));
+
+    expect(await screen.findByText("The review could not be loaded again. What you see is from before.")).toBeInTheDocument();
+    expect(screen.queryByText("We couldn't load the access review just now")).not.toBeInTheDocument();
+    expect(within(screen.getByTestId('review-account-1')).getByRole('radio', { name: 'Keep' })).toBeChecked();
+  });
+
+  it('asks that nobody is named in the note', async () => {
+    render(<AccessReviewPage />);
+    await screen.findByTestId('review-account-1');
+
+    expect(screen.getByText('Do not name people in the note. It is kept with the record.')).toBeInTheDocument();
   });
 
   it('shows the error card, never an empty list, when the review cannot be loaded', async () => {

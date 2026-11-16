@@ -18310,7 +18310,17 @@ CREATE TABLE `senior_access_reviews` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_sar_no_update` BEFORE UPDATE ON `senior_access_reviews` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'senior_access_review_immutable' 
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_sar_no_update` BEFORE UPDATE ON `senior_access_reviews` FOR EACH ROW
+BEGIN
+  IF NOT (NEW.`note` IS NULL
+      AND NEW.`id` <=> OLD.`id`
+      AND NEW.`reviewed_by` <=> OLD.`reviewed_by`
+      AND NEW.`account_count` <=> OLD.`account_count`
+      AND NEW.`remove_count` <=> OLD.`remove_count`
+      AND NEW.`created_at` <=> OLD.`created_at`) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'senior_access_review_immutable';
+  END IF;
+END
 */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -18422,6 +18432,7 @@ CREATE TABLE `sign_in_failure_hours` (
   `hour_start` datetime NOT NULL,
   `tenant_id` int(11) NOT NULL DEFAULT 0,
   `failures` int(10) unsigned NOT NULL DEFAULT 0,
+  `refused` int(10) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (`hour_start`,`tenant_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;

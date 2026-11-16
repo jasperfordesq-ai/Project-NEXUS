@@ -162,6 +162,99 @@ class SearchRebuildTest extends TestCase
         Queue::assertPushed(ReindexTenantSearchJob::class, 1);
     }
 
+    /**
+     * Review 16 Nov: the busy check and the "queued" mark were two steps, so
+     * two clicks close together could both pass the check and queue two jobs.
+     * A start now holds a short lock for that community while it checks and
+     * marks; a second start that finds the lock held is refused.
+     */
+    public function test_a_start_that_finds_another_start_in_progress_is_refused_and_queues_nothing(): void
+    {
+        Queue::fake();
+        $this->actAsPlatformTeam();
+        $this->assertTrue(Cache::add(SearchRebuildService::startLockKey($this->testTenantId), 1, 30));
+
+        $this->apiPost(self::URI, ['tenant_id' => $this->testTenantId])->assertStatus(409);
+
+        Queue::assertNotPushed(ReindexTenantSearchJob::class);
+        $this->assertNull(Cache::get(SearchRebuildService::cacheKey($this->testTenantId)));
+    }
+
+    public function test_two_starts_in_a_row_queue_one_job_and_the_lock_is_let_go(): void
+    {
+        Queue::fake();
+        $this->actAsPlatformTeam();
+
+        $this->apiPost(self::URI, ['tenant_id' => $this->testTenantId])->assertStatus(200);
+        $this->apiPost(self::URI, ['tenant_id' => $this->testTenantId])->assertStatus(409);
+
+        Queue::assertPushed(ReindexTenantSearchJob::class, 1);
+        $this->assertNull(Cache::get(SearchRebuildService::startLockKey($this->testTenantId)), 'the start lock is let go after each start');
+    }
+
+    /**
+     * Review 16 Nov: when handing the job to the queue failed, the record
+     * already said "queued", and every new start was refused for 30 minutes.
+     */
+    public function test_a_start_whose_job_cannot_be_queued_leaves_the_community_free(): void
+    {
+        $this->actAsPlatformTeam();
+        $before = [
+            'state' => 'done', 'started_at' => now()->subDay()->toIso8601String(), 'finished_at' => now()->subDay()->toIso8601String(),
+            'counts' => ['listing' => 1], 'errors' => 0, 'updated_at' => now()->subDay()->toIso8601String(),
+        ];
+        Cache::put(SearchRebuildService::cacheKey($this->testTenantId), $before, now()->addDays(7));
+
+        $real = $this->app->make(\Illuminate\Contracts\Bus\Dispatcher::class);
+        $this->mock(\Illuminate\Contracts\Bus\Dispatcher::class, function ($mock): void {
+            $mock->shouldReceive('dispatch')->andThrow(new \RuntimeException('queue down'));
+        });
+
+        $response = $this->apiPost(self::URI, ['tenant_id' => $this->testTenantId])->assertStatus(503);
+        $this->assertSame('SEARCH_UNAVAILABLE', $response->json('errors.0.code'));
+
+        $this->assertSame($before, Cache::get(SearchRebuildService::cacheKey($this->testTenantId)), 'the last real run is kept, not replaced by "queued"');
+        $this->assertNull(Cache::get(SearchRebuildService::startLockKey($this->testTenantId)));
+        $this->assertSame(0, DB::table('activity_log')->where('action', 'platform_team_search_rebuild')->count(), 'nothing was started, so nothing is recorded');
+
+        // The next start is allowed.
+        $this->app->instance(\Illuminate\Contracts\Bus\Dispatcher::class, $real);
+        Queue::fake();
+        $this->apiPost(self::URI, ['tenant_id' => $this->testTenantId])->assertStatus(200);
+        Queue::assertPushed(ReindexTenantSearchJob::class, 1);
+    }
+
+    /**
+     * A database error can quote the values of the failed statement. The
+     * log line names the kind of error only.
+     */
+    public function test_a_failed_record_logs_the_kind_of_error_only(): void
+    {
+        $planted = 'PLANTED-SEARCH-RECORD-7731';
+        $lines = [];
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Log\Events\MessageLogged::class, function ($e) use (&$lines): void {
+            $lines[] = $e->message . ' ' . json_encode($e->context);
+        });
+        $fail = true;
+        DB::connection()->beforeExecuting(function (string $query, array $bindings) use (&$fail, $planted): void {
+            if ($fail && str_contains($query, 'insert into `activity_log`')) {
+                throw new \Illuminate\Database\QueryException('mysql', $query . ' /* ' . $planted . ' */', $bindings, new \RuntimeException($planted));
+            }
+        });
+
+        try {
+            (new SearchRebuildService())->record(1, $this->testTenantId);
+        } finally {
+            $fail = false;
+        }
+
+        $this->assertNotEmpty($lines, 'the failure was logged');
+        foreach ($lines as $line) {
+            $this->assertStringNotContainsString($planted, $line);
+            $this->assertStringNotContainsString('Search rebuild for community', $line);
+        }
+    }
+
     public function test_a_waiting_state_older_than_30_minutes_does_not_block_a_new_start(): void
     {
         Queue::fake();

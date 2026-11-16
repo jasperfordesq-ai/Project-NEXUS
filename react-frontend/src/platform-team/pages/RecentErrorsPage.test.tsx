@@ -103,6 +103,26 @@ describe('RecentErrorsPage', () => {
     expect(apiGet).toHaveBeenLastCalledWith('/v2/platform-team/errors?refresh=1');
   });
 
+  it('keeps the figures on screen and says so when "check again" is refused', async () => {
+    render(<RecentErrorsPage />);
+    await screen.findByTestId('errors-project-php');
+    apiGet.mockResolvedValueOnce({ success: false, code: 'RATE_LIMIT_EXCEEDED', error: 'Too many' });
+
+    fireEvent.click(screen.getByRole('button', { name: 'home.refresh' }));
+
+    expect(await screen.findByText('errors.check_refused')).toBeInTheDocument();
+    expect(screen.getByTestId('errors-php-24h')).toHaveTextContent('1,234');
+    expect(screen.queryByText('errors.load_error_title')).not.toBeInTheDocument();
+  });
+
+  it('says the figures could not be read, never an empty grid, when connected but no parts came back', async () => {
+    apiGet.mockResolvedValue(reply({ connected: true, checked_at: '2026-11-16T18:30:00+00:00', projects: null }));
+    render(<RecentErrorsPage />);
+
+    expect(await screen.findByText('errors.could_not_read_any')).toBeInTheDocument();
+    expect(screen.queryByTestId('errors-project-php')).not.toBeInTheDocument();
+  });
+
   it('shows an error with a retry when the request fails', async () => {
     apiGet.mockRejectedValue(new Error('boom'));
     render(<RecentErrorsPage />);

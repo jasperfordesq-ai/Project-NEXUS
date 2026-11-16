@@ -28,7 +28,7 @@
  * nothing was done; the dialog stays open with the reason still in it.
  */
 
-import { useCallback, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertDialog, Button, Card, CardBody, Chip, Input, Spinner } from '@/components/ui';
 import { LoadError } from '@/components/feedback/LoadError';
@@ -111,6 +111,22 @@ export function FindAccountPage() {
   const [reason, setReason] = useState('');
   const [signingOut, setSigningOut] = useState(false);
   const [dialogError, setDialogError] = useState<DialogError | null>(null);
+  /**
+   * After a sign-out the button that opened the dialog is replaced by the "done"
+   * line, so keyboard focus would be lost. Focus moves to that line instead.
+   */
+  const [focusDoneId, setFocusDoneId] = useState<number | null>(null);
+  const doneLineRef = useRef<HTMLParagraphElement | null>(null);
+
+  useEffect(() => {
+    if (focusDoneId === null) return;
+    // After the dialog has closed and let go of focus.
+    const frame = requestAnimationFrame(() => {
+      doneLineRef.current?.focus();
+      setFocusDoneId(null);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [focusDoneId]);
 
   const find = useCallback(async (address: string) => {
     setSearched(address);
@@ -169,6 +185,7 @@ export function FindAccountPage() {
       });
       if (res.success && res.data?.signed_out === true) {
         setDone((prev) => new Set(prev).add(account.id));
+        setFocusDoneId(account.id);
         setTarget(null);
         setReason('');
         toast.success(
@@ -356,7 +373,12 @@ export function FindAccountPage() {
                         </div>
 
                         {wasSignedOut ? (
-                          <p className="flex items-start gap-2 text-sm font-medium text-foreground" role="status">
+                          <p
+                            ref={focusDoneId === account.id ? doneLineRef : undefined}
+                            tabIndex={-1}
+                            className="flex items-start gap-2 text-sm font-medium text-foreground outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                            role="status"
+                          >
                             <CircleCheck size={18} className="mt-0.5 shrink-0 text-success" aria-hidden="true" />
                             {t('accounts.done')}
                           </p>

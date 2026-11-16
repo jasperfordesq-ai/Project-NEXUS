@@ -285,6 +285,9 @@ class CommunitySetupTest extends TestCase
         $this->account($legacy, ['role' => 'member', 'is_admin' => 1, 'last_login_at' => now()]);
         $tenantSuper = $this->community();
         $this->account($tenantSuper, ['role' => 'member', 'is_tenant_super_admin' => 1, 'last_login_at' => now()]);
+        // AdminTier treats role 'tenant_admin' as a community admin too.
+        $tenantAdminRole = $this->community();
+        $this->account($tenantAdminRole, ['role' => 'tenant_admin', 'last_login_at' => now()]);
         $this->actAsPlatformTeam();
 
         $data = $this->data();
@@ -293,6 +296,7 @@ class CommunitySetupTest extends TestCase
         $this->assertTrue($this->row($data, $admin)['first_admin_signed_in']);
         $this->assertTrue($this->row($data, $legacy)['first_admin_signed_in']);
         $this->assertTrue($this->row($data, $tenantSuper)['first_admin_signed_in']);
+        $this->assertTrue($this->row($data, $tenantAdminRole)['first_admin_signed_in']);
     }
 
     public function test_the_email_sender_is_own_only_when_the_mailer_would_really_use_it(): void

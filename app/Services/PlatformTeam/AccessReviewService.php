@@ -33,7 +33,8 @@ use Illuminate\Support\Facades\Log;
  *
  * 🔴 Ids only in the record. Names are read from `users` when shown; an
  * erased account (or one whose row is gone) is shown without a name. The two
- * tables are append-only by database trigger.
+ * tables are append-only by database trigger, with one exception: a review's
+ * note may be set to NULL (clearNote()), so free text can be erased.
  *
  * A review is due when there has never been one, or the newest is more than
  * DUE_AFTER_DAYS days old (Ruling, design brief 16 Nov 2026).
@@ -259,12 +260,38 @@ final class AccessReviewService
             // Rolled back: no review and no line was recorded.
             Log::error('Platform team: an access review could not be recorded', [
                 'actor' => $actorId,
+                // The kind of error only: a database error quotes the values
+                // of the failed statement, the typed text among them.
                 'exception' => $e::class,
-                'message' => $e->getMessage(),
             ]);
 
             return self::FAILED;
         }
+    }
+
+    /**
+     * Erase the free-text note of one review. Every other part of the review
+     * stays as it was: the database trigger on `senior_access_reviews` allows
+     * this one change (note set to NULL, nothing else) and refuses any other.
+     *
+     * 🔴 No endpoint and no button call this, on purpose. It is the erasure
+     * path for a future need (a note that turns out to hold personal data),
+     * to be wired up when that need is decided, not before.
+     *
+     * @return bool false when there is no such review
+     */
+    public function clearNote(int $reviewId): bool
+    {
+        if (!DB::table('senior_access_reviews')->where('id', $reviewId)->exists()) {
+            return false;
+        }
+
+        DB::table('senior_access_reviews')
+            ->where('id', $reviewId)
+            ->whereNotNull('note')
+            ->update(['note' => null]);
+
+        return true;
     }
 
     /** Whole days since a stored time, never negative. */

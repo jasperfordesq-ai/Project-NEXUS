@@ -34,9 +34,12 @@ class AuthControllerTest extends TestCase
 
     protected function tearDown(): void
     {
-        AuthenticationConfigurationService::clearCache($this->testTenantId);
-        AuthenticationConfigurationService::clearCache(999);
-        parent::tearDown();
+        try {
+            AuthenticationConfigurationService::clearCache($this->testTenantId);
+            AuthenticationConfigurationService::clearCache(999);
+        } finally {
+            parent::tearDown();
+        }
     }
 
     // ================================================================
@@ -342,6 +345,94 @@ class AuthControllerTest extends TestCase
         ]);
 
         $response->assertStatus(401);
+    }
+
+    // ================================================================
+    // LOGIN — Lock-out (429), and the Platform team's count of refusals
+    // ================================================================
+
+    /** @return array{failures: int, refused: int} this hour's counts for one community */
+    private function signInCountsThisHour(int $tenantId): array
+    {
+        $row = DB::table('sign_in_failure_hours')
+            ->whereRaw("hour_start = DATE_FORMAT(NOW(), '%Y-%m-%d %H:00:00')")
+            ->where('tenant_id', $tenantId)
+            ->first();
+
+        return ['failures' => (int) ($row->failures ?? 0), 'refused' => (int) ($row->refused ?? 0)];
+    }
+
+    private function plantFailedAttempts(string $identifier, string $type, int $count): void
+    {
+        for ($i = 0; $i < $count; $i++) {
+            DB::table('login_attempts')->insert([
+                'identifier' => $identifier,
+                'type' => $type,
+                'ip_address' => '192.0.2.250',
+                'success' => 0,
+                'attempted_at' => now()->subSeconds(30),
+            ]);
+        }
+    }
+
+    /**
+     * An attempt refused by the email lock-out never reaches the password
+     * check, so it was not counted at all: 2,000 guesses in an hour showed as
+     * about 5. It is now counted as refused, and the answer is unchanged.
+     */
+    public function test_an_email_lock_out_answers_as_before_and_is_counted_as_refused(): void
+    {
+        $email = 'auth_locked_' . uniqid() . '@example.com';
+        $identifier = \App\Core\RateLimiter::emailIdentifierFor($email, $this->testTenantId);
+        $this->plantFailedAttempts($identifier, 'email', 10);
+        $lastAttemptId = (int) DB::table('login_attempts')->max('id');
+        $before = $this->signInCountsThisHour($this->testTenantId);
+
+        $response = $this->apiPost('/auth/login', [
+            'email' => $email,
+            'password' => 'any-password',
+        ]);
+
+        $response->assertStatus(429)
+            ->assertJsonPath('errors.0.code', ApiErrorCodes::RATE_LIMIT_EXCEEDED)
+            ->assertJsonPath('success', false);
+        $this->assertIsInt($response->json('retry_after'));
+        $this->assertSame(
+            ['errors', 'retry_after', 'success'],
+            collect(array_keys($response->json()))->sort()->values()->all(),
+            'the refusal answers exactly as before',
+        );
+        $this->assertSame(
+            ['failures' => $before['failures'], 'refused' => $before['refused'] + 1],
+            $this->signInCountsThisHour($this->testTenantId),
+        );
+        $this->assertSame(0, DB::table('login_attempts')->where('id', '>', $lastAttemptId)->count(), 'nothing new in login_attempts');
+    }
+
+    /** The address lock-out has no account to tie the refusal to: community 0. */
+    public function test_an_address_lock_out_answers_as_before_and_is_counted_as_refused_under_community_zero(): void
+    {
+        \App\Core\ClientIp::clearCache();
+        $ip = \App\Core\ClientIp::get();
+        $this->plantFailedAttempts($ip, 'ip', 10);
+        $lastAttemptId = (int) DB::table('login_attempts')->max('id');
+        $before = $this->signInCountsThisHour(0);
+        $beforeTenant = $this->signInCountsThisHour($this->testTenantId);
+
+        $response = $this->apiPost('/auth/login', [
+            'email' => 'auth_iplocked_' . uniqid() . '@example.com',
+            'password' => 'any-password',
+        ]);
+
+        $response->assertStatus(429)
+            ->assertJsonPath('errors.0.code', ApiErrorCodes::RATE_LIMIT_EXCEEDED);
+        $this->assertIsInt($response->json('retry_after'));
+        $this->assertSame(
+            ['failures' => $before['failures'], 'refused' => $before['refused'] + 1],
+            $this->signInCountsThisHour(0),
+        );
+        $this->assertSame($beforeTenant, $this->signInCountsThisHour($this->testTenantId));
+        $this->assertSame(0, DB::table('login_attempts')->where('id', '>', $lastAttemptId)->count(), 'nothing new in login_attempts');
     }
 
     public function test_login_returns_401_for_nonexistent_email(): void

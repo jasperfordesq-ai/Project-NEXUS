@@ -100,6 +100,9 @@ describe('AssuranceFactsPage', () => {
     expect(within(independent).getByText(/^assurance\.independent_test\.date\|date=/)).toBeInTheDocument();
     expect(within(independent).queryByRole('link')).not.toBeInTheDocument();
     expect(within(independent).getByText('assurance.source_owner')).toBeInTheDocument();
+    // The colon belongs to the wording (French spaces it, Japanese uses its own), never added in code.
+    expect(within(independent).getByText('assurance.source_label')).toBeInTheDocument();
+    expect(within(independent).queryByText(/assurance\.source_label:/)).not.toBeInTheDocument();
   });
 
   it('says "could not be read" for a fact that could not be read, never zero', async () => {

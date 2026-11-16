@@ -296,17 +296,20 @@
     },
     "failed": {
       "title": "Failed sign-ins",
-      "note": "Every failed sign-in is counted as it happens, by community and by the hour. The count keeps only a number: nothing about the person or where they signed in from. Figures are counted in whole hours, so each one can include up to an hour more.",
-      "counted_since": "Counted since {{date}}",
+      "note": "Two separate counts, by community and by the hour. “Failed password checks”: someone tried to sign in and the password was wrong. “Refused by the lock-out”: after too many tries, the attempt was turned away before any password was checked. The two are never added together. Each count keeps only a number, nothing about the person or where they signed in from. Figures are counted in whole hours, so each one can include up to an hour more.",
+      "counted_since": "Earliest failed sign-in on record: {{date}}",
       "nothing_counted": "Nothing has been counted yet. Failed sign-ins are counted from the day this count was switched on.",
       "last_hour": "In the last hour",
       "last_24h": "In the last 24 hours",
-      "empty": "No failed sign-ins in the last 24 hours.",
-      "col_failed": "Failed in the last 24 hours:",
+      "empty": "No failed or refused sign-ins in the last 24 hours.",
+      "col_failed": "Failed password checks in the last 24 hours:",
       "recent_title": "In the last 15 minutes",
       "recent_note": "Which internet addresses are being tried right now. The platform keeps these details for only about 20 minutes, and forgets an address's failures when it next signs in successfully. Sign-ins through the accessible site all arrive from one address.",
       "addresses_15m": "Different internet addresses in the last 15 minutes",
-      "most_from_one_15m": "Most from one address in the last 15 minutes"
+      "most_from_one_15m": "Most from one address in the last 15 minutes",
+      "checks_title": "Failed password checks",
+      "refused_title": "Refused by the lock-out",
+      "col_refused": "Refused by the lock-out in the last 24 hours:"
     },
     "access": {
       "title": "Senior access given and removed",
@@ -426,7 +429,8 @@
     "unavailable": {
       "emails": "Email figures could not be read just now. They are not zero.",
       "ai_chat": "AI chat figures could not be read just now. They are not zero.",
-      "group_files": "Group file sizes could not be read just now. They are not zero."
+      "group_files": "Group file sizes could not be read just now. They are not zero.",
+      "emails_kept_90_days": "Email records are kept for 90 days, so this month cannot be shown."
     },
     "totals_heading": "All communities together",
     "communities_heading": "Each community ({{count}})",
@@ -438,7 +442,7 @@
     "failed": "Failed",
     "bounced": "Bounced",
     "ai_requests": "Requests",
-    "ai_tokens": "Tokens",
+    "ai_tokens": "Pieces of text processed",
     "ai_cost": "Cost",
     "files": "Space used now",
     "removed_community": "Community #{{id}} (no longer exists)",
@@ -446,7 +450,7 @@
     "platform_mail": "Platform mail",
     "platform_mail_note": "Emails the platform sent that belong to no one community.",
     "notes_heading": "What the figures mean",
-    "sent_note": "“Sent” means the email was handed to the mail service. It does not prove the email arrived.",
+    "sent_note": "“Sent” means the email was handed to the mail service. It does not prove the email arrived. Bounced emails are included in Sent, so do not add the two together.",
     "ai_note": "AI cost is what was recorded for each request, in US dollars.",
     "files_note": "Group files is the space they take today, not what was added in this month.",
     "not_recorded_heading": "Not recorded today",
@@ -488,7 +492,8 @@
       "hours_this_month": "Hours exchanged this month",
       "new_listings_this_month": "New listings this month",
       "last_sign_in": "Most recent sign-in"
-    }
+    },
+    "quiet_unknown_summary": "We could not work out which communities are quiet just now."
   },
   "community_setup": {
     "title": "Community setup",
@@ -582,7 +587,8 @@
       "restriction": "A limit on use",
       "portability": "A transfer",
       "objection": "An objection"
-    }
+    },
+    "completed_without_date": "Completed requests with no completion date, so not in the 90-day figure: {{count}}"
   },
   "legal_documents": {
     "title": "Legal documents",
@@ -655,12 +661,14 @@
     "open_intro": "These accounts were marked \"Should be removed\" in the last review, and they still have their access.",
     "history_title": "Recent reviews",
     "history_none": "No reviews yet.",
-    "history_by": "Recorded by",
+    "history_by": "Recorded by {{name}}",
     "history_accounts_one": "{{count}} account",
     "history_accounts_other": "{{count}} accounts",
     "history_removals_one": "{{count}} marked for removal",
     "history_removals_other": "{{count}} marked for removal",
-    "erased": "Erased account"
+    "erased": "Erased account",
+    "refresh_failed": "The review could not be loaded again. What you see is from before.",
+    "note_no_names": "Do not name people in the note. It is kept with the record."
   },
   "push_notifications": {
     "title": "Push notifications",
@@ -736,7 +744,9 @@
       "needed": "The error service gives these figures only to a read-only access key of its own, stored on this server. That has not been done.",
       "decision": "Whether to do it is a decision for the platform's owner.",
       "meanwhile": "Until then, the nightly error report you already receive is the place to look."
-    }
+    },
+    "check_refused": "Checking again was refused: too many checks in a minute. The figures below are from before.",
+    "could_not_read_any": "The error service answered, but its figures could not be read. That is not the same as no errors."
   },
   "connections": {
     "title": "Keys and connections",
@@ -804,7 +814,9 @@
       "translated": "Translated"
     },
     "same_note": "Some phrases are meant to be the same in every language, such as names and units. So “still the same as English” is an upper limit, not an exact count.",
-    "not_measured": "The phone app and the accessible site are not measured here."
+    "not_measured": "The phone app and the accessible site are not measured here.",
+    "website_load_error": "The website figures could not be loaded",
+    "recount_refused": "Counting again was refused: too many requests in a short time. The figures below are from before."
   },
   "clean_up_jobs": {
     "title": "Clean-up jobs",
@@ -890,7 +902,8 @@
         "name": "Old identity checks",
         "deletes": "Deletes finished or expired identity checks older than 180 days. The record of what happened in each check is kept."
       }
-    }
+    },
+    "finished_only": "This job records that it finished, not that every step worked."
   },
   "search_rebuild": {
     "title": "Rebuild search",
@@ -922,7 +935,8 @@
       "done_with_errors_one": "Finished {{time}} with {{count}} entry that could not be updated",
       "done_with_errors_other": "Finished {{time}} with {{count}} entries that could not be updated",
       "failed": "Failed"
-    }
+    },
+    "check_failed": "Could not check again at {{time}}"
   },
   "agreements": {
     "title": "Agreements and renewals",
@@ -984,7 +998,8 @@
       "community_unknown": "That community does not exist.",
       "save": "Save",
       "cancel": "Cancel"
-    }
+    },
+    "community_missing": "Community no longer exists"
   },
   "assurance": {
     "title": "Assurance facts",
@@ -994,7 +1009,7 @@
     "read_at": "Read {{time}}",
     "could_not_read": "Could not be read",
     "not_recorded": "Not recorded",
-    "source_label": "Where this comes from",
+    "source_label": "Where this comes from:",
     "source_owner": "Entered by the platform's owner in the server's settings",
     "findings_note": "Open security findings are kept in a private record, not on this server, and are not shown here.",
     "test_scope_note": "An independent test covers the version it tested, not changes made since.",
@@ -1038,7 +1053,7 @@
     },
     "failed_sign_ins": {
       "title": "Record of failed sign-ins",
-      "since": "Failed sign-ins have been counted since {{date}}",
+      "since": "Earliest failed sign-in on record: {{date}}",
       "none": "Nothing has been counted yet",
       "note": "This says when the record starts. It is not a count of anything."
     },
@@ -1071,7 +1086,8 @@
       "warning_other": "Certificate runs out in {{count}} days",
       "failing": "Not working",
       "unknown": "Not checked yet",
-      "not_checkable": "Not a web address we can check"
+      "not_checkable": "Not a web address we can check",
+      "warning_days_unknown": "Certificate runs out soon. How many days are left could not be read."
     },
     "reason": {
       "does_not_resolve": "The name does not lead anywhere.",
@@ -1086,6 +1102,8 @@
     "check_now": "Check now",
     "checked": "Checked.",
     "check_failed": "The check could not be run. Try again.",
-    "too_many": "Too many checks in a minute. Wait a moment and try again."
+    "too_many": "Too many checks in a minute. Wait a moment and try again.",
+    "check_now_for": "Check {{name}} now",
+    "check_platform_now": "Check the platform's addresses now"
   }
 }

@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -33,9 +34,22 @@ return new class extends Migration
     {
         if (Schema::hasTable('refresh_session_activity')
             && ! Schema::hasColumn('refresh_session_activity', 'app_version')) {
-            Schema::table('refresh_session_activity', function (Blueprint $table): void {
-                $table->string('app_version', 20)->nullable();
-            });
+            // Raw statements, not the schema builder, for two reasons. This
+            // table is written on every sign-in and every renewal. An ALTER
+            // that has to wait for its metadata lock makes every later query
+            // on the table queue behind it, so sign-ins stall for as long as
+            // it waits: five seconds and then a failed deploy is better than
+            // that. And ALGORITHM=INSTANT, LOCK=NONE makes the server refuse
+            // the statement rather than quietly rebuild the table.
+            // The short wait is put back afterwards, so later migrations in the
+            // same run keep the server's usual one.
+            $previous = (int) DB::selectOne('SELECT @@SESSION.lock_wait_timeout AS t')->t;
+            DB::statement('SET SESSION lock_wait_timeout = 5');
+            try {
+                DB::statement('ALTER TABLE refresh_session_activity ADD COLUMN app_version VARCHAR(20) NULL, ALGORITHM=INSTANT, LOCK=NONE');
+            } finally {
+                DB::statement('SET SESSION lock_wait_timeout = ' . max(1, $previous));
+            }
         }
     }
 

@@ -224,6 +224,49 @@ describe('AgreementsPage', () => {
     expect(toast.success).not.toHaveBeenCalled();
   });
 
+  it('reads a refusal by the server\'s code first: a renewal date that is not a date is not "before the start"', async () => {
+    apiPost.mockResolvedValue({
+      success: false,
+      error: 'Refused',
+      errors: [{ code: 'VALIDATION_INVALID_FORMAT', field: 'renews_on', message: 'server words' }],
+    });
+    render(<AgreementsPage />);
+    const dialog = await openForm();
+
+    fireEvent.change(within(dialog).getByLabelText(/^Name of the agreement/), { target: { value: 'Support' } });
+    fireEvent.change(within(dialog).getByLabelText(/^Who it is with/), { target: { value: 'Hilltop' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
+
+    const alert = await within(dialog).findByRole('alert');
+    expect(alert).toHaveTextContent('Use a real date, or leave it empty.');
+    expect(alert).not.toHaveTextContent('before the start date');
+  });
+
+  it('writes day counts in the reader\'s number style', async () => {
+    apiGet.mockResolvedValue(list([
+      agreement({ id: 1, days_to_renewal: 1234 }),
+      agreement({ id: 2, days_to_renewal: -2500, renews_soon: true }),
+    ]));
+    render(<AgreementsPage />);
+
+    expect(within(await screen.findByTestId('agreement-1')).getByText('1,234')).toBeInTheDocument();
+    expect(within(screen.getByTestId('agreement-2')).getByText('2,500')).toBeInTheDocument();
+  });
+
+  it('opens an agreement whose community no longer exists without losing the link', async () => {
+    apiGet.mockResolvedValue(list([agreement({ community: { id: 99, name: null } })]));
+    render(<AgreementsPage />);
+    fireEvent.click(within(await screen.findByTestId('agreement-7')).getByRole('button', { name: 'Change' }));
+    const dialog = await screen.findByRole('dialog');
+
+    expect(within(dialog).getAllByText('Community no longer exists').length).toBeGreaterThan(0);
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(apiPut).toHaveBeenCalledTimes(1));
+    // Not sent, so the server keeps the link it has; sending the old number would be refused.
+    expect(apiPut.mock.calls[0]![1]).not.toHaveProperty('community_id');
+  });
+
   it('asks before ending an agreement, then ends it', async () => {
     render(<AgreementsPage />);
     fireEvent.click(within(await screen.findByTestId('agreement-7')).getByRole('button', { name: 'End' }));

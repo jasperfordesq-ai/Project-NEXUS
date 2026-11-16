@@ -46,12 +46,14 @@ const overview = (over: Partial<SecurityOverview> = {}): SecurityOverview => ({
     available: true,
     last_hour: 3,
     last_24h: 41,
+    refused_last_hour: 1900,
+    refused_last_24h: 2050,
     counted_since: '2026-11-10T14:00:00+00:00',
     addresses_15m: 7,
     most_from_one_address_15m: 22,
     by_community: [
-      { community: { id: 2, name: 'Sample Timebank' }, failed: 30 },
-      { community: null, failed: 11 },
+      { community: { id: 2, name: 'Sample Timebank' }, failed: 30, refused: 2040 },
+      { community: null, failed: 11, refused: 10 },
     ],
   },
   two_step: { available: true, senior_total: 9, without_two_step: 2 },
@@ -117,6 +119,33 @@ describe('SecurityPage', () => {
     expect(within(screen.getByTestId('failed-community-0')).getByText('senior_accounts.no_community')).toBeInTheDocument();
   });
 
+  // A locked-out attacker's guesses never reach the password check: shown apart, never added in.
+  it('shows the attempts refused by the lock-out beside the failed password checks', async () => {
+    show();
+
+    const section = await screen.findByTestId('security-failed');
+    expect(within(section).getByText('security.failed.checks_title')).toBeInTheDocument();
+    expect(within(section).getByText('security.failed.refused_title')).toBeInTheDocument();
+    expect(screen.getByTestId('failed-refused_last_hour')).toHaveTextContent((1900).toLocaleString('en'));
+    expect(screen.getByTestId('failed-refused_last_24h')).toHaveTextContent((2050).toLocaleString('en'));
+    expect(screen.getByTestId('failed-last_24h')).toHaveTextContent('41');
+    const community = screen.getByTestId('failed-community-2');
+    expect(within(community).getByText('security.failed.col_refused')).toBeInTheDocument();
+    expect(within(community).getByText((2040).toLocaleString('en'))).toBeInTheDocument();
+  });
+
+  it('puts each figure in the list as a term and its value, with nothing in between', async () => {
+    show();
+
+    await screen.findByTestId('security-failed');
+    for (const key of ['last_hour', 'last_24h', 'refused_last_hour', 'addresses_15m']) {
+      const item = screen.getByTestId(`failed-${key}`);
+      expect(item.tagName).toBe('DIV');
+      expect(item.parentElement?.tagName).toBe('DL');
+      expect(Array.from(item.children).map((child) => child.tagName)).toEqual(['DT', 'DD']);
+    }
+  });
+
   // A quiet first day must not read as "nothing happened this week".
   it('says nothing has been counted yet, rather than showing zeros as if they covered a day', async () => {
     apiGet.mockResolvedValue({
@@ -124,8 +153,11 @@ describe('SecurityPage', () => {
       data: overview({
         failed_sign_ins: {
           available: true,
-          last_hour: 0,
-          last_24h: 0,
+          // Nothing counted yet: the server sends no totals, not zeros.
+          last_hour: null,
+          last_24h: null,
+          refused_last_hour: null,
+          refused_last_24h: null,
           counted_since: null,
           addresses_15m: 1,
           most_from_one_address_15m: 2,
@@ -139,6 +171,7 @@ describe('SecurityPage', () => {
     expect(within(section).getByText('security.failed.nothing_counted')).toBeInTheDocument();
     expect(screen.queryByTestId('failed-last_hour')).not.toBeInTheDocument();
     expect(screen.queryByTestId('failed-last_24h')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('failed-refused_last_24h')).not.toBeInTheDocument();
     expect(within(section).queryByText('security.failed.empty')).not.toBeInTheDocument();
     expect(within(section).queryByText(/security\.failed\.counted_since/)).not.toBeInTheDocument();
     // The last-15-minutes figures come from another record and still show.

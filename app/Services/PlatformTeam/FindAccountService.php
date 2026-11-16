@@ -264,8 +264,9 @@ final class FindAccountService
             Log::error('Platform team: an account could not be signed out everywhere', [
                 'actor' => $actorId,
                 'target' => $targetId,
+                // The kind of error only: a database error quotes the values
+                // of the failed statement, the typed text among them.
                 'exception' => $e::class,
-                'message' => $e->getMessage(),
             ]);
 
             return self::FAILED;

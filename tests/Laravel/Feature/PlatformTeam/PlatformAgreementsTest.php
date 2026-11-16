@@ -385,6 +385,68 @@ class PlatformAgreementsTest extends TestCase
         }
     }
 
+    /**
+     * Review 16 Nov: a change could be saved with no record of who made it,
+     * because a failed activity_log insert was swallowed. Now the change and
+     * its record are one transaction: no record, no change, and a 500.
+     */
+    public function test_a_change_whose_record_cannot_be_written_is_not_saved(): void
+    {
+        $id = $this->agreement(['title' => 'Before']);
+        $me = $this->actAsPlatformTeam();
+
+        $broken = true;
+        DB::connection()->beforeExecuting(static function (string $sql) use (&$broken): void {
+            if ($broken && str_contains($sql, 'insert into `activity_log`')) {
+                throw new \RuntimeException('planted: the record cannot be written');
+            }
+        });
+
+        try {
+            $add = $this->apiPost(self::URI, ['title' => 'Never saved', 'with_whom' => 'Riverside Timebank']);
+            $change = $this->apiPut(self::URI . "/{$id}", ['title' => 'After']);
+            $end = $this->apiPost(self::URI . "/{$id}/end");
+        } finally {
+            $broken = false;
+        }
+
+        foreach (['add' => $add, 'change' => $change, 'end' => $end] as $label => $response) {
+            $response->assertStatus(500);
+            $this->assertStringNotContainsString('planted', (string) $response->getContent(), $label);
+        }
+        $this->assertSame(0, DB::table('platform_agreements')->where('title', 'Never saved')->count(), 'nothing was added');
+        $row = DB::table('platform_agreements')->where('id', $id)->first();
+        $this->assertSame('Before', $row->title, 'the change was not saved');
+        $this->assertSame(0, (int) $row->is_ended, 'the agreement was not ended');
+        $this->assertNotSame((int) $me->id, (int) ($row->updated_by ?? 0));
+    }
+
+    public function test_adding_changing_and_ending_are_held_to_thirty_a_minute_for_each_caller(): void
+    {
+        $id = $this->agreement();
+        $me = $this->actAsPlatformTeam();
+        $key = "api:platform_team_agreements:user:{$me->id}";
+        \Illuminate\Support\Facades\RateLimiter::clear($key);
+        for ($i = 0; $i < 30; $i++) {
+            \Illuminate\Support\Facades\RateLimiter::hit($key, 60);
+        }
+        $records = DB::table('activity_log')->where('entity_type', 'platform_agreement')->count();
+
+        try {
+            $this->apiPost(self::URI, ['title' => 'Throttled', 'with_whom' => 'Riverside Timebank'])->assertStatus(429);
+            $this->apiPut(self::URI . "/{$id}", ['title' => 'Throttled'])->assertStatus(429);
+            $this->apiPost(self::URI . "/{$id}/end")->assertStatus(429);
+            // Reading is not held.
+            $this->apiGet(self::URI)->assertStatus(200);
+        } finally {
+            \Illuminate\Support\Facades\RateLimiter::clear($key);
+        }
+
+        $this->assertSame(0, DB::table('platform_agreements')->where('title', 'Throttled')->count());
+        $this->assertSame(0, (int) DB::table('platform_agreements')->where('id', $id)->value('is_ended'));
+        $this->assertSame($records, DB::table('activity_log')->where('entity_type', 'platform_agreement')->count());
+    }
+
     // ------------------------------------------------------------------
     // Order and renewal
     // ------------------------------------------------------------------

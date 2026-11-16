@@ -16,7 +16,9 @@ use Illuminate\Support\Facades\Schema;
  * row older than 20 minutes, and a successful sign-in deletes that account's
  * failed rows, so the Security page's "last hour / last 24 hours" figures
  * read from it showed far less than they claimed. RateLimiter::recordAttempt()
- * now adds one to this table for every failed email sign-in.
+ * now adds one to `failures` for every failed email sign-in, and
+ * RateLimiter::countRefusedSignIn() one to `refused` for every attempt the
+ * lock-out turns away before the password is checked.
  *
  * 🔴 Counts only: an hour, a community id, a number. No email, no digest, no
  * IP address, nothing about a person.
@@ -42,6 +44,10 @@ return new class extends Migration
             $table->dateTime('hour_start');
             $table->integer('tenant_id')->default(0);
             $table->unsignedInteger('failures')->default(0);
+            // Attempts refused by the lock-out before any password check
+            // (RateLimiter::countRefusedSignIn()). Kept apart from `failures`:
+            // a locked-out attacker's guesses never reach the password check.
+            $table->unsignedInteger('refused')->default(0);
 
             $table->primary(['hour_start', 'tenant_id']);
         });

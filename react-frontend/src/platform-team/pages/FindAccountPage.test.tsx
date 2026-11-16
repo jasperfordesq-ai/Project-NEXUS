@@ -266,6 +266,18 @@ describe('FindAccountPage', () => {
     expect(toast.success).toHaveBeenCalledTimes(1);
   });
 
+  it('moves keyboard focus to the "done" line, since the button that opened the dialog is gone', async () => {
+    render(<FindAccountPage />);
+    search();
+    const dialog = await openDialog();
+    typeReason(dialog, 'Phone reported stolen');
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Sign out everywhere' }));
+
+    const line = await within(await card(41)).findByText('Signed out everywhere just now.');
+    expect(line).toHaveAttribute('tabindex', '-1');
+    await waitFor(() => expect(line).toHaveFocus());
+  });
+
   it('leaves the account alone when the dialog is cancelled', async () => {
     render(<FindAccountPage />);
     search();

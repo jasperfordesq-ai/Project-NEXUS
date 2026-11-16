@@ -65,6 +65,11 @@ export interface DataRequestsTotals {
   nearly_due: number | null;
   oldest_open_days: number | null;
   completed_last_90_days: number | null;
+  /**
+   * Completed requests with no completion date, platform-wide (not in any
+   * window). Optional: an older server does not send it; null = not readable.
+   */
+  completed_without_date?: number | null;
 }
 
 export interface DataRequests {
@@ -240,12 +245,12 @@ export function DataRequestsPage() {
             <table className="w-full border-collapse text-sm" data-testid="data-requests-table">
               <caption className="sr-only">{t('data_requests.title')}</caption>
               <thead>
-                <tr className="bg-surface-secondary text-left text-xs text-muted">
-                  <th scope="col" className="sticky left-0 z-10 min-w-48 bg-surface-secondary px-3 py-2 font-medium">
+                <tr className="bg-surface-secondary text-start text-xs text-muted">
+                  <th scope="col" className="sticky start-0 z-10 min-w-48 bg-surface-secondary px-3 py-2 font-medium">
                     {t('data_requests.column.community')}
                   </th>
                   {FIGURES.map((figure) => (
-                    <th key={figure} scope="col" className="min-w-24 px-3 py-2 text-right align-bottom font-medium">
+                    <th key={figure} scope="col" className="min-w-24 px-3 py-2 text-end align-bottom font-medium">
                       {label(figure)}
                     </th>
                   ))}
@@ -257,12 +262,12 @@ export function DataRequestsPage() {
               <tbody>
                 {data.communities.map((community) => (
                   <tr key={community.id} className="border-t border-divider align-top">
-                    <th scope="row" className="sticky left-0 z-10 bg-background px-3 py-2 text-left font-medium text-foreground">
+                    <th scope="row" className="sticky start-0 z-10 bg-background px-3 py-2 text-start font-medium text-foreground">
                       <span className="block break-words">{community.name}</span>
                       {community.is_active ? null : <span className="mt-1 flex">{notActive(community)}</span>}
                     </th>
                     {FIGURES.map((figure) => (
-                      <td key={figure} className={`px-3 py-2 text-right tabular-nums ${emphasis(community, figure)}`}>
+                      <td key={figure} className={`px-3 py-2 text-end tabular-nums ${emphasis(community, figure)}`}>
                         {value(community, figure)}
                       </td>
                     ))}
@@ -270,11 +275,11 @@ export function DataRequestsPage() {
                   </tr>
                 ))}
                 <tr className="border-t-2 border-divider bg-surface-secondary align-top">
-                  <th scope="row" className="sticky left-0 z-10 bg-surface-secondary px-3 py-2 text-left font-semibold text-foreground">
+                  <th scope="row" className="sticky start-0 z-10 bg-surface-secondary px-3 py-2 text-start font-semibold text-foreground">
                     {t('data_requests.totals_row')}
                   </th>
                   {FIGURES.map((figure) => (
-                    <td key={figure} className="px-3 py-2 text-right font-semibold tabular-nums text-foreground">
+                    <td key={figure} className="px-3 py-2 text-end font-semibold tabular-nums text-foreground">
                       {value(data.totals, figure)}
                     </td>
                   ))}
@@ -283,6 +288,12 @@ export function DataRequestsPage() {
               </tbody>
             </table>
           </div>
+
+          {(data.totals.completed_without_date ?? 0) > 0 ? (
+            <p className="max-w-2xl text-sm text-muted" data-testid="data-requests-without-date">
+              {t('data_requests.completed_without_date', { count: data.totals.completed_without_date ?? 0 })}
+            </p>
+          ) : null}
 
           <ul className="flex flex-col gap-3 md:hidden" data-testid="data-requests-list">
             {data.communities.map((community) => (

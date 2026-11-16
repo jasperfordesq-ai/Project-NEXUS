@@ -115,7 +115,10 @@ export function CommunityHealthPage() {
       ? t('community_health.not_available')
       : value.toLocaleString(i18n.language, { maximumFractionDigits: 1 });
 
+  const signInUnreadable = health?.unavailable.includes('last_sign_in_at') ?? false;
+
   const day = (iso: string | null): string => {
+    if (signInUnreadable) return t('community_health.not_available');
     if (!iso) return t('community_health.never_signed_in');
     const date = new Date(iso);
     return Number.isNaN(date.getTime())
@@ -151,6 +154,8 @@ export function CommunityHealthPage() {
   };
 
   const quietOnes = health ? health.communities.filter((c) => c.quiet === true) : [];
+  // An active community the server could not judge: the card must never say "none quiet".
+  const quietUnknown = health ? health.communities.some((c) => c.is_active && c.quiet === null) : false;
 
   return (
     <section className="mx-auto max-w-6xl">
@@ -197,9 +202,14 @@ export function CommunityHealthPage() {
                       {t('community_health.quiet_names', { names: joinList(quietOnes.map((c) => c.name), i18n.language) })}
                     </p>
                   </>
-                ) : (
+                ) : quietUnknown ? null : (
                   <p className="font-medium text-foreground">{t('community_health.none_quiet')}</p>
                 )}
+                {quietUnknown ? (
+                  <p className={`${quietOnes.length > 0 ? 'mt-1 ' : ''}font-medium text-foreground`}>
+                    {t('community_health.quiet_unknown_summary')}
+                  </p>
+                ) : null}
                 <p className="mt-2 text-muted">{t('community_health.quiet_rule', { days })}</p>
               </div>
             </CardBody>
@@ -211,12 +221,12 @@ export function CommunityHealthPage() {
             <table className="w-full border-collapse text-sm" data-testid="community-health-table">
               <caption className="sr-only">{t('community_health.title')}</caption>
               <thead>
-                <tr className="bg-surface-secondary text-left text-xs text-muted">
-                  <th scope="col" className="sticky left-0 z-10 min-w-48 bg-surface-secondary px-3 py-2 font-medium">
+                <tr className="bg-surface-secondary text-start text-xs text-muted">
+                  <th scope="col" className="sticky start-0 z-10 min-w-48 bg-surface-secondary px-3 py-2 font-medium">
                     {t('community_health.column.community')}
                   </th>
                   {FIGURES.map((figure) => (
-                    <th key={figure} scope="col" className="min-w-24 px-3 py-2 text-right align-bottom font-medium">
+                    <th key={figure} scope="col" className="min-w-24 px-3 py-2 text-end align-bottom font-medium">
                       {label(figure)}
                     </th>
                   ))}
@@ -228,12 +238,12 @@ export function CommunityHealthPage() {
               <tbody>
                 {health.communities.map((community) => (
                   <tr key={community.id} className="border-t border-divider">
-                    <th scope="row" className="sticky left-0 z-10 bg-background px-3 py-2 text-left font-medium text-foreground">
+                    <th scope="row" className="sticky start-0 z-10 bg-background px-3 py-2 text-start font-medium text-foreground">
                       <span className="block break-words">{community.name}</span>
                       <span className="mt-1 flex">{status(community)}</span>
                     </th>
                     {FIGURES.map((figure) => (
-                      <td key={figure} className="px-3 py-2 text-right tabular-nums text-foreground">
+                      <td key={figure} className="px-3 py-2 text-end tabular-nums text-foreground">
                         {number(community[figure])}
                       </td>
                     ))}
@@ -241,11 +251,11 @@ export function CommunityHealthPage() {
                   </tr>
                 ))}
                 <tr className="border-t-2 border-divider bg-surface-secondary">
-                  <th scope="row" className="sticky left-0 z-10 bg-surface-secondary px-3 py-2 text-left font-semibold text-foreground">
+                  <th scope="row" className="sticky start-0 z-10 bg-surface-secondary px-3 py-2 text-start font-semibold text-foreground">
                     {t('community_health.totals_row')}
                   </th>
                   {FIGURES.map((figure) => (
-                    <td key={figure} className="px-3 py-2 text-right font-semibold tabular-nums text-foreground">
+                    <td key={figure} className="px-3 py-2 text-end font-semibold tabular-nums text-foreground">
                       {number(health.totals[figure])}
                     </td>
                   ))}

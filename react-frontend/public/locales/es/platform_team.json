@@ -296,17 +296,20 @@
     },
     "failed": {
       "title": "Inicios de sesión fallidos",
-      "note": "Cada inicio de sesión fallido se cuenta en el momento en que ocurre, por comunidad y por hora. El recuento solo guarda un número: nada sobre la persona ni sobre desde dónde intentó entrar. Las cifras se cuentan en horas completas, así que cada una puede incluir hasta una hora más.",
-      "counted_since": "Contados desde el {{date}}",
+      "note": "Dos recuentos separados, por comunidad y por hora. «Comprobaciones de contraseña fallidas»: alguien intentó iniciar sesión y la contraseña era incorrecta. «Rechazados por el bloqueo»: tras demasiados intentos, el intento se rechazó antes de comprobar ninguna contraseña. Los dos nunca se suman. Cada recuento guarda solo un número, nada sobre la persona ni desde dónde inició sesión. Las cifras se cuentan en horas completas, así que cada una puede incluir hasta una hora más.",
+      "counted_since": "Primer inicio de sesión fallido registrado: {{date}}",
       "nothing_counted": "Todavía no se ha contado nada. Los inicios de sesión fallidos se cuentan desde el día en que se activó este recuento.",
       "last_hour": "En la última hora",
       "last_24h": "En las últimas 24 horas",
-      "empty": "No hay inicios de sesión fallidos en las últimas 24 horas.",
-      "col_failed": "Fallidos en las últimas 24 horas:",
+      "empty": "No hay inicios de sesión fallidos ni rechazados en las últimas 24 horas.",
+      "col_failed": "Comprobaciones de contraseña fallidas en las últimas 24 horas:",
       "recent_title": "En los últimos 15 minutos",
       "recent_note": "Qué direcciones de internet se están probando ahora mismo. La plataforma guarda estos datos solo unos 20 minutos y olvida los intentos fallidos de una dirección cuando desde ella se vuelve a iniciar sesión correctamente. Los inicios de sesión a través del sitio accesible llegan todos desde una sola dirección.",
       "addresses_15m": "Direcciones de internet distintas en los últimos 15 minutos",
-      "most_from_one_15m": "Más desde una sola dirección en los últimos 15 minutos"
+      "most_from_one_15m": "Más desde una sola dirección en los últimos 15 minutos",
+      "checks_title": "Comprobaciones de contraseña fallidas",
+      "refused_title": "Rechazados por el bloqueo",
+      "col_refused": "Rechazados por el bloqueo en las últimas 24 horas:"
     },
     "access": {
       "title": "Acceso de alto nivel concedido y retirado",
@@ -426,7 +429,8 @@
     "unavailable": {
       "emails": "No se han podido leer las cifras de correo ahora mismo. No son cero.",
       "ai_chat": "No se han podido leer las cifras del chat con IA ahora mismo. No son cero.",
-      "group_files": "No se ha podido leer el tamaño de los archivos de grupo ahora mismo. No es cero."
+      "group_files": "No se ha podido leer el tamaño de los archivos de grupo ahora mismo. No es cero.",
+      "emails_kept_90_days": "Los registros de correo se guardan 90 días, así que este mes no se puede mostrar."
     },
     "totals_heading": "Todas las comunidades juntas",
     "communities_heading": "Cada comunidad ({{count}})",
@@ -438,7 +442,7 @@
     "failed": "Fallidos",
     "bounced": "Rebotados",
     "ai_requests": "Solicitudes",
-    "ai_tokens": "Tokens",
+    "ai_tokens": "Fragmentos de texto procesados",
     "ai_cost": "Coste",
     "files": "Espacio usado ahora",
     "removed_community": "Comunidad #{{id}} (ya no existe)",
@@ -446,7 +450,7 @@
     "platform_mail": "Correo de la plataforma",
     "platform_mail_note": "Correos que envió la plataforma y que no pertenecen a ninguna comunidad concreta.",
     "notes_heading": "Qué significan las cifras",
-    "sent_note": "«Enviados» significa que el correo se entregó al servicio de correo. No demuestra que llegara.",
+    "sent_note": "«Enviados» significa que el correo se entregó al servicio de correo. No demuestra que llegara. Los correos rebotados están incluidos en Enviados, así que no sume las dos cifras.",
     "ai_note": "El coste de la IA es lo que se registró en cada solicitud, en dólares estadounidenses.",
     "files_note": "Archivos de grupo es el espacio que ocupan hoy, no lo que se añadió este mes.",
     "not_recorded_heading": "No se registra por ahora",
@@ -488,7 +492,8 @@
       "hours_this_month": "Horas intercambiadas este mes",
       "new_listings_this_month": "Anuncios nuevos este mes",
       "last_sign_in": "Último inicio de sesión"
-    }
+    },
+    "quiet_unknown_summary": "Ahora mismo no hemos podido saber qué comunidades están tranquilas."
   },
   "community_setup": {
     "title": "Configuración de las comunidades",
@@ -582,7 +587,8 @@
       "restriction": "Un límite de uso",
       "portability": "Una transferencia",
       "objection": "Una oposición"
-    }
+    },
+    "completed_without_date": "Solicitudes completadas sin fecha de finalización, por lo que no están en la cifra de 90 días: {{count}}"
   },
   "legal_documents": {
     "title": "Documentos legales",
@@ -655,12 +661,14 @@
     "open_intro": "Estas cuentas se marcaron como «Debería quitarse» en la última revisión y todavía conservan su acceso.",
     "history_title": "Revisiones recientes",
     "history_none": "Todavía no hay revisiones.",
-    "history_by": "Registrada por",
+    "history_by": "Registrada por {{name}}",
     "history_accounts_one": "{{count}} cuenta",
     "history_accounts_other": "{{count}} cuentas",
     "history_removals_one": "{{count}} marcada para quitar",
     "history_removals_other": "{{count}} marcadas para quitar",
-    "erased": "Cuenta borrada"
+    "erased": "Cuenta borrada",
+    "refresh_failed": "No se pudo volver a cargar la revisión. Lo que ves es de antes.",
+    "note_no_names": "No nombres a personas en la nota. Se guarda con el registro."
   },
   "push_notifications": {
     "title": "Notificaciones push",
@@ -736,7 +744,9 @@
       "needed": "El servicio de errores solo da estas cifras a una clave de acceso propia de solo lectura, guardada en este servidor. Eso no se ha hecho.",
       "decision": "Hacerlo o no es una decisión del propietario de la plataforma.",
       "meanwhile": "Mientras tanto, el informe nocturno de errores que ya recibe es el lugar donde mirar."
-    }
+    },
+    "check_refused": "Se rechazó volver a comprobar: demasiadas comprobaciones en un minuto. Las cifras de abajo son de antes.",
+    "could_not_read_any": "El servicio de errores respondió, pero no se pudieron leer sus cifras. Eso no significa que no haya errores."
   },
   "connections": {
     "title": "Claves y conexiones",
@@ -804,7 +814,9 @@
       "translated": "Traducido"
     },
     "same_note": "Algunas frases deben ser iguales en todos los idiomas, como nombres y unidades. Por eso «aún igual que en inglés» es un máximo, no una cifra exacta.",
-    "not_measured": "La aplicación móvil y el sitio accesible no se miden aquí."
+    "not_measured": "La aplicación móvil y el sitio accesible no se miden aquí.",
+    "website_load_error": "No se pudieron cargar las cifras del sitio web",
+    "recount_refused": "Se rechazó volver a contar: demasiadas solicitudes en poco tiempo. Las cifras de abajo son de antes."
   },
   "clean_up_jobs": {
     "title": "Tareas de limpieza",
@@ -890,7 +902,8 @@
         "name": "Comprobaciones de identidad antiguas",
         "deletes": "Borra las comprobaciones de identidad terminadas o caducadas de más de 180 días. Se conserva el registro de lo ocurrido en cada una."
       }
-    }
+    },
+    "finished_only": "Esta tarea registra que terminó, no que cada paso funcionara."
   },
   "search_rebuild": {
     "title": "Reconstruir la búsqueda",
@@ -922,7 +935,8 @@
       "done_with_errors_one": "Terminada {{time}} con {{count}} entrada que no se pudo actualizar",
       "done_with_errors_other": "Terminada {{time}} con {{count}} entradas que no se pudieron actualizar",
       "failed": "Falló"
-    }
+    },
+    "check_failed": "No se pudo volver a comprobar a las {{time}}"
   },
   "agreements": {
     "title": "Acuerdos y renovaciones",
@@ -984,7 +998,8 @@
       "community_unknown": "Esa comunidad no existe.",
       "save": "Guardar",
       "cancel": "Cancelar"
-    }
+    },
+    "community_missing": "La comunidad ya no existe"
   },
   "assurance": {
     "title": "Hechos medidos",
@@ -994,7 +1009,7 @@
     "read_at": "Leído {{time}}",
     "could_not_read": "No se pudo leer",
     "not_recorded": "No registrado",
-    "source_label": "De dónde viene",
+    "source_label": "De dónde viene:",
     "source_owner": "Introducido por el propietario de la plataforma en la configuración del servidor",
     "findings_note": "Los hallazgos de seguridad abiertos se guardan en un registro privado, no en este servidor, y no se muestran aquí.",
     "test_scope_note": "Una prueba independiente cubre la versión que probó, no los cambios hechos después.",
@@ -1038,7 +1053,7 @@
     },
     "failed_sign_ins": {
       "title": "Registro de inicios de sesión fallidos",
-      "since": "Los inicios de sesión fallidos se cuentan desde {{date}}",
+      "since": "Primer inicio de sesión fallido registrado: {{date}}",
       "none": "Todavía no se ha contado nada",
       "note": "Esto dice cuándo empieza el registro. No es un recuento de nada."
     },
@@ -1071,7 +1086,8 @@
       "warning_other": "El certificado caduca en {{count}} días",
       "failing": "No funciona",
       "unknown": "Aún no comprobada",
-      "not_checkable": "No es una dirección web que podamos comprobar"
+      "not_checkable": "No es una dirección web que podamos comprobar",
+      "warning_days_unknown": "El certificado caduca pronto. No se pudo leer cuántos días quedan."
     },
     "reason": {
       "does_not_resolve": "El nombre no lleva a ninguna parte.",
@@ -1086,6 +1102,8 @@
     "check_now": "Comprobar ahora",
     "checked": "Comprobada.",
     "check_failed": "No se pudo hacer la comprobación. Inténtalo de nuevo.",
-    "too_many": "Demasiadas comprobaciones en un minuto. Espera un momento y vuelve a intentarlo."
+    "too_many": "Demasiadas comprobaciones en un minuto. Espera un momento y vuelve a intentarlo.",
+    "check_now_for": "Comprobar {{name}} ahora",
+    "check_platform_now": "Comprobar ahora las direcciones de la plataforma"
   }
 }

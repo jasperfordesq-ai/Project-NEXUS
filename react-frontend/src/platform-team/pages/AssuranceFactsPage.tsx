@@ -198,8 +198,8 @@ export function AssuranceFactsPage() {
             )}
             <div className="mt-auto flex flex-col gap-1 border-t border-divider pt-3">
               {readAt ? <p className="text-xs text-muted">{t('assurance.read_at', { time: readAt })}</p> : null}
-              <p className="text-xs text-muted">
-                <span>{t('assurance.source_label')}: </span>
+              <p className="flex flex-wrap items-center gap-x-1 text-xs text-muted">
+                <span>{t('assurance.source_label')}</span>
                 {source ? (
                   <Link
                     to={tenantPath(source.path)}

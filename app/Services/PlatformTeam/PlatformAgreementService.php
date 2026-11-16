@@ -130,7 +130,7 @@ final class PlatformAgreementService
 
     /**
      * @param array<string, mixed> $data
-     * @return array{agreement: array<string, mixed>}|array{errors: list<array{code: string, message: string, field: string}>}
+     * @return array{agreement: array<string, mixed>}|array{errors: list<array{code: string, message: string, field: string}>}|array{error: 'failed'}
      */
     public function create(int $userId, array $data): array
     {
@@ -144,9 +144,15 @@ final class PlatformAgreementService
         foreach (self::FIELDS as $field) {
             $row[$field] = $values[$field] ?? null;
         }
-        $id = (int) DB::table('platform_agreements')->insertGetId($row);
+        $id = $this->inTransaction('platform_agreement_created', function () use ($row, $userId): int {
+            $id = (int) DB::table('platform_agreements')->insertGetId($row);
+            $this->record($userId, 'platform_agreement_created', $id);
 
-        $this->record($userId, 'platform_agreement_created', $id);
+            return $id;
+        });
+        if ($id === null) {
+            return ['error' => 'failed'];
+        }
 
         return ['agreement' => $this->one($id)];
     }
@@ -156,7 +162,7 @@ final class PlatformAgreementService
      * 🔴 Never `is_ended`: an agreement is ended by end() and stays ended.
      *
      * @param array<string, mixed> $data
-     * @return array{agreement: array<string, mixed>}|array{errors: list<array{code: string, message: string, field: string}>}|array{error: 'not_found'}
+     * @return array{agreement: array<string, mixed>}|array{errors: list<array{code: string, message: string, field: string}>}|array{error: 'not_found'|'failed'}
      */
     public function update(int $id, int $userId, array $data): array
     {
@@ -173,8 +179,15 @@ final class PlatformAgreementService
         if ($values !== []) {
             $values['updated_by'] = $userId > 0 ? $userId : null;
             $values['updated_at'] = now();
-            DB::table('platform_agreements')->where('id', $id)->update($values);
-            $this->record($userId, 'platform_agreement_changed', $id);
+            $done = $this->inTransaction('platform_agreement_changed', function () use ($id, $values, $userId): bool {
+                DB::table('platform_agreements')->where('id', $id)->update($values);
+                $this->record($userId, 'platform_agreement_changed', $id);
+
+                return true;
+            });
+            if ($done === null) {
+                return ['error' => 'failed'];
+            }
         }
 
         return ['agreement' => $this->one($id)];
@@ -184,7 +197,7 @@ final class PlatformAgreementService
      * Mark an agreement ended. The row is kept. Ending one that has already
      * ended changes nothing and writes no second record.
      *
-     * @return array{agreement: array<string, mixed>}|array{error: 'not_found'}
+     * @return array{agreement: array<string, mixed>}|array{error: 'not_found'|'failed'}
      */
     public function end(int $id, int $userId): array
     {
@@ -194,12 +207,19 @@ final class PlatformAgreementService
         }
 
         if ((int) $existing->is_ended !== 1) {
-            DB::table('platform_agreements')->where('id', $id)->update([
-                'is_ended' => 1,
-                'updated_by' => $userId > 0 ? $userId : null,
-                'updated_at' => now(),
-            ]);
-            $this->record($userId, 'platform_agreement_ended', $id);
+            $done = $this->inTransaction('platform_agreement_ended', function () use ($id, $userId): bool {
+                DB::table('platform_agreements')->where('id', $id)->update([
+                    'is_ended' => 1,
+                    'updated_by' => $userId > 0 ? $userId : null,
+                    'updated_at' => now(),
+                ]);
+                $this->record($userId, 'platform_agreement_ended', $id);
+
+                return true;
+            });
+            if ($done === null) {
+                return ['error' => 'failed'];
+            }
         }
 
         return ['agreement' => $this->one($id)];
@@ -423,35 +443,49 @@ final class PlatformAgreementService
     }
 
     /**
-     * The second record of a write (the first is on the row). A failure to
-     * write it must not undo the agreement, but it must be seen: logged at
-     * error, with the agreement id only.
+     * Run a write and its record as one transaction. If either fails, nothing
+     * is saved, the failure is logged (the kind of error only: a database
+     * error quotes the values of the failed statement) and null comes back.
+     *
+     * @template T
+     * @param callable(): T $write
+     * @return T|null
+     */
+    private function inTransaction(string $action, callable $write): mixed
+    {
+        try {
+            return DB::transaction($write);
+        } catch (\Throwable $e) {
+            Log::error('Platform agreement: the change and its record could not be saved', [
+                'action' => $action,
+                'exception' => $e::class,
+            ]);
+
+            return null;
+        }
+    }
+
+    /**
+     * The second record of a write (the first is on the row). Not caught:
+     * it runs inside the write's transaction, so a change with no record is
+     * not saved (review 16 Nov 2026).
      */
     private function record(int $userId, string $action, int $agreementId): void
     {
-        try {
-            // Not ActivityLog::log(): that stamps the writer's community. An
-            // agreement belongs to the platform, so tenant_id is NULL. The
-            // details name the agreement, never who it is with or the contact.
-            DB::table('activity_log')->insert([
-                'tenant_id' => null,
-                'user_id' => $userId > 0 ? $userId : null,
-                'action' => $action,
-                'details' => "Platform agreement #{$agreementId}",
-                'is_public' => 0,
-                'ip_address' => ClientIp::get(),
-                'action_type' => 'admin',
-                'entity_type' => 'platform_agreement',
-                'entity_id' => $agreementId,
-                'created_at' => now(),
-            ]);
-        } catch (\Throwable $e) {
-            Log::error('Platform agreement: the activity log entry could not be written', [
-                'action' => $action,
-                'agreement_id' => $agreementId,
-                'user_id' => $userId,
-                'exception' => $e::class,
-            ]);
-        }
+        // Not ActivityLog::log(): that stamps the writer's community. An
+        // agreement belongs to the platform, so tenant_id is NULL. The
+        // details name the agreement, never who it is with or the contact.
+        DB::table('activity_log')->insert([
+            'tenant_id' => null,
+            'user_id' => $userId > 0 ? $userId : null,
+            'action' => $action,
+            'details' => "Platform agreement #{$agreementId}",
+            'is_public' => 0,
+            'ip_address' => ClientIp::get(),
+            'action_type' => 'admin',
+            'entity_type' => 'platform_agreement',
+            'entity_id' => $agreementId,
+            'created_at' => now(),
+        ]);
     }
 }

@@ -14,6 +14,12 @@
  * routine deployment does not change it, so this is not shown after every
  * deployment, only after a release is cut.
  *
+ * It shows only while the release is new: its `date` (YYYY-MM-DD) is within
+ * the last 30 days. A release with no date, or a date that cannot be read,
+ * shows nothing, so an admin who never closed the line is not told months
+ * later that an old version "is live". Following "See what changed" also
+ * closes it.
+ *
  * It shows nothing, and says nothing, when the file is missing, is not the
  * changelog (a server without the `/changelog-data/` rule answers with the
  * app's own HTML), or lists no release. An admin loses nothing by not seeing
@@ -38,7 +44,12 @@ const CHANGELOG_INDEX = '/changelog-data/index.json';
 export interface NewestRelease {
   version: string;
   slug: string;
+  /** YYYY-MM-DD as written in the changelog, or null when it has none. */
+  date: string | null;
 }
+
+/** How long after its date a release is still "new". */
+export const WHATS_NEW_DAYS = 30;
 
 /** The newest released version in a changelog index, or null when there is none to name. */
 export function newestRelease(index: unknown): NewestRelease | null {
@@ -48,14 +59,36 @@ export function newestRelease(index: unknown): NewestRelease | null {
 
   for (const entry of releases as unknown[]) {
     if (typeof entry !== 'object' || entry === null) continue;
-    const { version, slug, isUnreleased } = entry as { version?: unknown; slug?: unknown; isUnreleased?: unknown };
+    const { version, slug, date, isUnreleased } = entry as {
+      version?: unknown;
+      slug?: unknown;
+      date?: unknown;
+      isUnreleased?: unknown;
+    };
     if (isUnreleased === true) continue;
     if (typeof version !== 'string' || typeof slug !== 'string') return null;
     if (version.trim() === '' || slug.trim() === '') return null;
-    return { version: version.trim(), slug: slug.trim() };
+    return {
+      version: version.trim(),
+      slug: slug.trim(),
+      date: typeof date === 'string' && date.trim() !== '' ? date.trim() : null,
+    };
   }
 
   return null;
+}
+
+/** True when the release's date reads as a calendar day within the last WHATS_NEW_DAYS days. */
+export function isRecentRelease(release: NewestRelease, now: Date = new Date()): boolean {
+  const match = release.date === null ? null : /^(\d{4})-(\d{2})-(\d{2})$/.exec(release.date);
+  if (match === null) return false;
+  const [, y, m, d] = match;
+  const day = new Date(Number(y), Number(m) - 1, Number(d));
+  if (Number.isNaN(day.getTime()) || day.getMonth() !== Number(m) - 1) return false;
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const ageDays = Math.round((today.getTime() - day.getTime()) / 86_400_000);
+  // A day ahead is allowed for a release cut in another time zone.
+  return ageDays >= -1 && ageDays <= WHATS_NEW_DAYS;
 }
 
 function seenRelease(): string | null {
@@ -87,7 +120,7 @@ export function WhatsNewBand() {
       .then((index: unknown) => {
         if (cancelled) return;
         const newest = newestRelease(index);
-        if (newest !== null && seenRelease() !== newest.slug) setRelease(newest);
+        if (newest !== null && isRecentRelease(newest) && seenRelease() !== newest.slug) setRelease(newest);
       })
       .catch(() => {
         // No changelog to read: show nothing. This is not an error an admin can act on.
@@ -99,11 +132,9 @@ export function WhatsNewBand() {
   }, []);
 
   const close = useCallback(() => {
-    setRelease((current) => {
-      if (current !== null) rememberRelease(current.slug);
-      return null;
-    });
-  }, []);
+    if (release !== null) rememberRelease(release.slug);
+    setRelease(null);
+  }, [release]);
 
   if (release === null) return null;
 
@@ -116,7 +147,7 @@ export function WhatsNewBand() {
       <Sparkles size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
       <p className="min-w-0 flex-1 break-words">
         <span>{t('whats_new.message', { version: release.version })}</span>{' '}
-        <Link to={tenantPath('/changelog')} className="font-medium underline underline-offset-2">
+        <Link to={tenantPath('/changelog')} onClick={close} className="font-medium underline underline-offset-2">
           {t('whats_new.link')}
         </Link>
       </p>

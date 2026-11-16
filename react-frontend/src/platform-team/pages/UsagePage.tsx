@@ -7,7 +7,8 @@
  * Platform team panel — Usage per community.
  *
  * For one month, what each community used of the services the platform pays
- * for and records: emails (sent, failed, bounced), AI chat (requests, tokens,
+ * for and records: emails (sent, failed, bounced; bounced is part of sent),
+ * AI chat (requests, tokens shown as "pieces of text processed",
  * cost), and the space its groups' files take today.
  *
  * 🔴 A part the server could not read says "Not available", never 0. What is
@@ -58,6 +59,12 @@ export interface UsageReport {
   month: string;
   is_current_month: boolean;
   sources: { emails: boolean; ai_chat: boolean; group_files: boolean };
+  /**
+   * Why a source is not available, when the server knows: `kept_90_days` = email
+   * records are deleted after 90 days, so that month cannot be shown. Optional:
+   * an older server does not send it.
+   */
+  source_notes?: { emails: 'kept_90_days' | null };
   communities: UsageCommunity[];
   platform_mail: EmailCounts | null;
   totals: { emails: EmailCounts | null; ai_chat: AiChatUse | null; group_file_bytes: number | null };
@@ -290,7 +297,9 @@ export function UsagePage() {
             <div className="flex flex-col gap-1" role="status">
               {unavailableSources.map((source) => (
                 <p key={source} className="text-sm text-warning-soft-foreground">
-                  {t(`usage.unavailable.${source}`)}
+                  {source === 'emails' && report.source_notes?.emails === 'kept_90_days'
+                    ? t('usage.unavailable.emails_kept_90_days')
+                    : t(`usage.unavailable.${source}`)}
                 </p>
               ))}
             </div>
@@ -350,7 +359,7 @@ export function UsagePage() {
             <h2 id="usage-notes-heading" className="mb-2 text-lg font-semibold text-foreground">
               {t('usage.notes_heading')}
             </h2>
-            <ul className="flex list-disc flex-col gap-1 pl-5 text-sm text-muted">
+            <ul className="flex list-disc flex-col gap-1 ps-5 text-sm text-muted">
               <li>{t('usage.sent_note')}</li>
               <li>{t('usage.ai_note')}</li>
               <li>{t('usage.files_note')}</li>
@@ -362,7 +371,7 @@ export function UsagePage() {
               {t('usage.not_recorded_heading')}
             </h2>
             <p className="mb-2 text-sm text-muted">{t('usage.not_recorded_intro')}</p>
-            <ul className="flex list-disc flex-col gap-1 pl-5 text-sm text-foreground">
+            <ul className="flex list-disc flex-col gap-1 ps-5 text-sm text-foreground">
               {(report.not_recorded ?? [])
                 .filter((key): key is NotRecorded => KNOWN_NOT_RECORDED.includes(key))
                 .map((key) => (

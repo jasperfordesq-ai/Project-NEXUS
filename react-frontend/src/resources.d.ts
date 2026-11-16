@@ -57247,7 +57247,7 @@ export default interface Resources {
       "error_step_cancelled": "The review was not recorded: the sign-in code was not entered. Your choices are still here.",
       "history_accounts_one": "{{count}} account",
       "history_accounts_other": "{{count}} accounts",
-      "history_by": "Recorded by",
+      "history_by": "Recorded by {{name}}",
       "history_none": "No reviews yet.",
       "history_removals_one": "{{count}} marked for removal",
       "history_removals_other": "{{count}} marked for removal",
@@ -57263,12 +57263,14 @@ export default interface Resources {
       "not_due": "The next review is due by {{date}}.",
       "note_hint": "Up to {{max}} characters. Only the platform team sees it.",
       "note_label": "Note (optional)",
+      "note_no_names": "Do not name people in the note. It is kept with the record.",
       "nothing_changes": "Recording a review changes nobody's access. To remove access, do it in the super admin panel (for super admins) or in the database (for the platform team). The next review shows anyone marked for removal who is still here.",
       "open_intro": "These accounts were marked \"Should be removed\" in the last review, and they still have their access.",
       "open_title": "Marked for removal last time and still here",
       "progress": "Decided: {{done}} of {{total}} accounts.",
       "record": "Record this review",
       "recorded_toast": "The review was recorded.",
+      "refresh_failed": "The review could not be loaded again. What you see is from before.",
       "reload": "Load the list again",
       "remove": "Should be removed",
       "review_intro": "Choose Keep or Should be removed for every account. Nothing is chosen for you.",
@@ -57332,6 +57334,7 @@ export default interface Resources {
       "chip_passed": "Renewal date passed",
       "chip_soon": "Renews soon",
       "community_gone": "Community no longer exists (#{{id}})",
+      "community_missing": "Community no longer exists",
       "community_none": "Not linked to a community",
       "empty_text": "Add one to be reminded before it renews.",
       "empty_title": "No agreements entered yet",
@@ -57419,7 +57422,7 @@ export default interface Resources {
       "failed_sign_ins": {
         "none": "Nothing has been counted yet",
         "note": "This says when the record starts. It is not a count of anything.",
-        "since": "Failed sign-ins have been counted since {{date}}",
+        "since": "Earliest failed sign-in on record: {{date}}",
         "title": "Record of failed sign-ins"
       },
       "findings_note": "Open security findings are kept in a private record, not on this server, and are not shown here.",
@@ -57440,7 +57443,7 @@ export default interface Resources {
         "title": "The version that is live",
         "version": "Version {{version}}"
       },
-      "source_label": "Where this comes from",
+      "source_label": "Where this comes from:",
       "source_owner": "Entered by the platform's owner in the server's settings",
       "test_scope_note": "An independent test covers the version it tested, not changes made since.",
       "title": "Assurance facts",
@@ -57460,6 +57463,7 @@ export default interface Resources {
       "unknown": "{{segment}}"
     },
     "clean_up_jobs": {
+      "finished_only": "This job records that it finished, not that every step worked.",
       "how_often": {
         "daily": "Every day",
         "hourly": "Every hour",
@@ -57573,6 +57577,7 @@ export default interface Resources {
       "quiet_names": "Quiet: {{names}}",
       "quiet_rule": "A community is called quiet when it is switched on and either no member has been active in the last {{days}} days, or there has been no exchange this month and none last month.",
       "quiet_unknown": "Can't tell if quiet",
+      "quiet_unknown_summary": "We could not work out which communities are quiet just now.",
       "same_as_dashboard": "Everything is counted the same way as on each community's own admin dashboard.",
       "title": "Community health",
       "totals_row": "All communities",
@@ -57666,6 +57671,7 @@ export default interface Resources {
         "overdue": "Overdue"
       },
       "community_count": "Communities: {{count}}",
+      "completed_without_date": "Completed requests with no completion date, so not in the 90-day figure: {{count}}",
       "counts_only": "Counts only. No member and no request is named on this page.",
       "empty": "There are no communities yet.",
       "intro": "Requests members have made about their own data, in every community: how many are waiting, and for how long.",
@@ -57724,6 +57730,8 @@ export default interface Resources {
     "domains": {
       "check_failed": "The check could not be run. Try again.",
       "check_now": "Check now",
+      "check_now_for": "Check {{name}} now",
+      "check_platform_now": "Check the platform's addresses now",
       "checked": "Checked.",
       "checked_at": "Checked {{time}}",
       "communities_heading": "Communities",
@@ -57753,6 +57761,7 @@ export default interface Resources {
         "not_checkable": "Not a web address we can check",
         "ok": "Fine",
         "unknown": "Not checked yet",
+        "warning_days_unknown": "Certificate runs out soon. How many days are left could not be read.",
         "warning_one": "Certificate runs out in {{count}} day",
         "warning_other": "Certificate runs out in {{count}} days"
       },
@@ -57762,8 +57771,10 @@ export default interface Resources {
       "uses_platform_address": "Uses the platform's address"
     },
     "errors": {
+      "check_refused": "Checking again was refused: too many checks in a minute. The figures below are from before.",
       "checked_at": "Checked {{time}}",
       "could_not_read": "The error service could not be read for this part. That is not the same as no errors.",
+      "could_not_read_any": "The error service answered, but its figures could not be read. That is not the same as no errors.",
       "counts_only": "These are counts only. The details of each error stay in the error service.",
       "figure": {
         "errors_24h": "Errors in the last 24 hours",
@@ -58095,6 +58106,7 @@ export default interface Resources {
       "available": "The search service can be reached.",
       "busy": "A rebuild for this community is already waiting or running.",
       "cancel": "Cancel",
+      "check_failed": "Could not check again at {{time}}",
       "confirm_message": "This adds and updates the community's search entries. Entries for things that were deleted are not removed by this. Members can keep searching while it runs.",
       "confirm_title": "Rebuild search for {{name}}?",
       "does": {
@@ -58136,16 +58148,19 @@ export default interface Resources {
       "by": "By:",
       "failed": {
         "addresses_15m": "Different internet addresses in the last 15 minutes",
-        "col_failed": "Failed in the last 24 hours:",
-        "counted_since": "Counted since {{date}}",
-        "empty": "No failed sign-ins in the last 24 hours.",
+        "checks_title": "Failed password checks",
+        "col_failed": "Failed password checks in the last 24 hours:",
+        "col_refused": "Refused by the lock-out in the last 24 hours:",
+        "counted_since": "Earliest failed sign-in on record: {{date}}",
+        "empty": "No failed or refused sign-ins in the last 24 hours.",
         "last_24h": "In the last 24 hours",
         "last_hour": "In the last hour",
         "most_from_one_15m": "Most from one address in the last 15 minutes",
-        "note": "Every failed sign-in is counted as it happens, by community and by the hour. The count keeps only a number: nothing about the person or where they signed in from. Figures are counted in whole hours, so each one can include up to an hour more.",
+        "note": "Two separate counts, by community and by the hour. “Failed password checks”: someone tried to sign in and the password was wrong. “Refused by the lock-out”: after too many tries, the attempt was turned away before any password was checked. The two are never added together. Each count keeps only a number, nothing about the person or where they signed in from. Figures are counted in whole hours, so each one can include up to an hour more.",
         "nothing_counted": "Nothing has been counted yet. Failed sign-ins are counted from the day this count was switched on.",
         "recent_note": "Which internet addresses are being tried right now. The platform keeps these details for only about 20 minutes, and forgets an address's failures when it next signs in successfully. Sign-ins through the accessible site all arrive from one address.",
         "recent_title": "In the last 15 minutes",
+        "refused_title": "Refused by the lock-out",
         "title": "Failed sign-ins"
       },
       "impersonation": {
@@ -58249,6 +58264,7 @@ export default interface Resources {
       "loading": "Loading the translation figures",
       "not_measured": "The phone app and the accessible site are not measured here.",
       "recount": "Count again",
+      "recount_refused": "Counting again was refused: too many requests in a short time. The figures below are from before.",
       "same_note": "Some phrases are meant to be the same in every language, such as names and units. So “still the same as English” is an upper limit, not an exact count.",
       "server_intro": "The words in the emails and messages the server sends. Counted from the files on the server, and kept for an hour.",
       "server_load_error": "The server figures could not be loaded",
@@ -58256,6 +58272,7 @@ export default interface Resources {
       "server_unavailable": "The server figures are not available: the English wording could not be read.",
       "title": "Translations",
       "website_intro": "The words on the website and in the panels. Counted when this version of the website was built.",
+      "website_load_error": "The website figures could not be loaded",
       "website_title": "Website wording",
       "website_unavailable": "The website figures are not available on this server."
     },
@@ -58286,7 +58303,7 @@ export default interface Resources {
       "ai_heading": "AI chat",
       "ai_note": "AI cost is what was recorded for each request, in US dollars.",
       "ai_requests": "Requests",
-      "ai_tokens": "Tokens",
+      "ai_tokens": "Pieces of text processed",
       "bounced": "Bounced",
       "communities_heading": "Each community ({{count}})",
       "emails_heading": "Emails",
@@ -58317,12 +58334,13 @@ export default interface Resources {
       "previous_month": "Previous month",
       "removed_community": "Community #{{id}} (no longer exists)",
       "sent": "Sent",
-      "sent_note": "“Sent” means the email was handed to the mail service. It does not prove the email arrived.",
+      "sent_note": "“Sent” means the email was handed to the mail service. It does not prove the email arrived. Bounced emails are included in Sent, so do not add the two together.",
       "title": "Usage per community",
       "totals_heading": "All communities together",
       "unavailable": {
         "ai_chat": "AI chat figures could not be read just now. They are not zero.",
         "emails": "Email figures could not be read just now. They are not zero.",
+        "emails_kept_90_days": "Email records are kept for 90 days, so this month cannot be shown.",
         "group_files": "Group file sizes could not be read just now. They are not zero."
       }
     }

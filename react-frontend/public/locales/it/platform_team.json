@@ -296,17 +296,20 @@
     },
     "failed": {
       "title": "Accessi non riusciti",
-      "note": "Ogni accesso non riuscito viene contato nel momento in cui avviene, per comunità e per ora. Il conteggio conserva solo un numero: niente sulla persona né sul luogo da cui ha provato ad accedere. I numeri sono contati per ore intere, quindi ognuno può includere fino a un’ora in più.",
-      "counted_since": "Conteggiati dal {{date}}",
+      "note": "Due conteggi separati, per comunità e per ora. «Controlli della password non riusciti»: qualcuno ha provato ad accedere e la password era sbagliata. «Respinti dal blocco»: dopo troppi tentativi, il tentativo è stato respinto prima di controllare qualsiasi password. I due non vengono mai sommati. Ogni conteggio conserva solo un numero, nulla sulla persona né sul luogo da cui ha effettuato l’accesso. Le cifre sono contate a ore intere, quindi ognuna può includere fino a un’ora in più.",
+      "counted_since": "Primo accesso non riuscito registrato: {{date}}",
       "nothing_counted": "Non è stato ancora contato nulla. Gli accessi non riusciti vengono contati dal giorno in cui questo conteggio è stato attivato.",
       "last_hour": "Nell’ultima ora",
       "last_24h": "Nelle ultime 24 ore",
-      "empty": "Nessun accesso non riuscito nelle ultime 24 ore.",
-      "col_failed": "Non riusciti nelle ultime 24 ore:",
+      "empty": "Nessun accesso non riuscito o respinto nelle ultime 24 ore.",
+      "col_failed": "Controlli della password non riusciti nelle ultime 24 ore:",
       "recent_title": "Negli ultimi 15 minuti",
       "recent_note": "Quali indirizzi internet vengono provati in questo momento. La piattaforma conserva questi dati solo per circa 20 minuti e dimentica i tentativi non riusciti di un indirizzo quando da esso arriva un accesso riuscito. Gli accessi tramite il sito accessibile arrivano tutti da un solo indirizzo.",
       "addresses_15m": "Indirizzi internet diversi negli ultimi 15 minuti",
-      "most_from_one_15m": "Il numero più alto da un solo indirizzo negli ultimi 15 minuti"
+      "most_from_one_15m": "Il numero più alto da un solo indirizzo negli ultimi 15 minuti",
+      "checks_title": "Controlli della password non riusciti",
+      "refused_title": "Respinti dal blocco",
+      "col_refused": "Respinti dal blocco nelle ultime 24 ore:"
     },
     "access": {
       "title": "Accessi di alto livello concessi e tolti",
@@ -426,7 +429,8 @@
     "unavailable": {
       "emails": "Non è stato possibile leggere i dati delle email in questo momento. Non sono zero.",
       "ai_chat": "Non è stato possibile leggere i dati della chat con IA in questo momento. Non sono zero.",
-      "group_files": "Non è stato possibile leggere la dimensione dei file di gruppo in questo momento. Non è zero."
+      "group_files": "Non è stato possibile leggere la dimensione dei file di gruppo in questo momento. Non è zero.",
+      "emails_kept_90_days": "I registri delle email sono conservati per 90 giorni, quindi questo mese non può essere mostrato."
     },
     "totals_heading": "Tutte le comunità insieme",
     "communities_heading": "Ogni comunità ({{count}})",
@@ -438,7 +442,7 @@
     "failed": "Non riuscite",
     "bounced": "Respinte",
     "ai_requests": "Richieste",
-    "ai_tokens": "Token",
+    "ai_tokens": "Porzioni di testo elaborate",
     "ai_cost": "Costo",
     "files": "Spazio usato ora",
     "removed_community": "Comunità #{{id}} (non esiste più)",
@@ -446,7 +450,7 @@
     "platform_mail": "Email della piattaforma",
     "platform_mail_note": "Email inviate dalla piattaforma che non appartengono a nessuna comunità in particolare.",
     "notes_heading": "Cosa significano i dati",
-    "sent_note": "«Inviate» significa che l’email è stata consegnata al servizio di posta. Non dimostra che sia arrivata.",
+    "sent_note": "«Inviate» significa che l’email è stata consegnata al servizio di posta. Non dimostra che sia arrivata. Le email respinte sono incluse in Inviate, quindi non sommate le due cifre.",
     "ai_note": "Il costo dell’IA è quanto registrato per ogni richiesta, in dollari statunitensi.",
     "files_note": "File di gruppo indica lo spazio che occupano oggi, non quanto è stato aggiunto in questo mese.",
     "not_recorded_heading": "Non registrato per ora",
@@ -488,7 +492,8 @@
       "hours_this_month": "Ore scambiate questo mese",
       "new_listings_this_month": "Nuovi annunci questo mese",
       "last_sign_in": "Accesso più recente"
-    }
+    },
+    "quiet_unknown_summary": "Al momento non siamo riusciti a capire quali comunità sono tranquille."
   },
   "community_setup": {
     "title": "Configurazione delle comunità",
@@ -582,7 +587,8 @@
       "restriction": "Un limite all’uso",
       "portability": "Un trasferimento",
       "objection": "Un’opposizione"
-    }
+    },
+    "completed_without_date": "Richieste completate senza data di completamento, quindi escluse dal dato dei 90 giorni: {{count}}"
   },
   "legal_documents": {
     "title": "Documenti legali",
@@ -655,12 +661,14 @@
     "open_intro": "Questi account sono stati segnati «Da rimuovere» nell’ultima revisione e hanno ancora il loro accesso.",
     "history_title": "Revisioni recenti",
     "history_none": "Ancora nessuna revisione.",
-    "history_by": "Registrata da",
+    "history_by": "Registrata da {{name}}",
     "history_accounts_one": "Account esaminati: {{count}}",
     "history_accounts_other": "Account esaminati: {{count}}",
     "history_removals_one": "{{count}} segnato da rimuovere",
     "history_removals_other": "{{count}} segnati da rimuovere",
-    "erased": "Account cancellato"
+    "erased": "Account cancellato",
+    "refresh_failed": "Non è stato possibile ricaricare la revisione. Quello che vedi è di prima.",
+    "note_no_names": "Non nominare persone nella nota. Viene conservata con la registrazione."
   },
   "push_notifications": {
     "title": "Notifiche push",
@@ -736,7 +744,9 @@
       "needed": "Il servizio errori fornisce questi numeri solo a una sua chiave di accesso in sola lettura, salvata su questo server. Non è stato fatto.",
       "decision": "Se farlo è una decisione del proprietario della piattaforma.",
       "meanwhile": "Fino ad allora, il rapporto notturno sugli errori che ricevi già è il posto dove guardare."
-    }
+    },
+    "check_refused": "Il nuovo controllo è stato rifiutato: troppi controlli in un minuto. I dati qui sotto sono di prima.",
+    "could_not_read_any": "Il servizio errori ha risposto, ma non è stato possibile leggerne i dati. Non significa che non ci siano errori."
   },
   "connections": {
     "title": "Chiavi e collegamenti",
@@ -804,7 +814,9 @@
       "translated": "Tradotto"
     },
     "same_note": "Alcune frasi devono restare uguali in ogni lingua, come nomi e unità di misura. Quindi «ancora uguali all’inglese» è un limite massimo, non un numero esatto.",
-    "not_measured": "L’app per telefono e il sito accessibile non sono misurati qui."
+    "not_measured": "L’app per telefono e il sito accessibile non sono misurati qui.",
+    "website_load_error": "Non è stato possibile caricare i dati del sito web",
+    "recount_refused": "Il nuovo conteggio è stato rifiutato: troppe richieste in poco tempo. I dati qui sotto sono di prima."
   },
   "clean_up_jobs": {
     "title": "Attività di pulizia",
@@ -890,7 +902,8 @@
         "name": "Vecchi controlli di identità",
         "deletes": "Cancella i controlli di identità conclusi o scaduti più vecchi di 180 giorni. La registrazione di quanto è avvenuto in ogni controllo viene conservata."
       }
-    }
+    },
+    "finished_only": "Questa attività registra di essere terminata, non che ogni passaggio abbia funzionato."
   },
   "search_rebuild": {
     "title": "Ricostruisci la ricerca",
@@ -922,7 +935,8 @@
       "done_with_errors_one": "Terminata {{time}} con {{count}} voce che non è stato possibile aggiornare",
       "done_with_errors_other": "Terminata {{time}} con {{count}} voci che non è stato possibile aggiornare",
       "failed": "Non riuscita"
-    }
+    },
+    "check_failed": "Impossibile controllare di nuovo alle {{time}}"
   },
   "agreements": {
     "title": "Accordi e rinnovi",
@@ -984,7 +998,8 @@
       "community_unknown": "Quella comunità non esiste.",
       "save": "Salva",
       "cancel": "Annulla"
-    }
+    },
+    "community_missing": "La comunità non esiste più"
   },
   "assurance": {
     "title": "Fatti misurati",
@@ -994,7 +1009,7 @@
     "read_at": "Letto {{time}}",
     "could_not_read": "Non è stato possibile leggerlo",
     "not_recorded": "Non registrato",
-    "source_label": "Da dove viene",
+    "source_label": "Da dove viene:",
     "source_owner": "Inserito dal proprietario della piattaforma nelle impostazioni del server",
     "findings_note": "I rilievi di sicurezza aperti sono tenuti in un registro privato, non su questo server, e qui non vengono mostrati.",
     "test_scope_note": "Un test indipendente riguarda la versione che ha testato, non le modifiche fatte dopo.",
@@ -1038,7 +1053,7 @@
     },
     "failed_sign_ins": {
       "title": "Registro degli accessi non riusciti",
-      "since": "Gli accessi non riusciti sono contati dal {{date}}",
+      "since": "Primo accesso non riuscito registrato: {{date}}",
       "none": "Non è ancora stato contato nulla",
       "note": "Questo dice quando inizia il registro. Non è un conteggio di nulla."
     },
@@ -1071,7 +1086,8 @@
       "warning_other": "Il certificato scade tra {{count}} giorni",
       "failing": "Non funziona",
       "unknown": "Non ancora controllato",
-      "not_checkable": "Non è un indirizzo web che possiamo controllare"
+      "not_checkable": "Non è un indirizzo web che possiamo controllare",
+      "warning_days_unknown": "Il certificato scade presto. Non è stato possibile leggere quanti giorni restano."
     },
     "reason": {
       "does_not_resolve": "Il nome non porta da nessuna parte.",
@@ -1086,6 +1102,8 @@
     "check_now": "Controlla ora",
     "checked": "Controllato.",
     "check_failed": "Non è stato possibile eseguire il controllo. Riprova.",
-    "too_many": "Troppi controlli in un minuto. Attendi un momento e riprova."
+    "too_many": "Troppi controlli in un minuto. Attendi un momento e riprova.",
+    "check_now_for": "Controlla {{name}} ora",
+    "check_platform_now": "Controlla ora gli indirizzi della piattaforma"
   }
 }

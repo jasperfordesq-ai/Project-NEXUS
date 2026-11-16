@@ -31,6 +31,11 @@ final class PlatformAgreementsController extends BaseApiController
 {
     protected bool $isV2Api = true;
 
+    /** Adding, changing and ending share one limit per caller (review 16 Nov 2026). */
+    private const WRITE_LIMIT_KEY = 'platform_team_agreements';
+
+    private const WRITES_PER_MINUTE = 30;
+
     public function index(): JsonResponse
     {
         $this->requireGodPlatformAdmin();
@@ -41,8 +46,12 @@ final class PlatformAgreementsController extends BaseApiController
     public function store(): JsonResponse
     {
         $userId = $this->requireGodPlatformAdmin();
+        $this->rateLimit(self::WRITE_LIMIT_KEY, self::WRITES_PER_MINUTE, 60);
 
         $result = (new PlatformAgreementService())->create($userId, $this->getAllInput());
+        if (isset($result['error'])) {
+            return $this->notSaved();
+        }
         if (isset($result['errors'])) {
             return $this->respondWithErrors($result['errors'], 422);
         }
@@ -53,10 +62,11 @@ final class PlatformAgreementsController extends BaseApiController
     public function update(string $id): JsonResponse
     {
         $userId = $this->requireGodPlatformAdmin();
+        $this->rateLimit(self::WRITE_LIMIT_KEY, self::WRITES_PER_MINUTE, 60);
 
         $result = (new PlatformAgreementService())->update((int) $id, $userId, $this->getAllInput());
         if (isset($result['error'])) {
-            return $this->respondNotFound();
+            return $result['error'] === 'failed' ? $this->notSaved() : $this->respondNotFound();
         }
         if (isset($result['errors'])) {
             return $this->respondWithErrors($result['errors'], 422);
@@ -68,12 +78,19 @@ final class PlatformAgreementsController extends BaseApiController
     public function end(string $id): JsonResponse
     {
         $userId = $this->requireGodPlatformAdmin();
+        $this->rateLimit(self::WRITE_LIMIT_KEY, self::WRITES_PER_MINUTE, 60);
 
         $result = (new PlatformAgreementService())->end((int) $id, $userId);
         if (isset($result['error'])) {
-            return $this->respondNotFound();
+            return $result['error'] === 'failed' ? $this->notSaved() : $this->respondNotFound();
         }
 
         return $this->respondWithData(['agreement' => $result['agreement']]);
+    }
+
+    /** The change and its record could not be saved together, so neither was. */
+    private function notSaved(): JsonResponse
+    {
+        return $this->respondWithError('SAVE_FAILED', __('api.server_error'), null, 500);
     }
 }

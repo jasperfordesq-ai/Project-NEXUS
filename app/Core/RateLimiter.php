@@ -165,6 +165,46 @@ class RateLimiter
     }
 
     /**
+     * Add one to this hour's "refused by the lock-out" count. Called by the
+     * sign-in just before it answers 429 because of too many attempts: such
+     * an attempt never reaches the password check, so countFailedSignIn()
+     * never sees it, and a locked-out attacker's guesses would otherwise not
+     * be counted at all.
+     *
+     * The community is the one emailIdentifierFor() would use for this email
+     * in the current request. `$email` null (the address lock-out, which has
+     * no account to tie the refusal to) counts under community 0.
+     *
+     * Same guarantees as countFailedSignIn(): one upsert, counts only, never
+     * throws, logged once per process if it fails, no DDL.
+     */
+    public static function countRefusedSignIn(?string $email): void
+    {
+        try {
+            $tenantId = 0;
+            if ($email !== null) {
+                $scoped = self::emailIdentifierFor($email, TenantContext::currentId());
+                $tenantId = preg_match('/^tenant:(\d+):email:/', $scoped, $match) === 1 ? (int) $match[1] : 0;
+            }
+
+            DB::insert(
+                'INSERT INTO `' . self::$failureCounterTable . "` (hour_start, tenant_id, failures, refused)
+                 VALUES (DATE_FORMAT(NOW(), '%Y-%m-%d %H:00:00'), ?, 0, 1)
+                 ON DUPLICATE KEY UPDATE refused = refused + 1",
+                [$tenantId]
+            );
+        } catch (\Throwable $e) {
+            if (!self::$failureCounterLogged) {
+                self::$failureCounterLogged = true;
+                Log::error('Refused sign-in could not be counted (sign_in_failure_hours); the refusal itself was unaffected. Logged once per process.', [
+                    'exception' => $e::class,
+                    'message' => $e->getMessage(),
+                ]);
+            }
+        }
+    }
+
+    /**
      * Clear failed attempts for an identifier (called on successful login).
      */
     public static function clearAttempts(string $identifier, string $type = 'email'): void

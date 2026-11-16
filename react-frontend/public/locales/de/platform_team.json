@@ -296,17 +296,20 @@
     },
     "failed": {
       "title": "Fehlgeschlagene Anmeldungen",
-      "note": "Jede fehlgeschlagene Anmeldung wird gezählt, sobald sie geschieht, nach Community und nach Stunde. Die Zählung speichert nur eine Zahl: nichts über die Person und nichts darüber, von wo sie sich anmelden wollte. Gezählt wird in ganzen Stunden, daher kann jede Zahl bis zu eine Stunde mehr enthalten.",
-      "counted_since": "Gezählt seit {{date}}",
+      "note": "Zwei getrennte Zählungen, nach Gemeinschaft und nach Stunde. „Fehlgeschlagene Passwortprüfungen“: Jemand wollte sich anmelden und das Passwort war falsch. „Von der Sperre abgewiesen“: Nach zu vielen Versuchen wurde der Versuch abgewiesen, bevor überhaupt ein Passwort geprüft wurde. Die beiden werden nie zusammengezählt. Jede Zählung speichert nur eine Zahl, nichts über die Person oder woher sie sich angemeldet hat. Gezählt wird in ganzen Stunden, daher kann jede Zahl bis zu eine Stunde mehr enthalten.",
+      "counted_since": "Früheste erfasste fehlgeschlagene Anmeldung: {{date}}",
       "nothing_counted": "Bisher wurde noch nichts gezählt. Fehlgeschlagene Anmeldungen werden ab dem Tag gezählt, an dem diese Zählung eingeschaltet wurde.",
       "last_hour": "In der letzten Stunde",
       "last_24h": "In den letzten 24 Stunden",
-      "empty": "Keine fehlgeschlagenen Anmeldungen in den letzten 24 Stunden.",
-      "col_failed": "Fehlversuche in den letzten 24 Stunden:",
+      "empty": "Keine fehlgeschlagenen oder abgewiesenen Anmeldungen in den letzten 24 Stunden.",
+      "col_failed": "Fehlgeschlagene Passwortprüfungen in den letzten 24 Stunden:",
       "recent_title": "In den letzten 15 Minuten",
       "recent_note": "Welche Internetadressen gerade ausprobiert werden. Die Plattform bewahrt diese Angaben nur etwa 20 Minuten auf und vergisst die Fehlversuche einer Adresse, sobald von ihr wieder eine erfolgreiche Anmeldung kommt. Anmeldungen über die barrierefreie Website kommen alle von einer einzigen Adresse.",
       "addresses_15m": "Verschiedene Internetadressen in den letzten 15 Minuten",
-      "most_from_one_15m": "Die meisten von einer Adresse in den letzten 15 Minuten"
+      "most_from_one_15m": "Die meisten von einer Adresse in den letzten 15 Minuten",
+      "checks_title": "Fehlgeschlagene Passwortprüfungen",
+      "refused_title": "Von der Sperre abgewiesen",
+      "col_refused": "Von der Sperre abgewiesen in den letzten 24 Stunden:"
     },
     "access": {
       "title": "Leitender Zugriff: vergeben und entzogen",
@@ -426,7 +429,8 @@
     "unavailable": {
       "emails": "Die E-Mail-Zahlen konnten gerade nicht gelesen werden. Sie sind nicht null.",
       "ai_chat": "Die KI-Chat-Zahlen konnten gerade nicht gelesen werden. Sie sind nicht null.",
-      "group_files": "Die Größe der Gruppendateien konnte gerade nicht gelesen werden. Sie ist nicht null."
+      "group_files": "Die Größe der Gruppendateien konnte gerade nicht gelesen werden. Sie ist nicht null.",
+      "emails_kept_90_days": "E-Mail-Aufzeichnungen werden 90 Tage lang aufbewahrt, deshalb kann dieser Monat nicht angezeigt werden."
     },
     "totals_heading": "Alle Gemeinschaften zusammen",
     "communities_heading": "Jede Gemeinschaft ({{count}})",
@@ -438,7 +442,7 @@
     "failed": "Fehlgeschlagen",
     "bounced": "Zurückgewiesen",
     "ai_requests": "Anfragen",
-    "ai_tokens": "Token",
+    "ai_tokens": "Verarbeitete Textstücke",
     "ai_cost": "Kosten",
     "files": "Jetzt belegter Platz",
     "removed_community": "Gemeinschaft #{{id}} (existiert nicht mehr)",
@@ -446,7 +450,7 @@
     "platform_mail": "Plattform-E-Mails",
     "platform_mail_note": "E-Mails, die die Plattform gesendet hat und die zu keiner einzelnen Gemeinschaft gehören.",
     "notes_heading": "Was die Zahlen bedeuten",
-    "sent_note": "„Gesendet“ heißt, die E-Mail wurde an den Mail-Dienst übergeben. Das beweist nicht, dass sie angekommen ist.",
+    "sent_note": "„Gesendet“ heißt, die E-Mail wurde an den Mail-Dienst übergeben. Das beweist nicht, dass sie angekommen ist. Zurückgewiesene E-Mails sind in „Gesendet“ enthalten, zählen Sie die beiden also nicht zusammen.",
     "ai_note": "Die KI-Kosten sind die für jede Anfrage erfassten Beträge in US-Dollar.",
     "files_note": "Gruppendateien zeigt den Platz, den sie heute belegen, nicht was in diesem Monat hinzugekommen ist.",
     "not_recorded_heading": "Derzeit nicht erfasst",
@@ -488,7 +492,8 @@
       "hours_this_month": "Getauschte Stunden in diesem Monat",
       "new_listings_this_month": "Neue Angebote in diesem Monat",
       "last_sign_in": "Letzte Anmeldung"
-    }
+    },
+    "quiet_unknown_summary": "Wir konnten gerade nicht ermitteln, welche Gemeinschaften ruhig sind."
   },
   "community_setup": {
     "title": "Einrichtung der Gemeinschaften",
@@ -582,7 +587,8 @@
       "restriction": "Eine Einschränkung der Nutzung",
       "portability": "Eine Übertragung",
       "objection": "Ein Widerspruch"
-    }
+    },
+    "completed_without_date": "Erledigte Anfragen ohne Erledigungsdatum, daher nicht in der 90-Tage-Zahl: {{count}}"
   },
   "legal_documents": {
     "title": "Rechtliche Dokumente",
@@ -655,12 +661,14 @@
     "open_intro": "Diese Konten wurden in der letzten Prüfung mit „Sollte entfernt werden“ markiert und haben ihren Zugriff noch.",
     "history_title": "Letzte Prüfungen",
     "history_none": "Noch keine Prüfungen.",
-    "history_by": "Festgehalten von",
+    "history_by": "Festgehalten von {{name}}",
     "history_accounts_one": "{{count}} Konto",
     "history_accounts_other": "{{count}} Konten",
     "history_removals_one": "{{count}} zur Entfernung markiert",
     "history_removals_other": "{{count}} zur Entfernung markiert",
-    "erased": "Gelöschtes Konto"
+    "erased": "Gelöschtes Konto",
+    "refresh_failed": "Die Prüfung konnte nicht neu geladen werden. Was Sie sehen, ist der vorherige Stand.",
+    "note_no_names": "Nennen Sie in der Notiz keine Personen. Sie wird mit dem Eintrag aufbewahrt."
   },
   "push_notifications": {
     "title": "Push-Benachrichtigungen",
@@ -736,7 +744,9 @@
       "needed": "Der Fehlerdienst gibt diese Zahlen nur an einen eigenen Zugangsschlüssel mit reinem Leserecht heraus, der auf diesem Server gespeichert ist. Das ist nicht geschehen.",
       "decision": "Ob das geschehen soll, entscheidet der Eigentümer der Plattform.",
       "meanwhile": "Bis dahin ist der nächtliche Fehlerbericht, den Sie bereits erhalten, die richtige Stelle zum Nachsehen."
-    }
+    },
+    "check_refused": "Erneut prüfen wurde abgelehnt: zu viele Prüfungen in einer Minute. Die Zahlen unten sind von vorher.",
+    "could_not_read_any": "Der Fehlerdienst hat geantwortet, aber seine Zahlen konnten nicht gelesen werden. Das heißt nicht, dass es keine Fehler gibt."
   },
   "connections": {
     "title": "Schlüssel und Verbindungen",
@@ -804,7 +814,9 @@
       "translated": "Übersetzt"
     },
     "same_note": "Manche Texte sollen in jeder Sprache gleich sein, etwa Namen und Einheiten. „Noch wie im Englischen“ ist daher eine Obergrenze, keine genaue Zahl.",
-    "not_measured": "Die Handy-App und die barrierefreie Website werden hier nicht gemessen."
+    "not_measured": "Die Handy-App und die barrierefreie Website werden hier nicht gemessen.",
+    "website_load_error": "Die Zahlen der Website konnten nicht geladen werden",
+    "recount_refused": "Neu zählen wurde abgelehnt: zu viele Anfragen in kurzer Zeit. Die Zahlen unten sind von vorher."
   },
   "clean_up_jobs": {
     "title": "Aufräumaufgaben",
@@ -890,7 +902,8 @@
         "name": "Alte Identitätsprüfungen",
         "deletes": "Löscht abgeschlossene oder abgelaufene Identitätsprüfungen, die älter als 180 Tage sind. Die Aufzeichnung dessen, was bei jeder Prüfung geschah, bleibt erhalten."
       }
-    }
+    },
+    "finished_only": "Diese Aufgabe hält fest, dass sie beendet wurde, nicht dass jeder Schritt funktioniert hat."
   },
   "search_rebuild": {
     "title": "Suche neu aufbauen",
@@ -922,7 +935,8 @@
       "done_with_errors_one": "Abgeschlossen {{time}}, {{count}} Eintrag konnte nicht aktualisiert werden",
       "done_with_errors_other": "Abgeschlossen {{time}}, {{count}} Einträge konnten nicht aktualisiert werden",
       "failed": "Fehlgeschlagen"
-    }
+    },
+    "check_failed": "Um {{time}} konnte nicht erneut geprüft werden"
   },
   "agreements": {
     "title": "Vereinbarungen und Verlängerungen",
@@ -984,7 +998,8 @@
       "community_unknown": "Diese Gemeinschaft gibt es nicht.",
       "save": "Speichern",
       "cancel": "Abbrechen"
-    }
+    },
+    "community_missing": "Gemeinschaft existiert nicht mehr"
   },
   "assurance": {
     "title": "Gemessene Fakten",
@@ -994,7 +1009,7 @@
     "read_at": "Gelesen {{time}}",
     "could_not_read": "Konnte nicht gelesen werden",
     "not_recorded": "Nicht erfasst",
-    "source_label": "Woher das kommt",
+    "source_label": "Woher das kommt:",
     "source_owner": "Vom Eigentümer der Plattform in den Einstellungen des Servers eingetragen",
     "findings_note": "Offene Sicherheitsbefunde werden in einem privaten Verzeichnis geführt, nicht auf diesem Server, und werden hier nicht gezeigt.",
     "test_scope_note": "Ein unabhängiger Test gilt für die getestete Version, nicht für spätere Änderungen.",
@@ -1038,7 +1053,7 @@
     },
     "failed_sign_ins": {
       "title": "Aufzeichnung fehlgeschlagener Anmeldungen",
-      "since": "Fehlgeschlagene Anmeldungen werden gezählt seit {{date}}",
+      "since": "Früheste erfasste fehlgeschlagene Anmeldung: {{date}}",
       "none": "Es wurde noch nichts gezählt",
       "note": "Das sagt, wann die Aufzeichnung beginnt. Es ist keine Zählung von irgendetwas."
     },
@@ -1071,7 +1086,8 @@
       "warning_other": "Zertifikat läuft in {{count}} Tagen ab",
       "failing": "Funktioniert nicht",
       "unknown": "Noch nicht geprüft",
-      "not_checkable": "Keine Webadresse, die wir prüfen können"
+      "not_checkable": "Keine Webadresse, die wir prüfen können",
+      "warning_days_unknown": "Das Zertifikat läuft bald ab. Wie viele Tage noch bleiben, konnte nicht gelesen werden."
     },
     "reason": {
       "does_not_resolve": "Der Name führt nirgendwohin.",
@@ -1086,6 +1102,8 @@
     "check_now": "Jetzt prüfen",
     "checked": "Geprüft.",
     "check_failed": "Die Prüfung konnte nicht ausgeführt werden. Bitte erneut versuchen.",
-    "too_many": "Zu viele Prüfungen in einer Minute. Bitte kurz warten und erneut versuchen."
+    "too_many": "Zu viele Prüfungen in einer Minute. Bitte kurz warten und erneut versuchen.",
+    "check_now_for": "{{name}} jetzt prüfen",
+    "check_platform_now": "Die Adressen der Plattform jetzt prüfen"
   }
 }

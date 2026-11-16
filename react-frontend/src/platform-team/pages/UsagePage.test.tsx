@@ -150,6 +150,49 @@ describe('UsagePage', () => {
     expect(within(screen.getByTestId('usage-platform-mail')).getByText('usage.not_available')).toBeInTheDocument();
   });
 
+  // Email records are kept 90 days: an older month says why, never zeros.
+  it('says email records are kept for 90 days when an older month is chosen', async () => {
+    apiGet.mockResolvedValue(
+      reply(
+        report({
+          sources: { emails: false, ai_chat: true, group_files: true },
+          source_notes: { emails: 'kept_90_days' },
+          communities: [
+            {
+              id: 2,
+              name: 'Sample Timebank',
+              slug: 'sample',
+              is_active: true,
+              emails: null,
+              ai_chat: { requests: 1, tokens: 2, cost_usd: 0 },
+              group_file_bytes: 0,
+            },
+          ],
+          platform_mail: null,
+          totals: { emails: null, ai_chat: { requests: 1, tokens: 2, cost_usd: 0 }, group_file_bytes: 0 },
+        }),
+      ),
+    );
+    render(<UsagePage />);
+
+    await screen.findByTestId('usage-community-2');
+    expect(screen.getByText('usage.unavailable.emails_kept_90_days')).toBeInTheDocument();
+    expect(screen.queryByText('usage.unavailable.emails')).not.toBeInTheDocument();
+    expect(screen.getByTestId('usage-2-sent')).toHaveTextContent('usage.not_available');
+  });
+
+  it('says bounced emails are included in Sent, and indents its lists from the reading start', async () => {
+    render(<UsagePage />);
+
+    await screen.findByTestId('usage-community-2');
+    const note = screen.getByText('usage.sent_note');
+    expect(note).toBeInTheDocument();
+    // Right-to-left languages: the list indent follows the reading direction.
+    expect(note.closest('ul')).toHaveClass('ps-5');
+    expect(note.closest('ul')).not.toHaveClass('pl-5');
+    expect(screen.getByTestId('usage-not-recorded').querySelector('ul')).toHaveClass('ps-5');
+  });
+
   it('moves to the previous month, and cannot move past this month', async () => {
     render(<UsagePage />);
     await screen.findByTestId('usage-community-2');

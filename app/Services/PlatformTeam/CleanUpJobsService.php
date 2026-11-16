@@ -25,7 +25,10 @@ use Illuminate\Support\Facades\Log;
  *   - `runner`: a sub-task of CronJobRunner::runAllInternal() (the
  *     `nexus:run-all` closure that runs every minute). Read from `cron_logs`
  *     (`job_id`, newest `success` and newest `error`); `cleanup` deletes those
- *     rows after 30 days, so an older run is no longer known.
+ *     rows after 30 days, so an older run is no longer known. 🔴 These jobs
+ *     catch their own steps' errors and still record `success`, so their
+ *     rows carry `checked_by: finished_only`: a success means the job
+ *     finished, not that every step worked.
  *   - `retention:enforce` additionally reads `tenant_retention_runs`
  *     (`completed` / `failed`), its own record of each pass.
  *
@@ -79,7 +82,7 @@ final class CleanUpJobsService
         'purge_verification_sessions' => ['source' => 'runner', 'name' => 'purge-verification-sessions', 'how_often' => 'weekly'],
     ];
 
-    /** @return array{jobs: list<array{key: string, how_often: string, last_ok_at: ?string, last_failed_at: ?string, status: string, readable: bool}>} */
+    /** @return array{jobs: list<array{key: string, how_often: string, last_ok_at: ?string, last_failed_at: ?string, status: string, readable: bool, checked_by: 'record'|'finished_only'}>} */
     public function report(): array
     {
         $runner = $this->runnerTimes();
@@ -126,6 +129,11 @@ final class CleanUpJobsService
                 'last_failed_at' => $failed,
                 'status' => $readable ? self::status($ok, $failed, $job['how_often']) : self::UNKNOWN,
                 'readable' => $readable,
+                // What a success in the record proves. The runner's jobs catch
+                // their own steps' errors and still log success, so for them
+                // it proves only that the job finished (CronJobRunner is not
+                // changed for this; the page says so in words).
+                'checked_by' => $job['source'] === 'runner' ? 'finished_only' : 'record',
             ];
         }
 
