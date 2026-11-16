@@ -422,7 +422,10 @@ different controller behind a different check:
 16 November 2026). 🔴 `platform_notices` and `platform_notice_dismissals` are
 platform-global: they have no `tenant_id`, on purpose, because a notice is
 the same in every community. An admin is sent only what the band shows; who
-wrote a notice goes to the platform team's list alone.
+wrote a notice goes to the platform team's list alone. Each write is also
+recorded in `activity_log` with `tenant_id` NULL, so no community's admins can
+read it there. Changing a notice's words, kind or link deletes its dismissal
+rows, so it is shown again to everyone who closed it.
 
 **Left open on purpose.** An endpoint that a screen outside the panel still
 calls keeps its previous check, and a test pins that a community admin still

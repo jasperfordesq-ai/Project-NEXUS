@@ -322,7 +322,8 @@
       "can_close": "Gli amministratori possono chiuderlo",
       "can_close_hint": "Se è disattivato, l’avviso resta finché non termina o non lo chiudi tu.",
       "save": "Salva",
-      "cancel": "Annulla"
+      "cancel": "Annulla",
+      "reshow_note": "Se cambi il testo, il tipo o il link, le persone che hanno chiuso questo avviso lo vedranno di nuovo."
     }
   }
 }

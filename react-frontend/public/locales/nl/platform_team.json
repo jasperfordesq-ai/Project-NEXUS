@@ -322,7 +322,8 @@
       "can_close": "Beheerders kunnen haar sluiten",
       "can_close_hint": "Als dit uit staat, blijft de mededeling staan tot ze afloopt of tot jij haar beëindigt.",
       "save": "Opslaan",
-      "cancel": "Annuleren"
+      "cancel": "Annuleren",
+      "reshow_note": "Als je de tekst, de soort of de link wijzigt, zien mensen die deze mededeling hebben gesloten haar opnieuw."
     }
   }
 }

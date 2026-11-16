@@ -3,13 +3,17 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 
 const { apiGet, apiPost, logError } = vi.hoisted(() => ({ apiGet: vi.fn(), apiPost: vi.fn(), logError: vi.fn() }));
 
 vi.mock('@/lib/api', () => ({ api: { get: apiGet, post: apiPost } }));
 vi.mock('@/lib/logger', () => ({ logError }));
+// The band asks again when the admin moves to another page; the tests move
+// the page by changing this and re-rendering.
+const route = vi.hoisted(() => ({ pathname: '/riverside/admin' }));
+vi.mock('react-router-dom', () => ({ useLocation: () => ({ pathname: route.pathname }) }));
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key, i18n: { language: 'en' } }),
 }));
@@ -132,6 +136,96 @@ describe('PlatformNoticeBand', () => {
 
     await screen.findByTestId('platform-notice-7');
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+
+  // Owner, 16 Nov 2026: an ended notice must not stay on an admin's screen
+  // until they happen to reload the page.
+  describe('keeping up to date without a reload', () => {
+    const START = 1_800_000_000_000;
+    let now = START;
+
+    beforeEach(() => {
+      now = START;
+      route.pathname = '/riverside/admin';
+      vi.spyOn(Date, 'now').mockImplementation(() => now);
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    const moveTo = (pathname: string, rerender: (ui: React.ReactElement) => void) => {
+      route.pathname = pathname;
+      rerender(<PlatformNoticeBand />);
+    };
+
+    it('asks again when the admin moves to another page, and an ended notice leaves the screen', async () => {
+      apiGet.mockResolvedValueOnce(reply([notice()]));
+      const { rerender } = render(<PlatformNoticeBand />);
+      await screen.findByTestId('platform-notice-7');
+
+      // The platform team has ended it since.
+      apiGet.mockResolvedValue(reply([]));
+      now = START + 61_000;
+      moveTo('/riverside/admin/users', rerender);
+
+      await waitFor(() => expect(screen.queryByTestId('platform-notice-7')).not.toBeInTheDocument());
+      expect(apiGet).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not ask on every page: at most once a minute', async () => {
+      apiGet.mockResolvedValue(reply([notice()]));
+      const { rerender } = render(<PlatformNoticeBand />);
+      await screen.findByTestId('platform-notice-7');
+
+      now = START + 10_000;
+      moveTo('/riverside/admin/users', rerender);
+      now = START + 30_000;
+      moveTo('/riverside/admin/listings', rerender);
+
+      expect(apiGet).toHaveBeenCalledTimes(1);
+    });
+
+    it('asks again when the admin comes back to the tab after a while', async () => {
+      apiGet.mockResolvedValueOnce(reply([notice()]));
+      render(<PlatformNoticeBand />);
+      await screen.findByTestId('platform-notice-7');
+
+      apiGet.mockResolvedValue(reply([]));
+      now = START + 5 * 60_000;
+      document.dispatchEvent(new Event('visibilitychange'));
+
+      await waitFor(() => expect(screen.queryByTestId('platform-notice-7')).not.toBeInTheDocument());
+    });
+
+    it('keeps what it is showing when asking again fails', async () => {
+      apiGet.mockResolvedValueOnce(reply([notice()]));
+      const { rerender } = render(<PlatformNoticeBand />);
+      await screen.findByTestId('platform-notice-7');
+
+      apiGet.mockResolvedValue({ success: false, error: 'Server error' });
+      now = START + 61_000;
+      moveTo('/riverside/admin/users', rerender);
+
+      await waitFor(() => expect(logError).toHaveBeenCalled());
+      expect(screen.getByTestId('platform-notice-7')).toBeInTheDocument();
+      expect(screen.queryByText('platform_notice.load_failed')).not.toBeInTheDocument();
+    });
+
+    it('does not bring back a notice closed on this page if the server has not caught up yet', async () => {
+      // The server keeps sending it: the "closed" request has not landed.
+      apiGet.mockResolvedValue(reply([notice(), notice({ id: 8, message: 'Another one.' })]));
+      const { rerender } = render(<PlatformNoticeBand />);
+      fireEvent.click((await screen.findAllByRole('button', { name: 'platform_notice.close' }))[0]!);
+      await waitFor(() => expect(screen.queryByTestId('platform-notice-7')).not.toBeInTheDocument());
+
+      now = START + 61_000;
+      moveTo('/riverside/admin/users', rerender);
+
+      await waitFor(() => expect(apiGet).toHaveBeenCalledTimes(2));
+      expect(screen.queryByTestId('platform-notice-7')).not.toBeInTheDocument();
+      expect(screen.getByTestId('platform-notice-8')).toBeInTheDocument();
+    });
   });
 
   it('treats a kind it does not know as plain information', async () => {

@@ -322,7 +322,8 @@
       "can_close": "Admins can close it",
       "can_close_hint": "If this is off, the notice stays until it finishes or you end it.",
       "save": "Save",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "reshow_note": "If you change the words, the kind or the link, people who closed this notice will see it again."
     }
   }
 }

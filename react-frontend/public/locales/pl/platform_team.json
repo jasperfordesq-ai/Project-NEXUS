@@ -322,7 +322,8 @@
       "can_close": "Administratorzy mogą go zamknąć",
       "can_close_hint": "Gdy to jest wyłączone, komunikat zostaje, dopóki się nie skończy albo go nie zakończysz.",
       "save": "Zapisz",
-      "cancel": "Anuluj"
+      "cancel": "Anuluj",
+      "reshow_note": "Jeśli zmienisz treść, rodzaj lub link, osoby, które zamknęły ten komunikat, zobaczą go ponownie."
     }
   }
 }

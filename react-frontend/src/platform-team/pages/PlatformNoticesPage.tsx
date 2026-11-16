@@ -359,6 +359,11 @@ export function PlatformNoticesPage() {
                 <PlatformNoticeView notice={preview} onClose={() => undefined} />
               </div>
               <p className="mt-1.5 text-xs text-muted">{t('notices.form.language_note')}</p>
+              {editing ? (
+                <p className="mt-1 text-xs text-muted" data-testid="notice-reshow-note">
+                  {t('notices.form.reshow_note')}
+                </p>
+              ) : null}
             </div>
 
             <Textarea

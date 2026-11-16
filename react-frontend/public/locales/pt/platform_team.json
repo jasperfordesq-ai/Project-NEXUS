@@ -322,7 +322,8 @@
       "can_close": "Os administradores podem fechá-lo",
       "can_close_hint": "Se isto estiver desativado, o aviso fica até terminar ou até você encerrá-lo.",
       "save": "Salvar",
-      "cancel": "Cancelar"
+      "cancel": "Cancelar",
+      "reshow_note": "Se você mudar o texto, o tipo ou o link, as pessoas que fecharam este aviso o verão de novo."
     }
   }
 }

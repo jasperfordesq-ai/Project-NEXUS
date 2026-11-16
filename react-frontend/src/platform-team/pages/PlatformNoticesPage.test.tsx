@@ -179,6 +179,22 @@ describe('PlatformNoticesPage', () => {
     expect(apiPut.mock.calls[0]![1]).toMatchObject({ message: 'Planned work moved to Wednesday.', kind: 'planned_work' });
   });
 
+  it('warns, when changing a notice, that new words show it again to people who closed it', async () => {
+    render(<PlatformNoticesPage />);
+    fireEvent.click(within(await screen.findByTestId('team-notice-7')).getByRole('button', { name: 'Change' }));
+
+    expect(await screen.findByTestId('notice-reshow-note')).toHaveTextContent(
+      'If you change the words, the kind or the link, people who closed this notice will see it again.',
+    );
+  });
+
+  it('does not show that warning on a brand new notice: nobody has closed it', async () => {
+    render(<PlatformNoticesPage />);
+    await openForm();
+
+    expect(screen.queryByTestId('notice-reshow-note')).not.toBeInTheDocument();
+  });
+
   it('keeps the form open and says so when the server refuses', async () => {
     apiPost.mockResolvedValue({ success: false, error: 'Refused', errors: [{ field: 'link_url', message: 'server words' }] });
     render(<PlatformNoticesPage />);

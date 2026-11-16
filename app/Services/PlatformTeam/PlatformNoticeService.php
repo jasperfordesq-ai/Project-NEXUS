@@ -9,7 +9,7 @@ declare(strict_types=1);
 namespace App\Services\PlatformTeam;
 
 use App\Core\ApiErrorCodes;
-use App\Models\ActivityLog;
+use App\Core\ClientIp;
 use App\Services\SiteAnnouncementService;
 use App\Support\Names\NameReason;
 use App\Support\UserDisplayName;
@@ -44,6 +44,13 @@ use Illuminate\Support\Facades\Log;
  *
  * Every write is recorded twice: on the row (`created_by`, `updated_by`,
  * `ended_by`, `ended_at`) and in `activity_log` with the acting account.
+ * 🔴 The activity log row is written with NO community (`tenant_id` NULL): a
+ * platform notice belongs to none, and filed under the writer's current
+ * community it would be readable by that community's admins.
+ *
+ * 🔴 Changing what a notice SAYS (its words, kind or link) forgets who closed
+ * it, so everyone is shown it again (owner, 16 Nov 2026). Changing only when
+ * it shows, or whether it can be closed, does not.
  */
 final class PlatformNoticeService
 {
@@ -57,6 +64,9 @@ final class PlatformNoticeService
 
     /** The platform team's list: newest first, this many. */
     public const LIST_LIMIT = 100;
+
+    /** The fields that are what a notice says. A change to any of them is shown again to people who closed it. */
+    private const SAYS = ['message', 'kind', 'link_url', 'link_label'];
 
     // ------------------------------------------------------------------
     // The platform team
@@ -134,9 +144,25 @@ final class PlatformNoticeService
         }
 
         if ($values !== []) {
+            $saysSomethingNew = false;
+            foreach (self::SAYS as $field) {
+                if (array_key_exists($field, $values) && (string) ($values[$field] ?? '') !== (string) ($existing->{$field} ?? '')) {
+                    $saysSomethingNew = true;
+                    break;
+                }
+            }
+
             $values['updated_by'] = $userId > 0 ? $userId : null;
             $values['updated_at'] = now();
-            DB::table('platform_notices')->where('id', $id)->update($values);
+            // One transaction: a changed notice with its old "closed by" rows
+            // still in place would stay hidden from exactly the people who
+            // most need to see the change.
+            DB::transaction(static function () use ($id, $values, $saysSomethingNew): void {
+                DB::table('platform_notices')->where('id', $id)->update($values);
+                if ($saysSomethingNew) {
+                    DB::table('platform_notice_dismissals')->where('notice_id', $id)->delete();
+                }
+            });
             $this->record($userId, 'platform_notice_changed', $id);
         }
 
@@ -369,7 +395,21 @@ final class PlatformNoticeService
     private function record(int $userId, string $action, int $noticeId): void
     {
         try {
-            ActivityLog::log($userId, $action, "Platform notice #{$noticeId}", false, null, 'admin', 'platform_notice', $noticeId);
+            // Not ActivityLog::log(): that stamps the community the writer is
+            // in. tenant_id is NULL on purpose (see the class comment). The
+            // details name the notice, never its words.
+            DB::table('activity_log')->insert([
+                'tenant_id' => null,
+                'user_id' => $userId > 0 ? $userId : null,
+                'action' => $action,
+                'details' => "Platform notice #{$noticeId}",
+                'is_public' => 0,
+                'ip_address' => ClientIp::get(),
+                'action_type' => 'admin',
+                'entity_type' => 'platform_notice',
+                'entity_id' => $noticeId,
+                'created_at' => now(),
+            ]);
         } catch (\Throwable $e) {
             Log::error('Platform notice: the activity log entry could not be written', [
                 'action' => $action,

@@ -322,7 +322,8 @@
       "can_close": "Les administrateurs peuvent le fermer",
       "can_close_hint": "Si c'est désactivé, l'avis reste jusqu'à sa fin ou jusqu'à ce que vous l'arrêtiez.",
       "save": "Enregistrer",
-      "cancel": "Annuler"
+      "cancel": "Annuler",
+      "reshow_note": "Si vous modifiez le texte, le type ou le lien, les personnes qui ont fermé cet avis le verront à nouveau."
     }
   }
 }

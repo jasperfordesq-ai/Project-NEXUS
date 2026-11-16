@@ -57413,6 +57413,7 @@ export default interface Resources {
         "message_required": "Write the notice, in 280 characters or fewer.",
         "preview": "What admins will see",
         "preview_placeholder": "Your notice will appear here.",
+        "reshow_note": "If you change the words, the kind or the link, people who closed this notice will see it again.",
         "save": "Save",
         "title_edit": "Change the notice",
         "title_new": "Write a notice",

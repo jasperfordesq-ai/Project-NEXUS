@@ -322,7 +322,8 @@
       "can_close": "Is féidir le riarthóirí é a dhúnadh",
       "can_close_hint": "Má tá sé seo múchta, fanann an fógra go dtí go gcríochnaíonn sé nó go gcuireann tú deireadh leis.",
       "save": "Sábháil",
-      "cancel": "Cealaigh"
+      "cancel": "Cealaigh",
+      "reshow_note": "Má athraíonn tú na focail, an cineál nó an nasc, feicfidh daoine a dhún an fógra seo arís é."
     }
   }
 }

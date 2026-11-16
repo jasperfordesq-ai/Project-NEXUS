@@ -322,7 +322,8 @@
       "can_close": "Admins können ihn schließen",
       "can_close_hint": "Wenn das aus ist, bleibt der Hinweis, bis er abläuft oder Sie ihn beenden.",
       "save": "Speichern",
-      "cancel": "Abbrechen"
+      "cancel": "Abbrechen",
+      "reshow_note": "Wenn Sie den Text, die Art oder den Link ändern, sehen Personen, die diesen Hinweis geschlossen haben, ihn wieder."
     }
   }
 }

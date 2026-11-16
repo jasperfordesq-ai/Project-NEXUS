@@ -308,6 +308,81 @@ class PlatformNoticesTest extends TestCase
         $this->apiPost(self::ADMIN . '/999999999/dismiss')->assertStatus(404);
     }
 
+    /**
+     * Someone who closed a notice must not miss it when what it SAYS changes
+     * (owner, 16 Nov 2026). Changing the words, the kind or the link shows it
+     * again to everyone; changing only when it shows, or whether it can be
+     * closed, does not.
+     */
+    public function test_changing_what_a_notice_says_shows_it_again_to_people_who_closed_it(): void
+    {
+        $id = $this->notice();
+        $admin = $this->actAsCommunityAdmin();
+        $this->apiPost(self::ADMIN . "/{$id}/dismiss")->assertStatus(200);
+        $this->assertSame([], $this->shownIds());
+
+        $this->actAsPlatformTeam();
+        $this->apiPut(self::TEAM . "/{$id}", ['message' => 'Planned work moved to Wednesday.'])->assertStatus(200);
+
+        $this->assertSame(0, DB::table('platform_notice_dismissals')->where('notice_id', $id)->count());
+        \Laravel\Sanctum\Sanctum::actingAs($admin, ['*']);
+        $this->assertSame([$id], $this->shownIds());
+    }
+
+    /** @return array<string, array{0: array<string, mixed>}> */
+    public static function changesThatSayNothingNew(): array
+    {
+        return [
+            'only the end time' => [['ends_at' => '2099-01-01T10:00:00Z']],
+            'only whether it can be closed' => [['is_dismissible' => true]],
+            'the same words sent again' => [['message' => 'Planned work on Tuesday evening.', 'kind' => 'planned_work']],
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     * @dataProvider changesThatSayNothingNew
+     */
+    public function test_a_change_that_says_nothing_new_leaves_a_closed_notice_closed(array $payload): void
+    {
+        $id = $this->notice();
+        $admin = $this->actAsCommunityAdmin();
+        $this->apiPost(self::ADMIN . "/{$id}/dismiss")->assertStatus(200);
+
+        $this->actAsPlatformTeam();
+        $this->apiPut(self::TEAM . "/{$id}", $payload)->assertStatus(200);
+
+        $this->assertSame(1, DB::table('platform_notice_dismissals')->where('notice_id', $id)->where('user_id', $admin->id)->count());
+    }
+
+    /**
+     * A platform notice belongs to no community. Its record must not land in
+     * the activity log of whichever community the writer happened to be in,
+     * where that community's admins could read it (review, 16 Nov 2026).
+     */
+    public function test_the_record_of_a_notice_is_kept_under_no_community(): void
+    {
+        $me = $this->actAsPlatformTeam();
+
+        $id = (int) $this->apiPost(self::TEAM, ['message' => 'Recorded under no community.'])->assertStatus(201)->json('data.notice.id');
+        $this->apiPut(self::TEAM . "/{$id}", ['message' => 'Recorded under no community, changed.'])->assertStatus(200);
+        $this->apiPost(self::TEAM . "/{$id}/end")->assertStatus(200);
+
+        $rows = DB::table('activity_log')
+            ->where('user_id', $me->id)
+            ->whereIn('action', ['platform_notice_created', 'platform_notice_changed', 'platform_notice_ended'])
+            ->get(['action', 'tenant_id', 'entity_type', 'entity_id', 'details']);
+
+        $this->assertCount(3, $rows);
+        foreach ($rows as $row) {
+            $this->assertNull($row->tenant_id, "{$row->action} was filed under community {$row->tenant_id}");
+            $this->assertSame('platform_notice', $row->entity_type);
+            $this->assertSame($id, (int) $row->entity_id);
+            // The record says which notice, never what it said.
+            $this->assertStringNotContainsString('no community', (string) $row->details);
+        }
+    }
+
     public function test_the_list_tells_the_platform_team_how_many_people_closed_a_notice(): void
     {
         $id = $this->notice();

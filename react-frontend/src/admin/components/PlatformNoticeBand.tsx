@@ -21,11 +21,19 @@
  * 🔴 The API client answers `{ success: false }` for a 403 or a 500; it does
  * not throw. Both failure shapes are handled, for loading and for closing.
  *
+ * The band keeps itself up to date without a reload (owner, 16 Nov 2026): it
+ * asks again when the admin moves to another admin page or comes back to the
+ * tab, at most once a minute. So a notice the platform team has ended leaves
+ * the screen, and a new one arrives, within a minute of the admin's next
+ * move. When asking again fails it keeps what it is showing. A notice closed
+ * on this page stays closed even if the server has not caught up yet.
+ *
  * `PlatformNoticeView` is the band itself, also used as the live preview
  * where the platform team writes a notice, so what they see is the real thing.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ExternalLink from 'lucide-react/icons/external-link';
 import Info from 'lucide-react/icons/info';
@@ -91,35 +99,72 @@ export function PlatformNoticeView({ notice, onClose }: { notice: PlatformNotice
   );
 }
 
+/** The band asks the server again no more often than this. */
+const ASK_AGAIN_AFTER_MS = 60_000;
+
 export function PlatformNoticeBand() {
   const { t } = useTranslation('admin_nav');
+  const { pathname } = useLocation();
   const [notices, setNotices] = useState<PlatformNotice[]>([]);
   const [loadFailed, setLoadFailed] = useState(false);
+  const mounted = useRef(true);
+  const lastAsked = useRef(0);
+  const loadedOnce = useRef(false);
+  /** Closed on this page. Kept out even if the server still sends them. */
+  const closedHere = useRef(new Set<number>());
 
   useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const res = await api.get<{ notices: PlatformNotice[] }>('/v2/admin/platform-notices');
-        if (cancelled) return;
-        if (res.success && res.data && Array.isArray(res.data.notices)) {
-          setNotices(res.data.notices);
-        } else {
-          logError('Platform notices could not be loaded', { code: res.code, error: res.error });
-          setLoadFailed(true);
-        }
-      } catch (err) {
-        logError('Platform notices could not be loaded', err);
-        if (!cancelled) setLoadFailed(true);
-      }
-    })();
+    mounted.current = true;
     return () => {
-      cancelled = true;
+      mounted.current = false;
     };
   }, []);
 
+  const load = useCallback(async () => {
+    lastAsked.current = Date.now();
+    const failed = () => {
+      // Before anything has loaded, say so. After that, keep what is showing:
+      // a blip must not take a notice off the screen.
+      if (mounted.current && !loadedOnce.current) setLoadFailed(true);
+    };
+    try {
+      const res = await api.get<{ notices: PlatformNotice[] }>('/v2/admin/platform-notices');
+      if (!mounted.current) return;
+      if (res.success && res.data && Array.isArray(res.data.notices)) {
+        loadedOnce.current = true;
+        setLoadFailed(false);
+        setNotices(res.data.notices.filter((n) => !closedHere.current.has(n.id)));
+      } else {
+        logError('Platform notices could not be loaded', { code: res.code, error: res.error });
+        failed();
+      }
+    } catch (err) {
+      logError('Platform notices could not be loaded', err);
+      failed();
+    }
+  }, []);
+
+  // On arrival, and again when the admin moves to another page.
+  useEffect(() => {
+    if (lastAsked.current === 0 || Date.now() - lastAsked.current >= ASK_AGAIN_AFTER_MS) {
+      void load();
+    }
+  }, [pathname, load]);
+
+  // And when they come back to a tab that has been sitting in the background.
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === 'visible' && Date.now() - lastAsked.current >= ASK_AGAIN_AFTER_MS) {
+        void load();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, [load]);
+
   const close = useCallback((id: number) => {
     // Gone from this page at once; the server remembers it for next time.
+    closedHere.current.add(id);
     setNotices((current) => current.filter((n) => n.id !== id));
     void api
       .post(`/v2/admin/platform-notices/${id}/dismiss`)
