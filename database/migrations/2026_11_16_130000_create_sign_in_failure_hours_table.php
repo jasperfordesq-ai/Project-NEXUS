@@ -42,7 +42,10 @@ return new class extends Migration
 
         Schema::create('sign_in_failure_hours', static function (Blueprint $table): void {
             $table->dateTime('hour_start');
-            $table->integer('tenant_id')->default(0);
+            // No default, on purpose: a column named tenant_id must never
+            // fill itself in (TenantlessInsertRefusedTest). Both counters
+            // always give it; 0 means "community not known".
+            $table->integer('tenant_id');
             $table->unsignedInteger('failures')->default(0);
             // Attempts refused by the lock-out before any password check
             // (RateLimiter::countRefusedSignIn()). Kept apart from `failures`:

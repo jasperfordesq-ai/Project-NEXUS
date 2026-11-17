@@ -18430,7 +18430,7 @@ DROP TABLE IF EXISTS `sign_in_failure_hours`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `sign_in_failure_hours` (
   `hour_start` datetime NOT NULL,
-  `tenant_id` int(11) NOT NULL DEFAULT 0,
+  `tenant_id` int(11) NOT NULL,
   `failures` int(10) unsigned NOT NULL DEFAULT 0,
   `refused` int(10) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (`hour_start`,`tenant_id`)
