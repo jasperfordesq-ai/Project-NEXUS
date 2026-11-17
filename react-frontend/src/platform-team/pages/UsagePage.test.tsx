@@ -6,9 +6,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 
-const { apiGet } = vi.hoisted(() => ({ apiGet: vi.fn() }));
+const { apiGet, formattingLocale } = vi.hoisted(() => ({
+  apiGet: vi.fn(),
+  formattingLocale: vi.fn(() => 'en'),
+}));
 
 vi.mock('@/lib/api', () => ({ api: { get: apiGet } }));
+// The page formats with getFormattingLocale() (language + community region).
+// Pinned per test to the locale the expected strings are written in.
+vi.mock('@/lib/helpers', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/helpers')>()),
+  getFormattingLocale: formattingLocale,
+}));
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('react-i18next', () => ({
@@ -277,19 +286,25 @@ describe('UsagePage', () => {
 });
 
 describe('formatBytes and formatUsd', () => {
+  beforeEach(() => {
+    formattingLocale.mockReturnValue('en');
+  });
+
   it('uses readable units in the viewer’s language', () => {
-    expect(formatBytes(0, 'en')).toBe('0 MB');
-    expect(formatBytes(512 * 1024, 'en')).toBe('0.5 MB');
-    expect(formatBytes(250 * 1024 * 1024, 'en')).toBe('250 MB');
-    expect(formatBytes(1.5 * 1024 * 1024 * 1024, 'en')).toBe('1.5 GB');
+    expect(formatBytes(0)).toBe('0 MB');
+    expect(formatBytes(512 * 1024)).toBe('0.5 MB');
+    expect(formatBytes(250 * 1024 * 1024)).toBe('250 MB');
+    expect(formatBytes(1.5 * 1024 * 1024 * 1024)).toBe('1.5 GB');
     // German writes a decimal comma and a no-break space before the unit.
-    expect(formatBytes(1.5 * 1024 * 1024 * 1024, 'de')).toMatch(/^1,5\sGB$/u);
+    formattingLocale.mockReturnValue('de');
+    expect(formatBytes(1.5 * 1024 * 1024 * 1024)).toMatch(/^1,5\sGB$/u);
   });
 
   it('shows money as US dollars in the viewer’s language, keeping a tiny cost visible', () => {
-    expect(formatUsd(1.5, 'en')).toBe('$1.50');
-    expect(formatUsd(0, 'en')).toBe('$0.00');
-    expect(formatUsd(0.0025, 'en')).toBe('$0.0025');
-    expect(formatUsd(1.5, 'de')).toMatch(/1,50/);
+    expect(formatUsd(1.5)).toBe('$1.50');
+    expect(formatUsd(0)).toBe('$0.00');
+    expect(formatUsd(0.0025)).toBe('$0.0025');
+    formattingLocale.mockReturnValue('de');
+    expect(formatUsd(1.5)).toMatch(/1,50/);
   });
 });

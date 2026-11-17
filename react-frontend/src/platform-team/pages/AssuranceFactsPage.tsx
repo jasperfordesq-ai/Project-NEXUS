@@ -33,6 +33,7 @@ import RefreshCw from 'lucide-react/icons/refresh-cw';
 import ArrowRight from 'lucide-react/icons/arrow-right';
 import CircleHelp from 'lucide-react/icons/circle-help';
 import Info from 'lucide-react/icons/info';
+import { getFormattingLocale } from '@/lib/helpers';
 
 interface FactBase<K extends string> {
   key: K;
@@ -69,10 +70,9 @@ const SOURCE: Record<AssuranceFact['key'], { path: string; label: string } | nul
 };
 
 export function AssuranceFactsPage() {
-  const { t, i18n } = useTranslation('platform_team');
+  const { t } = useTranslation('platform_team');
   const { tenantPath } = useTenant();
   usePageTitle(t('assurance.title'));
-  const language = i18n.language;
 
   const [data, setData] = useState<AssuranceFacts | null>(null);
   const [loading, setLoading] = useState(true);
@@ -106,17 +106,17 @@ export function AssuranceFactsPage() {
     if (!iso) return null;
     const date = new Date(iso);
     if (Number.isNaN(date.getTime())) return null;
-    return date.toLocaleString(language, { dateStyle: 'medium', timeStyle: 'short' });
+    return date.toLocaleString(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' });
   };
 
   // A calendar date (YYYY-MM-DD) is shown as that day, whatever the viewer's time zone.
   const calendarDate = (value: string): string => {
     const date = new Date(`${value}T00:00:00Z`);
     if (Number.isNaN(date.getTime())) return value;
-    return date.toLocaleDateString(language, { dateStyle: 'long', timeZone: 'UTC' });
+    return date.toLocaleDateString(getFormattingLocale(), { dateStyle: 'long', timeZone: 'UTC' });
   };
 
-  const number = (value: number) => new Intl.NumberFormat(language).format(value);
+  const number = (value: number) => new Intl.NumberFormat(getFormattingLocale()).format(value);
 
   const lines = (fact: AssuranceFact): ReactNode[] => {
     switch (fact.key) {

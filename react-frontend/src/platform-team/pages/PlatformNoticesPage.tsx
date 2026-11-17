@@ -37,6 +37,7 @@ import { useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
+import { getFormattingLocale } from '@/lib/helpers';
 import {
   PLATFORM_NOTICE_KINDS, PLATFORM_NOTICE_MAX_LINK_LABEL, PLATFORM_NOTICE_MAX_MESSAGE,
   httpsLink, noticeKind, type PlatformNotice, type PlatformNoticeKind,
@@ -97,7 +98,7 @@ function fromLocalField(value: string): string | null {
 }
 
 export function PlatformNoticesPage() {
-  const { t, i18n } = useTranslation('platform_team');
+  const { t } = useTranslation('platform_team');
   const toast = useToast();
   usePageTitle(t('notices.title'));
 
@@ -256,7 +257,7 @@ export function PlatformNoticesPage() {
     const date = new Date(iso);
     return Number.isNaN(date.getTime())
       ? null
-      : date.toLocaleString(i18n.language, { dateStyle: 'medium', timeStyle: 'short' });
+      : date.toLocaleString(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' });
   };
 
   const fact = (label: string, value: string) => (

@@ -38,6 +38,7 @@ import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
+import { getFormattingLocale } from '@/lib/helpers';
 
 /** Where the build step writes the website figures. The nginx rule names the same path. */
 export const TRANSLATION_COVERAGE_FILE = '/translation-coverage.json';
@@ -101,9 +102,8 @@ function languageNames(code: string): { own: string; english: string } {
 }
 
 export function TranslationsPage() {
-  const { t, i18n } = useTranslation('platform_team');
+  const { t } = useTranslation('platform_team');
   usePageTitle(t('translations.title'));
-  const language = i18n.language;
 
   const [website, setWebsite] = useState<Section>({ state: 'loading' });
   const [server, setServer] = useState<Section>({ state: 'loading' });
@@ -174,13 +174,13 @@ export function TranslationsPage() {
     void loadServer();
   }, [loadWebsite, loadServer]);
 
-  const number = (value: number) => new Intl.NumberFormat(language).format(value);
-  const percent = (value: number) => new Intl.NumberFormat(language, { style: 'percent' }).format(value / 100);
+  const number = (value: number) => new Intl.NumberFormat(getFormattingLocale()).format(value);
+  const percent = (value: number) => new Intl.NumberFormat(getFormattingLocale(), { style: 'percent' }).format(value / 100);
   const when = (iso: string | null) => {
     if (!iso) return null;
     const date = new Date(iso);
     if (Number.isNaN(date.getTime())) return null;
-    return date.toLocaleString(language, { dateStyle: 'medium', timeStyle: 'short' });
+    return date.toLocaleString(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' });
   };
 
   const renderTable = (prefix: 'website' | 'server', rows: LocaleCoverage[]) => (

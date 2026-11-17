@@ -31,6 +31,7 @@ import CheckCircle from 'lucide-react/icons/circle-check';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import SearchIcon from 'lucide-react/icons/search';
+import { getFormattingLocale } from '@/lib/helpers';
 
 type RebuildState = 'queued' | 'running' | 'done' | 'failed';
 
@@ -68,7 +69,7 @@ function isBusy(last: LastRebuild | null): boolean {
 }
 
 export function SearchRebuildPage() {
-  const { t, i18n } = useTranslation('platform_team');
+  const { t } = useTranslation('platform_team');
   const toast = useToast();
   usePageTitle(t('search_rebuild.title'));
 
@@ -147,7 +148,7 @@ export function SearchRebuildPage() {
   const when = (iso: string | null): string => {
     if (!iso) return t('home.value.not_known');
     const date = new Date(iso);
-    return Number.isNaN(date.getTime()) ? t('home.value.not_known') : date.toLocaleString(i18n.language, { dateStyle: 'medium', timeStyle: 'short' });
+    return Number.isNaN(date.getTime()) ? t('home.value.not_known') : date.toLocaleString(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' });
   };
 
   const describe = (last: LastRebuild | null): string => {
@@ -211,7 +212,7 @@ export function SearchRebuildPage() {
           {anyBusy && <p className="mb-3 text-sm text-muted">{t('search_rebuild.auto_refresh')}</p>}
           {checkFailedAt !== null && (
             <p className="mb-3 text-sm font-medium text-warning-soft-foreground" role="status">
-              {t('search_rebuild.check_failed', { time: checkFailedAt.toLocaleTimeString(i18n.language, { timeStyle: 'short' }) })}
+              {t('search_rebuild.check_failed', { time: checkFailedAt.toLocaleTimeString(getFormattingLocale(), { timeStyle: 'short' }) })}
             </p>
           )}
 

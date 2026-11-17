@@ -32,6 +32,7 @@ import { joinList } from '@/lib/listFormat';
 import { logError } from '@/lib/logger';
 import Clock from 'lucide-react/icons/clock';
 import Eye from 'lucide-react/icons/eye';
+import { getFormattingLocale } from '@/lib/helpers';
 
 export type RequestType = 'access' | 'erasure' | 'rectification' | 'restriction' | 'portability' | 'objection';
 
@@ -145,7 +146,7 @@ export function DataRequestsPage() {
         ? t('data_requests.no_oldest')
         : t('data_requests.not_available');
     }
-    return v.toLocaleString(i18n.language);
+    return v.toLocaleString(getFormattingLocale());
   };
 
   const label = (figure: Figure): string =>
@@ -175,7 +176,7 @@ export function DataRequestsPage() {
         {open.map((type) => (
           <div key={type} className="flex flex-wrap gap-x-1">
             <dt className="text-muted">{t(`data_requests.type.${type}`)}</dt>
-            <dd className="tabular-nums text-foreground">{byType[type].toLocaleString(i18n.language)}</dd>
+            <dd className="tabular-nums text-foreground">{byType[type].toLocaleString(getFormattingLocale())}</dd>
           </div>
         ))}
       </dl>

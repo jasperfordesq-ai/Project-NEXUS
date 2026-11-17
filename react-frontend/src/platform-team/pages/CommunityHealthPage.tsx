@@ -28,6 +28,7 @@ import { joinList } from '@/lib/listFormat';
 import { logError } from '@/lib/logger';
 import Eye from 'lucide-react/icons/eye';
 import Moon from 'lucide-react/icons/moon';
+import { getFormattingLocale } from '@/lib/helpers';
 
 export interface CommunityHealthRow {
   id: number;
@@ -125,7 +126,7 @@ export function CommunityHealthPage() {
   const number = (value: number | null): string =>
     value === null
       ? t('community_health.not_available')
-      : value.toLocaleString(i18n.language, { maximumFractionDigits: 1 });
+      : value.toLocaleString(getFormattingLocale(), { maximumFractionDigits: 1 });
 
   const signInUnreadable = health?.unavailable.includes('last_sign_in_at') ?? false;
 
@@ -135,7 +136,7 @@ export function CommunityHealthPage() {
     const date = new Date(iso);
     return Number.isNaN(date.getTime())
       ? t('community_health.never_signed_in')
-      : date.toLocaleDateString(i18n.language, { day: 'numeric', month: 'short', year: 'numeric' });
+      : date.toLocaleDateString(getFormattingLocale(), { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
   const label = (figure: Figure): string =>

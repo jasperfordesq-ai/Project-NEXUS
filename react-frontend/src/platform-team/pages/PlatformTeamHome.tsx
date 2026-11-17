@@ -48,6 +48,7 @@ import Timer from 'lucide-react/icons/timer';
 import Wrench from 'lucide-react/icons/wrench';
 import Zap from 'lucide-react/icons/zap';
 import type { LucideIcon } from 'lucide-react';
+import { getFormattingLocale } from '@/lib/helpers';
 
 type HealthStatus = 'ok' | 'warning' | 'failing' | 'unknown';
 
@@ -175,7 +176,7 @@ export function PlatformTeamHome() {
     if (fact.type === 'percent') return `${fact.value}%`;
     if (fact.type === 'datetime') {
       const date = new Date(String(fact.value));
-      return Number.isNaN(date.getTime()) ? t('home.value.not_known') : date.toLocaleString(i18n.language);
+      return Number.isNaN(date.getTime()) ? t('home.value.not_known') : date.toLocaleString(getFormattingLocale());
     }
     return String(fact.value);
   };
@@ -210,7 +211,7 @@ export function PlatformTeamHome() {
             </Chip>
             {checkedAt && !Number.isNaN(checkedAt.getTime()) && (
               <span className="text-sm text-muted">
-                {t('home.checked_at', { time: checkedAt.toLocaleTimeString(i18n.language) })}
+                {t('home.checked_at', { time: checkedAt.toLocaleTimeString(getFormattingLocale()) })}
               </span>
             )}
           </div>

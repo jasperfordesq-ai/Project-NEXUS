@@ -32,6 +32,7 @@ import XCircle from 'lucide-react/icons/circle-x';
 import HelpCircle from 'lucide-react/icons/circle-help';
 import MinusCircle from 'lucide-react/icons/circle-minus';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
+import { getFormattingLocale } from '@/lib/helpers';
 
 type DomainStatus = 'ok' | 'warning' | 'failing' | 'unknown' | 'not_checkable';
 
@@ -118,7 +119,7 @@ function hasOwnAddress(community: CommunityRow): boolean {
 }
 
 export function DomainsPage() {
-  const { t, i18n } = useTranslation('platform_team');
+  const { t } = useTranslation('platform_team');
   const toast = useToast();
   usePageTitle(t('domains.title'));
 
@@ -199,13 +200,13 @@ export function DomainsPage() {
   const date = (iso: string | null): string | null => {
     if (!iso) return null;
     const d = new Date(iso);
-    return Number.isNaN(d.getTime()) ? null : d.toLocaleDateString(i18n.language, { year: 'numeric', month: 'long', day: 'numeric' });
+    return Number.isNaN(d.getTime()) ? null : d.toLocaleDateString(getFormattingLocale(), { year: 'numeric', month: 'long', day: 'numeric' });
   };
 
   const time = (iso: string | null): string | null => {
     if (!iso) return null;
     const d = new Date(iso);
-    return Number.isNaN(d.getTime()) ? null : d.toLocaleString(i18n.language, { dateStyle: 'medium', timeStyle: 'short' });
+    return Number.isNaN(d.getTime()) ? null : d.toLocaleString(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' });
   };
 
   /** The state in words, with an icon. */

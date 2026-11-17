@@ -18,6 +18,7 @@
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
+import { getFormattingLocale } from '@/lib/helpers';
 
 /** The address with `refresh=1` added when asked, keeping any question it already has. */
 export function withRefresh(url: string, refresh: boolean): string {
@@ -35,11 +36,11 @@ interface FiguresRefreshProps {
 }
 
 export function FiguresRefresh({ onRefresh, loading, generatedAt, refused }: FiguresRefreshProps) {
-  const { t, i18n } = useTranslation('platform_team');
+  const { t } = useTranslation('platform_team');
 
   const when = generatedAt ? new Date(generatedAt) : null;
   const time =
-    when && !Number.isNaN(when.getTime()) ? when.toLocaleTimeString(i18n.language, { timeStyle: 'short' }) : null;
+    when && !Number.isNaN(when.getTime()) ? when.toLocaleTimeString(getFormattingLocale(), { timeStyle: 'short' }) : null;
 
   return (
     <div className="flex flex-col items-start gap-1 sm:items-end">

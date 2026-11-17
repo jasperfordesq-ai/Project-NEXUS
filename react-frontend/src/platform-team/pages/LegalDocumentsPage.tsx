@@ -36,6 +36,7 @@ import CircleHelp from 'lucide-react/icons/circle-help';
 import Eye from 'lucide-react/icons/eye';
 import FileX from 'lucide-react/icons/file-x';
 import ShieldAlert from 'lucide-react/icons/shield-alert';
+import { getFormattingLocale } from '@/lib/helpers';
 
 export interface LegalDocument {
   type: string;
@@ -147,7 +148,7 @@ export function LegalDocumentsPage() {
     const when = document.published_at ? new Date(document.published_at) : null;
     const date =
       when && !Number.isNaN(when.getTime())
-        ? when.toLocaleDateString(i18n.language, { day: 'numeric', month: 'short', year: 'numeric' })
+        ? when.toLocaleDateString(getFormattingLocale(), { day: 'numeric', month: 'short', year: 'numeric' })
         : t('legal_documents.date_unknown');
     return t('legal_documents.version', { version: document.version_number, date });
   };
@@ -172,7 +173,7 @@ export function LegalDocumentsPage() {
       <span className="font-medium text-warning">
         {t('legal_documents.members_not_accepted', {
           count: document.members_not_accepted,
-          asked: new Intl.NumberFormat(i18n.language).format(document.members_asked),
+          asked: new Intl.NumberFormat(getFormattingLocale()).format(document.members_asked),
         })}
       </span>
     );

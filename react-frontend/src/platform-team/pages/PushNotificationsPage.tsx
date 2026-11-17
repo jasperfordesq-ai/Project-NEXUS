@@ -28,6 +28,7 @@ import { FiguresRefresh, withRefresh } from '../components/FiguresRefresh';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
+import { getFormattingLocale } from '@/lib/helpers';
 
 interface CommunityCounts {
   accepted: number;
@@ -65,9 +66,8 @@ const DAY_FIGURES = ['accepted', 'partial', 'failed', 'nobody_to_send_to'] as co
 const COMMUNITY_FIGURES = ['accepted', 'partial', 'failed'] as const;
 
 export function PushNotificationsPage() {
-  const { t, i18n } = useTranslation('platform_team');
+  const { t } = useTranslation('platform_team');
   usePageTitle(t('push_notifications.title'));
-  const language = i18n.language;
 
   const [days, setDays] = useState<number>(DEFAULT_DAYS);
   const [report, setReport] = useState<PushReport | null>(null);
@@ -108,11 +108,11 @@ export function PushNotificationsPage() {
     void load(days);
   }, [load, days]);
 
-  const number = (n: number) => new Intl.NumberFormat(language).format(n);
+  const number = (n: number) => new Intl.NumberFormat(getFormattingLocale()).format(n);
 
   const dayLabel = (date: string) => {
     const [year = 1970, month = 1, day = 1] = date.split('-').map(Number);
-    return new Date(Date.UTC(year, month - 1, day)).toLocaleDateString(language, {
+    return new Date(Date.UTC(year, month - 1, day)).toLocaleDateString(getFormattingLocale(), {
       weekday: 'short',
       day: 'numeric',
       month: 'short',

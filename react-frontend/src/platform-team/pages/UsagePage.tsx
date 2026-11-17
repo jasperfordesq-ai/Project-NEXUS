@@ -28,6 +28,7 @@ import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import ChevronLeft from 'lucide-react/icons/chevron-left';
 import ChevronRight from 'lucide-react/icons/chevron-right';
+import { getFormattingLocale } from '@/lib/helpers';
 
 interface EmailCounts {
   sent: number;
@@ -79,9 +80,9 @@ const MB = 1024 * 1024;
 const GB = 1024 * MB;
 
 /** Megabytes below one gigabyte, gigabytes above, in the viewer's language. */
-export function formatBytes(bytes: number, language: string): string {
+export function formatBytes(bytes: number): string {
   const [value, unit] = bytes >= GB ? [bytes / GB, 'gigabyte'] : [bytes / MB, 'megabyte'];
-  return new Intl.NumberFormat(language, {
+  return new Intl.NumberFormat(getFormattingLocale(), {
     style: 'unit',
     unit,
     unitDisplay: 'short',
@@ -90,9 +91,9 @@ export function formatBytes(bytes: number, language: string): string {
 }
 
 /** US dollars, as the AI service charges. A cost under a cent keeps its digits rather than reading as nothing. */
-export function formatUsd(amount: number, language: string): string {
+export function formatUsd(amount: number): string {
   const tiny = amount > 0 && amount < 0.01;
-  return new Intl.NumberFormat(language, {
+  return new Intl.NumberFormat(getFormattingLocale(), {
     style: 'currency',
     currency: 'USD',
     minimumFractionDigits: 2,
@@ -116,9 +117,8 @@ function shiftMonth(month: string, by: number): string {
 }
 
 export function UsagePage() {
-  const { t, i18n } = useTranslation('platform_team');
+  const { t } = useTranslation('platform_team');
   usePageTitle(t('usage.title'));
-  const language = i18n.language;
 
   const [report, setReport] = useState<UsageReport | null>(null);
   const [refused, setRefused] = useState(false);
@@ -159,11 +159,11 @@ export function UsagePage() {
     void load();
   }, [load]);
 
-  const number = (n: number) => new Intl.NumberFormat(language).format(n);
+  const number = (n: number) => new Intl.NumberFormat(getFormattingLocale()).format(n);
 
   const monthLabel = (month: string) => {
     const [year, mon] = partsOf(month);
-    return new Date(Date.UTC(year, mon - 1, 1)).toLocaleDateString(language, {
+    return new Date(Date.UTC(year, mon - 1, 1)).toLocaleDateString(getFormattingLocale(), {
       month: 'long',
       year: 'numeric',
       timeZone: 'UTC',
@@ -209,12 +209,12 @@ export function UsagePage() {
       <>
         {figure(t('usage.ai_requests'), number(ai.requests), `${prefix}-ai_requests`)}
         {figure(t('usage.ai_tokens'), number(ai.tokens), `${prefix}-ai_tokens`)}
-        {figure(t('usage.ai_cost'), formatUsd(ai.cost_usd, language), `${prefix}-ai_cost`)}
+        {figure(t('usage.ai_cost'), formatUsd(ai.cost_usd), `${prefix}-ai_cost`)}
       </>
     );
 
   const filesFigure = (bytes: number | null, prefix: string) =>
-    figure(t('usage.files'), bytes === null ? t('usage.not_available') : formatBytes(bytes, language), `${prefix}-files`);
+    figure(t('usage.files'), bytes === null ? t('usage.not_available') : formatBytes(bytes), `${prefix}-files`);
 
   const communityCard = (community: UsageCommunity) => {
     const prefix = `usage-${community.id}`;

@@ -30,6 +30,7 @@ import RefreshCw from 'lucide-react/icons/refresh-cw';
 import CircleCheck from 'lucide-react/icons/circle-check';
 import CircleX from 'lucide-react/icons/circle-x';
 import CircleHelp from 'lucide-react/icons/circle-help';
+import { getFormattingLocale } from '@/lib/helpers';
 
 export interface Deployment {
   /** ISO 8601 with offset, as the server recorded it; null when unreadable. */
@@ -58,9 +59,8 @@ const OUTCOME_ICON = {
 } as const;
 
 export function DeploymentsPage() {
-  const { t, i18n } = useTranslation('platform_team');
+  const { t } = useTranslation('platform_team');
   usePageTitle(t('deployments.title'));
-  const language = i18n.language;
 
   const [history, setHistory] = useState<DeploymentHistory | null>(null);
   const [loading, setLoading] = useState(true);
@@ -94,20 +94,20 @@ export function DeploymentsPage() {
     if (!timestamp) return t('deployments.not_recorded');
     const date = new Date(timestamp);
     if (Number.isNaN(date.getTime())) return t('deployments.not_recorded');
-    return date.toLocaleString(language, { dateStyle: 'medium', timeStyle: 'short' });
+    return date.toLocaleString(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' });
   };
 
   // Minutes and seconds in the viewer's language, from the browser's own unit names.
   const duration = (seconds: number | null) => {
     if (seconds === null || seconds < 0) return t('deployments.not_recorded');
     const unit = (value: number, name: 'minute' | 'second') =>
-      new Intl.NumberFormat(language, { style: 'unit', unit: name, unitDisplay: 'short' }).format(value);
+      new Intl.NumberFormat(getFormattingLocale(), { style: 'unit', unit: name, unitDisplay: 'short' }).format(value);
     return `${unit(Math.floor(seconds / 60), 'minute')} ${unit(seconds % 60, 'second')}`;
   };
 
   // On a rollback the recorder may count backwards: the number of changes is the distance either way.
   const changes = (distance: number | null) =>
-    distance === null ? t('deployments.not_recorded') : new Intl.NumberFormat(language).format(Math.abs(distance));
+    distance === null ? t('deployments.not_recorded') : new Intl.NumberFormat(getFormattingLocale()).format(Math.abs(distance));
 
   const fact = (label: string, value: string, testId?: string) => (
     <div className="min-w-0">

@@ -41,6 +41,7 @@ import Info from 'lucide-react/icons/info';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import ShieldAlert from 'lucide-react/icons/shield-alert';
 import ShieldCheck from 'lucide-react/icons/shield-check';
+import { getFormattingLocale } from '@/lib/helpers';
 
 const ACCESS_CHANGES = [
   'tenant_super_admin_granted',
@@ -111,7 +112,7 @@ export interface SecurityOverview {
 }
 
 export function SecurityPage() {
-  const { t, i18n } = useTranslation('platform_team');
+  const { t } = useTranslation('platform_team');
   const { tenantPath } = useTenant();
   usePageTitle(t('security.title'));
 
@@ -148,18 +149,18 @@ export function SecurityPage() {
     const date = new Date(iso);
     return Number.isNaN(date.getTime())
       ? t('security.not_recorded')
-      : date.toLocaleString(i18n.language, { dateStyle: 'medium', timeStyle: 'short' });
+      : date.toLocaleString(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' });
   };
 
   // Not sent (an older server) is "could not be checked", never "nobody was signed out".
   const signOuts: Section<{ items: SignOut[]; truncated: boolean }> = overview?.sign_outs ?? { available: false };
 
-  const number = (value: number): string => value.toLocaleString(i18n.language);
+  const number = (value: number): string => value.toLocaleString(getFormattingLocale());
   const day = (iso: string): string => {
     const date = new Date(iso);
     return Number.isNaN(date.getTime())
       ? t('security.not_recorded')
-      : date.toLocaleDateString(i18n.language, { dateStyle: 'medium' });
+      : date.toLocaleDateString(getFormattingLocale(), { dateStyle: 'medium' });
   };
 
   // One figure: a <dt>/<dd> pair in a <div> directly inside the <dl> (valid list

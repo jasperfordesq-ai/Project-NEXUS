@@ -33,6 +33,7 @@ import { logError } from '@/lib/logger';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import CircleHelp from 'lucide-react/icons/circle-help';
 import PlugZap from 'lucide-react/icons/plug-zap';
+import { getFormattingLocale } from '@/lib/helpers';
 
 export type ErrorProjectKey = 'php' | 'react' | 'webuk';
 
@@ -61,9 +62,8 @@ const FIGURES = [
 const ENDPOINT = '/v2/platform-team/errors';
 
 export function RecentErrorsPage() {
-  const { t, i18n } = useTranslation('platform_team');
+  const { t } = useTranslation('platform_team');
   usePageTitle(t('errors.title'));
-  const language = i18n.language;
 
   const [report, setReport] = useState<RecentErrorsReport | null>(null);
   const [loading, setLoading] = useState(true);
@@ -102,13 +102,13 @@ export function RecentErrorsPage() {
   }, [load]);
 
   const number = (value: number | null) =>
-    value === null ? t('errors.not_available') : new Intl.NumberFormat(language).format(value);
+    value === null ? t('errors.not_available') : new Intl.NumberFormat(getFormattingLocale()).format(value);
 
   const checkedAt = (() => {
     if (!report?.checked_at) return null;
     const date = new Date(report.checked_at);
     if (Number.isNaN(date.getTime())) return null;
-    return date.toLocaleString(language, { dateStyle: 'medium', timeStyle: 'short' });
+    return date.toLocaleString(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' });
   })();
 
 

@@ -31,6 +31,7 @@ import CheckCircle from 'lucide-react/icons/circle-check';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import RotateCcw from 'lucide-react/icons/rotate-ccw';
 import Trash2 from 'lucide-react/icons/trash-2';
+import { getFormattingLocale } from '@/lib/helpers';
 
 interface FailedJob {
   id: string;
@@ -50,7 +51,7 @@ interface FailedJobsList {
 const PER_PAGE = 25;
 
 export function FailedJobsPage() {
-  const { t, i18n } = useTranslation('platform_team');
+  const { t } = useTranslation('platform_team');
   const toast = useToast();
   usePageTitle(t('failed_jobs.title'));
 
@@ -109,7 +110,7 @@ export function FailedJobsPage() {
   const when = (iso: string | null): string => {
     if (!iso) return t('home.value.not_known');
     const date = new Date(iso);
-    return Number.isNaN(date.getTime()) ? t('home.value.not_known') : date.toLocaleString(i18n.language);
+    return Number.isNaN(date.getTime()) ? t('home.value.not_known') : date.toLocaleString(getFormattingLocale());
   };
 
   const pages = list ? Math.max(1, Math.ceil(list.total / PER_PAGE)) : 1;

@@ -38,6 +38,7 @@ import CalendarClock from 'lucide-react/icons/calendar-clock';
 import Info from 'lucide-react/icons/info';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import { SENIOR_LEVELS, accountStatusKey, type SeniorLevel } from './SeniorAccountsPage';
+import { getFormattingLocale } from '@/lib/helpers';
 
 const URL = '/v2/platform-team/access-review';
 
@@ -85,7 +86,7 @@ export interface AccessReview {
 type RecordError = 'step_cancelled' | 'list_changed' | 'failed';
 
 export function AccessReviewPage() {
-  const { t, i18n } = useTranslation('platform_team');
+  const { t } = useTranslation('platform_team');
   const toast = useToast();
   usePageTitle(t('access_review.title'));
 
@@ -142,7 +143,7 @@ export function AccessReviewPage() {
     const date = new Date(iso);
     return Number.isNaN(date.getTime())
       ? t('senior_accounts.never')
-      : date.toLocaleDateString(i18n.language, { day: 'numeric', month: 'short', year: 'numeric' });
+      : date.toLocaleDateString(getFormattingLocale(), { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
   const communityName = (community: { id: number; name: string | null } | null): string =>
@@ -191,7 +192,7 @@ export function AccessReviewPage() {
     const date = new Date(data.last_review.at);
     if (Number.isNaN(date.getTime())) return null;
     date.setDate(date.getDate() + DUE_AFTER_DAYS);
-    return date.toLocaleDateString(i18n.language, { day: 'numeric', month: 'long', year: 'numeric' });
+    return date.toLocaleDateString(getFormattingLocale(), { day: 'numeric', month: 'long', year: 'numeric' });
   })();
 
   return (

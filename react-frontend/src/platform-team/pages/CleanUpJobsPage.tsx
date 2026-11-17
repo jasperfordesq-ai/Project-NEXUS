@@ -32,6 +32,7 @@ import CircleX from 'lucide-react/icons/circle-x';
 import CircleHelp from 'lucide-react/icons/circle-help';
 import Clock from 'lucide-react/icons/clock';
 import TriangleAlert from 'lucide-react/icons/triangle-alert';
+import { getFormattingLocale } from '@/lib/helpers';
 
 export type CleanUpJobStatus = 'ok' | 'late' | 'failing' | 'unknown';
 
@@ -67,9 +68,8 @@ const STATE = {
 } as const;
 
 export function CleanUpJobsPage() {
-  const { t, i18n } = useTranslation('platform_team');
+  const { t } = useTranslation('platform_team');
   usePageTitle(t('clean_up_jobs.title'));
-  const language = i18n.language;
 
   const [report, setReport] = useState<CleanUpJobsReport | null>(null);
   const [loading, setLoading] = useState(true);
@@ -103,7 +103,7 @@ export function CleanUpJobsPage() {
     if (!value) return empty;
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return empty;
-    return date.toLocaleString(language, { dateStyle: 'medium', timeStyle: 'short' });
+    return date.toLocaleString(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' });
   };
 
   const fact = (label: string, value: string, testId: string) => (

@@ -16,6 +16,12 @@ vi.mock('@/lib/api', () => ({ api: { get: apiGet, post: apiPost } }));
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/contexts', () => ({ useToast: () => toast }));
+// The page formats with getFormattingLocale() (language + community region).
+// Pin it to the locale these expected strings are written in.
+vi.mock('@/lib/helpers', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/helpers')>()),
+  getFormattingLocale: () => 'en',
+}));
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) =>

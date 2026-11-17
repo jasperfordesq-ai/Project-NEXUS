@@ -29,6 +29,7 @@ import Eye from 'lucide-react/icons/eye';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import ShieldAlert from 'lucide-react/icons/shield-alert';
 import ShieldCheck from 'lucide-react/icons/shield-check';
+import { getFormattingLocale } from '@/lib/helpers';
 
 export const SENIOR_LEVELS = ['platform_team', 'global_super_admin', 'tenant_super_admin', 'platform_flag_only'] as const;
 export type SeniorLevel = (typeof SENIOR_LEVELS)[number];
@@ -68,7 +69,7 @@ export interface SeniorAccountsList {
 }
 
 export function SeniorAccountsPage() {
-  const { t, i18n } = useTranslation('platform_team');
+  const { t } = useTranslation('platform_team');
   usePageTitle(t('senior_accounts.title'));
 
   const [list, setList] = useState<SeniorAccountsList | null>(null);
@@ -104,7 +105,7 @@ export function SeniorAccountsPage() {
     const date = new Date(iso);
     return Number.isNaN(date.getTime())
       ? t('senior_accounts.never')
-      : date.toLocaleDateString(i18n.language, { day: 'numeric', month: 'short', year: 'numeric' });
+      : date.toLocaleDateString(getFormattingLocale(), { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
   const statusLabel = (status: string): string => t(accountStatusKey(status));
@@ -145,8 +146,8 @@ export function SeniorAccountsPage() {
               )}
               <p className="text-sm text-foreground">
                 {withoutTwoStep > 0
-                  ? t('senior_accounts.without_two_step', { count: withoutTwoStep, total: new Intl.NumberFormat(i18n.language).format(list.total) })
-                  : t('senior_accounts.all_have_two_step', { total: new Intl.NumberFormat(i18n.language).format(list.total) })}
+                  ? t('senior_accounts.without_two_step', { count: withoutTwoStep, total: new Intl.NumberFormat(getFormattingLocale()).format(list.total) })
+                  : t('senior_accounts.all_have_two_step', { total: new Intl.NumberFormat(getFormattingLocale()).format(list.total) })}
               </p>
             </CardBody>
           </Card>

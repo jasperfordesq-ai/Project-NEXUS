@@ -41,6 +41,7 @@ import Info from 'lucide-react/icons/info';
 import LogOut from 'lucide-react/icons/log-out';
 import Search from 'lucide-react/icons/search';
 import SearchX from 'lucide-react/icons/search-x';
+import { getFormattingLocale } from '@/lib/helpers';
 
 const FIND_URL = '/v2/platform-team/accounts/find';
 
@@ -95,7 +96,7 @@ function wholeAddress(value: string): string | null {
 }
 
 export function FindAccountPage() {
-  const { t, i18n } = useTranslation('platform_team');
+  const { t } = useTranslation('platform_team');
   const { user } = useAuth();
   const toast = useToast();
   usePageTitle(t('accounts.title'));
@@ -211,7 +212,7 @@ export function FindAccountPage() {
     const date = new Date(iso);
     return Number.isNaN(date.getTime())
       ? t('senior_accounts.never')
-      : date.toLocaleDateString(i18n.language, { day: 'numeric', month: 'short', year: 'numeric' });
+      : date.toLocaleDateString(getFormattingLocale(), { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
   /**
@@ -343,7 +344,7 @@ export function FindAccountPage() {
                               <div className="flex gap-1">
                                 <dt className="shrink-0">{t('accounts.open_sign_ins')}</dt>
                                 <dd className="font-medium text-foreground" data-testid={`open-sign-ins-${account.id}`}>
-                                  {(wasSignedOut ? 0 : account.signed_in_now).toLocaleString(i18n.language)}
+                                  {(wasSignedOut ? 0 : account.signed_in_now).toLocaleString(getFormattingLocale())}
                                 </dd>
                               </div>
                             </dl>

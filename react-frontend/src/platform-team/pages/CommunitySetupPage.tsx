@@ -32,6 +32,7 @@ import CircleDashed from 'lucide-react/icons/circle-dashed';
 import CircleHelp from 'lucide-react/icons/circle-help';
 import Info from 'lucide-react/icons/info';
 import Mail from 'lucide-react/icons/mail';
+import { getFormattingLocale } from '@/lib/helpers';
 
 export interface CommunitySetupRow {
   id: number;
@@ -69,7 +70,7 @@ const STEPS = [
 type Step = (typeof STEPS)[number];
 
 export function CommunitySetupPage() {
-  const { t, i18n } = useTranslation('platform_team');
+  const { t } = useTranslation('platform_team');
   usePageTitle(t('community_setup.title'));
 
   const [setup, setSetup] = useState<CommunitySetup | null>(null);
@@ -160,7 +161,7 @@ export function CommunitySetupPage() {
     return Number.isNaN(date.getTime())
       ? null
       : t('community_setup.created_on', {
-          date: date.toLocaleDateString(i18n.language, { day: 'numeric', month: 'short', year: 'numeric' }),
+          date: date.toLocaleDateString(getFormattingLocale(), { day: 'numeric', month: 'short', year: 'numeric' }),
         });
   };
 
@@ -228,8 +229,8 @@ export function CommunitySetupPage() {
           <p className="text-sm text-muted">
             {setup.truncated
               ? t('community_setup.truncated', {
-                  shown: new Intl.NumberFormat(i18n.language).format(setup.communities.length),
-                  total: new Intl.NumberFormat(i18n.language).format(setup.total_communities),
+                  shown: new Intl.NumberFormat(getFormattingLocale()).format(setup.communities.length),
+                  total: new Intl.NumberFormat(getFormattingLocale()).format(setup.total_communities),
                 })
               : t('community_setup.community_count', { count: setup.communities.length })}
           </p>

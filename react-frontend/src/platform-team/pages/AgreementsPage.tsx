@@ -40,6 +40,7 @@ import { useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
+import { getFormattingLocale } from '@/lib/helpers';
 
 export interface Agreement {
   id: number;
@@ -96,7 +97,7 @@ const orNull = (value: string): string | null => {
 };
 
 export function AgreementsPage() {
-  const { t, i18n } = useTranslation('platform_team');
+  const { t } = useTranslation('platform_team');
   const toast = useToast();
   usePageTitle(t('agreements.title'));
 
@@ -284,12 +285,12 @@ export function AgreementsPage() {
     if (!value) return t('agreements.not_entered');
     const [y, m, d] = value.split('-').map(Number);
     const date = new Date(y ?? NaN, (m ?? NaN) - 1, d ?? NaN);
-    return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString(i18n.language, { dateStyle: 'medium' });
+    return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString(getFormattingLocale(), { dateStyle: 'medium' });
   };
 
   const text = (value: string | null): string => value ?? t('agreements.not_entered');
 
-  const count = (value: number): string => new Intl.NumberFormat(i18n.language).format(value);
+  const count = (value: number): string => new Intl.NumberFormat(getFormattingLocale()).format(value);
 
   const communityName = (agreement: Agreement): string => {
     if (!agreement.community) return t('agreements.community_none');
