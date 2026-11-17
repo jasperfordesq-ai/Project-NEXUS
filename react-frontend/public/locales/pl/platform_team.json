@@ -192,7 +192,7 @@
   "senior_accounts": {
     "title": "Konta wysokiego szczebla",
     "intro": "Każde konto, które może zarządzać więcej niż jedną społecznością, data jego ostatniego logowania oraz to, czy ma włączone logowanie dwuetapowe.",
-    "read_only_note": "Ta strona tylko pokazuje te konta. Nic tutaj nie nadaje ani nie odbiera dostępu.",
+    "changes_note": "Tutaj możesz dodać kogoś do zespołu platformy albo go z niego usunąć. Każda zmiana jest zapisywana razem z tym, kto ją wprowadził.",
     "loading": "Wczytywanie kont wysokiego szczebla",
     "load_error_title": "Nie udało się teraz wczytać kont wysokiego szczebla",
     "without_two_step": "Logowanie dwuetapowe jest wyłączone na {{count, number}} z tych {{total}} kont.",
@@ -228,6 +228,42 @@
       "pending": "Czeka na zatwierdzenie",
       "rejected": "Odrzucone",
       "other": "Nieaktywne"
+    },
+    "add_someone": "Dodaj kogoś",
+    "add": "Dodaj do zespołu platformy",
+    "remove": "Usuń z zespołu platformy",
+    "remove_mark": "Zdejmij oznaczenie",
+    "is_you": "To twoje konto. Nie możesz usunąć siebie.",
+    "needs_two_step": "Logowanie dwuetapowe musi być włączone, zanim to konto będzie mogło dołączyć do zespołu platformy.",
+    "not_active_note": "To konto nie jest aktywne, więc nie może dołączyć do zespołu platformy.",
+    "added_toast": "{{name}} jest teraz w zespole platformy.",
+    "removed_toast": "{{name}} nie jest już w zespole platformy.",
+    "mark_removed_toast": "Zdjęto oznaczenie zespołu platformy z konta {{name}}.",
+    "confirm": {
+      "add_title": "Dodać {{name}} do zespołu platformy?",
+      "add_text": "Ta osoba będzie mogła wszystko, w każdej społeczności, łącznie z tym panelem.",
+      "add_also_global": "Zostanie też globalnym superadministratorem.",
+      "remove_title": "Usunąć {{name}} z zespołu platformy?",
+      "remove_text": "Ta osoba nie będzie już mogła otworzyć tego panelu. Pozostanie globalnym superadministratorem. Ten dostęp można odebrać w panelu superadministratora.",
+      "remove_mark_title": "Zdjąć oznaczenie zespołu platformy z konta {{name}}?",
+      "remove_mark_text": "Inne części platformy przestaną traktować to konto jak konto z dostępem do całej platformy z powodu tego oznaczenia. Jeśli dostęp wynika ze starej roli „god”, nie da się tego tutaj zmienić.",
+      "recorded": "To zostanie zapisane razem z twoim imieniem i nazwiskiem.",
+      "cancel": "Anuluj",
+      "error": {
+        "step_cancelled": "Nie potwierdzono, że to ty, więc nic nie zostało zmienione.",
+        "failed": "To się nie udało. Nic nie zostało zmienione.",
+        "gone": "Tego konta nie można już stąd zmienić. Odśwież listę.",
+        "two_step": "To konto ma wyłączone logowanie dwuetapowe. Najpierw trzeba je włączyć.",
+        "not_active": "To konto nie jest aktywne, więc nie można go dodać.",
+        "already": "To konto jest już w zespole platformy.",
+        "not_member": "To konto nie ma oznaczenia zespołu platformy, więc nie ma tu czego zdejmować.",
+        "too_many": "To dużo zmian. Odczekaj minutę i spróbuj ponownie."
+      }
+    },
+    "find": {
+      "title": "Dodaj kogoś do zespołu platformy",
+      "intro": "Wyszukaj konto tej osoby po adresie e-mail. Jeśli nie jest jeszcze globalnym superadministratorem, przy dodaniu też nim zostanie. Każde wyszukiwanie jest zapisywane, adres nigdy.",
+      "on_team": "Jest już w zespole platformy."
     }
   },
   "accounts": {
@@ -324,13 +360,15 @@
     },
     "access": {
       "title": "Nadany i odebrany dostęp wysokiego szczebla",
-      "note": "Nie jest tu pokazywane: zmiany przynależności do zespołu platformy, którą ustawia się w bazie danych i której się nie zapisuje; ani dostęp superadministratora społeczności odbierany wszystkim naraz, gdy społeczność przestaje być hubem.",
+      "note": "Nie jest tu pokazywane: zmiany w zespole platformy wprowadzone bezpośrednio w bazie danych, których się nie zapisuje; ani dostęp superadministratora społeczności odbierany wszystkim naraz, gdy społeczność przestaje być hubem.",
       "empty": "W ciągu ostatnich {{days}} dni nie nadano ani nie odebrano dostępu wysokiego szczebla.",
       "change": {
         "tenant_super_admin_granted": "Nadano superadministratora społeczności",
         "tenant_super_admin_removed": "Odebrano superadministratora społeczności",
         "global_super_admin_granted": "Nadano globalnego superadministratora",
-        "global_super_admin_removed": "Odebrano globalnego superadministratora"
+        "global_super_admin_removed": "Odebrano globalnego superadministratora",
+        "platform_team_added": "Dodano do zespołu platformy",
+        "platform_team_removed": "Usunięto z zespołu platformy"
       }
     },
     "impersonation": {

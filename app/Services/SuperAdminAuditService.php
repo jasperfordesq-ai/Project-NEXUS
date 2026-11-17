@@ -57,6 +57,9 @@ class SuperAdminAuditService
         'bulk_users_moved'            => 'Bulk Users Moved',
         'bulk_tenants_updated'        => 'Bulk Tenants Updated',
         self::UNKNOWN_ACTION          => 'Unrecognised Action',
+        // Platform team panel → Senior accounts (PlatformTeamMembershipService).
+        'platform_team_added'         => 'Added to the Platform Team',
+        'platform_team_removed'       => 'Removed from the Platform Team',
     ];
 
     /**
@@ -80,6 +83,8 @@ class SuperAdminAuditService
         'bulk_users_moved'            => 'fa-users',
         'bulk_tenants_updated'        => 'fa-building',
         self::UNKNOWN_ACTION          => 'fa-question-circle',
+        'platform_team_added'         => 'fa-user-shield',
+        'platform_team_removed'       => 'fa-user-slash',
     ];
 
     public function __construct()

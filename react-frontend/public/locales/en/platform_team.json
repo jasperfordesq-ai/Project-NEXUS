@@ -188,7 +188,7 @@
   "senior_accounts": {
     "title": "Senior accounts",
     "intro": "Every account that can manage more than one community, when it last signed in, and whether two-step sign-in is on.",
-    "read_only_note": "This page only shows these accounts. Nothing here gives or takes away access.",
+    "changes_note": "You can add someone to the platform team here, or remove them. Every change is recorded, with who made it.",
     "loading": "Loading the senior accounts",
     "load_error_title": "We couldn't load the senior accounts just now",
     "without_two_step": "Two-step sign-in is off for {{count, number}} of these {{total}} accounts.",
@@ -224,6 +224,42 @@
       "pending": "Waiting for approval",
       "rejected": "Rejected",
       "other": "Not active"
+    },
+    "add_someone": "Add someone",
+    "add": "Add to the platform team",
+    "remove": "Remove from the platform team",
+    "remove_mark": "Take the mark away",
+    "is_you": "This is you. You can't remove yourself.",
+    "needs_two_step": "Two-step sign-in must be on before this account can join the platform team.",
+    "not_active_note": "This account isn't active, so it can't join the platform team.",
+    "added_toast": "{{name}} is now on the platform team.",
+    "removed_toast": "{{name}} is no longer on the platform team.",
+    "mark_removed_toast": "The platform team mark was taken away from {{name}}.",
+    "confirm": {
+      "add_title": "Add {{name}} to the platform team?",
+      "add_text": "They will be able to do everything, in every community, including this panel.",
+      "add_also_global": "They will also become a global super admin.",
+      "remove_title": "Remove {{name}} from the platform team?",
+      "remove_text": "They will no longer be able to open this panel. They stay a global super admin. That can be taken away in the super admin panel.",
+      "remove_mark_title": "Take the platform team mark away from {{name}}?",
+      "remove_mark_text": "Other parts of the platform will stop treating this account as platform-wide because of the mark. If its access comes from the old \"god\" role, that can't be changed here.",
+      "recorded": "This is recorded, with your name.",
+      "cancel": "Cancel",
+      "error": {
+        "step_cancelled": "You did not confirm it was you, so nothing was changed.",
+        "failed": "That didn't work. Nothing was changed.",
+        "gone": "This account can no longer be changed from here. Refresh the list.",
+        "two_step": "Two-step sign-in is off for this account. It must be on first.",
+        "not_active": "This account isn't active, so it can't be added.",
+        "already": "This account is already on the platform team.",
+        "not_member": "This account doesn't carry the platform team mark, so there is nothing to take away here.",
+        "too_many": "That is a lot of changes. Wait a minute, then try again."
+      }
+    },
+    "find": {
+      "title": "Add someone to the platform team",
+      "intro": "Find their account by its email address. If they aren't a global super admin yet, adding them makes them one too. Each search is recorded, never the address.",
+      "on_team": "Already on the platform team."
     }
   },
   "accounts": {
@@ -320,13 +356,15 @@
     },
     "access": {
       "title": "Senior access given and removed",
-      "note": "Not shown here: changes to platform team membership, which is set in the database and not recorded; and tenant super admin access taken from everyone at once when a community stops being a hub.",
+      "note": "Not shown here: platform team changes made directly in the database, which are not recorded; and tenant super admin access taken from everyone at once when a community stops being a hub.",
       "empty": "No senior access was given or removed in the last {{days}} days.",
       "change": {
         "tenant_super_admin_granted": "Tenant super admin given",
         "tenant_super_admin_removed": "Tenant super admin removed",
         "global_super_admin_granted": "Global super admin given",
-        "global_super_admin_removed": "Global super admin removed"
+        "global_super_admin_removed": "Global super admin removed",
+        "platform_team_added": "Added to the platform team",
+        "platform_team_removed": "Removed from the platform team"
       }
     },
     "impersonation": {

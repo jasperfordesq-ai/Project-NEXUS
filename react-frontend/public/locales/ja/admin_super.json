@@ -799,6 +799,8 @@
     "audit_action_federation_partnership_terminate": "パートナーシップ終了",
     "audit_action_federation_feature_toggle": "フェデレーション機能が変更されました",
     "audit_action_federation_controls_updated": "フェデレーションの管理が更新されました",
+    "audit_action_platform_team_added": "プラットフォームチームに追加",
+    "audit_action_platform_team_removed": "プラットフォームチームから除外",
     "audit_action_unknown": "認識されない操作",
     "tenant_action_success": "テナントアクションが成功しました",
     "tenant_action_succeeded": "テナントアクションが成功しました",

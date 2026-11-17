@@ -194,7 +194,7 @@
   "senior_accounts": {
     "title": "Cuntais shinsearacha",
     "intro": "Gach cuntas ar féidir leis níos mó ná pobal amháin a bhainistiú, cathain a shínigh sé isteach go deireanach, agus an bhfuil síniú isteach dhá chéim ar siúl.",
-    "read_only_note": "Ní dhéanann an leathanach seo ach na cuntais seo a thaispeáint. Ní thugtar ná ní bhaintear rochtain anseo.",
+    "changes_note": "Is féidir leat duine a chur le foireann an ardáin anseo, nó é a bhaint di. Taifeadtar gach athrú, agus cé a rinne é.",
     "loading": "Na cuntais shinsearacha á lódáil",
     "load_error_title": "Níorbh fhéidir linn na cuntais shinsearacha a lódáil faoi láthair",
     "without_two_step": "Tá síniú isteach dhá chéim múchta i gcás {{count, number}} de na {{total}} cuntas seo.",
@@ -230,6 +230,42 @@
       "pending": "Ag fanacht le faomhadh",
       "rejected": "Diúltaithe",
       "other": "Gan a bheith gníomhach"
+    },
+    "add_someone": "Cuir duine leis",
+    "add": "Cuir le foireann an ardáin",
+    "remove": "Bain d’fhoireann an ardáin",
+    "remove_mark": "Bain an marc",
+    "is_you": "Is tusa é seo. Ní féidir leat tú féin a bhaint.",
+    "needs_two_step": "Ní mór síniú isteach dhá chéim a bheith ar siúl sular féidir an cuntas seo a chur le foireann an ardáin.",
+    "not_active_note": "Níl an cuntas seo gníomhach, mar sin ní féidir é a chur le foireann an ardáin.",
+    "added_toast": "Tá {{name}} ar fhoireann an ardáin anois.",
+    "removed_toast": "Níl {{name}} ar fhoireann an ardáin a thuilleadh.",
+    "mark_removed_toast": "Baineadh marc fhoireann an ardáin de {{name}}.",
+    "confirm": {
+      "add_title": "{{name}} a chur le foireann an ardáin?",
+      "add_text": "Beidh an duine seo in ann gach rud a dhéanamh, i ngach pobal, an painéal seo san áireamh.",
+      "add_also_global": "Beidh an duine seo ina sár-riarthóir domhanda freisin.",
+      "remove_title": "{{name}} a bhaint d’fhoireann an ardáin?",
+      "remove_text": "Ní bheidh an duine seo in ann an painéal seo a oscailt a thuilleadh. Fanfaidh an duine ina sár-riarthóir domhanda. Is féidir é sin a bhaint i bpainéal an tsár-riarthóra.",
+      "remove_mark_title": "Marc fhoireann an ardáin a bhaint de {{name}}?",
+      "remove_mark_text": "Stopfaidh codanna eile den ardán de bheith ag caitheamh leis an gcuntas seo mar chuntas don ardán ar fad mar gheall ar an marc. Más ón seanról \"god\" a thagann a rochtain, ní féidir é sin a athrú anseo.",
+      "recorded": "Taifeadtar é seo, agus d’ainm leis.",
+      "cancel": "Cealaigh",
+      "error": {
+        "step_cancelled": "Níor dheimhnigh tú gur tusa a bhí ann, mar sin níor athraíodh aon rud.",
+        "failed": "Níor oibrigh sé sin. Níor athraíodh aon rud.",
+        "gone": "Ní féidir an cuntas seo a athrú as seo a thuilleadh. Athnuaigh an liosta.",
+        "two_step": "Tá síniú isteach dhá chéim múchta don chuntas seo. Ní mór é a chur ar siúl ar dtús.",
+        "not_active": "Níl an cuntas seo gníomhach, mar sin ní féidir é a chur leis.",
+        "already": "Tá an cuntas seo ar fhoireann an ardáin cheana féin.",
+        "not_member": "Níl marc fhoireann an ardáin ar an gcuntas seo, mar sin níl aon rud le baint anseo.",
+        "too_many": "Sin a lán athruithe. Fan nóiméad, ansin bain triail eile as."
+      }
+    },
+    "find": {
+      "title": "Cuir duine le foireann an ardáin",
+      "intro": "Aimsigh a chuntas de réir a sheolta ríomhphoist. Mura sár-riarthóir domhanda an duine fós, déanfar sár-riarthóir domhanda de freisin. Taifeadtar gach cuardach, ach ní thaifeadtar an seoladh riamh.",
+      "on_team": "Ar fhoireann an ardáin cheana féin."
     }
   },
   "accounts": {
@@ -326,13 +362,15 @@
     },
     "access": {
       "title": "Rochtain shinsearach a tugadh agus a baineadh",
-      "note": "Ní thaispeántar anseo: athruithe ar bhallraíocht fhoireann an ardáin, a shocraítear sa bhunachar sonraí agus nach dtaifeadtar; ná rochtain sár-riarthóra pobail a bhaintear de gach duine d’aon iarraidh nuair a stopann pobal de bheith ina mhol.",
+      "note": "Ní thaispeántar anseo: athruithe ar fhoireann an ardáin a dhéantar go díreach sa bhunachar sonraí, nach dtaifeadtar; ná rochtain sár-riarthóra pobail a bhaintear de gach duine d’aon iarraidh nuair a stopann pobal de bheith ina mhol.",
       "empty": "Níor tugadh ná níor baineadh aon rochtain shinsearach le {{days}} lá anuas.",
       "change": {
         "tenant_super_admin_granted": "Sár-riarthóir pobail tugtha",
         "tenant_super_admin_removed": "Sár-riarthóir pobail bainte",
         "global_super_admin_granted": "Sár-riarthóir domhanda tugtha",
-        "global_super_admin_removed": "Sár-riarthóir domhanda bainte"
+        "global_super_admin_removed": "Sár-riarthóir domhanda bainte",
+        "platform_team_added": "Curtha le foireann an ardáin",
+        "platform_team_removed": "Bainte d’fhoireann an ardáin"
       }
     },
     "impersonation": {

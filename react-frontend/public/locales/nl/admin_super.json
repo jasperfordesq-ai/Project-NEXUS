@@ -799,6 +799,8 @@
     "audit_action_federation_partnership_terminate": "Partnerschap beëindigd",
     "audit_action_federation_feature_toggle": "Federatief kenmerk gewijzigd",
     "audit_action_federation_controls_updated": "Federatiecontroles bijgewerkt",
+    "audit_action_platform_team_added": "Aan het platformteam toegevoegd",
+    "audit_action_platform_team_removed": "Uit het platformteam verwijderd",
     "audit_action_unknown": "Onherkende actie",
     "tenant_action_success": "Huurdersactie geslaagd",
     "tenant_action_succeeded": "Huurdersactie is geslaagd",

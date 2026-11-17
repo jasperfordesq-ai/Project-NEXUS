@@ -188,7 +188,7 @@
   "senior_accounts": {
     "title": "Leitende Konten",
     "intro": "Jedes Konto, das mehr als eine Gemeinschaft verwalten kann, wann es sich zuletzt angemeldet hat und ob die Anmeldung in zwei Schritten eingeschaltet ist.",
-    "read_only_note": "Diese Seite zeigt diese Konten nur an. Hier wird kein Zugriff vergeben oder entzogen.",
+    "changes_note": "Hier können Sie jemanden zum Plattform-Team hinzufügen oder daraus entfernen. Jede Änderung wird aufgezeichnet, mit dem Namen der Person, die sie vorgenommen hat.",
     "loading": "Leitende Konten werden geladen",
     "load_error_title": "Wir konnten die leitenden Konten gerade nicht laden",
     "without_two_step": "Bei {{count, number}} dieser {{total}} Konten ist die Anmeldung in zwei Schritten ausgeschaltet.",
@@ -224,6 +224,42 @@
       "pending": "Wartet auf Freigabe",
       "rejected": "Abgelehnt",
       "other": "Nicht aktiv"
+    },
+    "add_someone": "Jemanden hinzufügen",
+    "add": "Zum Plattform-Team hinzufügen",
+    "remove": "Aus dem Plattform-Team entfernen",
+    "remove_mark": "Kennzeichen entfernen",
+    "is_you": "Das sind Sie. Sie können sich nicht selbst entfernen.",
+    "needs_two_step": "Die Anmeldung in zwei Schritten muss eingeschaltet sein, bevor dieses Konto zum Plattform-Team gehören kann.",
+    "not_active_note": "Dieses Konto ist nicht aktiv und kann deshalb nicht zum Plattform-Team gehören.",
+    "added_toast": "{{name}} gehört jetzt zum Plattform-Team.",
+    "removed_toast": "{{name}} gehört nicht mehr zum Plattform-Team.",
+    "mark_removed_toast": "Das Plattform-Team-Kennzeichen wurde bei {{name}} entfernt.",
+    "confirm": {
+      "add_title": "{{name}} zum Plattform-Team hinzufügen?",
+      "add_text": "Diese Person kann dann alles, in jeder Gemeinschaft, auch diesen Bereich öffnen.",
+      "add_also_global": "Sie wird außerdem globaler Super-Admin.",
+      "remove_title": "{{name}} aus dem Plattform-Team entfernen?",
+      "remove_text": "Diese Person kann diesen Bereich dann nicht mehr öffnen. Sie bleibt globaler Super-Admin. Das lässt sich im Super-Admin-Bereich entziehen.",
+      "remove_mark_title": "Das Plattform-Team-Kennzeichen bei {{name}} entfernen?",
+      "remove_mark_text": "Andere Teile der Plattform behandeln dieses Konto dann nicht mehr wegen des Kennzeichens als plattformweit. Kommt der Zugriff von der alten Rolle „god“, lässt sich das hier nicht ändern.",
+      "recorded": "Das wird aufgezeichnet, mit Ihrem Namen.",
+      "cancel": "Abbrechen",
+      "error": {
+        "step_cancelled": "Sie haben nicht bestätigt, dass Sie es sind. Es wurde nichts geändert.",
+        "failed": "Das hat nicht geklappt. Es wurde nichts geändert.",
+        "gone": "Dieses Konto kann von hier aus nicht mehr geändert werden. Laden Sie die Liste neu.",
+        "two_step": "Bei diesem Konto ist die Anmeldung in zwei Schritten ausgeschaltet. Sie muss zuerst eingeschaltet werden.",
+        "not_active": "Dieses Konto ist nicht aktiv und kann deshalb nicht hinzugefügt werden.",
+        "already": "Dieses Konto gehört bereits zum Plattform-Team.",
+        "not_member": "Dieses Konto trägt das Plattform-Team-Kennzeichen nicht. Hier gibt es also nichts zu entfernen.",
+        "too_many": "Das sind sehr viele Änderungen. Warten Sie eine Minute und versuchen Sie es dann noch einmal."
+      }
+    },
+    "find": {
+      "title": "Jemanden zum Plattform-Team hinzufügen",
+      "intro": "Suchen Sie das Konto über seine E-Mail-Adresse. Wer noch kein globaler Super-Admin ist, wird es beim Hinzufügen ebenfalls. Jede Suche wird aufgezeichnet, die Adresse nie.",
+      "on_team": "Gehört bereits zum Plattform-Team."
     }
   },
   "accounts": {
@@ -320,13 +356,15 @@
     },
     "access": {
       "title": "Leitender Zugriff: vergeben und entzogen",
-      "note": "Hier nicht angezeigt: Änderungen an der Mitgliedschaft im Plattform-Team, die in der Datenbank gesetzt und nicht aufgezeichnet wird, und der Super-Admin-Zugriff einer Gemeinschaft, der allen auf einmal entzogen wird, wenn eine Gemeinschaft kein Hub mehr ist.",
+      "note": "Hier nicht angezeigt: Änderungen am Plattform-Team, die direkt in der Datenbank vorgenommen und nicht aufgezeichnet werden, und der Super-Admin-Zugriff einer Gemeinschaft, der allen auf einmal entzogen wird, wenn eine Gemeinschaft kein Hub mehr ist.",
       "empty": "In den letzten {{days}} Tagen wurde kein leitender Zugriff vergeben oder entzogen.",
       "change": {
         "tenant_super_admin_granted": "Super-Admin einer Gemeinschaft vergeben",
         "tenant_super_admin_removed": "Super-Admin einer Gemeinschaft entzogen",
         "global_super_admin_granted": "Globaler Super-Admin vergeben",
-        "global_super_admin_removed": "Globaler Super-Admin entzogen"
+        "global_super_admin_removed": "Globaler Super-Admin entzogen",
+        "platform_team_added": "Zum Plattform-Team hinzugefügt",
+        "platform_team_removed": "Aus dem Plattform-Team entfernt"
       }
     },
     "impersonation": {

@@ -1201,6 +1201,15 @@ class GdprService
                 throw new \RuntimeException('Cannot erase an unknown tenant user.');
             }
 
+            // There is always at least one platform team member (owner, 17 Nov
+            // 2026). The database refuses the anonymising write below itself
+            // (trigger trg_users_last_platform_team_update_guard); stopped
+            // here, before any file or record of theirs has been removed.
+            // Adding another member first lets the erasure go ahead.
+            if (\App\Support\Authorization\PlatformTeam::isLastMember($userId)) {
+                throw new \RuntimeException(\App\Support\Authorization\PlatformTeam::LAST_MEMBER_DB_MESSAGE);
+            }
+
             // Tracks whether a CRITICAL PII-erasure step failed. If so we must NOT
             // report the request as completed — PII would survive an Article 17 erasure.
             $criticalErasureFailed = false;

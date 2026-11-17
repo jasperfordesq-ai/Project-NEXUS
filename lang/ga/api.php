@@ -528,6 +528,7 @@ return [
     'super_grant_denied_not_hub_target' => 'Ní féidir Sár-Riarachán a dheonú: ní Mol é an spriocthionónta',
     'super_revoke_denied_global' => 'Ní féidir pribhléidí ó shárriarthóir domhanda a chúlghairm',
     'super_cannot_revoke_self' => 'Ní féidir do shárstádas domhanda riaracháin féin a chúlghairm',
+    'platform_team_last_member' => 'Is é an cuntas seo an t-aon bhall amháin d’fhoireann an ardáin. Cuir ball eile leis sula scriosann tú an cuntas seo nó sula mbaineann tú a rochtain de.',
     'new_tenant_id_required' => 'nua_tionónta_id ag teastáil',
     'super_move_user_failed' => 'Theip ar an úsáideoir a bhogadh',
     'super_move_user_passkey_recovery_required' => 'Ní féidir an t-úsáideoir seo a bhogadh go dtí go mbeidh modh sínithe isteach le pasfhocal cumraithe; ní féidir pas-eochracha a aistriú idir pobail.',

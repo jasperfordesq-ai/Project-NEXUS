@@ -4527,8 +4527,10 @@ Route::middleware(['auth:sanctum', 'platform-team'])->group(function () {
     Route::get('/v2/platform-team/phone-app', [\App\Http\Controllers\Api\PlatformTeam\PhoneAppController::class, 'index']);
     // Push notifications: per day and per community, pushes accepted / partly accepted / failed / with nobody to send to. Read-only; counts only.
     Route::get('/v2/platform-team/push-notifications', [\App\Http\Controllers\Api\PlatformTeam\PushNotificationsController::class, 'index']);
-    // Senior accounts: who can administer more than one community. Read-only; nothing here grants or removes access.
+    // Senior accounts: who can administer more than one community. Since 17 Nov 2026 it also adds an account to the platform team and removes one (needs a recent second step, asked after the lock; every change is written to the super admin audit log).
     Route::get('/v2/platform-team/senior-accounts', [\App\Http\Controllers\Api\PlatformTeam\SeniorAccountsController::class, 'index']);
+    Route::post('/v2/platform-team/senior-accounts/{id}/add-to-team', [\App\Http\Controllers\Api\PlatformTeam\SeniorAccountsController::class, 'addToTeam'])->whereNumber('id')->middleware('step-up');
+    Route::post('/v2/platform-team/senior-accounts/{id}/remove-from-team', [\App\Http\Controllers\Api\PlatformTeam\SeniorAccountsController::class, 'removeFromTeam'])->whereNumber('id')->middleware('step-up');
     // Find an account by its exact email address (in the body, never the address), and sign it out everywhere (needs a recent second step, asked after the lock).
     Route::post('/v2/platform-team/accounts/find', [\App\Http\Controllers\Api\PlatformTeam\FindAccountController::class, 'find']);
     Route::post('/v2/platform-team/accounts/{id}/sign-out', [\App\Http\Controllers\Api\PlatformTeam\FindAccountController::class, 'signOut'])->whereNumber('id')->middleware('step-up');

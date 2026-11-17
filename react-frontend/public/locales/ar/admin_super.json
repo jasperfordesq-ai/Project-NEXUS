@@ -799,6 +799,8 @@
     "audit_action_federation_partnership_terminate": "انتهى الشراكة",
     "audit_action_federation_feature_toggle": "تم تغيير ميزة الاتحاد",
     "audit_action_federation_controls_updated": "تم تحديث ضوابط الاتحاد",
+    "audit_action_platform_team_added": "أُضيف إلى فريق المنصة",
+    "audit_action_platform_team_removed": "أُزيل من فريق المنصة",
     "audit_action_unknown": "إجراء غير معروف",
     "tenant_action_success": "نجح إجراء المستأجر",
     "tenant_action_succeeded": "نجح إجراء المستأجر",

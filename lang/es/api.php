@@ -528,6 +528,7 @@ return [
     'super_grant_denied_not_hub_target' => 'No se puede otorgar superadministrador: el inquilino de destino no es un centro',
     'super_revoke_denied_global' => 'No se pueden revocar privilegios de un superadministrador global',
     'super_cannot_revoke_self' => 'No se puede revocar su propio estado de superadministrador global',
+    'platform_team_last_member' => 'Esta cuenta es el único miembro del equipo de la plataforma. Añade otro antes de eliminarla o quitarle permisos.',
     'new_tenant_id_required' => 'Se requiere new_tenant_id',
     'super_move_user_failed' => 'No se pudo mover al usuario',
     'super_move_user_passkey_recovery_required' => 'Este usuario no se puede trasladar hasta que se configure un método de inicio de sesión con contraseña; las claves de acceso no se pueden transferir entre comunidades.',

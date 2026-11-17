@@ -799,6 +799,8 @@
     "audit_action_federation_partnership_terminate": "Parceria encerrada",
     "audit_action_federation_feature_toggle": "Recurso da federação alterado",
     "audit_action_federation_controls_updated": "Controles da federação atualizados",
+    "audit_action_platform_team_added": "Adicionado à equipe da plataforma",
+    "audit_action_platform_team_removed": "Removido da equipe da plataforma",
     "audit_action_unknown": "Ação não reconhecida",
     "tenant_action_success": "Ação do inquilino bem-sucedida",
     "tenant_action_succeeded": "Ação do inquilino bem-sucedida",

@@ -799,6 +799,8 @@
     "audit_action_federation_partnership_terminate": "Partnerschaft beendet",
     "audit_action_federation_feature_toggle": "Föderationsfunktion geändert",
     "audit_action_federation_controls_updated": "Föderationskontrollen aktualisiert",
+    "audit_action_platform_team_added": "Zum Plattform-Team hinzugefügt",
+    "audit_action_platform_team_removed": "Aus dem Plattform-Team entfernt",
     "audit_action_unknown": "Nicht erkannte Aktion",
     "tenant_action_success": "Die Mieterklage war erfolgreich",
     "tenant_action_succeeded": "Mieterklage hatte Erfolg",

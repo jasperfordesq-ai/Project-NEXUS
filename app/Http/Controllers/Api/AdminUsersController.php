@@ -1313,6 +1313,18 @@ class AdminUsersController extends BaseApiController
             return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.insufficient_permissions'), null, 403);
         }
 
+        // There is always at least one platform team member (owner, 17 Nov
+        // 2026). The database refuses the deletion itself; asked here first,
+        // BEFORE the "your account was deleted" email below is sent.
+        if (\App\Support\Authorization\PlatformTeam::isLastMember($id)) {
+            return $this->respondWithError(
+                \App\Support\Authorization\PlatformTeam::LAST_MEMBER_CODE,
+                __('api.platform_team_last_member'),
+                null,
+                422
+            );
+        }
+
         // Send deletion email BEFORE the actual deletion (user record must still exist)
         try {
             LocaleContext::withLocale($user['preferred_language'] ?? null, function () use ($user, $id) {
@@ -2041,6 +2053,18 @@ class AdminUsersController extends BaseApiController
 
             if (!$user) {
                 return $this->respondWithError('NOT_FOUND', __('api.user_not_found'), null, 404);
+            }
+
+            // There is always at least one platform team member (owner, 17 Nov
+            // 2026). The database refuses this write itself; asked here first
+            // so the answer says why.
+            if (!$grant && \App\Support\Authorization\PlatformTeam::isLastMember($id)) {
+                return $this->respondWithError(
+                    \App\Support\Authorization\PlatformTeam::LAST_MEMBER_CODE,
+                    __('api.platform_team_last_member'),
+                    null,
+                    422
+                );
             }
 
             // SECURITY: Scope UPDATE by tenant_id to prevent cross-tenant modification

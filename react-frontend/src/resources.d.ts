@@ -28733,6 +28733,8 @@ export default interface Resources {
       "audit_action_federation_updated": "Partner network updated",
       "audit_action_federation_whitelist_add": "Tenant added to the federation allow-list",
       "audit_action_federation_whitelist_remove": "Tenant removed from the federation allow-list",
+      "audit_action_platform_team_added": "Added to the platform team",
+      "audit_action_platform_team_removed": "Removed from the platform team",
       "audit_action_tenant_created": "Tenant created",
       "audit_action_tenant_updated": "Tenant updated",
       "audit_action_unknown": "Unrecognised action",
@@ -58149,11 +58151,13 @@ export default interface Resources {
         "change": {
           "global_super_admin_granted": "Global super admin given",
           "global_super_admin_removed": "Global super admin removed",
+          "platform_team_added": "Added to the platform team",
+          "platform_team_removed": "Removed from the platform team",
           "tenant_super_admin_granted": "Tenant super admin given",
           "tenant_super_admin_removed": "Tenant super admin removed"
         },
         "empty": "No senior access was given or removed in the last {{days}} days.",
-        "note": "Not shown here: changes to platform team membership, which is set in the database and not recorded; and tenant super admin access taken from everyone at once when a community stops being a hub.",
+        "note": "Not shown here: platform team changes made directly in the database, which are not recorded; and tenant super admin access taken from everyone at once when a community stops being a hub.",
         "title": "Senior access given and removed"
       },
       "by": "By:",
@@ -58204,10 +58208,41 @@ export default interface Resources {
       "when": "When:"
     },
     "senior_accounts": {
+      "add": "Add to the platform team",
+      "add_someone": "Add someone",
+      "added_toast": "{{name}} is now on the platform team.",
       "all_have_two_step": "Two-step sign-in is on for all {{total}} of these accounts.",
+      "changes_note": "You can add someone to the platform team here, or remove them. Every change is recorded, with who made it.",
       "community": "Community:",
+      "confirm": {
+        "add_also_global": "They will also become a global super admin.",
+        "add_text": "They will be able to do everything, in every community, including this panel.",
+        "add_title": "Add {{name}} to the platform team?",
+        "cancel": "Cancel",
+        "error": {
+          "already": "This account is already on the platform team.",
+          "failed": "That didn't work. Nothing was changed.",
+          "gone": "This account can no longer be changed from here. Refresh the list.",
+          "not_active": "This account isn't active, so it can't be added.",
+          "not_member": "This account doesn't carry the platform team mark, so there is nothing to take away here.",
+          "step_cancelled": "You did not confirm it was you, so nothing was changed.",
+          "too_many": "That is a lot of changes. Wait a minute, then try again.",
+          "two_step": "Two-step sign-in is off for this account. It must be on first."
+        },
+        "recorded": "This is recorded, with your name.",
+        "remove_mark_text": "Other parts of the platform will stop treating this account as platform-wide because of the mark. If its access comes from the old \"god\" role, that can't be changed here.",
+        "remove_mark_title": "Take the platform team mark away from {{name}}?",
+        "remove_text": "They will no longer be able to open this panel. They stay a global super admin. That can be taken away in the super admin panel.",
+        "remove_title": "Remove {{name}} from the platform team?"
+      },
+      "find": {
+        "intro": "Find their account by its email address. If they aren't a global super admin yet, adding them makes them one too. Each search is recorded, never the address.",
+        "on_team": "Already on the platform team.",
+        "title": "Add someone to the platform team"
+      },
       "incomplete": "Platform-wide elsewhere, not on the platform team",
       "intro": "Every account that can manage more than one community, when it last signed in, and whether two-step sign-in is on.",
+      "is_you": "This is you. You can't remove yourself.",
       "last_sign_in": "Last signed in:",
       "level": {
         "global_super_admin": "Global super admins",
@@ -58223,11 +58258,16 @@ export default interface Resources {
       },
       "load_error_title": "We couldn't load the senior accounts just now",
       "loading": "Loading the senior accounts",
+      "mark_removed_toast": "The platform team mark was taken away from {{name}}.",
+      "needs_two_step": "Two-step sign-in must be on before this account can join the platform team.",
       "never": "Never",
       "no_community": "None",
       "none_at_level": "No accounts at this level.",
+      "not_active_note": "This account isn't active, so it can't join the platform team.",
       "passkey": "Has a passkey",
-      "read_only_note": "This page only shows these accounts. Nothing here gives or takes away access.",
+      "remove": "Remove from the platform team",
+      "remove_mark": "Take the mark away",
+      "removed_toast": "{{name}} is no longer on the platform team.",
       "status": {
         "banned": "Banned",
         "inactive": "Inactive",

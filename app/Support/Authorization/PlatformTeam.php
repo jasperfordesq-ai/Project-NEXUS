@@ -49,4 +49,51 @@ final class PlatformTeam
 
         return !empty($row->is_super_admin) || ($row->role ?? 'member') === 'super_admin';
     }
+
+    /**
+     * The error code a request answers with when it would delete, erase or
+     * demote the last platform team member.
+     */
+    public const LAST_MEMBER_CODE = 'PLATFORM_TEAM_LAST_MEMBER';
+
+    /** What the database's own guard says when it refuses (the triggers' SIGNAL text). */
+    public const LAST_MEMBER_DB_MESSAGE = 'platform_team_last_member';
+
+    /**
+     * Whether this account is the ONLY platform team member left.
+     *
+     * 🔴 There is always at least one platform team member (owner, 17 Nov
+     * 2026): the last one cannot be deleted, erased or demoted, by any route.
+     * The guarantee is in the database: the triggers
+     * `trg_users_last_platform_team_update_guard` and `…_delete_guard`
+     * (migration 2026_11_17_120000) refuse the write itself, whoever makes it.
+     * This method is the same question asked EARLY, so a request can say why
+     * before it emails anyone or starts erasing. It must stay the same
+     * definition as those triggers: on the team (both legs above), and the
+     * account neither deleted nor erased. Whether the account is suspended is
+     * not part of it.
+     *
+     * Pinned by tests/Laravel/Feature/PlatformTeam/LastPlatformTeamMemberTest.php.
+     */
+    public static function isLastMember(int $userId): bool
+    {
+        if ($userId <= 0) {
+            return false;
+        }
+
+        // Two rows are enough to answer: "is there exactly one, and is it this one?"
+        // Cross-community on purpose: the platform team is not a community's.
+        $members = DB::table('users')
+            ->where('is_god', '<>', 0)
+            ->where(static function ($q): void {
+                $q->where('is_super_admin', '<>', 0)->orWhere('role', 'super_admin');
+            })
+            ->whereNull('deleted_at')
+            ->whereNull('anonymized_at')
+            ->orderBy('id')
+            ->limit(2)
+            ->pluck('id');
+
+        return $members->count() === 1 && (int) $members->first() === $userId;
+    }
 }

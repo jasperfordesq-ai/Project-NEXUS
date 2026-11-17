@@ -799,6 +799,8 @@
     "audit_action_federation_partnership_terminate": "Críochnaíodh an comhpháirtíocht",
     "audit_action_federation_feature_toggle": "Athraíodh gné na comhdhála",
     "audit_action_federation_controls_updated": "Nuashonraíodh rialúcháin na comhdhála",
+    "audit_action_platform_team_added": "Curtha le foireann an ardáin",
+    "audit_action_platform_team_removed": "Bainte d’fhoireann an ardáin",
     "audit_action_unknown": "Gníomh gan aitheantas",
     "tenant_action_success": "D’éirigh le Gníomh Tionóntaí",
     "tenant_action_succeeded": "D'éirigh le gníomh tionóntaí",

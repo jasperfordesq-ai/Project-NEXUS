@@ -528,6 +528,7 @@ return [
     'super_grant_denied_not_hub_target' => 'Não é possível conceder Superadministrador: o locatário alvo não é um Hub',
     'super_revoke_denied_global' => 'Não é possível revogar privilégios de um superadministrador global',
     'super_cannot_revoke_self' => 'Não é possível revogar seu status de superadministrador global',
+    'platform_team_last_member' => 'Esta conta é o único membro da equipe da plataforma. Adicione outro antes de excluí-la ou de retirar o acesso dela.',
     'new_tenant_id_required' => 'new_tenant_id é obrigatório',
     'super_move_user_failed' => 'Falha ao mover usuário',
     'super_move_user_passkey_recovery_required' => 'Este utilizador não pode ser movido até ser configurado um método de início de sessão com palavra-passe; as chaves de acesso não podem ser transferidas entre comunidades.',

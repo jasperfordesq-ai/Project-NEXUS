@@ -540,6 +540,7 @@ return [
     'super_grant_denied_not_hub_target' => 'لا يمكن منح المشرف المتميز: المستأجر المستهدف ليس مركزًا',
     'super_revoke_denied_global' => 'لا يمكن إلغاء الامتيازات من المشرف العام المتميز',
     'super_cannot_revoke_self' => 'لا يمكن إلغاء حالة المشرف العام المتميز الخاصة بك',
+    'platform_team_last_member' => 'هذا الحساب هو العضو الوحيد في فريق المنصة. أضف عضوًا آخر قبل حذف هذا الحساب أو سحب صلاحياته.',
     'new_tenant_id_required' => 'مطلوب new_tenant_id',
     'super_move_user_failed' => 'فشل في نقل المستخدم',
     'super_move_user_passkey_recovery_required' => 'لا يمكن نقل هذا المستخدم حتى يتم إعداد طريقة تسجيل دخول بكلمة مرور؛ لا يمكن نقل مفاتيح المرور بين المجتمعات.',

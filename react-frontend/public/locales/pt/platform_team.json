@@ -188,7 +188,7 @@
   "senior_accounts": {
     "title": "Contas de alto nível",
     "intro": "Todas as contas que podem gerenciar mais de uma comunidade, quando entraram pela última vez e se a entrada em duas etapas está ativada.",
-    "read_only_note": "Esta página apenas mostra essas contas. Nada aqui concede ou retira acesso.",
+    "changes_note": "Aqui você pode adicionar alguém à equipe da plataforma ou remover. Cada mudança fica registrada, com quem a fez.",
     "loading": "Carregando as contas de alto nível",
     "load_error_title": "Não conseguimos carregar as contas de alto nível agora",
     "without_two_step": "A entrada em duas etapas está desativada em {{count, number}} destas {{total}} contas.",
@@ -224,6 +224,42 @@
       "pending": "Aguardando aprovação",
       "rejected": "Rejeitada",
       "other": "Não ativa"
+    },
+    "add_someone": "Adicionar alguém",
+    "add": "Adicionar à equipe da plataforma",
+    "remove": "Remover da equipe da plataforma",
+    "remove_mark": "Retirar a marca",
+    "is_you": "Esta conta é a sua. Você não pode remover a si mesmo.",
+    "needs_two_step": "A entrada em duas etapas precisa estar ativada antes que esta conta possa entrar na equipe da plataforma.",
+    "not_active_note": "Esta conta não está ativa, então não pode entrar na equipe da plataforma.",
+    "added_toast": "{{name}} agora faz parte da equipe da plataforma.",
+    "removed_toast": "{{name}} não faz mais parte da equipe da plataforma.",
+    "mark_removed_toast": "A marca da equipe da plataforma foi retirada de {{name}}.",
+    "confirm": {
+      "add_title": "Adicionar {{name}} à equipe da plataforma?",
+      "add_text": "Essa pessoa poderá fazer tudo, em todas as comunidades, inclusive abrir este painel.",
+      "add_also_global": "Ela também se tornará superadministrador global.",
+      "remove_title": "Remover {{name}} da equipe da plataforma?",
+      "remove_text": "Essa pessoa não poderá mais abrir este painel. Ela continua como superadministrador global. Esse acesso pode ser retirado no painel de superadministrador.",
+      "remove_mark_title": "Retirar a marca da equipe da plataforma de {{name}}?",
+      "remove_mark_text": "Outras partes da plataforma deixarão de tratar esta conta como conta de toda a plataforma por causa da marca. Se o acesso dela vem do antigo papel \"god\", isso não pode ser mudado aqui.",
+      "recorded": "Isso fica registrado, com o seu nome.",
+      "cancel": "Cancelar",
+      "error": {
+        "step_cancelled": "Você não confirmou que era você, então nada foi alterado.",
+        "failed": "Não deu certo. Nada foi alterado.",
+        "gone": "Esta conta não pode mais ser alterada daqui. Atualize a lista.",
+        "two_step": "A entrada em duas etapas está desativada nesta conta. Ela precisa ser ativada antes.",
+        "not_active": "Esta conta não está ativa, então não pode ser adicionada.",
+        "already": "Esta conta já faz parte da equipe da plataforma.",
+        "not_member": "Esta conta não tem a marca da equipe da plataforma, então não há nada para retirar aqui.",
+        "too_many": "São muitas mudanças. Espere um minuto e tente de novo."
+      }
+    },
+    "find": {
+      "title": "Adicionar alguém à equipe da plataforma",
+      "intro": "Procure a conta da pessoa pelo endereço de e-mail. Se ela ainda não for superadministrador global, também passará a ser. Cada busca fica registrada, nunca o endereço.",
+      "on_team": "Já faz parte da equipe da plataforma."
     }
   },
   "accounts": {
@@ -320,13 +356,15 @@
     },
     "access": {
       "title": "Acesso de alto nível concedido e retirado",
-      "note": "Não aparece aqui: mudanças na participação na equipe da plataforma, que é definida no banco de dados e não é registrada; nem o acesso de superadministrador de comunidade retirado de todos de uma vez quando uma comunidade deixa de ser um polo.",
+      "note": "Não aparece aqui: mudanças na equipe da plataforma feitas diretamente no banco de dados, que não são registradas; nem o acesso de superadministrador de comunidade retirado de todos de uma vez quando uma comunidade deixa de ser um polo.",
       "empty": "Nenhum acesso de alto nível foi concedido ou retirado nos últimos {{days}} dias.",
       "change": {
         "tenant_super_admin_granted": "Superadministrador de comunidade concedido",
         "tenant_super_admin_removed": "Superadministrador de comunidade retirado",
         "global_super_admin_granted": "Superadministrador global concedido",
-        "global_super_admin_removed": "Superadministrador global retirado"
+        "global_super_admin_removed": "Superadministrador global retirado",
+        "platform_team_added": "Adicionado à equipe da plataforma",
+        "platform_team_removed": "Removido da equipe da plataforma"
       }
     },
     "impersonation": {

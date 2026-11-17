@@ -799,6 +799,8 @@
     "audit_action_federation_partnership_terminate": "Partnerstwo zakończone",
     "audit_action_federation_feature_toggle": "Funkcja federacji zmieniona",
     "audit_action_federation_controls_updated": "Kontrole federacji zaktualizowane",
+    "audit_action_platform_team_added": "Dodano do zespołu platformy",
+    "audit_action_platform_team_removed": "Usunięto z zespołu platformy",
     "audit_action_unknown": "Nie rozpoznano akcji",
     "tenant_action_success": "Akcja najemcy powiodła się",
     "tenant_action_succeeded": "Akcja najemcy powiodła się",

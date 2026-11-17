@@ -20,9 +20,10 @@ use Illuminate\Support\Facades\DB;
  * team, global super admins and tenant super admins, with when each last
  * signed in and whether it has a second sign-in step.
  *
- * 🔴 Read-only. Nothing here, and no web request anywhere, grants or removes
- * platform team membership (`users.is_god` is set in the database). The way
- * to the top tier is deliberately not a button.
+ * 🔴 This class only reads. The page's two actions (add an account to the
+ * platform team, remove one from it; owner, 17 Nov 2026) are in
+ * PlatformTeamMembershipService, which is the only code that writes
+ * `users.is_god`. Until that date the flag was set in the database by hand.
  *
  * 🔴 Cross-community on purpose: no `tenant_id` filter, because the question
  * is "who holds senior access anywhere on this installation". Correct only

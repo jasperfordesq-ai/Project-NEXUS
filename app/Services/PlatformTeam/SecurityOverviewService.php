@@ -50,11 +50,14 @@ use Illuminate\Support\Facades\Log;
  * ever counted. `login_attempts` holds a digest of each email, never the
  * email; the digest is not sent either.
  *
- * 🔴 Not recorded as a change to a person, so not shown: changes to
- * `users.is_god` (the platform team flag; it is set in the database), and
- * tenant super admin taken from everyone in a community at once when it stops
- * being a hub (`hub_toggled` names the community, not the people). The page
- * says so.
+ * 🔴 Not recorded as a change to a person, so not shown: tenant super admin
+ * taken from everyone in a community at once when it stops being a hub
+ * (`hub_toggled` names the community, not the people), and any change to
+ * `users.is_god` (the platform team flag) made straight in the database. The
+ * page says so. Since 17 Nov 2026 the Senior accounts page adds and removes
+ * platform team members and records each change, so those ARE shown
+ * (`platform_team_added` / `platform_team_removed`); nothing before that date
+ * was recorded.
  *
  * 🔴 Names are the account's name NOW, joined from `users`, never the copy
  * `super_admin_audit_log` keeps as text (`actor_name`, `target_name`).
@@ -86,6 +89,9 @@ final class SecurityOverviewService
         'super_admin_revoked' => 'tenant_super_admin_removed',
         'global_super_admin_granted' => 'global_super_admin_granted',
         'global_super_admin_revoked' => 'global_super_admin_removed',
+        // Senior accounts page (PlatformTeamMembershipService), since 17 Nov 2026.
+        'platform_team_added' => 'platform_team_added',
+        'platform_team_removed' => 'platform_team_removed',
     ];
 
     /** Super admin panel actions that may carry a super admin flag in their before/after values. */

@@ -528,6 +528,7 @@ return [
     'super_grant_denied_not_hub_target' => 'Impossible d\'accorder le statut de super-administrateur : le locataire cible n\'est pas un hub',
     'super_revoke_denied_global' => 'Impossible de révoquer les privilèges d\'un super administrateur global',
     'super_cannot_revoke_self' => 'Impossible de révoquer votre propre statut de super-administrateur global',
+    'platform_team_last_member' => 'Ce compte est le seul membre de l\'équipe de la plateforme. Ajoutez-en un autre avant de le supprimer ou de lui retirer ses droits.',
     'new_tenant_id_required' => 'new_tenant_id est requis',
     'super_move_user_failed' => 'Échec du déplacement de l\'utilisateur',
     'super_move_user_passkey_recovery_required' => 'Cet utilisateur ne peut pas être déplacé tant qu’une méthode de connexion par mot de passe n’est pas configurée ; les clés d’accès ne peuvent pas être transférées entre communautés.',

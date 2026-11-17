@@ -540,6 +540,7 @@ return [
     'super_grant_denied_not_hub_target' => 'Nie można przyznać superadministratora: dzierżawa docelowa nie jest centrum',
     'super_revoke_denied_global' => 'Nie można odebrać uprawnień superadministratorowi globalnemu',
     'super_cannot_revoke_self' => 'Nie można odwołać własnego statusu globalnego superadministratora',
+    'platform_team_last_member' => 'To jedyny członek zespołu platformy. Dodaj kolejnego, zanim usuniesz to konto albo odbierzesz mu uprawnienia.',
     'new_tenant_id_required' => 'nowy_tenant_id jest wymagany',
     'super_move_user_failed' => 'Nie udało się przenieść użytkownika',
     'super_move_user_passkey_recovery_required' => 'Nie można przenieść tego użytkownika, dopóki nie zostanie skonfigurowana metoda logowania hasłem; kluczy dostępu nie można przenosić między społecznościami.',

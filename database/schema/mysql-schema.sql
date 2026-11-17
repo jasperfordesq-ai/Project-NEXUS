@@ -18818,7 +18818,7 @@ CREATE TABLE `super_admin_audit_log` (
   `actor_tenant_id` int(10) unsigned NOT NULL,
   `actor_name` varchar(255) NOT NULL,
   `actor_email` varchar(255) NOT NULL,
-  `action_type` enum('tenant_created','tenant_updated','tenant_deleted','tenant_moved','hub_toggled','super_admin_granted','super_admin_revoked','user_created','user_updated','user_moved','bulk_users_moved','bulk_tenants_updated','tenant_purged','global_super_admin_granted','global_super_admin_revoked','unknown') NOT NULL,
+  `action_type` enum('tenant_created','tenant_updated','tenant_deleted','tenant_moved','hub_toggled','super_admin_granted','super_admin_revoked','user_created','user_updated','user_moved','bulk_users_moved','bulk_tenants_updated','tenant_purged','global_super_admin_granted','global_super_admin_revoked','unknown','platform_team_added','platform_team_removed') NOT NULL,
   `target_type` enum('tenant','user','bulk') NOT NULL,
   `target_id` int(10) unsigned DEFAULT NULL,
   `target_name` varchar(255) DEFAULT NULL,
@@ -20768,6 +20768,38 @@ DELIMITER ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
 /*!50003 CREATE*/ /*!50003 TRIGGER `trg_users_delegate_update_guard` BEFORE UPDATE ON `users` FOR EACH ROW BEGIN IF OLD.`status` = 'delegate' AND (NOT (NEW.`status` <=> 'delegate') OR NEW.`password_hash` IS NOT NULL OR NOT (NEW.`email` <=> OLD.`email`) OR NOT (NEW.`role` <=> OLD.`role`) OR NOT (NEW.`tenant_id` <=> OLD.`tenant_id`) OR COALESCE(NEW.`is_super_admin`, 0) <> 0 OR COALESCE(NEW.`is_god`, 0) <> 0 OR COALESCE(NEW.`is_tenant_super_admin`, 0) <> 0) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'user_delegate_immutable'; ELSEIF NOT (OLD.`status` <=> 'delegate') AND NEW.`status` = 'delegate' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'user_delegate_conversion_refused'; END IF; END 
+*/;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_users_last_platform_team_update_guard` BEFORE UPDATE ON `users` FOR EACH ROW BEGIN DECLARE others_left INT DEFAULT 0; IF (OLD.`is_god` <> 0 AND (COALESCE(OLD.`is_super_admin`, 0) <> 0 OR COALESCE(OLD.`role`, '') = 'super_admin') AND OLD.`deleted_at` IS NULL AND OLD.`anonymized_at` IS NULL) AND NOT (NEW.`is_god` <> 0 AND (COALESCE(NEW.`is_super_admin`, 0) <> 0 OR COALESCE(NEW.`role`, '') = 'super_admin') AND NEW.`deleted_at` IS NULL AND NEW.`anonymized_at` IS NULL) THEN SELECT COUNT(*) INTO others_left FROM `users` AS other WHERE other.`is_god` <> 0 AND (COALESCE(other.`is_super_admin`, 0) <> 0 OR COALESCE(other.`role`, '') = 'super_admin') AND other.`deleted_at` IS NULL AND other.`anonymized_at` IS NULL AND other.`id` <> OLD.`id`; IF others_left = 0 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'platform_team_last_member'; END IF; END IF; END 
+*/;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_users_last_platform_team_delete_guard` BEFORE DELETE ON `users` FOR EACH ROW BEGIN DECLARE others_left INT DEFAULT 0; IF (OLD.`is_god` <> 0 AND (COALESCE(OLD.`is_super_admin`, 0) <> 0 OR COALESCE(OLD.`role`, '') = 'super_admin') AND OLD.`deleted_at` IS NULL AND OLD.`anonymized_at` IS NULL) THEN SELECT COUNT(*) INTO others_left FROM `users` AS other WHERE other.`is_god` <> 0 AND (COALESCE(other.`is_super_admin`, 0) <> 0 OR COALESCE(other.`role`, '') = 'super_admin') AND other.`deleted_at` IS NULL AND other.`anonymized_at` IS NULL AND other.`id` <> OLD.`id`; IF others_left = 0 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'platform_team_last_member'; END IF; END IF; END 
 */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;

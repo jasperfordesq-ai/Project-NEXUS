@@ -731,6 +731,18 @@ class UsersController extends BaseApiController
             return $this->respondWithError('INVALID_PASSWORD', __('api.user_invalid_password'), 'password', 403);
         }
 
+        // There is always at least one platform team member (owner, 17 Nov
+        // 2026). The database refuses the erasure itself; asked here first so
+        // the answer says why, and nothing is erased or emailed.
+        if (\App\Support\Authorization\PlatformTeam::isLastMember($userId)) {
+            return $this->respondWithError(
+                \App\Support\Authorization\PlatformTeam::LAST_MEMBER_CODE,
+                __('api.platform_team_last_member'),
+                null,
+                422
+            );
+        }
+
         // Capture contact details (and preferred locale) before anonymization
         $userEmail  = $userRow->email;
         $userLocale = $userRow->preferred_language ?? null;

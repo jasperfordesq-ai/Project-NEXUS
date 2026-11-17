@@ -48,6 +48,9 @@ const ACCESS_CHANGES = [
   'tenant_super_admin_removed',
   'global_super_admin_granted',
   'global_super_admin_removed',
+  // Senior accounts page: someone added to, or removed from, the platform team.
+  'platform_team_added',
+  'platform_team_removed',
 ] as const;
 type AccessChangeKind = (typeof ACCESS_CHANGES)[number];
 

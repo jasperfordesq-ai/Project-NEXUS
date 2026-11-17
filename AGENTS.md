@@ -735,7 +735,18 @@ admin** (`is_super_admin`: platform-wide) → **god** (`is_god` **and**
   `App\Support\Authorization\PlatformTeam::includes()`, reached through
   `requireGodPlatformAdmin()` in a controller or the `platform-team` route
   middleware, and mirrored in the browser by `isPlatformTeamUser()`
-  (`lib/access.ts`). A global super admin without `is_god` is **not** on it. A
+  (`lib/access.ts`). A global super admin without `is_god` is **not** on it.
+  🔴 Members are added and removed on the panel's Senior accounts page (owner,
+  17 Nov 2026; `PlatformTeamMembershipService`, the only code that writes
+  `users.is_god`): recent second sign-in step, the account active with two-step
+  on, never yourself, every change in `super_admin_audit_log`. Do not set the
+  flag in the database by hand: that leaves no record.
+  🔴 **There is always at least one platform team member** (owner, 17 Nov 2026):
+  two triggers on `users` (`trg_users_last_platform_team_*`) refuse any write
+  that would delete, erase or demote the last one, with
+  `platform_team_last_member`. A test or script that takes the ONLY member off
+  the team fails by design: create a second member first.
+  `PlatformTeam::isLastMember()` is the same question asked early. A
   page in the panel is locked on the server, not only hidden: every endpoint
   that only panel pages call starts with `requireGodPlatformAdmin()`, pinned
   per controller in `tests/Laravel/Feature/Security/PlatformTeamLocks/`. An

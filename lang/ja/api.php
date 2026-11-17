@@ -540,6 +540,7 @@ return [
     'super_grant_denied_not_hub_target' => 'スーパー管理者を付与できません: ターゲット テナントはハブではありません',
     'super_revoke_denied_global' => 'グローバルスーパー管理者から権限を取り消すことはできません',
     'super_cannot_revoke_self' => '自分のグローバル スーパー管理者ステータスを取り消すことはできません',
+    'platform_team_last_member' => 'このアカウントはプラットフォームチームの唯一のメンバーです。削除または権限の取り消しを行う前に、別のメンバーを追加してください。',
     'new_tenant_id_required' => 'new_tenant_id は必須です',
     'super_move_user_failed' => 'ユーザーの移動に失敗しました',
     'super_move_user_passkey_recovery_required' => 'パスワードによるサインイン方法が設定されるまで、このユーザーは移動できません。パスキーはコミュニティ間で移行できません。',

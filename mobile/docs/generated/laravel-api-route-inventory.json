@@ -2,11 +2,11 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2881,
-  "api_route_rows": 2846,
-  "distinct_api_paths": 2375,
+  "total_registered_routes": 2883,
+  "api_route_rows": 2848,
+  "distinct_api_paths": 2377,
   "route_source_fingerprint": {
-    "digest": "d828bf06cc985ff164bee7c9e71c90c0afdb7052185c9017e046c0855ca0a893",
+    "digest": "1d146ddc44cce81a7b9a0cd2a6cfb801b1bb4ba535aa26b13fad40994de6b1b4",
     "files": [
       {
         "file": "routes/api-marketplace-admin.php",
@@ -18,7 +18,7 @@
       },
       {
         "file": "routes/api.php",
-        "sha256": "dd1434edc591ecc927ee3788b547871eff4ef023edd15963f16fdcde8e80601f"
+        "sha256": "453dbc27337da1cbb4891015122786399bd2c047a01c78e01c1688b55231c709"
       },
       {
         "file": "routes/channels.php",
@@ -6496,6 +6496,12 @@
     ],
     "/api/v2/platform-team/senior-accounts": [
       "GET"
+    ],
+    "/api/v2/platform-team/senior-accounts/{id}/add-to-team": [
+      "POST"
+    ],
+    "/api/v2/platform-team/senior-accounts/{id}/remove-from-team": [
+      "POST"
     ],
     "/api/v2/platform-team/translation-coverage": [
       "GET"

@@ -528,6 +528,7 @@ return [
     'super_grant_denied_not_hub_target' => 'Super Admin kann nicht gewährt werden: Der Zielmandant ist kein Hub',
     'super_revoke_denied_global' => 'Berechtigungen können einem globalen Superadministrator nicht entzogen werden',
     'super_cannot_revoke_self' => 'Der Status Ihres eigenen globalen Superadministrators kann nicht widerrufen werden',
+    'platform_team_last_member' => 'Dies ist das einzige Mitglied des Plattform-Teams. Fügen Sie ein weiteres hinzu, bevor Sie dieses Konto löschen oder herabstufen.',
     'new_tenant_id_required' => 'new_tenant_id ist erforderlich',
     'super_move_user_failed' => 'Benutzer konnte nicht verschoben werden',
     'super_move_user_passkey_recovery_required' => 'Dieser Benutzer kann erst verschoben werden, wenn eine Passwort-Anmeldemethode eingerichtet ist; Passkeys können nicht zwischen Communitys übertragen werden.',

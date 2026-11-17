@@ -19,8 +19,9 @@ use Tests\Laravel\TestCase;
  * more than one community (platform team, global super admins, tenant super
  * admins), with when it last signed in and whether two-step is on.
  *
- * Read-only on purpose: no request here, or anywhere, grants or removes
- * platform team membership.
+ * The list itself only reads. Adding an account to the platform team and
+ * removing one (17 Nov 2026) are separate requests with their own tests:
+ * PlatformTeamMembershipTest.
  */
 class SeniorAccountsTest extends TestCase
 {
@@ -206,7 +207,7 @@ class SeniorAccountsTest extends TestCase
         $this->assertArrayHasKey($account->id, $this->rows());
     }
 
-    /** No request here changes anything: the way to the top tier is not a web button. */
+    /** The list's own address changes nothing, whatever is sent to it. */
     public function test_nothing_can_be_changed_through_it(): void
     {
         $this->actAsPlatformTeam();

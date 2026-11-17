@@ -1147,6 +1147,7 @@ return [
     'super_grant_denied_not_hub_target'    => 'Cannot grant Super Admin: target tenant is not a Hub',
     'super_revoke_denied_global'           => 'Cannot revoke privileges from a global super admin',
     'super_cannot_revoke_self'             => 'Cannot revoke your own global super admin status',
+    'platform_team_last_member'            => 'This is the only platform team member. Add another one before deleting or demoting this account.',
     'new_tenant_id_required'               => 'new_tenant_id is required',
     'super_move_user_failed'               => 'Failed to move user',
     'super_move_user_passkey_recovery_required' => 'This user cannot be moved until a password sign-in method is configured; passkeys cannot be transferred between communities.',

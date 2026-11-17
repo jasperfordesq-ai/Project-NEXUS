@@ -1613,6 +1613,18 @@ class AdminSuperController extends BaseApiController
             );
         }
 
+        // There is always at least one platform team member (owner, 17 Nov
+        // 2026). The database refuses this write itself; asked here first so
+        // the answer says why.
+        if (\App\Support\Authorization\PlatformTeam::isLastMember($id)) {
+            return $this->respondWithError(
+                \App\Support\Authorization\PlatformTeam::LAST_MEMBER_CODE,
+                __('api.platform_team_last_member'),
+                null,
+                422
+            );
+        }
+
         DB::update("UPDATE users SET is_super_admin = 0 WHERE id = ?", [$id]);
 
         SuperAdminAuditService::log(

@@ -188,7 +188,7 @@
   "senior_accounts": {
     "title": "Accounts op hoog niveau",
     "intro": "Elk account dat meer dan één gemeenschap kan beheren, wanneer het voor het laatst inlogde en of inloggen in twee stappen aanstaat.",
-    "read_only_note": "Deze pagina laat deze accounts alleen zien. Hier wordt geen toegang gegeven of afgenomen.",
+    "changes_note": "Hier kun je iemand aan het platformteam toevoegen of eruit verwijderen. Elke wijziging wordt vastgelegd, met wie het deed.",
     "loading": "De accounts op hoog niveau worden geladen",
     "load_error_title": "We konden de accounts op hoog niveau nu niet laden",
     "without_two_step": "Inloggen in twee stappen staat uit bij {{count, number}} van deze {{total}} accounts.",
@@ -224,6 +224,42 @@
       "pending": "Wacht op goedkeuring",
       "rejected": "Afgewezen",
       "other": "Niet actief"
+    },
+    "add_someone": "Iemand toevoegen",
+    "add": "Aan het platformteam toevoegen",
+    "remove": "Uit het platformteam verwijderen",
+    "remove_mark": "Kenmerk weghalen",
+    "is_you": "Dit ben jij. Je kunt jezelf niet verwijderen.",
+    "needs_two_step": "Inloggen in twee stappen moet aan staan voordat dit account bij het platformteam kan komen.",
+    "not_active_note": "Dit account is niet actief en kan daarom niet bij het platformteam komen.",
+    "added_toast": "{{name}} zit nu in het platformteam.",
+    "removed_toast": "{{name}} zit niet meer in het platformteam.",
+    "mark_removed_toast": "Het kenmerk van het platformteam is bij {{name}} weggehaald.",
+    "confirm": {
+      "add_title": "{{name}} aan het platformteam toevoegen?",
+      "add_text": "Deze persoon kan dan alles doen, in elke gemeenschap, ook dit paneel openen.",
+      "add_also_global": "Deze persoon wordt ook globale superbeheerder.",
+      "remove_title": "{{name}} uit het platformteam verwijderen?",
+      "remove_text": "Deze persoon kan dit paneel dan niet meer openen en blijft globale superbeheerder. Dat kan worden ingetrokken in het superbeheerderspaneel.",
+      "remove_mark_title": "Het kenmerk van het platformteam bij {{name}} weghalen?",
+      "remove_mark_text": "Andere delen van het platform behandelen dit account dan niet meer als account voor het hele platform vanwege het kenmerk. Komt de toegang van de oude rol \"god\", dan kan dat hier niet worden gewijzigd.",
+      "recorded": "Dit wordt vastgelegd, met je naam.",
+      "cancel": "Annuleren",
+      "error": {
+        "step_cancelled": "Je hebt niet bevestigd dat jij het bent, dus er is niets gewijzigd.",
+        "failed": "Dat is niet gelukt. Er is niets gewijzigd.",
+        "gone": "Dit account kan hier niet meer worden gewijzigd. Vernieuw de lijst.",
+        "two_step": "Inloggen in twee stappen staat uit voor dit account. Dat moet eerst aan.",
+        "not_active": "Dit account is niet actief en kan daarom niet worden toegevoegd.",
+        "already": "Dit account zit al in het platformteam.",
+        "not_member": "Dit account heeft het kenmerk van het platformteam niet, dus er valt hier niets weg te halen.",
+        "too_many": "Dat zijn veel wijzigingen. Wacht een minuut en probeer het dan opnieuw."
+      }
+    },
+    "find": {
+      "title": "Iemand aan het platformteam toevoegen",
+      "intro": "Zoek het account op via het e-mailadres. Wie nog geen globale superbeheerder is, wordt dat bij het toevoegen ook. Elke zoekopdracht wordt vastgelegd, het adres nooit.",
+      "on_team": "Zit al in het platformteam."
     }
   },
   "accounts": {
@@ -320,13 +356,15 @@
     },
     "access": {
       "title": "Toegang op hoog niveau gegeven en ingetrokken",
-      "note": "Hier niet getoond: wijzigingen in het lidmaatschap van het platformteam, dat in de database wordt ingesteld en niet wordt vastgelegd; en superbeheerderstoegang van een gemeenschap die in één keer bij iedereen wordt ingetrokken wanneer een gemeenschap geen hub meer is.",
+      "note": "Hier niet getoond: wijzigingen in het platformteam die rechtstreeks in de database zijn gedaan en niet worden vastgelegd; en superbeheerderstoegang van een gemeenschap die in één keer bij iedereen wordt ingetrokken wanneer een gemeenschap geen hub meer is.",
       "empty": "In de afgelopen {{days}} dagen is geen toegang op hoog niveau gegeven of ingetrokken.",
       "change": {
         "tenant_super_admin_granted": "Superbeheerder van een gemeenschap gegeven",
         "tenant_super_admin_removed": "Superbeheerder van een gemeenschap ingetrokken",
         "global_super_admin_granted": "Globale superbeheerder gegeven",
-        "global_super_admin_removed": "Globale superbeheerder ingetrokken"
+        "global_super_admin_removed": "Globale superbeheerder ingetrokken",
+        "platform_team_added": "Aan het platformteam toegevoegd",
+        "platform_team_removed": "Uit het platformteam verwijderd"
       }
     },
     "impersonation": {

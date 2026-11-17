@@ -151,7 +151,10 @@ the rule above.
   the first check on every super-admin panel endpoint — accepts
   `is_super_admin`, `is_tenant_super_admin` or a `super_admin`/`god` role
   string, but **not** the `is_god` flag. Conversely `requireGod()` reads only
-  the `is_god` column, not `role = 'god'`. Give god accounts both flags.
+  the `is_god` column, not `role = 'god'`. Give god accounts both flags. The
+  Senior accounts page of the Platform team panel does that in one act since
+  17 November 2026 (see
+  [Adding and removing platform team members](#adding-and-removing-platform-team-members-17-november-2026)).
 
 ### A broker is not a junior administrator
 
@@ -320,6 +323,97 @@ The code keeps the names it had: `is_god`, `requireGod()`, `isGodUser()`.
 - `is_tenant_super_admin` is not a platform super admin.
 - A global super admin without `is_god` is **not** on the platform team.
 
+#### Adding and removing platform team members (17 November 2026)
+
+Until 17 November 2026 `users.is_god` could only be set in the database by
+hand, and nothing recorded it. The owner asked for a place in the panel. It is
+the **Senior accounts** page (`/platform-team/senior-accounts`), and these two
+requests are the only web requests that write `users.is_god`
+(`PlatformTeamMembershipService`):
+
+| Request | What it does |
+|---|---|
+| `POST /v2/platform-team/senior-accounts/{id}/add-to-team` | Sets `is_god`. Sets `is_super_admin` too when the account is not a global super admin yet, so one act does both steps. Flags only: the role string is never touched (F-431). |
+| `POST /v2/platform-team/senior-accounts/{id}/remove-from-team` | Clears `is_god` and nothing else. The account stays a global super admin; that is taken away in the super admin panel. |
+
+The rules, all checked again inside the transaction on locked rows:
+
+- **Platform team only**, twice (route middleware and the first statement of
+  each method), and the lock is asked **before** the second sign-in step.
+- **A recent second sign-in step** from the caller (`step-up`, checked again in
+  the controller), then at most ten changes a minute.
+- **The account being added is active and has two-step sign-in on**
+  (`totp_enabled`). Refused with `PLATFORM_TEAM_ACCOUNT_NOT_ACTIVE` or
+  `PLATFORM_TEAM_TWO_STEP_REQUIRED` (422).
+- **Nobody removes themselves** (`PLATFORM_TEAM_CANNOT_REMOVE_SELF`), and the
+  caller must still be on the team when the write happens. The caller's row and
+  the account's row are locked together in id order, so two members removing
+  each other at the same moment cannot both succeed. Together these mean this
+  code can never leave the team empty.
+- **Never** a manager's stand-in (`status = 'delegate'`), a deleted account or
+  an erased one: those answer 404.
+- **Every change is recorded** in `super_admin_audit_log` in the same
+  transaction, under its own action type (`platform_team_added`,
+  `platform_team_removed`; enum members added by migration
+  `2026_11_17_110000`), plus `global_super_admin_granted` when the add also set
+  that flag. If the record cannot be written, the change is rolled back. The
+  Security page lists both.
+
+On the page: "Add to the platform team" on a global super admin, "Remove from
+the platform team" on a member (never on your own row), both ways to put a
+half-set account right, and "Add someone", which finds any other account by its
+whole email address through the Find an account request (so the search is
+recorded, and the address is sent in the body). Every change asks first.
+
+🔴 Still true: an edit made straight in the database is not recorded. Tests:
+`PlatformTeamMembershipTest`, `SeniorAccountsPage.test.tsx`.
+
+#### There is always at least one platform team member (17 November 2026)
+
+Owner rule: the last platform team member cannot be deleted, erased or demoted,
+by any route. "On the team" here is the definition above, on an account that is
+neither deleted nor erased (`deleted_at` and `anonymized_at` both empty).
+
+**The guarantee is in the database.** Two triggers on `users`
+(`trg_users_last_platform_team_update_guard`, `…_delete_guard`; migration
+`2026_11_17_120000`) refuse any write that would leave nobody: clearing
+`is_god`, clearing super admin (the flag, or the role string when that is the
+leg the account stands on), setting `deleted_at` or `anonymized_at`, or deleting
+the row. They answer `platform_team_last_member`. This holds for every request,
+every command and an edit made by hand, which a check in each controller could
+not promise: the flags can be changed from at least eight places.
+
+- One statement that would take every member off at once is refused whole.
+- 🔴 The count of the other members inside the trigger is an ordinary read, on
+  purpose. A locking read was built first and taken out the same day: it holds
+  its locks until the transaction ends, and erasing an account is one long
+  transaction, so erasing a member would have held up every new account on the
+  platform. (`FOR UPDATE` is not possible at all: MariaDB refuses it on `users`
+  from a trigger on `users`, error 1442.) What that leaves open: two different
+  members taken off by two different transactions in the same instant can each
+  see the other still in place. The Senior accounts page cannot do that (it
+  locks both rows and re-checks the caller); the other routes could, in theory.
+- 🔴 `status` is not part of it. Suspending or banning the last member is not
+  refused: a bulk status update must never fail because of one row. A suspended
+  account still counts as the one that is left.
+- 🔴 A row removed by a cascading foreign key (a `tenants` row deleted) does not
+  fire triggers. `TenantPurgeService` moves platform super admins to the parent
+  community and deletes the rest with its own `DELETE`, so that path is safe.
+
+**The same question asked early**, so a person is told why before anything is
+emailed or erased: `PlatformTeam::isLastMember()`, answered with 422
+`PLATFORM_TEAM_LAST_MEMBER` and `api.platform_team_last_member`, in
+`AdminSuperController::userRevokeGlobalSuperAdmin()`,
+`AdminUsersController::setGlobalSuperAdmin()` (when revoking) and `destroy()`
+(before the "your account was deleted" email), and
+`UsersController::deleteAccount()`. `GdprService::executeAccountDeletion()`
+stops straight after its lock, before any file or record is removed; adding a
+second member lets the erasure go ahead. A new place that deletes or demotes an
+account needs no check to be safe, only to be polite.
+
+🔴 Tests that take the only platform team account off the team now fail: give
+the test a second member first. Tests: `LastPlatformTeamMemberTest`.
+
 **Kept figures (16 November 2026).** Six read endpoints that count across every
 community — `community-health`, `usage` (per month), `community-setup`,
 `data-requests`, `legal-documents`, `push-notifications` (per `days`) — serve a
@@ -405,9 +499,11 @@ not on the team": the `is_god` flag or the old role string `god` without super
 admin. 🔴 That last kind is not platform team membership and cannot open the
 panel, but `SuperPanelAccess` and `CrossTenantEntry` both treat either mark as
 platform-wide, so the page says so), home community,
-last sign-in date, two-step on or off and whether it has a passkey. 🔴 It is
-read-only and must stay so: no request grants or removes platform team
-membership, which is set in the database on purpose. The fifth is Security
+last sign-in date, two-step on or off and whether it has a passkey. Since
+17 November 2026 (owner) the page also adds an account to the platform team
+and removes one: see
+[Adding and removing platform team members](#adding-and-removing-platform-team-members-17-november-2026).
+The list request itself only reads. The fifth is Security
 (`GET /v2/platform-team/security`; `SecurityOverviewService`), also read-only:
 senior access given and removed (`super_admin_audit_log`: the four grant and
 revoke actions, plus `user_created` / `user_updated` / `user_moved` rows whose
@@ -429,8 +525,11 @@ addresses, user agents and stored descriptions are never selected into the
 response, and a section that cannot be read answers `available: false`
 instead of an empty list. 🔴 Names are the account's name today, joined from
 `users`, never the copy `super_admin_audit_log` keeps as text: erasure does
-not scrub that copy. 🔴 Changes to `users.is_god` are not recorded
-anywhere, so no page can show them; nor is tenant super admin removed in bulk
+not scrub that copy. Platform team members added or removed on the Senior
+accounts page are listed too (`platform_team_added` / `platform_team_removed`,
+recorded since 17 November 2026). 🔴 A change to `users.is_god` made straight
+in the database is still not recorded anywhere, so no page can show it, and
+nothing before that date was recorded; nor is tenant super admin removed in bulk
 when a community stops being a hub (`hub_toggled` names the community only). The sixth is Communities at a glance
 (`GET /v2/platform-team/communities`; `CommunitiesAtAGlanceService`), also
 read-only: every community against every optional feature and core module, on

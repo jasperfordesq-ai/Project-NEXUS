@@ -188,7 +188,7 @@
   "senior_accounts": {
     "title": "Account di alto livello",
     "intro": "Tutti gli account che possono gestire più di una comunità, quando hanno effettuato l’ultimo accesso e se l’accesso in due passaggi è attivo.",
-    "read_only_note": "Questa pagina mostra soltanto questi account. Qui non si concede né si toglie alcun accesso.",
+    "changes_note": "Qui puoi aggiungere qualcuno al team della piattaforma, o toglierlo. Ogni modifica viene registrata, con chi l’ha fatta.",
     "loading": "Caricamento degli account di alto livello",
     "load_error_title": "Non siamo riusciti a caricare gli account di alto livello in questo momento",
     "without_two_step": "L’accesso in due passaggi è disattivato per {{count, number}} di questi {{total}} account.",
@@ -224,6 +224,42 @@
       "pending": "In attesa di approvazione",
       "rejected": "Rifiutato",
       "other": "Non attivo"
+    },
+    "add_someone": "Aggiungi qualcuno",
+    "add": "Aggiungi al team della piattaforma",
+    "remove": "Togli dal team della piattaforma",
+    "remove_mark": "Togli il contrassegno",
+    "is_you": "Questo account è il tuo. Non puoi toglierti da solo.",
+    "needs_two_step": "L’accesso in due passaggi deve essere attivo prima che questo account possa entrare nel team della piattaforma.",
+    "not_active_note": "Questo account non è attivo, quindi non può entrare nel team della piattaforma.",
+    "added_toast": "{{name}} ora fa parte del team della piattaforma.",
+    "removed_toast": "{{name}} non fa più parte del team della piattaforma.",
+    "mark_removed_toast": "Il contrassegno del team della piattaforma è stato tolto a {{name}}.",
+    "confirm": {
+      "add_title": "Aggiungere {{name}} al team della piattaforma?",
+      "add_text": "Potrà fare tutto, in ogni comunità, compreso aprire questo pannello.",
+      "add_also_global": "Diventerà anche super amministratore globale.",
+      "remove_title": "Togliere {{name}} dal team della piattaforma?",
+      "remove_text": "Non potrà più aprire questo pannello. Resta super amministratore globale. Questo accesso si può togliere nel pannello super amministratore.",
+      "remove_mark_title": "Togliere il contrassegno del team della piattaforma a {{name}}?",
+      "remove_mark_text": "Le altre parti della piattaforma smetteranno di trattare questo account come account di tutta la piattaforma per via del contrassegno. Se il suo accesso viene dal vecchio ruolo «god», qui non si può cambiare.",
+      "recorded": "Viene registrato, con il tuo nome.",
+      "cancel": "Annulla",
+      "error": {
+        "step_cancelled": "Non hai confermato di essere tu, quindi non è stato cambiato nulla.",
+        "failed": "Non ha funzionato. Non è stato cambiato nulla.",
+        "gone": "Questo account non può più essere modificato da qui. Aggiorna l’elenco.",
+        "two_step": "L’accesso in due passaggi è disattivato per questo account. Prima va attivato.",
+        "not_active": "Questo account non è attivo, quindi non può essere aggiunto.",
+        "already": "Questo account fa già parte del team della piattaforma.",
+        "not_member": "Questo account non ha il contrassegno del team della piattaforma, quindi qui non c’è nulla da togliere.",
+        "too_many": "Sono molte modifiche. Aspetta un minuto, poi riprova."
+      }
+    },
+    "find": {
+      "title": "Aggiungi qualcuno al team della piattaforma",
+      "intro": "Cerca il suo account tramite l’indirizzo email. Se non è ancora super amministratore globale, lo diventerà anche. Ogni ricerca viene registrata, mai l’indirizzo.",
+      "on_team": "Fa già parte del team della piattaforma."
     }
   },
   "accounts": {
@@ -320,13 +356,15 @@
     },
     "access": {
       "title": "Accessi di alto livello concessi e tolti",
-      "note": "Non mostrato qui: le modifiche all’appartenenza al team della piattaforma, che si imposta nel database e non viene registrata; e l’accesso da super amministratore di comunità tolto a tutti in una volta quando una comunità smette di essere un hub.",
+      "note": "Non mostrato qui: le modifiche al team della piattaforma fatte direttamente nel database, che non vengono registrate; e l’accesso da super amministratore di comunità tolto a tutti in una volta quando una comunità smette di essere un hub.",
       "empty": "Negli ultimi {{days}} giorni non è stato concesso né tolto alcun accesso di alto livello.",
       "change": {
         "tenant_super_admin_granted": "Super amministratore di comunità concesso",
         "tenant_super_admin_removed": "Super amministratore di comunità tolto",
         "global_super_admin_granted": "Super amministratore globale concesso",
-        "global_super_admin_removed": "Super amministratore globale tolto"
+        "global_super_admin_removed": "Super amministratore globale tolto",
+        "platform_team_added": "Aggiunto al team della piattaforma",
+        "platform_team_removed": "Tolto dal team della piattaforma"
       }
     },
     "impersonation": {

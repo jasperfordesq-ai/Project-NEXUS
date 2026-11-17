@@ -540,6 +540,7 @@ return [
     'super_grant_denied_not_hub_target' => 'Kan geen superbeheerder verlenen: doeltenant is geen hub',
     'super_revoke_denied_global' => 'Kan rechten van een globale hoofdbeheerder niet intrekken',
     'super_cannot_revoke_self' => 'Kan uw eigen globale superbeheerderstatus niet intrekken',
+    'platform_team_last_member' => 'Dit is het enige lid van het platformteam. Voeg eerst een ander lid toe voordat je dit account verwijdert of rechten afneemt.',
     'new_tenant_id_required' => 'nieuwe_tenant_id is vereist',
     'super_move_user_failed' => 'Kan gebruiker niet verplaatsen',
     'super_move_user_passkey_recovery_required' => 'Deze gebruiker kan pas worden verplaatst nadat een aanmeldmethode met wachtwoord is ingesteld; passkeys kunnen niet tussen communities worden overgedragen.',

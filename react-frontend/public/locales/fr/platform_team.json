@@ -188,7 +188,7 @@
   "senior_accounts": {
     "title": "Comptes à haut niveau",
     "intro": "Tous les comptes qui peuvent gérer plus d'une communauté, la date de leur dernière connexion et si la connexion en deux étapes est activée.",
-    "read_only_note": "Cette page ne fait qu'afficher ces comptes. Rien ici ne donne ni ne retire un accès.",
+    "changes_note": "Vous pouvez ajouter quelqu'un à l'équipe de la plateforme ici, ou l'en retirer. Chaque changement est enregistré, avec le nom de la personne qui l'a fait.",
     "loading": "Chargement des comptes à haut niveau",
     "load_error_title": "Nous n'avons pas pu charger les comptes à haut niveau pour le moment",
     "without_two_step": "La connexion en deux étapes est désactivée pour {{count, number}} de ces {{total}} comptes.",
@@ -224,6 +224,42 @@
       "pending": "En attente d'approbation",
       "rejected": "Refusé",
       "other": "Non actif"
+    },
+    "add_someone": "Ajouter quelqu'un",
+    "add": "Ajouter à l'équipe de la plateforme",
+    "remove": "Retirer de l'équipe de la plateforme",
+    "remove_mark": "Retirer la marque",
+    "is_you": "C'est vous. Vous ne pouvez pas vous retirer vous-même.",
+    "needs_two_step": "La connexion en deux étapes doit être activée avant que ce compte puisse rejoindre l'équipe de la plateforme.",
+    "not_active_note": "Ce compte n'est pas actif ; il ne peut donc pas rejoindre l'équipe de la plateforme.",
+    "added_toast": "{{name}} fait maintenant partie de l'équipe de la plateforme.",
+    "removed_toast": "{{name}} ne fait plus partie de l'équipe de la plateforme.",
+    "mark_removed_toast": "La marque d'équipe de la plateforme a été retirée à {{name}}.",
+    "confirm": {
+      "add_title": "Ajouter {{name}} à l'équipe de la plateforme ?",
+      "add_text": "Cette personne pourra tout faire, dans toutes les communautés, y compris ouvrir cet espace.",
+      "add_also_global": "Elle deviendra aussi super-administrateur global.",
+      "remove_title": "Retirer {{name}} de l'équipe de la plateforme ?",
+      "remove_text": "Cette personne ne pourra plus ouvrir cet espace. Elle reste super-administrateur global. Cet accès peut être retiré dans l'espace super-administrateur.",
+      "remove_mark_title": "Retirer la marque d'équipe de la plateforme à {{name}} ?",
+      "remove_mark_text": "Les autres parties de la plateforme ne traiteront plus ce compte comme un compte à l'échelle de la plateforme à cause de cette marque. Si son accès vient de l'ancien rôle « god », cela ne peut pas être changé ici.",
+      "recorded": "C'est enregistré, avec votre nom.",
+      "cancel": "Annuler",
+      "error": {
+        "step_cancelled": "Vous n'avez pas confirmé que c'était vous ; rien n'a été changé.",
+        "failed": "Cela n'a pas fonctionné. Rien n'a été changé.",
+        "gone": "Ce compte ne peut plus être modifié d'ici. Actualisez la liste.",
+        "two_step": "La connexion en deux étapes est désactivée pour ce compte. Elle doit d'abord être activée.",
+        "not_active": "Ce compte n'est pas actif ; il ne peut donc pas être ajouté.",
+        "already": "Ce compte fait déjà partie de l'équipe de la plateforme.",
+        "not_member": "Ce compte ne porte pas la marque d'équipe de la plateforme ; il n'y a donc rien à retirer ici.",
+        "too_many": "Cela fait beaucoup de changements. Attendez une minute, puis réessayez."
+      }
+    },
+    "find": {
+      "title": "Ajouter quelqu'un à l'équipe de la plateforme",
+      "intro": "Recherchez son compte par son adresse e-mail. Si la personne n'est pas encore super-administrateur global, elle le deviendra aussi. Chaque recherche est enregistrée, jamais l'adresse.",
+      "on_team": "Fait déjà partie de l'équipe de la plateforme."
     }
   },
   "accounts": {
@@ -320,13 +356,15 @@
     },
     "access": {
       "title": "Accès à haut niveau accordés et retirés",
-      "note": "Non affiché ici : les changements d'appartenance à l'équipe de la plateforme, qui se règle dans la base de données et n'est pas enregistrée ; et l'accès de super-administrateur de communauté retiré à tout le monde d'un coup lorsqu'une communauté cesse d'être un pôle.",
+      "note": "Non affiché ici : les changements de l'équipe de la plateforme faits directement dans la base de données, qui ne sont pas enregistrés ; et l'accès de super-administrateur de communauté retiré à tout le monde d'un coup lorsqu'une communauté cesse d'être un pôle.",
       "empty": "Aucun accès à haut niveau n'a été accordé ou retiré au cours des {{days}} derniers jours.",
       "change": {
         "tenant_super_admin_granted": "Super-administrateur de communauté accordé",
         "tenant_super_admin_removed": "Super-administrateur de communauté retiré",
         "global_super_admin_granted": "Super-administrateur global accordé",
-        "global_super_admin_removed": "Super-administrateur global retiré"
+        "global_super_admin_removed": "Super-administrateur global retiré",
+        "platform_team_added": "Ajouté à l'équipe de la plateforme",
+        "platform_team_removed": "Retiré de l'équipe de la plateforme"
       }
     },
     "impersonation": {
