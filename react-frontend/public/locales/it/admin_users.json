@@ -422,6 +422,7 @@
       "password_reset_failed": "La reimpostazione della password non è riuscita",
       "password_reset_sent": "E-mail di reimpostazione della password inviata",
       "password_updated": "Password aggiornata",
+      "platform_team_last_member": "Questo account è l’unico membro del team della piattaforma. Aggiungine un altro prima di eliminarlo o di togliergli i permessi.",
       "recheck_complete": "Ricontrolla Completato",
       "recheck_failed": "Ricontrollo non riuscito",
       "remove_badge_failed": "Impossibile rimuovere il badge",

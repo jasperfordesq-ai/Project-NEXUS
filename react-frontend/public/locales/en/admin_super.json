@@ -212,6 +212,7 @@
     "partnership_terminated": "Partnership Terminated",
     "partnerships": "Partnerships",
     "clear": "Clear",
+    "platform_team_last_member": "This is the only platform team member. Add another one before deleting or demoting this account.",
     "user_with_id": "User #{{id}}",
     "placeholder_add_notes_about_why_this_tenant_is_being_whitelist": "Add Notes About Why This Tenant is Being Whitelist...",
     "placeholder_describe_reason_for_emergency_lockdown": "Describe Reason for Emergency Lockdown...",

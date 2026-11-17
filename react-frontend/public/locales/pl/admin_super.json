@@ -212,6 +212,7 @@
     "partnership_terminated": "Współpraca rozwiązana",
     "partnerships": "Partnerstwa",
     "clear": "Jasne",
+    "platform_team_last_member": "To jedyny członek zespołu platformy. Dodaj kolejnego, zanim usuniesz to konto albo odbierzesz mu uprawnienia.",
     "user_with_id": "Użytkownik #{{id}}",
     "placeholder_add_notes_about_why_this_tenant_is_being_whitelist": "Dodaj notatkę o tym, dlaczego ten najemca znajduje się na białej liście...",
     "placeholder_describe_reason_for_emergency_lockdown": "Opisz przyczynę awaryjnego zamknięcia...",

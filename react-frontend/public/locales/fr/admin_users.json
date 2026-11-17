@@ -422,6 +422,7 @@
       "password_reset_failed": "Échec de la réinitialisation du mot de passe",
       "password_reset_sent": "E-mail de réinitialisation du mot de passe envoyé",
       "password_updated": "Mot de passe mis à jour",
+      "platform_team_last_member": "Ce compte est le seul membre de l'équipe de la plateforme. Ajoutez-en un autre avant de le supprimer ou de lui retirer ses droits.",
       "recheck_complete": "Revérification terminée",
       "recheck_failed": "Échec de la nouvelle vérification",
       "remove_badge_failed": "Échec de la suppression du badge",

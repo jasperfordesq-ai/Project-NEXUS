@@ -212,6 +212,7 @@
     "partnership_terminated": "Partnerschap beëindigd",
     "partnerships": "Partnerschappen",
     "clear": "Wissen",
+    "platform_team_last_member": "Dit is het enige lid van het platformteam. Voeg eerst een ander lid toe voordat je dit account verwijdert of rechten afneemt.",
     "user_with_id": "Gebruiker #{{id}}",
     "placeholder_add_notes_about_why_this_tenant_is_being_whitelist": "Voeg opmerkingen toe over waarom deze huurder op de witte lijst staat...",
     "placeholder_describe_reason_for_emergency_lockdown": "Beschrijf de reden voor de noodvergrendeling...",

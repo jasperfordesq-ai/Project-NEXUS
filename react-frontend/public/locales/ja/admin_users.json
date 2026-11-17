@@ -419,6 +419,7 @@
       "password_reset_failed": "パスワードのリセットに失敗しました",
       "password_reset_sent": "パスワードリセットメールを送信しました",
       "password_updated": "パスワードが更新されました",
+      "platform_team_last_member": "このアカウントはプラットフォームチームの唯一のメンバーです。削除または権限の取り消しを行う前に、別のメンバーを追加してください。",
       "recheck_complete": "再チェック完了",
       "recheck_failed": "再チェックに失敗しました",
       "remove_badge_failed": "バッジの削除に失敗しました",

@@ -422,6 +422,7 @@
       "password_reset_failed": "Falha na redefinição de senha",
       "password_reset_sent": "E-mail de redefinição de senha enviado",
       "password_updated": "Senha atualizada",
+      "platform_team_last_member": "Esta conta é o único membro da equipe da plataforma. Adicione outro antes de excluí-la ou de retirar o acesso dela.",
       "recheck_complete": "Verifique novamente concluído",
       "recheck_failed": "Falha na nova verificação",
       "remove_badge_failed": "Falha ao remover selo",

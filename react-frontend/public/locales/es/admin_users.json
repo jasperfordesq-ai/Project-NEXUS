@@ -422,6 +422,7 @@
       "password_reset_failed": "Error al restablecer la contraseña",
       "password_reset_sent": "Correo electrónico de restablecimiento de contraseña enviado",
       "password_updated": "Contraseña actualizada",
+      "platform_team_last_member": "Esta cuenta es el único miembro del equipo de la plataforma. Añade otro antes de eliminarla o quitarle permisos.",
       "recheck_complete": "Volver a verificar completo",
       "recheck_failed": "Error al volver a comprobar",
       "remove_badge_failed": "No se pudo eliminar la insignia",

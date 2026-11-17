@@ -77,6 +77,10 @@ final class PlatformTeamTest extends TestCase
 
     public function test_a_flag_removed_in_the_database_is_seen_at_once(): void
     {
+        // The database refuses to demote the last platform team member
+        // (trg_users_last_platform_team_*), and a fresh test database may hold
+        // no other one. A second member keeps this test about cache-free reads.
+        $this->userId(['is_god' => true, 'is_super_admin' => true]);
         $id = $this->userId(['is_god' => true, 'is_super_admin' => true]);
         $this->assertTrue(PlatformTeam::includes($id));
 

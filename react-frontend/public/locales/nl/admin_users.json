@@ -419,6 +419,7 @@
       "password_reset_failed": "Wachtwoord opnieuw instellen mislukt",
       "password_reset_sent": "E-mail voor wachtwoordherstel verzonden",
       "password_updated": "Wachtwoord bijgewerkt",
+      "platform_team_last_member": "Dit is het enige lid van het platformteam. Voeg eerst een ander lid toe voordat je dit account verwijdert of rechten afneemt.",
       "recheck_complete": "Controleer opnieuw Voltooid",
       "recheck_failed": "Opnieuw controleren mislukt",
       "remove_badge_failed": "Kan de badge niet verwijderen",

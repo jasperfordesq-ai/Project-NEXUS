@@ -212,6 +212,7 @@
     "partnership_terminated": "Parceria encerrada",
     "partnerships": "Parcerias",
     "clear": "Claro",
+    "platform_team_last_member": "Esta conta é o único membro da equipe da plataforma. Adicione outro antes de excluí-la ou de retirar o acesso dela.",
     "user_with_id": "Usuário #{{id}}",
     "placeholder_add_notes_about_why_this_tenant_is_being_whitelist": "Adicione notas sobre por que este locatário está na lista de permissões...",
     "placeholder_describe_reason_for_emergency_lockdown": "Descreva o motivo do bloqueio de emergência...",

@@ -212,6 +212,7 @@
     "partnership_terminated": "تم إنهاء الشراكة",
     "partnerships": "الشراكات",
     "clear": "واضح",
+    "platform_team_last_member": "هذا الحساب هو العضو الوحيد في فريق المنصة. أضف عضوًا آخر قبل حذف هذا الحساب أو سحب صلاحياته.",
     "user_with_id": "المستخدم #{{id}}",
     "placeholder_add_notes_about_why_this_tenant_is_being_whitelist": "أضف ملاحظات حول سبب إدراج هذا المستأجر في القائمة البيضاء...",
     "placeholder_describe_reason_for_emergency_lockdown": "توضيح سبب الإغلاق الطارئ...",

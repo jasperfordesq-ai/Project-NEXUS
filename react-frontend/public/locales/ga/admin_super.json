@@ -212,6 +212,7 @@
     "partnership_terminated": "Comhpháirtíocht Foirceanta",
     "partnerships": "Comhpháirtíochtaí",
     "clear": "Glan",
+    "platform_team_last_member": "Is é an cuntas seo an t-aon bhall amháin d’fhoireann an ardáin. Cuir ball eile leis sula scriosann tú an cuntas seo nó sula mbaineann tú a rochtain de.",
     "user_with_id": "Úsáideoir #{{id}}",
     "placeholder_add_notes_about_why_this_tenant_is_being_whitelist": "Cuir Nótaí Leis Faoin Fáth a bhfuil an Tionónta seo ar an Liosta Bán...",
     "placeholder_describe_reason_for_emergency_lockdown": "Déan cur síos ar an gcúis le glasáil éigeandála...",

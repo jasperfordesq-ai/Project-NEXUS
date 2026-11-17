@@ -178,9 +178,10 @@ export function SuperUserList() {
       toast.success(t('super.user_updated_successfully'));
       loadUsers();
     } else {
-      // The last platform team member cannot be demoted: the server says so in
-      // words, in the reader's language. Anything else keeps the general message.
-      toast.error(res?.code === 'PLATFORM_TEAM_LAST_MEMBER' && res.error ? res.error : t('super.action_failed'));
+      // The last platform team member cannot be demoted: say so in words.
+      // Anything else keeps the general message.
+      const isLastPlatformTeamMember = res?.code === 'PLATFORM_TEAM_LAST_MEMBER';
+      toast.error(isLastPlatformTeamMember ? t('super.platform_team_last_member') : t('super.action_failed'));
     }
     setActionLoading(false);
     setConfirmAction(null);

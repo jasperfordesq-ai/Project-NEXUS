@@ -419,6 +419,7 @@
       "password_reset_failed": "Das Zurücksetzen des Passworts ist fehlgeschlagen",
       "password_reset_sent": "E-Mail zum Zurücksetzen des Passworts gesendet",
       "password_updated": "Passwort aktualisiert",
+      "platform_team_last_member": "Dies ist das einzige Mitglied des Plattform-Teams. Fügen Sie ein weiteres hinzu, bevor Sie dieses Konto löschen oder herabstufen.",
       "recheck_complete": "Erneute Prüfung abgeschlossen",
       "recheck_failed": "Erneute Überprüfung fehlgeschlagen",
       "remove_badge_failed": "Abzeichen konnte nicht entfernt werden",

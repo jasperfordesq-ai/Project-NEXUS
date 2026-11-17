@@ -212,6 +212,7 @@
     "partnership_terminated": "Partnership terminata",
     "partnerships": "Partenariati",
     "clear": "Cancella",
+    "platform_team_last_member": "Questo account è l’unico membro del team della piattaforma. Aggiungine un altro prima di eliminarlo o di togliergli i permessi.",
     "user_with_id": "Utente n.{{id}}",
     "placeholder_add_notes_about_why_this_tenant_is_being_whitelist": "Aggiungi note sul motivo per cui questo tenant viene inserito nella whitelist...",
     "placeholder_describe_reason_for_emergency_lockdown": "Descrivere il motivo del blocco di emergenza...",

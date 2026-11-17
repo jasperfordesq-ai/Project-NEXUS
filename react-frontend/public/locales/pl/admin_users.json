@@ -425,6 +425,7 @@
       "password_reset_failed": "Resetowanie hasła nie powiodło się",
       "password_reset_sent": "Wysłano wiadomość e-mail dotyczącą resetowania hasła",
       "password_updated": "Hasło zaktualizowane",
+      "platform_team_last_member": "To jedyny członek zespołu platformy. Dodaj kolejnego, zanim usuniesz to konto albo odbierzesz mu uprawnienia.",
       "recheck_complete": "Sprawdź ponownie Ukończono",
       "recheck_failed": "Ponowne sprawdzenie nie powiodło się",
       "remove_badge_failed": "Nie udało się usunąć plakietki",

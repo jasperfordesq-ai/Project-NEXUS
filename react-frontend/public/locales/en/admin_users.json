@@ -436,6 +436,7 @@
       "password_reset_failed": "Password reset failed",
       "password_reset_sent": "Password reset email sent",
       "password_updated": "Password Updated",
+      "platform_team_last_member": "This is the only platform team member. Add another one before deleting or demoting this account.",
       "recheck_complete": "Recheck Complete",
       "recheck_failed": "Recheck Failed",
       "remove_badge_failed": "Failed to remove badge",

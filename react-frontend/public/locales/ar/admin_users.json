@@ -431,6 +431,7 @@
       "password_reset_failed": "فشلت إعادة تعيين كلمة المرور",
       "password_reset_sent": "تم إرسال البريد الإلكتروني لإعادة تعيين كلمة المرور",
       "password_updated": "تم تحديث كلمة المرور",
+      "platform_team_last_member": "هذا الحساب هو العضو الوحيد في فريق المنصة. أضف عضوًا آخر قبل حذف هذا الحساب أو سحب صلاحياته.",
       "recheck_complete": "إعادة فحص كاملة",
       "recheck_failed": "فشل إعادة الفحص",
       "remove_badge_failed": "فشلت إزالة الشارة",

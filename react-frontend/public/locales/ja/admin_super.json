@@ -212,6 +212,7 @@
     "partnership_terminated": "パートナーシップの終了",
     "partnerships": "パートナーシップ",
     "clear": "クリア",
+    "platform_team_last_member": "このアカウントはプラットフォームチームの唯一のメンバーです。削除または権限の取り消しを行う前に、別のメンバーを追加してください。",
     "user_with_id": "ユーザー番号{{id}}",
     "placeholder_add_notes_about_why_this_tenant_is_being_whitelist": "このテナントがホワイトリストに登録されている理由に関するメモを追加...",
     "placeholder_describe_reason_for_emergency_lockdown": "緊急ロックダウンの理由を説明してください...",

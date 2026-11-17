@@ -262,10 +262,10 @@ export function UserEdit() {
         setIsGlobalSuperAdmin(!isGlobalSuperAdmin);
         toast.success(!isGlobalSuperAdmin ? t('toasts.global_super_admin_granted') : t('toasts.global_super_admin_revoked'));
       } else {
-        // The last platform team member cannot be demoted: the server says so
-        // in words, in the reader's language.
+        // The last platform team member cannot be demoted: say so in words.
+        const isLastPlatformTeamMember = res.code === 'PLATFORM_TEAM_LAST_MEMBER';
         toast.error(
-          res.code === 'PLATFORM_TEAM_LAST_MEMBER' && res.error ? res.error : t('toasts.global_super_admin_failed'),
+          isLastPlatformTeamMember ? t('toasts.platform_team_last_member') : t('toasts.global_super_admin_failed'),
         );
       }
     } catch {
