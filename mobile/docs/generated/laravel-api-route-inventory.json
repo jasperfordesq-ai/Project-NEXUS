@@ -2,11 +2,11 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2847,
-  "api_route_rows": 2812,
-  "distinct_api_paths": 2345,
+  "total_registered_routes": 2881,
+  "api_route_rows": 2846,
+  "distinct_api_paths": 2375,
   "route_source_fingerprint": {
-    "digest": "447f424619e99cf47b6417490e5e4de54e3cc85289221cc61434cae24560abac",
+    "digest": "d828bf06cc985ff164bee7c9e71c90c0afdb7052185c9017e046c0855ca0a893",
     "files": [
       {
         "file": "routes/api-marketplace-admin.php",
@@ -18,15 +18,15 @@
       },
       {
         "file": "routes/api.php",
-        "sha256": "be84f5b03467c651e705757efdf6280094c03d855ed82bdb0ea59d61fd774808"
+        "sha256": "dd1434edc591ecc927ee3788b547871eff4ef023edd15963f16fdcde8e80601f"
       },
       {
         "file": "routes/channels.php",
-        "sha256": "f567011dec970156fb3d575a2d32afc49e6877b4a9d0e899622d53c22a4690af"
+        "sha256": "18309a923fffcd98abad414f6f918811e3ed126483a5f2fd769687ecc321213a"
       },
       {
         "file": "bootstrap/app.php",
-        "sha256": "984fda361bbec88f6fcc268e31be58dc681da8e75e01db64399abb98020ab38f"
+        "sha256": "eee9a624b1fdb57499d2335583dadaca67c9d043ebf4eedd9e122e909b97578b"
       }
     ]
   },
@@ -2666,6 +2666,12 @@
     "/api/v2/admin/plans/{id}/sync-stripe": [
       "POST"
     ],
+    "/api/v2/admin/platform-notices": [
+      "GET"
+    ],
+    "/api/v2/admin/platform-notices/{id}/dismiss": [
+      "POST"
+    ],
     "/api/v2/admin/podcasts": [
       "GET"
     ],
@@ -3257,12 +3263,6 @@
     "/api/v2/admin/tools/404-errors/{id}": [
       "DELETE"
     ],
-    "/api/v2/admin/tools/blog-backups": [
-      "GET"
-    ],
-    "/api/v2/admin/tools/blog-backups/{id}/restore": [
-      "POST"
-    ],
     "/api/v2/admin/tools/health-check": [
       "POST"
     ],
@@ -3276,18 +3276,9 @@
     "/api/v2/admin/tools/redirects/{id}": [
       "DELETE"
     ],
-    "/api/v2/admin/tools/seed": [
-      "POST"
-    ],
     "/api/v2/admin/tools/seo-audit": [
       "GET",
       "POST"
-    ],
-    "/api/v2/admin/tools/webp-convert": [
-      "POST"
-    ],
-    "/api/v2/admin/tools/webp-stats": [
-      "GET"
     ],
     "/api/v2/admin/translation/glossary": [
       "GET",
@@ -6411,6 +6402,109 @@
     ],
     "/api/v2/pilot-inquiry": [
       "POST"
+    ],
+    "/api/v2/platform-team/access-review": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/platform-team/accounts/find": [
+      "POST"
+    ],
+    "/api/v2/platform-team/accounts/{id}/sign-out": [
+      "POST"
+    ],
+    "/api/v2/platform-team/agreements": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/platform-team/agreements/{id}": [
+      "PUT"
+    ],
+    "/api/v2/platform-team/agreements/{id}/end": [
+      "POST"
+    ],
+    "/api/v2/platform-team/assurance": [
+      "GET"
+    ],
+    "/api/v2/platform-team/clean-up-jobs": [
+      "GET"
+    ],
+    "/api/v2/platform-team/communities": [
+      "GET"
+    ],
+    "/api/v2/platform-team/community-health": [
+      "GET"
+    ],
+    "/api/v2/platform-team/community-setup": [
+      "GET"
+    ],
+    "/api/v2/platform-team/connections": [
+      "GET"
+    ],
+    "/api/v2/platform-team/data-requests": [
+      "GET"
+    ],
+    "/api/v2/platform-team/deployments": [
+      "GET"
+    ],
+    "/api/v2/platform-team/domains": [
+      "GET"
+    ],
+    "/api/v2/platform-team/domains/check": [
+      "POST"
+    ],
+    "/api/v2/platform-team/errors": [
+      "GET"
+    ],
+    "/api/v2/platform-team/failed-jobs": [
+      "GET"
+    ],
+    "/api/v2/platform-team/failed-jobs/{uuid}": [
+      "DELETE"
+    ],
+    "/api/v2/platform-team/failed-jobs/{uuid}/retry": [
+      "POST"
+    ],
+    "/api/v2/platform-team/health": [
+      "GET"
+    ],
+    "/api/v2/platform-team/legal-documents": [
+      "GET"
+    ],
+    "/api/v2/platform-team/notices": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/platform-team/notices/{id}": [
+      "PUT"
+    ],
+    "/api/v2/platform-team/notices/{id}/end": [
+      "POST"
+    ],
+    "/api/v2/platform-team/phone-app": [
+      "GET"
+    ],
+    "/api/v2/platform-team/push-notifications": [
+      "GET"
+    ],
+    "/api/v2/platform-team/search-rebuild": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/platform-team/security": [
+      "GET"
+    ],
+    "/api/v2/platform-team/senior-accounts": [
+      "GET"
+    ],
+    "/api/v2/platform-team/translation-coverage": [
+      "GET"
+    ],
+    "/api/v2/platform-team/unfinished-features": [
+      "GET"
+    ],
+    "/api/v2/platform-team/usage": [
+      "GET"
     ],
     "/api/v2/platform/stats": [
       "GET"

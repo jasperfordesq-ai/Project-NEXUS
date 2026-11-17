@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Mobile Route Parity Matrix
 
-Last reviewed: 2026-10-06
+Last reviewed: 2026-11-17
 
 > GENERATED FILE — do not edit by hand.
 > Regenerate with `npm run parity:matrix` from `mobile/`.
@@ -17,21 +17,22 @@ when a React member route exists that nobody has classified for mobile.
 
 | Measure | Count |
 | --- | --- |
-| React member routes | 266 |
-| Mobile routes (Expo Router screens) | 189 |
-| Covered natively | 174 |
-| Deliberately out of scope | 88 |
-| **Known gaps** | **4** |
+| React member routes | 279 |
+| Mobile routes (Expo Router screens) | 209 |
+| Covered natively | 176 |
+| Deliberately out of scope | 98 |
+| **Known gaps** | **5** |
 | Awaiting review (shrink-only, budget 31) | 0 |
 | **Undeclared (blocks `--check`)** | **0** |
-| Mobile routes not claimed by a React route | 46 |
+| Mobile routes not claimed by a React route | 64 |
 | Broken declarations | 0 |
 
 ## Known gaps (member-facing, wanted, not built)
 
 | React route | Note |
 | --- | --- |
-| `listings/mine` | My listings (a member's own offers and requests, grouped by state) has no native screen yet; wanted on mobile. |
+| `messages/group/:id` | Group chats (thread, members, add/remove, leave) were added to the website on 28 Oct 2026; the native Messages tab lists one-to-one conversations only and has no group chat screen yet. |
+| `thank-yous` | The community thank-you page (notes their receivers chose to show, first names only) was added to the website on 15 Nov 2026 behind the 'Thank-you page' module switch, off by default; the app shows a member's own thank-yous (appreciations) but has no community-wide page yet. |
 | `volunteering/incidents/:id` | A reporter's page for their own volunteering safeguarding report (status, timeline, adding information) has no native screen yet; reports and their emails currently open on the web. |
 | `volunteering/org/:orgId/safeguarding` | An organisation's safeguarding reports (summary list and case page for owners, admins and the safeguarding lead) have no native screen yet; the native organisation dashboard has no Safeguarding tab. |
 | `volunteering/org/:orgId/safeguarding/:id` | An organisation's safeguarding reports (summary list and case page for owners, admins and the safeguarding lead) have no native screen yet; the native organisation dashboard has no Safeguarding tab. |
@@ -190,20 +191,24 @@ when a React member route exists that nobody has classified for mobile.
 | `listings/:id/request-exchange` | native | `exchange-detail` | — |
 | `listings/create` | native | `new-exchange` | — |
 | `listings/edit/:id` | native | `edit-exchange` | — |
-| `listings/mine` | gap | — | My listings (a member's own offers and requests, grouped by state) has no native screen yet; wanted on mobile. |
+| `listings/mine` | native | `my-listings` | — |
 | `login` | native | `login` | — |
 | `marketplace` | native | `marketplace` | — |
 | `marketplace/:id` | native | `marketplace-detail` | — |
 | `marketplace/:id/edit` | native | `edit-marketplace-listing` | — |
 | `marketplace/become-partner` | native | `marketplace-become-partner` | — |
+| `marketplace/borrow` | native | `marketplace-borrow` | — |
 | `marketplace/category/:slug` | native | `marketplace-category` | — |
 | `marketplace/collections` | native | `marketplace-collections` | — |
 | `marketplace/free` | native | `marketplace-free` | — |
+| `marketplace/listings/:id` | out-of-scope | — | Website-only forwarder for links in emails already sent (EmailLinkRedirects, 8bac7ee98); it redirects to /marketplace/:id, which is classified separately. The phone app opens the destination, not this address. |
 | `marketplace/map` | native | `marketplace-map` | — |
 | `marketplace/me/pickups` | native | `marketplace-pickups` | — |
 | `marketplace/my-listings` | native | `marketplace-my-listings` | — |
 | `marketplace/my-offers` | native | `marketplace-offers` | — |
+| `marketplace/offers` | out-of-scope | — | Website-only forwarder for links in emails already sent (EmailLinkRedirects, 8bac7ee98); it redirects to /marketplace/my-offers, which is classified separately. The phone app opens the destination, not this address. |
 | `marketplace/orders` | native | `marketplace-orders` | — |
+| `marketplace/orders/:id` | out-of-scope | — | Website-only forwarder for links in emails already sent (EmailLinkRedirects, 8bac7ee98); it redirects to the buyer’s or seller’s order list, which is classified separately. The phone app opens the destination, not this address. |
 | `marketplace/orders/sales` | native | `marketplace-sales-orders` | — |
 | `marketplace/reports` | out-of-scope | — | Marketplace moderation; administration surface. |
 | `marketplace/reports/:id` | out-of-scope | — | Marketplace moderation; administration surface. |
@@ -227,8 +232,10 @@ when a React member route exists that nobody has classified for mobile.
 | `members` | native | `members` | — |
 | `messages` | native | `messages` | — |
 | `messages/:id` | native | `thread` | — |
+| `messages/group/:id` | gap | — | Group chats (thread, members, add/remove, leave) were added to the website on 28 Oct 2026; the native Messages tab lists one-to-one conversations only and has no group chat screen yet. |
 | `messages/new/:userId` | native | `new-message` | — |
 | `municipality-calendar` | out-of-scope | — | Municipality-specific web surface. |
+| `network` | out-of-scope | — | Website-only forwarder for links in emails already sent (EmailLinkRedirects, 8bac7ee98); it redirects to /federation/connections, which is classified separately. The phone app opens the destination, not this address. |
 | `newsletter/unsubscribe` | out-of-scope | — | Reached from an email link; must work without the app installed. |
 | `nexus-score` | native | `nexus-score` | — |
 | `notifications` | native | `notifications` | — |
@@ -245,6 +252,7 @@ when a React member route exists that nobody has classified for mobile.
 | `pilot-apply` | out-of-scope | — | Sales and onboarding funnel, not a member journey. |
 | `pilot-apply/status/:token` | out-of-scope | — | Sales and onboarding funnel. |
 | `pilot-inquiry` | out-of-scope | — | Sales and onboarding funnel. |
+| `platform-team/*` | out-of-scope | — | Platform team workspace — the platform's own operators, with its own React application; not a member surface. |
 | `platform/disclaimer` | out-of-scope | — | Platform legal document; web-first. |
 | `platform/privacy` | out-of-scope | — | Platform legal document; web-first. |
 | `platform/terms` | out-of-scope | — | Platform legal document; web-first. |
@@ -253,6 +261,7 @@ when a React member route exists that nobody has classified for mobile.
 | `podcasts/:showSlug/:episodeSlug` | native | `podcast-episode` | — |
 | `podcasts/studio` | native | `podcast-studio` | — |
 | `polls` | native | `polls` | — |
+| `polls/:id` | out-of-scope | — | Website-only forwarder for links in emails already sent (EmailLinkRedirects, 8bac7ee98); it redirects to /polls, which is classified separately. The phone app opens the destination, not this address. Mobile handles /polls/{id} deep links itself. |
 | `premium` | out-of-scope | — | Policy-blocked: native fundraising requires a documented Apple-approved nonprofit and Apple Pay design; do not add an external payment shortcut. |
 | `premium/manage` | out-of-scope | — | Policy-blocked with the member_premium payment design; management cannot ship before the native entitlement and refund lifecycle is approved. |
 | `premium/return` | out-of-scope | — | Policy-blocked: no native payment-return route is valid until the approved Apple Pay/fundraising flow exists. |
@@ -264,6 +273,7 @@ when a React member route exists that nobody has classified for mobile.
 | `regional-analytics` | out-of-scope | — | Regional analytics; dense reporting, web-first. |
 | `register` | native | `register` | — |
 | `resources` | native | `resources` | — |
+| `resources/:id` | out-of-scope | — | Website-only forwarder for links in emails already sent (EmailLinkRedirects, 8bac7ee98); it redirects to /resources, which is classified separately. The phone app opens the destination, not this address. |
 | `reviews` | native | `reviews` | — |
 | `reviews/create` | native | `reviews` | — |
 | `saved` | native | `profile-collections` | — |
@@ -271,6 +281,8 @@ when a React member route exists that nobody has classified for mobile.
 | `settings` | native | `settings` | — |
 | `settings/blocked` | native | `settings-blocked-users` | — |
 | `settings/data-export` | native | `settings-data-export` | — |
+| `settings/safeguarding` | out-of-scope | — | Website-only forwarder for links in emails already sent (EmailLinkRedirects, 8bac7ee98); it redirects to /settings?tab=safeguarding, which is classified separately. The phone app opens the destination, not this address. |
+| `settings/security` | out-of-scope | — | Website-only forwarder for links in emails already sent (EmailLinkRedirects, 8bac7ee98); it redirects to /settings?tab=security, which is classified separately. The phone app opens the destination, not this address. |
 | `skills` | native | `skills` | — |
 | `social-prescribing` | out-of-scope | — | Long-form editorial page; web-first. |
 | `strategic-plan` | out-of-scope | — | Marketing/organisational page. |
@@ -278,6 +290,7 @@ when a React member route exists that nobody has classified for mobile.
 | `support-actions/confirm/:token` | out-of-scope | — | Public side-effecting linked-account support confirmations remain browser-only; they are not an adults-only native member journey. |
 | `terms` | native | `legal-document` | — |
 | `terms/versions` | out-of-scope | — | Legal version history; web-first. |
+| `thank-yous` | gap | — | The community thank-you page (notes their receivers chose to show, first names only) was added to the website on 15 Nov 2026 behind the 'Thank-you page' module switch, off by default; the app shows a member's own thank-yous (appreciations) but has no community-wide page yet. |
 | `timebanking-guide` | out-of-scope | — | Long-form editorial guide; web-first. |
 | `trust-and-safety` | native | `static-page` | — |
 | `users/:userId/appreciations` | native | `appreciations` | — |
@@ -291,6 +304,7 @@ when a React member route exists that nobody has classified for mobile.
 | `verify-identity` | native | `verify-identity` | — |
 | `verify-identity-optional` | native | `verify-identity` | — |
 | `verify-identity/callback` | out-of-scope | — | Stripe Identity browser redirect target. |
+| `volunteer-org/wallet` | out-of-scope | — | Website-only forwarder for links in emails already sent (EmailLinkRedirects, 8bac7ee98); it redirects to the organisation wallet tab, which is classified separately. The phone app opens the destination, not this address. |
 | `volunteering` | native | `volunteering` | — |
 | `volunteering/checkin/:token` | native | `volunteer-checkin` | Authorised coordinators explicitly confirm check-in and check-out; opening the link causes no mutation. |
 | `volunteering/create` | native | `new-volunteering` | — |
@@ -353,7 +367,25 @@ A surprise here can also mean a `native` declaration names the wrong screen.
 - `new-post`
 - `quick-create`
 - `settings-delete-account`
+- `settings-safeguarding`
 - `settings-translation`
+- `settings-two-factor`
+- `volunteer-incident-report`
+- `volunteer-shift-code`
+- `volunteering-my-accessibility`
+- `volunteering-my-alerts`
+- `volunteering-my-group-signups`
+- `volunteering-my-qualifications`
+- `volunteering-my-waitlists`
+- `volunteering-my-wellbeing`
+- `volunteering-org-campaign-form`
+- `volunteering-org-expenses`
+- `volunteering-org-fundraising`
+- `volunteering-shift-form`
+- `volunteering-shift-list`
+- `volunteering-shift-pattern-form`
+- `volunteering-shift-roster`
+- `volunteering-wellbeing-staff-alert`
 - `wallet-transaction`
 - `create`
 - `index`

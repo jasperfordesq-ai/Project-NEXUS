@@ -1,25 +1,34 @@
 {
   "generated_by": "mobile/scripts/generate-parity-matrix.mjs",
   "summary": {
-    "react_member_routes": 266,
-    "mobile_routes": 189,
-    "native": 174,
-    "out_of_scope": 88,
-    "gap": 4,
+    "react_member_routes": 279,
+    "mobile_routes": 209,
+    "native": 176,
+    "out_of_scope": 98,
+    "gap": 5,
     "needs_review": 0,
     "needs_review_budget": 31,
     "undeclared": 0,
-    "mobile_routes_not_claimed_by_any_react_route": 46,
+    "mobile_routes_not_claimed_by_any_react_route": 64,
     "broken_declarations": 0
   },
   "undeclared": [],
   "broken_declarations": [],
   "gaps": [
     {
-      "route": "listings/mine",
+      "route": "messages/group/:id",
       "status": "gap",
       "mobile": null,
-      "reason": "My listings (a member's own offers and requests, grouped by state) has no native screen yet; wanted on mobile.",
+      "reason": "Group chats (thread, members, add/remove, leave) were added to the website on 28 Oct 2026; the native Messages tab lists one-to-one conversations only and has no group chat screen yet.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "thank-yous",
+      "status": "gap",
+      "mobile": null,
+      "reason": "The community thank-you page (notes their receivers chose to show, first names only) was added to the website on 15 Nov 2026 behind the 'Thank-you page' module switch, off by default; the app shows a member's own thank-yous (appreciations) but has no community-wide page yet.",
       "sources": [
         "AppRoutes.tsx"
       ]
@@ -95,7 +104,25 @@
     "new-post",
     "quick-create",
     "settings-delete-account",
+    "settings-safeguarding",
     "settings-translation",
+    "settings-two-factor",
+    "volunteer-incident-report",
+    "volunteer-shift-code",
+    "volunteering-my-accessibility",
+    "volunteering-my-alerts",
+    "volunteering-my-group-signups",
+    "volunteering-my-qualifications",
+    "volunteering-my-waitlists",
+    "volunteering-my-wellbeing",
+    "volunteering-org-campaign-form",
+    "volunteering-org-expenses",
+    "volunteering-org-fundraising",
+    "volunteering-shift-form",
+    "volunteering-shift-list",
+    "volunteering-shift-pattern-form",
+    "volunteering-shift-roster",
+    "volunteering-wellbeing-staff-alert",
     "wallet-transaction",
     "create",
     "index",
@@ -1487,9 +1514,9 @@
     },
     {
       "route": "listings/mine",
-      "status": "gap",
-      "mobile": null,
-      "reason": "My listings (a member's own offers and requests, grouped by state) has no native screen yet; wanted on mobile.",
+      "status": "native",
+      "mobile": "my-listings",
+      "reason": null,
       "sources": [
         "AppRoutes.tsx"
       ]
@@ -1540,6 +1567,15 @@
       ]
     },
     {
+      "route": "marketplace/borrow",
+      "status": "native",
+      "mobile": "marketplace-borrow",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
       "route": "marketplace/category/:slug",
       "status": "native",
       "mobile": "marketplace-category",
@@ -1562,6 +1598,15 @@
       "status": "native",
       "mobile": "marketplace-free",
       "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "marketplace/listings/:id",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Website-only forwarder for links in emails already sent (EmailLinkRedirects, 8bac7ee98); it redirects to /marketplace/:id, which is classified separately. The phone app opens the destination, not this address.",
       "sources": [
         "AppRoutes.tsx"
       ]
@@ -1603,10 +1648,28 @@
       ]
     },
     {
+      "route": "marketplace/offers",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Website-only forwarder for links in emails already sent (EmailLinkRedirects, 8bac7ee98); it redirects to /marketplace/my-offers, which is classified separately. The phone app opens the destination, not this address.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
       "route": "marketplace/orders",
       "status": "native",
       "mobile": "marketplace-orders",
       "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "marketplace/orders/:id",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Website-only forwarder for links in emails already sent (EmailLinkRedirects, 8bac7ee98); it redirects to the buyer’s or seller’s order list, which is classified separately. The phone app opens the destination, not this address.",
       "sources": [
         "AppRoutes.tsx"
       ]
@@ -1819,6 +1882,15 @@
       ]
     },
     {
+      "route": "messages/group/:id",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Group chats (thread, members, add/remove, leave) were added to the website on 28 Oct 2026; the native Messages tab lists one-to-one conversations only and has no group chat screen yet.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
       "route": "messages/new/:userId",
       "status": "native",
       "mobile": "new-message",
@@ -1832,6 +1904,15 @@
       "status": "out-of-scope",
       "mobile": null,
       "reason": "Municipality-specific web surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "network",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Website-only forwarder for links in emails already sent (EmailLinkRedirects, 8bac7ee98); it redirects to /federation/connections, which is classified separately. The phone app opens the destination, not this address.",
       "sources": [
         "AppRoutes.tsx"
       ]
@@ -1988,6 +2069,15 @@
       ]
     },
     {
+      "route": "platform-team/*",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Platform team workspace — the platform's own operators, with its own React application; not a member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
       "route": "platform/disclaimer",
       "status": "out-of-scope",
       "mobile": null,
@@ -2058,6 +2148,15 @@
       "status": "native",
       "mobile": "polls",
       "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "polls/:id",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Website-only forwarder for links in emails already sent (EmailLinkRedirects, 8bac7ee98); it redirects to /polls, which is classified separately. The phone app opens the destination, not this address. Mobile handles /polls/{id} deep links itself.",
       "sources": [
         "AppRoutes.tsx"
       ]
@@ -2165,6 +2264,15 @@
       ]
     },
     {
+      "route": "resources/:id",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Website-only forwarder for links in emails already sent (EmailLinkRedirects, 8bac7ee98); it redirects to /resources, which is classified separately. The phone app opens the destination, not this address.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
       "route": "reviews",
       "status": "native",
       "mobile": "reviews",
@@ -2223,6 +2331,24 @@
       "status": "native",
       "mobile": "settings-data-export",
       "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "settings/safeguarding",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Website-only forwarder for links in emails already sent (EmailLinkRedirects, 8bac7ee98); it redirects to /settings?tab=safeguarding, which is classified separately. The phone app opens the destination, not this address.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "settings/security",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Website-only forwarder for links in emails already sent (EmailLinkRedirects, 8bac7ee98); it redirects to /settings?tab=security, which is classified separately. The phone app opens the destination, not this address.",
       "sources": [
         "AppRoutes.tsx"
       ]
@@ -2296,6 +2422,15 @@
       ]
     },
     {
+      "route": "thank-yous",
+      "status": "gap",
+      "mobile": null,
+      "reason": "The community thank-you page (notes their receivers chose to show, first names only) was added to the website on 15 Nov 2026 behind the 'Thank-you page' module switch, off by default; the app shows a member's own thank-yous (appreciations) but has no community-wide page yet.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
       "route": "timebanking-guide",
       "status": "out-of-scope",
       "mobile": null,
@@ -2366,6 +2501,7 @@
       "mobile": null,
       "reason": "Public page for employers and colleges checking a volunteer's certificate; not a member journey. The app opens it in the browser from the certificate.",
       "sources": [
+        "AppRoutes.tsx",
         "PublicAppRoutes.tsx"
       ]
     },
@@ -2375,6 +2511,7 @@
       "mobile": null,
       "reason": "Same public certificate check, with the code prefilled from the printed link.",
       "sources": [
+        "AppRoutes.tsx",
         "PublicAppRoutes.tsx"
       ]
     },
@@ -2410,6 +2547,15 @@
       "status": "out-of-scope",
       "mobile": null,
       "reason": "Stripe Identity browser redirect target.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "volunteer-org/wallet",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Website-only forwarder for links in emails already sent (EmailLinkRedirects, 8bac7ee98); it redirects to the organisation wallet tab, which is classified separately. The phone app opens the destination, not this address.",
       "sources": [
         "AppRoutes.tsx"
       ]

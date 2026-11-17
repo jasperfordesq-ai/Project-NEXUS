@@ -78,7 +78,7 @@
       "ok": "Fine",
       "warning": "Needs a look",
       "failing": "Not working",
-      "unknown": "Could not be checked"
+      "unknown": "We couldn't check this"
     },
     "card": {
       "release": "What is live",
@@ -388,7 +388,7 @@
     "until": "Shows until:",
     "written_by": "Written by:",
     "closed_count": "People who closed it:",
-    "cannot_close": "Cannot be closed",
+    "cannot_close": "Stays until it ends",
     "change": "Change",
     "end": "End now",
     "end_title": "End this notice now?",
@@ -483,7 +483,7 @@
     "none_quiet": "No community is quiet.",
     "quiet_rule": "A community is called quiet when it is switched on and either no member has been active in the last {{days}} days, or there has been no exchange this month and none last month.",
     "quiet": "Quiet",
-    "quiet_unknown": "Can't tell if quiet",
+    "quiet_unknown": "We can't tell if it is quiet",
     "not_active": "Not active",
     "unavailable_note": "Some figures could not be read just now. They say \"Not available\". They are not zero.",
     "not_available": "Not available",
@@ -775,7 +775,7 @@
       "ai": "AI",
       "maps_translation": "Maps and translation",
       "search": "Search",
-      "error_reports": "Error reports",
+      "error_reports": "Reports of errors",
       "protection": "Protection",
       "alerts": "Alerts",
       "sign_in": "Sign in with another account",
@@ -784,7 +784,7 @@
     "name": {
       "web_push": "Web push notifications",
       "file_storage": "File storage",
-      "sentry_api": "Error service: reading the figures"
+      "sentry_api": "Reading figures from the error service"
     },
     "detail": {
       "stripe_webhook": "Key that checks payment messages really come from Stripe",
@@ -816,7 +816,7 @@
     "column": {
       "language": "Language",
       "phrases": "Phrases",
-      "missing": "Missing",
+      "missing": "Not there yet",
       "same": "Still the same as English",
       "translated": "Translated"
     },
@@ -846,7 +846,7 @@
       "late": "Late",
       "failing": "Failing",
       "unknown": "No record yet",
-      "unreadable": "Could not be read"
+      "unreadable": "We couldn't read this"
     },
     "job": {
       "performance_prune": {
@@ -944,7 +944,7 @@
       "done_with_errors_other": "Finished {{time}} with {{count, number}} entries that could not be updated",
       "failed": "Failed"
     },
-    "check_failed": "Could not check again at {{time}}"
+    "check_failed": "We couldn't check again at {{time}}"
   },
   "agreements": {
     "title": "Agreements and renewals",
@@ -1015,7 +1015,7 @@
     "loading": "Reading the facts",
     "load_error_title": "The facts could not be loaded",
     "read_at": "Read {{time}}",
-    "could_not_read": "Could not be read",
+    "could_not_read": "We couldn't read this",
     "not_recorded": "Not recorded",
     "source_label": "Where this comes from:",
     "source_owner": "Entered by the platform's owner in the server's settings",
@@ -1046,7 +1046,7 @@
       "state": {
         "healthy": "The newest backup was found and is recent",
         "stale": "The newest backup is too old",
-        "missing": "No backup was found",
+        "missing": "There is no backup on the server",
         "empty": "The newest backup is empty",
         "unreadable": "The backups could not be read",
         "other": "The check gave a result this page does not recognise"
