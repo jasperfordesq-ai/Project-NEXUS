@@ -943,7 +943,10 @@
     "bulk_update_confirm_message_few": "قم بتطبيق هذا التحديث على المستأجر (المستأجرين) {{count}}.",
     "bulk_update_confirm_message_many": "قم بتطبيق هذا التحديث على المستأجر (المستأجرين) {{count}}.",
     "bulk_update_confirm_message_two": "قم بتطبيق هذا التحديث على المستأجر (المستأجرين) {{count}}.",
-    "bulk_update_confirm_message_zero": "قم بتطبيق هذا التحديث على المستأجر (المستأجرين) {{count}}."
+    "bulk_update_confirm_message_zero": "قم بتطبيق هذا التحديث على المستأجر (المستأجرين) {{count}}.",
+    "tenant_federation_read_failed": "بيانات الاتحاد الخاصة بهذا المجتمع غير متاحة حاليًا. يُرجى إعادة تحميل الصفحة للمحاولة مرة أخرى.",
+    "manage_whitelist_in_platform_team": "تغيير القائمة البيضاء في لوحة فريق المنصة",
+    "manage_partnerships_in_platform_team": "إدارة الشراكات في لوحة فريق المنصة"
   },
   "tenant_form": {
     "active": "نشيط",

@@ -140,6 +140,7 @@ export function RecentErrorsPage() {
               {t('errors.not_connected.title')}
             </h2>
             <p className="text-sm text-foreground">{t('errors.not_connected.needed')}</p>
+            <p className="text-sm text-foreground">{t('errors.not_connected.settings')}</p>
             <p className="text-sm text-foreground">{t('errors.not_connected.decision')}</p>
             <p className="text-sm text-muted">{t('errors.not_connected.meanwhile')}</p>
           </CardBody>

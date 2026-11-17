@@ -8,7 +8,10 @@
  *
  * Which outside services this server has a key for
  * (`GET /v2/platform-team/connections`, platform team only), grouped, each
- * shown as "Set up" or "Not set up" with an icon AND the words.
+ * shown as "Set up" or "Not set up" with an icon AND the words. A key the
+ * server marks optional (the service works without it) that is not set reads
+ * "Not needed" instead, with a line saying what the key would add, and is left
+ * out of the count.
  *
  * 🔴 The server sends a yes or no per service and nothing else: this page
  * never shows a key or any part of one. Expiry dates are not recorded
@@ -35,11 +38,18 @@ import { logError } from '@/lib/logger';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import CircleCheck from 'lucide-react/icons/circle-check';
 import CircleMinus from 'lucide-react/icons/circle-minus';
+import Info from 'lucide-react/icons/info';
 
 export interface Connection {
   key: string;
   group: string;
   configured: boolean;
+  /**
+   * True when the code that uses the service works without this key and the
+   * key only adds something extra. Unset, such a row reads "Not needed", not
+   * "Not set up", and is not counted against the total.
+   */
+  optional?: boolean;
 }
 
 export interface ConnectionsReport {
@@ -124,6 +134,8 @@ export function ConnectionsPage() {
     .map((group) => ({ group, items: connections.filter((c) => c.group === group) }))
     .filter(({ items }) => items.length > 0);
   const done = connections.filter((c) => c.configured).length;
+  // An optional key that is not set is not a gap: it is not counted against.
+  const needed = connections.filter((c) => c.configured || !c.optional).length;
 
   const name = (key: string) => SERVICE_NAMES[key] ?? t(`connections.name.${key}`);
 
@@ -151,7 +163,7 @@ export function ConnectionsPage() {
       ) : (
         <div className="flex flex-col gap-4">
           <p className="text-base font-medium text-foreground">
-            {t('connections.count', { done, total: connections.length })}
+            {t('connections.count', { done, total: needed })}
           </p>
           <div className="grid gap-4 md:grid-cols-2">
             {groups.map(({ group, items }) => (
@@ -170,11 +182,19 @@ export function ConnectionsPage() {
                           {DETAIL_KEYS.has(item.key) ? (
                             <p className="text-xs text-muted">{t(`connections.detail.${item.key}`)}</p>
                           ) : null}
+                          {item.optional ? (
+                            <p className="text-xs text-muted">{t(`connections.optional_adds.${item.key}`)}</p>
+                          ) : null}
                         </div>
                         {item.configured ? (
                           <span className="inline-flex items-center gap-1 text-sm font-semibold text-success">
                             <CircleCheck size={16} aria-hidden="true" />
                             {t('connections.status.set_up')}
+                          </span>
+                        ) : item.optional ? (
+                          <span className="inline-flex items-center gap-1 text-sm font-semibold text-muted">
+                            <Info size={16} aria-hidden="true" />
+                            {t('connections.status.not_needed')}
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 text-sm font-semibold text-muted">

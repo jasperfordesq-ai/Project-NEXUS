@@ -85,6 +85,8 @@ describe('RecentErrorsPage', () => {
     const box = await screen.findByTestId('errors-not-connected');
     expect(within(box).getByText('errors.not_connected.title')).toBeInTheDocument();
     expect(within(box).getByText('errors.not_connected.needed')).toBeInTheDocument();
+    // Which four settings switch it on, the region's address among them.
+    expect(within(box).getByText('errors.not_connected.settings')).toBeInTheDocument();
     expect(within(box).getByText('errors.not_connected.decision')).toBeInTheDocument();
     expect(within(box).getByText('errors.not_connected.meanwhile')).toBeInTheDocument();
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();

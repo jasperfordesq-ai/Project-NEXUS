@@ -101,6 +101,42 @@ describe('ConnectionsPage', () => {
     expect(screen.queryByTestId('connection-sentry_api')).not.toBeInTheDocument();
   });
 
+  it('shows an optional key that is not set in neutral words, never as not set up, and leaves it out of the count', async () => {
+    apiGet.mockResolvedValue({
+      success: true,
+      data: {
+        connections: [
+          ...REPORT.connections,
+          { key: 'fcm', group: 'notifications', configured: false, optional: false },
+          { key: 'expo', group: 'notifications', configured: false, optional: true },
+        ],
+      },
+    });
+    renderPage();
+
+    const expo = await screen.findByTestId('connection-expo');
+    expect(within(expo).getByText('connections.status.not_needed')).toBeInTheDocument();
+    expect(within(expo).queryByText('connections.status.not_set_up')).not.toBeInTheDocument();
+    expect(within(expo).getByText('connections.optional_adds.expo')).toBeInTheDocument();
+    // A key that is needed still reads as not set up.
+    expect(within(screen.getByTestId('connection-fcm')).getByText('connections.status.not_set_up')).toBeInTheDocument();
+    // 3 of the 6 that are needed; the optional unset key is not counted against.
+    expect(screen.getByText('connections.count|3|6')).toBeInTheDocument();
+  });
+
+  it('shows an optional key that is set as set up, with what it adds', async () => {
+    apiGet.mockResolvedValue({
+      success: true,
+      data: { connections: [...REPORT.connections, { key: 'expo', group: 'notifications', configured: true, optional: true }] },
+    });
+    renderPage();
+
+    const expo = await screen.findByTestId('connection-expo');
+    expect(within(expo).getByText('connections.status.set_up')).toBeInTheDocument();
+    expect(within(expo).getByText('connections.optional_adds.expo')).toBeInTheDocument();
+    expect(screen.getByText('connections.count|4|6')).toBeInTheDocument();
+  });
+
   it('counts the services that are set up', async () => {
     renderPage();
 

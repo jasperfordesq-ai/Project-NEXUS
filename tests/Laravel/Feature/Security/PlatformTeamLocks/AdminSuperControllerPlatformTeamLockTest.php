@@ -18,14 +18,20 @@ namespace Tests\Laravel\Feature\Security\PlatformTeamLocks;
  * separate checks; they now ask the one shared question, so their rows here
  * pin behaviour that did not change.
  *
- * Left open on purpose (design 6.2, "L2"), and pinned below: the whitelist
- * and the partnership list / suspend / terminate endpoints are also called by
- * the per-community federation page, which stays in the super admin panel
- * (reactivate stays open with them, as the undo of suspend);
- * the audit log and the community list are shared with pages that stay too.
+ * Left open on purpose (design 6.2, "L2"), and pinned below: the audit log
+ * and the community list, which are shared with pages that stay in the super
+ * admin panel.
+ *
+ * The federation whitelist and the partnership list / suspend / reactivate /
+ * terminate endpoints were left open here too, because the per-community
+ * federation page called them. Owner decision 17 Nov 2026 (closes O-292):
+ * they are the platform team's. That page now reads its own scoped request
+ * (`federation/tenant/{id}/features`) and shows the whitelist status and the
+ * partnerships read-only, so they moved into `locked()` below.
  * (The read-only federation overview was left open for a few hours on 15 Nov
  * 2026 because RegionalPanelIsolationTest used it as its tier B control; the
- * owner said to lock it, and that control now uses the whitelist.)
+ * owner said to lock it. That control used the whitelist until 17 Nov 2026
+ * and now uses the audit log.)
  */
 final class AdminSuperControllerPlatformTeamLockTest extends PlatformTeamLockTestCase
 {
@@ -40,6 +46,15 @@ final class AdminSuperControllerPlatformTeamLockTest extends PlatformTeamLockTes
             'save federation switches' => ['PUT', '/v2/admin/super/federation/system-controls', 'refusal-only'],
             'emergency lockdown' => ['POST', '/v2/admin/super/federation/emergency-lockdown', 'refusal-only'],
             'lift lockdown' => ['POST', '/v2/admin/super/federation/lift-lockdown', 'refusal-only'],
+
+            // Federation whitelist and partnerships (owner decision 17 Nov 2026).
+            'whitelist' => ['GET', '/v2/admin/super/federation/whitelist'],
+            'add to the whitelist' => ['POST', '/v2/admin/super/federation/whitelist', 'refusal-only'],
+            'remove from the whitelist' => ['DELETE', '/v2/admin/super/federation/whitelist/999999999', 'refusal-only'],
+            'partnerships' => ['GET', '/v2/admin/super/federation/partnerships'],
+            'suspend a partnership' => ['POST', '/v2/admin/super/federation/partnerships/999999999/suspend', 'refusal-only'],
+            'reactivate a partnership' => ['POST', '/v2/admin/super/federation/partnerships/999999999/reactivate', 'refusal-only'],
+            'terminate a partnership' => ['POST', '/v2/admin/super/federation/partnerships/999999999/terminate', 'refusal-only'],
 
             // Platform billing and revenue.
             'billing snapshot' => ['GET', '/v2/admin/super/billing/snapshot'],
@@ -58,16 +73,6 @@ final class AdminSuperControllerPlatformTeamLockTest extends PlatformTeamLockTes
     public static function leftOpenToAGlobalSuperAdmin(): array
     {
         return [
-            // Shared with the per-community federation page (super admin panel).
-            'whitelist' => ['GET', '/v2/admin/super/federation/whitelist'],
-            'add to the whitelist' => ['POST', '/v2/admin/super/federation/whitelist'],
-            'remove from the whitelist' => ['DELETE', '/v2/admin/super/federation/whitelist/999999999'],
-            'partnerships' => ['GET', '/v2/admin/super/federation/partnerships'],
-            'suspend a partnership' => ['POST', '/v2/admin/super/federation/partnerships/999999999/suspend'],
-            'terminate a partnership' => ['POST', '/v2/admin/super/federation/partnerships/999999999/terminate'],
-            // No staying screen calls reactivate, but it is the undo of suspend:
-            // whoever may suspend a partnership must be able to put it back.
-            'reactivate a partnership' => ['POST', '/v2/admin/super/federation/partnerships/999999999/reactivate'],
             // Shared with the super admin audit log and community pages.
             'audit log' => ['GET', '/v2/admin/super/audit'],
             'community list' => ['GET', '/v2/admin/super/tenants'],
@@ -81,6 +86,23 @@ final class AdminSuperControllerPlatformTeamLockTest extends PlatformTeamLockTes
         $status = $this->requestAs($method, $uri)->getStatusCode();
 
         $this->assertNotContains($status, [401, 403], "{$method} {$uri} must stay open to a global super admin, got {$status}");
+    }
+
+    /**
+     * The whitelist and the partnership list are platform-wide (every
+     * community's, not one branch's), so a tenant super admin — whose reach
+     * is its own branch only — must never read them. Named on its own because
+     * `requireSuperAdmin()`, which these two used until 17 Nov 2026, admits
+     * `is_tenant_super_admin`.
+     */
+    public function test_a_tenant_super_admin_cannot_read_the_whitelist_or_the_partnerships(): void
+    {
+        foreach (['/v2/admin/super/federation/whitelist', '/v2/admin/super/federation/partnerships'] as $uri) {
+            $this->actAsTier(['role' => 'admin', 'is_tenant_super_admin' => true]);
+            $status = $this->apiGet($uri)->getStatusCode();
+
+            $this->assertSame(403, $status, "GET {$uri} must refuse a tenant super admin, got {$status}");
+        }
     }
 
     /**

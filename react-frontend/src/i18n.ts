@@ -10,6 +10,7 @@ import ChainedBackend from 'i18next-chained-backend';
 import HttpBackend from 'i18next-http-backend';
 import LocalStorageBackend from 'i18next-localstorage-backend';
 import { queueSentryMessage } from '@/lib/telemetryQueue';
+import { installRegionalNumberFormat } from '@/lib/i18nRegionalNumbers';
 
 export const SUPPORTED_LOCALE_CODES = [
   'ar',
@@ -182,6 +183,14 @@ if (!i18n.isInitialized) {
         lookupLocalStorage: 'nexus_language',
       },
     });
+}
+
+// `{{count, number}}` inside a sentence follows the community's region, like
+// every stand-alone number (getFormattingLocale). The formatter exists once
+// init() has run — here, or earlier in src/test/setup.ts — and the hook covers
+// any instance initialised later.
+if (!installRegionalNumberFormat(i18n)) {
+  i18n.on('initialized', () => installRegionalNumberFormat(i18n));
 }
 
 /** Languages that use right-to-left script direction. */

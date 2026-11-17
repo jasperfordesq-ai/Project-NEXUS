@@ -682,6 +682,7 @@
     "nav": "Pushmeldingen",
     "intro": "Hoeveel meldingen er naar de telefoons en browsers van leden zijn gestuurd, per dag en per gemeenschap. „Aangenomen door de pushdienst” betekent dat de dienst de melding heeft aangenomen, niet dat een telefoon hem heeft getoond. Sommige soorten meldingen worden verstuurd zonder hier te worden vastgelegd (herinneringen aan evenementen, noodmeldingen en enkele andere), dus de echte aantallen zijn minstens deze.",
     "timezone_note": "De dagen volgen de tijd van de server (UTC).",
+    "kept_note": "Elke registratie wordt {{count, number}} dagen bewaard en daarna door de nachtelijke opschoning verwijderd.",
     "days_picker": "Hoeveel dagen tonen",
     "days_option": "Laatste {{count, number}} dagen",
     "loading": "Cijfers over pushmeldingen laden",
@@ -749,6 +750,7 @@
     "not_connected": {
       "title": "Niet gekoppeld",
       "needed": "De foutendienst geeft deze cijfers alleen aan een eigen toegangssleutel die alleen mag lezen, opgeslagen op deze server. Dat is niet gebeurd.",
+      "settings": "Om dit aan te zetten zijn vier instellingen op de server nodig: de alleen-lezen-sleutel (SENTRY_AUTH_TOKEN_MONITOR), de organisatie (SENTRY_ORG), het projectnummer of de projectnummers (SENTRY_PROJECT_PHP en eventueel SENTRY_PROJECT_REACT en SENTRY_PROJECT_WEBUK) en het adres voor de regio van de organisatie (SENTRY_API_BASE). Het adres is nodig voor elke organisatie buiten de Amerikaanse regio.",
       "decision": "Of dat gebeurt, beslist de eigenaar van het platform.",
       "meanwhile": "Tot die tijd is het nachtelijke foutenrapport dat u al ontvangt de plek om te kijken."
     },
@@ -765,7 +767,11 @@
     "load_error_title": "Sleutels en koppelingen konden niet worden geladen",
     "status": {
       "set_up": "Ingesteld",
-      "not_set_up": "Niet ingesteld"
+      "not_set_up": "Niet ingesteld",
+      "not_needed": "Niet nodig – werkt zonder sleutel"
+    },
+    "optional_adds": {
+      "expo": "Optioneel. Een sleutel maakt het versturen van telefoonmeldingen extra veilig. Zonder sleutel worden ze ook verstuurd."
     },
     "group": {
       "email": "E-mail",
@@ -859,7 +865,7 @@
       },
       "prune_logs": {
         "name": "Oude logregels",
-        "deletes": "Verwijdert oude regels uit de logs van het platform, zoals runs van geplande taken, niet-gevonden pagina's, activiteit en partnerverbindingen."
+        "deletes": "Verwijdert oude regels uit de logs van het platform, zoals runs van geplande taken, niet-gevonden pagina's, activiteit, partnerverbindingen en pushmeldingen."
       },
       "prune_match_notifications": {
         "name": "Gegevens over match-e-mails",

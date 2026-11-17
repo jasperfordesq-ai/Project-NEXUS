@@ -28,9 +28,16 @@ return [
         // service needs its own read-only key. Unset (the default) = the page
         // says "Not connected" and the server asks the error service nothing.
         // Same names as scripts/postdeploy-watch.mjs reads on a developer machine.
+        // Four things are needed: the read-only key, the organisation, the
+        // project number(s), and the API address of the organisation's region.
+        // The default below answers only for US-region organisations; one in
+        // another region (e.g. the EU: https://de.sentry.io/api/0) must set
+        // SENTRY_API_BASE to its region's address, or every request fails.
         'api_token' => env('SENTRY_AUTH_TOKEN_MONITOR'),
         'org' => env('SENTRY_ORG'),
-        'api_base' => env('SENTRY_API_BASE', 'https://sentry.io/api/0'),
+        // `?:` not a default argument: `.env.example` ships SENTRY_API_BASE
+        // empty, and an empty string must mean "use the default", not "off".
+        'api_base' => env('SENTRY_API_BASE') ?: 'https://sentry.io/api/0',
         'projects' => [
             'php' => env('SENTRY_PROJECT_PHP'),
             'react' => env('SENTRY_PROJECT_REACT'),

@@ -916,7 +916,10 @@
     "apply_to_n_tenants_many": "Aplicar a {{count}} inquilinos",
     "bulk_move_confirm_message_with_grant_many": "Mover {{count}} usuarios y otorgar acceso de superadministrador al inquilino.",
     "bulk_move_confirm_message_many": "Mover {{count}} usuario(s).",
-    "bulk_update_confirm_message_many": "Aplique esta actualización a {{count}} inquilinos."
+    "bulk_update_confirm_message_many": "Aplique esta actualización a {{count}} inquilinos.",
+    "tenant_federation_read_failed": "Los datos de federación de esta comunidad no están disponibles en este momento. Vuelve a cargar la página para intentarlo de nuevo.",
+    "manage_whitelist_in_platform_team": "Cambiar la lista blanca en el panel del equipo de la plataforma",
+    "manage_partnerships_in_platform_team": "Gestionar las asociaciones en el panel del equipo de la plataforma"
   },
   "tenant_form": {
     "active": "Activo",

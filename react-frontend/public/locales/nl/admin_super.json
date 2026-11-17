@@ -907,7 +907,10 @@
     "partner_api_disable_title": "Schakel de Partner-API uit",
     "partner_api_disable_confirm": "Alle integraties van externe partners worden onmiddellijk stopgezet, inclusief portemonnee-activiteiten en webhook-levering. Bestaande tokens en abonnementen blijven behouden en worden hervat wanneer u deze weer inschakelt.",
     "partner_api_disable_action": "Partner-API uitschakelen",
-    "partner_api_reason_placeholder": "bijv. In afwachting van audit van externe partnertoegang"
+    "partner_api_reason_placeholder": "bijv. In afwachting van audit van externe partnertoegang",
+    "tenant_federation_read_failed": "De federatiegegevens van deze community zijn op dit moment niet beschikbaar. Laad de pagina opnieuw om het nog eens te proberen.",
+    "manage_whitelist_in_platform_team": "De whitelist wijzigen in het paneel van het platformteam",
+    "manage_partnerships_in_platform_team": "Partnerschappen beheren in het paneel van het platformteam"
   },
   "tenant_form": {
     "active": "Actief",

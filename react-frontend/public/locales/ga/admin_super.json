@@ -934,7 +934,10 @@
     "bulk_move_confirm_message_two": "Bog {{count}} úsáideoir(í).",
     "bulk_update_confirm_message_few": "Cuir an nuashonrú seo i bhfeidhm ar {{count}} tionónta(í).",
     "bulk_update_confirm_message_many": "Cuir an nuashonrú seo i bhfeidhm ar {{count}} tionónta(í).",
-    "bulk_update_confirm_message_two": "Cuir an nuashonrú seo i bhfeidhm ar {{count}} tionónta(í)."
+    "bulk_update_confirm_message_two": "Cuir an nuashonrú seo i bhfeidhm ar {{count}} tionónta(í).",
+    "tenant_federation_read_failed": "Níl sonraí cónaidhme an phobail seo ar fáil faoi láthair. Athlódáil an leathanach chun triail eile a bhaint as.",
+    "manage_whitelist_in_platform_team": "Athraigh an liosta ceadaithe i bpainéal fhoireann an ardáin",
+    "manage_partnerships_in_platform_team": "Bainistigh comhpháirtíochtaí i bpainéal fhoireann an ardáin"
   },
   "tenant_form": {
     "active": "Gníomhach",

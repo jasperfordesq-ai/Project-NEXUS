@@ -26,6 +26,9 @@
  *   - Keys ending _zero/_one/_two/_few/_many/_other are one phrase per base
  *     key: languages legitimately have different plural forms, so a language
  *     has the phrase when it has ANY form of it.
+ *   - A phrase whose every English form is empty (after trimming) is not a
+ *     phrase: it is left out of `keys` and is never missing or the same as
+ *     English, whatever the language has there.
  *   - "Same as English" = identical after trimming, and the English text has
  *     at least one letter once placeholders ({{x}}, {x}, :x, %s) and tags are
  *     removed. It over-counts words that are meant to be the same (names,
@@ -56,6 +59,19 @@ function groupPhrases(flat) {
     const base = key.replace(PLURAL_SUFFIX, '');
     if (!groups.has(base)) groups.set(base, new Map());
     groups.get(base).set(key, text);
+  }
+  return groups;
+}
+
+/**
+ * English phrase groups with the empty ones left out: a group whose every
+ * English form is empty (after trimming) is not a phrase, so it can never be
+ * missing or the same as English.
+ */
+function englishPhrases(flat) {
+  const groups = groupPhrases(flat);
+  for (const [base, forms] of groups) {
+    if ([...forms.values()].every((text) => text.trim() === '')) groups.delete(base);
   }
   return groups;
 }
@@ -103,7 +119,7 @@ export function computeCoverage(localesDir, locales) {
   for (const file of namespaces) {
     const flat = readFlat(path.join(enDir, file));
     if (flat === null) return { available: false };
-    const groups = groupPhrases(flat);
+    const groups = englishPhrases(flat);
     english.set(file, groups);
     total += groups.size;
   }

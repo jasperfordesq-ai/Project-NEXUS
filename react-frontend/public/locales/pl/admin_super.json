@@ -925,7 +925,10 @@
     "bulk_move_confirm_message_few": "Przenieś {{count}} użytkowników.",
     "bulk_move_confirm_message_many": "Przenieś {{count}} użytkowników.",
     "bulk_update_confirm_message_few": "Zastosuj tę aktualizację do {{count}} dzierżawców.",
-    "bulk_update_confirm_message_many": "Zastosuj tę aktualizację do {{count}} dzierżawców."
+    "bulk_update_confirm_message_many": "Zastosuj tę aktualizację do {{count}} dzierżawców.",
+    "tenant_federation_read_failed": "Dane federacji tej społeczności są w tej chwili niedostępne. Odśwież stronę, aby spróbować ponownie.",
+    "manage_whitelist_in_platform_team": "Zmień białą listę w panelu zespołu platformy",
+    "manage_partnerships_in_platform_team": "Zarządzaj partnerstwami w panelu zespołu platformy"
   },
   "tenant_form": {
     "active": "Aktywny",

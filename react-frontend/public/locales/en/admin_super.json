@@ -907,7 +907,10 @@
     "partner_api_disable_title": "Disable the Partner API",
     "partner_api_disable_confirm": "All third-party partner integrations will stop immediately, including wallet operations and webhook delivery. Existing tokens and subscriptions are kept and resume when you switch it back on.",
     "partner_api_disable_action": "Disable Partner API",
-    "partner_api_reason_placeholder": "e.g. Pending external partner access audit"
+    "partner_api_reason_placeholder": "e.g. Pending external partner access audit",
+    "tenant_federation_read_failed": "This community's federation details are unavailable right now. Please reload the page to try again.",
+    "manage_whitelist_in_platform_team": "Change the whitelist in the Platform team panel",
+    "manage_partnerships_in_platform_team": "Manage partnerships in the Platform team panel"
   },
   "tenant_form": {
     "active": "Active",

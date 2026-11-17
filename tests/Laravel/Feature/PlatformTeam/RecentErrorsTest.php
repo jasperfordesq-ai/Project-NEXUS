@@ -300,6 +300,69 @@ class RecentErrorsTest extends TestCase
         $this->assertNull($projects['react']['unresolved']);
     }
 
+    /**
+     * Measured against the real service (17 Nov 2026): a project with NO
+     * unresolved problems answers 200 with no `X-Hits` header at all and an
+     * empty list. That is a real zero, not "could not be read".
+     */
+    public function test_no_hits_header_with_an_empty_list_is_a_real_zero(): void
+    {
+        Http::fake(function (Request $request) {
+            if (str_contains($request->url(), '/events/')) {
+                return Http::response(['data' => [['count()' => 4]]], 200);
+            }
+            parse_str((string) parse_url($request->url(), PHP_URL_QUERY), $q);
+
+            return ($q['project'] ?? '') === '1001'
+                ? Http::response([], 200)
+                : Http::response([], 200, ['X-Hits' => '0']);
+        });
+
+        $projects = $this->byKey($this->data()['projects']);
+
+        $this->assertTrue($projects['php']['available']);
+        $this->assertSame(0, $projects['php']['unresolved']);
+        $this->assertTrue($projects['react']['available']);
+        $this->assertSame(0, $projects['react']['unresolved']);
+    }
+
+    public function test_no_hits_header_with_a_row_stays_not_available_never_counted(): void
+    {
+        Http::fake(function (Request $request) {
+            if (str_contains($request->url(), '/events/')) {
+                return Http::response(['data' => [['count()' => 4]]], 200);
+            }
+
+            return Http::response([['title' => self::PLANTED[0]]], 200);
+        });
+
+        $projects = $this->byKey($this->data()['projects']);
+
+        $this->assertTrue($projects['php']['available']);
+        $this->assertNull($projects['php']['unresolved']);
+        $this->assertNull($projects['react']['unresolved']);
+    }
+
+    public function test_no_hits_header_with_a_body_that_is_not_an_empty_list_stays_not_available(): void
+    {
+        Http::fake(function (Request $request) {
+            if (str_contains($request->url(), '/events/')) {
+                return Http::response(['data' => [['count()' => 4]]], 200);
+            }
+            parse_str((string) parse_url($request->url(), PHP_URL_QUERY), $q);
+
+            // An empty object, and a body that is not JSON: neither is an empty list.
+            return ($q['project'] ?? '') === '1001'
+                ? Http::response('{}', 200)
+                : Http::response('', 200);
+        });
+
+        $projects = $this->byKey($this->data()['projects']);
+
+        $this->assertNull($projects['php']['unresolved']);
+        $this->assertNull($projects['react']['unresolved']);
+    }
+
     /** @return array<string, array{0: callable}> */
     public static function failures(): array
     {

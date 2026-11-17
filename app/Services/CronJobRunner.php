@@ -1033,6 +1033,82 @@ class CronJobRunner
     }
 
     /**
+     * Queued activity type => the `email_log.category` its email is logged
+     * under (instant and digest sends alike). Anything not listed is logged as
+     * `notification_queue`; event activity types as `event_reminder`.
+     * 🔴 EmailTriggerAuditService counts every category this can produce as
+     * evidence that a sent queue row really sent an email
+     * (notificationQueueAuditCategories()); one missing there raises a false
+     * critical alarm.
+     */
+    private const NOTIFICATION_QUEUE_AUDIT_CATEGORIES = [
+        'new_message' => 'message',
+        'message_received' => 'message',
+        'voice_message' => 'message',
+
+        'connection_request' => 'connection',
+        'connection_accepted' => 'connection',
+        'friend_request' => 'connection',
+        'friend_accepted' => 'connection',
+
+        'vol_application_received' => 'volunteering',
+        'vol_application_submitted' => 'volunteering',
+        'vol_application_approved' => 'volunteering',
+        'vol_application_declined' => 'volunteering',
+        'vol_volunteer_removed' => 'volunteering',
+        'vol_hours_approved' => 'volunteering',
+        'vol_shift_reminder' => 'volunteering',
+        'vol_expense_status' => 'volunteering',
+
+        'goal_reminder' => 'goal_reminder',
+
+        'marketplace_order' => 'marketplace',
+        'marketplace_offer' => 'marketplace',
+        'marketplace_payment' => 'marketplace',
+        'marketplace_rating' => 'marketplace',
+        'marketplace_report' => 'marketplace',
+
+        'listing_approved' => 'listing',
+        'listing_rejected' => 'listing',
+        'listing_expiry' => 'listing',
+        'listing_expiry_reminder' => 'listing',
+        'saved_search_match' => 'listing',
+
+        'hot_match' => 'job_alert',
+        'mutual_match' => 'job_alert',
+        'match_digest' => 'job_alert',
+        'match_approval_request' => 'job_alert',
+        'match_approved' => 'job_alert',
+        'match_rejected' => 'job_alert',
+        'job_alert' => 'job_alert',
+
+        'new_topic' => 'group',
+        'new_reply' => 'group',
+        'mention' => 'group',
+        'group_member_joined' => 'group',
+        'group_role_changed' => 'group',
+
+        'exchange_request' => 'exchange',
+        'exchange_update' => 'exchange',
+        'exchange_completed' => 'exchange',
+
+        // Linked / sub-account relationship requests, approvals, and proxy
+        // actions (a carer posted or spent for the member). Needs an
+        // explicit category so these appear as their own line in the email
+        // trigger audit rather than being lumped into 'notification_queue' —
+        // see EmailTriggerAuditService::eventMatrix().
+        'sub_account_request' => 'sub_account',
+        'sub_account_approved' => 'sub_account',
+        'sub_account_proxy_listing' => 'sub_account',
+        'sub_account_proxy_transfer' => 'sub_account',
+        'sub_account_permissions_expanded' => 'sub_account',
+        'sub_account_permissions_changed' => 'sub_account',
+        'sub_account_revoked' => 'sub_account',
+        'support_action_withdrawn' => 'sub_account',
+        'support_action_lapsed' => 'sub_account',
+    ];
+
+    /**
      * Map queued activity types to stable email audit matrix categories.
      */
     private static function resolveNotificationQueueAuditCategory(string $activityType): string
@@ -1041,74 +1117,25 @@ class CronJobRunner
             return 'event_reminder';
         }
 
-        return match ($activityType) {
-            'new_message',
-            'message_received',
-            'voice_message' => 'message',
+        return self::NOTIFICATION_QUEUE_AUDIT_CATEGORIES[$activityType] ?? 'notification_queue';
+    }
 
-            'connection_request',
-            'connection_accepted',
-            'friend_request',
-            'friend_accepted' => 'connection',
+    /**
+     * Every `email_log.category` a notification-queue email can be logged
+     * under, for EmailTriggerAuditService's evidence check.
+     *
+     * @return list<string>
+     */
+    public static function notificationQueueAuditCategories(): array
+    {
+        $categories = array_values(array_unique([
+            ...array_values(self::NOTIFICATION_QUEUE_AUDIT_CATEGORIES),
+            'event_reminder',
+            'notification_queue',
+        ]));
+        sort($categories);
 
-            'vol_application_received',
-            'vol_application_submitted',
-            'vol_application_approved',
-            'vol_application_declined',
-            'vol_volunteer_removed',
-            'vol_hours_approved',
-            'vol_shift_reminder',
-            'vol_expense_status' => 'volunteering',
-
-            'goal_reminder' => 'goal_reminder',
-
-            'marketplace_order',
-            'marketplace_offer',
-            'marketplace_payment',
-            'marketplace_rating',
-            'marketplace_report' => 'marketplace',
-
-            'listing_approved',
-            'listing_rejected',
-            'listing_expiry',
-            'listing_expiry_reminder',
-            'saved_search_match' => 'listing',
-
-            'hot_match',
-            'mutual_match',
-            'match_digest',
-            'match_approval_request',
-            'match_approved',
-            'match_rejected',
-            'job_alert' => 'job_alert',
-
-            'new_topic',
-            'new_reply',
-            'mention',
-            'group_member_joined',
-            'group_role_changed' => 'group',
-
-            'exchange_request',
-            'exchange_update',
-            'exchange_completed' => 'exchange',
-
-            // Linked / sub-account relationship requests, approvals, and proxy
-            // actions (a carer posted or spent for the member). Needs an
-            // explicit category so these appear as their own line in the email
-            // trigger audit rather than being lumped into 'notification_queue' —
-            // see EmailTriggerAuditService::eventMatrix().
-            'sub_account_request',
-            'sub_account_approved',
-            'sub_account_proxy_listing',
-            'sub_account_proxy_transfer',
-            'sub_account_permissions_expanded',
-            'sub_account_permissions_changed',
-            'sub_account_revoked',
-            'support_action_withdrawn',
-            'support_action_lapsed' => 'sub_account',
-
-            default => 'notification_queue',
-        };
+        return $categories;
     }
 
     /**

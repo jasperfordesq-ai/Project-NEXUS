@@ -907,7 +907,10 @@
     "partner_api_disable_title": "パートナー API を無効にする",
     "partner_api_disable_confirm": "ウォレットの操作や Webhook 配信を含む、すべてのサードパーティ パートナーの統合が直ちに停止されます。既存のトークンとサブスクリプションは保持され、再度オンにすると再開されます。",
     "partner_api_disable_action": "パートナー API を無効にする",
-    "partner_api_reason_placeholder": "例えば外部パートナーのアクセス監査が保留中です"
+    "partner_api_reason_placeholder": "例えば外部パートナーのアクセス監査が保留中です",
+    "tenant_federation_read_failed": "このコミュニティのフェデレーション情報は現在表示できません。ページを再読み込みしてもう一度お試しください。",
+    "manage_whitelist_in_platform_team": "ホワイトリストはプラットフォームチームのパネルで変更します",
+    "manage_partnerships_in_platform_team": "パートナーシップはプラットフォームチームのパネルで管理します"
   },
   "tenant_form": {
     "active": "アクティブ",

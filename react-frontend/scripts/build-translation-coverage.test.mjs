@@ -84,6 +84,31 @@ test('a broken language file does not throw: its phrases count as missing', () =
   }
 });
 
+test('a phrase whose English text is empty is not a phrase: never counted, never missing', () => {
+  const { dir, write, cleanup } = fixture();
+  try {
+    // Three English-empty phrases beside one real one (and a plural family whose every form is empty).
+    write('en', 'extra', {
+      notes: { a: '', b: '   ' },
+      blank_one: '',
+      blank_other: ' ',
+      real: 'Real words',
+    });
+    // German: empty where English is empty, text where English is empty, and the real one left empty.
+    write('de', 'extra', { notes: { a: '', b: 'Etwas' }, real: '' });
+    // Spanish: the real phrase translated, nothing where English is empty.
+    write('es', 'extra', { real: 'Palabras reales' });
+    const result = computeCoverage(dir, ['de', 'es']);
+    // 6 from the fixture + `extra.real` = 7: the English-empty ones are left out entirely.
+    // German has no `common` or `admin` file (6 missing) and `extra.real` empty (1 more).
+    assert.deepEqual(result.locales[0], { locale: 'de', keys: 7, missing: 7, same_as_english: 0 });
+    // Spanish: only the fixture's 6 are missing; English-empty phrases never are.
+    assert.deepEqual(result.locales[1], { locale: 'es', keys: 7, missing: 6, same_as_english: 0 });
+  } finally {
+    cleanup();
+  }
+});
+
 test('without readable English it is not available', () => {
   const dir = mkdtempSync(path.join(tmpdir(), 'nexus-tc-'));
   try {

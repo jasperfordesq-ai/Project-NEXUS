@@ -694,6 +694,7 @@
     "nav": "Fógraí brú",
     "intro": "Cé mhéad fógra a seoladh chuig fóin agus brabhsálaithe na mball, de réir lae agus de réir pobail. Ciallaíonn “Glactha ag an tseirbhís bhrú” gur ghlac an tseirbhís leis an bhfógra, ní gur thaispeáin fón é. Seoltar roinnt cineálacha fógraí gan iad a thaifeadadh anseo (meabhrúcháin imeachtaí, foláirimh éigeandála agus roinnt eile), mar sin is ar a laghad iad seo na fíoruimhreacha.",
     "timezone_note": "Leanann na laethanta am an fhreastalaí (UTC).",
+    "kept_note": "Coinnítear gach taifead ar feadh {{count, number}} lá, agus ansin scriosann an glanadh oíche é.",
     "days_picker": "Cé mhéad lá le taispeáint",
     "days_option": "Na {{count, number}} lá deiridh",
     "loading": "Figiúirí na bhfógraí brú á lódáil",
@@ -761,6 +762,7 @@
     "not_connected": {
       "title": "Gan nascadh",
       "needed": "Ní thugann an tseirbhís earráidí na figiúirí seo ach d’eochair rochtana dá cuid féin, léamh amháin, atá stóráilte ar an bhfreastalaí seo. Níor rinneadh sin.",
+      "settings": "Chun é a chur ar siúl, tá ceithre shocrú de dhíth ar an bhfreastalaí: an eochair léite amháin (SENTRY_AUTH_TOKEN_MONITOR), an eagraíocht (SENTRY_ORG), uimhir nó uimhreacha an tionscadail (SENTRY_PROJECT_PHP, agus más mian leat SENTRY_PROJECT_REACT agus SENTRY_PROJECT_WEBUK), agus seoladh réigiún na heagraíochta (SENTRY_API_BASE). Tá gá leis an seoladh d'aon eagraíocht lasmuigh de réigiún SAM.",
       "decision": "Is é úinéir an ardáin a chinnfidh an ndéanfar é.",
       "meanwhile": "Go dtí sin, is í an tuairisc earráidí oíche a fhaigheann tú cheana féin an áit le féachaint."
     },
@@ -777,7 +779,11 @@
     "load_error_title": "Níorbh fhéidir na heochracha agus na naisc a lódáil",
     "status": {
       "set_up": "Socraithe",
-      "not_set_up": "Gan socrú"
+      "not_set_up": "Gan socrú",
+      "not_needed": "Níl gá leis — oibríonn sé gan eochair"
+    },
+    "optional_adds": {
+      "expo": "Roghnach. Cuireann eochair slándáil bhreise le fógraí fóin nuair a sheoltar iad. Gan í, seoltar fós iad."
     },
     "group": {
       "email": "Ríomhphost",
@@ -871,7 +877,7 @@
       },
       "prune_logs": {
         "name": "Sean-taifid loga",
-        "deletes": "Scriosann sé sean-sraitheanna as logaí an ardáin, mar shampla ritheanna jabanna sceidealaithe, leathanaigh nach bhfuarthas, gníomhaíocht agus naisc le comhpháirtithe."
+        "deletes": "Scriosann sé sean-sraitheanna as logaí an ardáin, mar shampla ritheanna jabanna sceidealaithe, leathanaigh nach bhfuarthas, gníomhaíocht, naisc le comhpháirtithe agus fógraí brú."
       },
       "prune_match_notifications": {
         "name": "Taifid ríomhphoist meaitseála",

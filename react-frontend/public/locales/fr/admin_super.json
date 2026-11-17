@@ -916,7 +916,10 @@
     "apply_to_n_tenants_many": "Appliquer aux locataires {{count}}",
     "bulk_move_confirm_message_with_grant_many": "Déplacez {{count}} utilisateur(s) et accordez au locataire un accès super-administrateur.",
     "bulk_move_confirm_message_many": "Déplacer {{count}} utilisateur(s).",
-    "bulk_update_confirm_message_many": "Appliquez cette mise à jour au(x) locataire(s) {{count}}."
+    "bulk_update_confirm_message_many": "Appliquez cette mise à jour au(x) locataire(s) {{count}}.",
+    "tenant_federation_read_failed": "Les informations de fédération de cette communauté sont indisponibles pour le moment. Rechargez la page pour réessayer.",
+    "manage_whitelist_in_platform_team": "Modifier la liste blanche dans le panneau de l'équipe de la plateforme",
+    "manage_partnerships_in_platform_team": "Gérer les partenariats dans le panneau de l'équipe de la plateforme"
   },
   "tenant_form": {
     "active": "Actif",

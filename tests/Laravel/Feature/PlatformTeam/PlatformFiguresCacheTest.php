@@ -145,6 +145,43 @@ class PlatformFiguresCacheTest extends TestCase
         $this->apiGet($uri)->assertStatus(200);
     }
 
+    /** Each page has its own six a minute: using up one page's does not stop "Check again" on another. */
+    public function test_refreshing_one_page_six_times_does_not_use_up_another_pages_refreshes(): void
+    {
+        $this->actAsPlatformTeam();
+
+        for ($i = 0; $i < 6; $i++) {
+            $this->apiGet('/v2/platform-team/community-health?refresh=1')->assertStatus(200);
+        }
+
+        $this->apiGet('/v2/platform-team/data-requests?refresh=1')->assertStatus(200);
+
+        // The page whose six are used up is still refused, exactly as before.
+        $this->apiGet('/v2/platform-team/community-health?refresh=1')
+            ->assertStatus(429)
+            ->assertHeader('Retry-After')
+            ->assertJsonPath('code', 'RATE_LIMIT_EXCEEDED');
+    }
+
+    /** The push page's windows (7 days, 14 days) are one page, so they share that page's six. */
+    public function test_the_push_page_windows_share_one_limit(): void
+    {
+        $this->actAsPlatformTeam();
+
+        for ($i = 0; $i < 6; $i++) {
+            $this->apiGet('/v2/platform-team/push-notifications?days=7&refresh=1')->assertStatus(200);
+        }
+
+        $this->apiGet('/v2/platform-team/push-notifications?days=14&refresh=1')->assertStatus(429);
+    }
+
+    public function test_the_refresh_limit_is_named_after_the_page(): void
+    {
+        $this->assertSame('platform_team_figures_refresh:push_notifications', PlatformFiguresCache::refreshLimitAction('push_notifications:7'));
+        $this->assertSame('platform_team_figures_refresh:usage', PlatformFiguresCache::refreshLimitAction('usage:2026-11'));
+        $this->assertSame('platform_team_figures_refresh:community_health', PlatformFiguresCache::refreshLimitAction('community_health'));
+    }
+
     public function test_each_month_of_usage_and_each_push_window_is_kept_apart(): void
     {
         $this->actAsPlatformTeam();

@@ -630,7 +630,12 @@ class EmailTriggerAuditService
 
     /**
      * Categories that can prove a sent notification_queue row reached the
-     * central email dispatcher.
+     * central email dispatcher: the matrix's notification_queue entries, plus
+     * every category the queue sender itself logs under
+     * (CronJobRunner::notificationQueueAuditCategories()). The second part is
+     * the sender's own list, not a copy: `connection`, `group`, `exchange` and
+     * `job_alert` queue emails were logged under categories the matrix files
+     * against other sources, and every such sent row was flagged critical.
      *
      * @return list<string>
      */
@@ -639,6 +644,7 @@ class EmailTriggerAuditService
         $categories = collect($this->eventMatrix())
             ->filter(fn (array $entry) => ($entry['source_table'] ?? null) === 'notification_queue')
             ->pluck('category')
+            ->merge(CronJobRunner::notificationQueueAuditCategories())
             ->push('notification_queue')
             ->unique()
             ->values()

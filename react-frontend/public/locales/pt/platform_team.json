@@ -682,6 +682,7 @@
     "nav": "Notificações push",
     "intro": "Quantas notificações foram enviadas para os celulares e navegadores dos membros, por dia e por comunidade. “Aceitas pelo serviço de push” quer dizer que o serviço recebeu a notificação, não que um celular a exibiu. Alguns tipos de notificação são enviados sem ser registrados aqui (lembretes de eventos, alertas de emergência e alguns outros), então os números reais são no mínimo estes.",
     "timezone_note": "Os dias seguem o horário do servidor (UTC).",
+    "kept_note": "Cada registro fica guardado por {{count, number}} dias e depois a limpeza noturna o apaga.",
     "days_picker": "Quantos dias mostrar",
     "days_option": "Últimos {{count, number}} dias",
     "loading": "Carregando os números de notificações push",
@@ -749,6 +750,7 @@
     "not_connected": {
       "title": "Não conectado",
       "needed": "O serviço de erros só fornece esses números a uma chave de acesso própria, somente leitura, guardada neste servidor. Isso não foi feito.",
+      "settings": "Para ativar, o servidor precisa de quatro configurações: a chave somente leitura (SENTRY_AUTH_TOKEN_MONITOR), a organização (SENTRY_ORG), o número ou os números do projeto (SENTRY_PROJECT_PHP e, se quiser, SENTRY_PROJECT_REACT e SENTRY_PROJECT_WEBUK) e o endereço da região da organização (SENTRY_API_BASE). O endereço é necessário para qualquer organização fora da região dos EUA.",
       "decision": "Fazer isso ou não é uma decisão do dono da plataforma.",
       "meanwhile": "Até lá, o relatório noturno de erros que você já recebe é o lugar para conferir."
     },
@@ -765,7 +767,11 @@
     "load_error_title": "Não foi possível carregar as chaves e conexões",
     "status": {
       "set_up": "Configurado",
-      "not_set_up": "Não configurado"
+      "not_set_up": "Não configurado",
+      "not_needed": "Não é necessária — funciona sem chave"
+    },
+    "optional_adds": {
+      "expo": "Opcional. Uma chave deixa o envio de notificações para o celular mais seguro. Sem ela, elas continuam sendo enviadas."
     },
     "group": {
       "email": "E-mail",
@@ -859,7 +865,7 @@
       },
       "prune_logs": {
         "name": "Registros antigos de log",
-        "deletes": "Apaga linhas antigas dos logs da plataforma, como execuções de tarefas agendadas, páginas não encontradas, atividade e conexões de parceiros."
+        "deletes": "Apaga linhas antigas dos logs da plataforma, como execuções de tarefas agendadas, páginas não encontradas, atividade, conexões de parceiros e notificações push."
       },
       "prune_match_notifications": {
         "name": "Registros de e-mails de combinação",

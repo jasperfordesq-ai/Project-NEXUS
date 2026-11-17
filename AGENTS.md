@@ -751,10 +751,12 @@ admin** (`is_super_admin`: platform-wide) → **god** (`is_god` **and**
   queue, pilot inquiries, platform capabilities, translation key, regional
   analytics subscriptions, national dashboard) are in the Platform team panel.
   The tier B endpoints only those screens call are platform-team-only in the
-  controller; the ones a page that stays still calls (federation whitelist,
-  partnership list / suspend / terminate / reactivate, the audit log, the
-  community list)
-  are left open and pinned by `AdminSuperControllerPlatformTeamLockTest`.
+  controller; the ones a page that stays still calls (the audit log, the
+  community list) are left open and pinned by
+  `AdminSuperControllerPlatformTeamLockTest`. The federation whitelist and
+  partnership endpoints (list / suspend / reactivate / terminate) became
+  platform-team-only on 17 Nov 2026 (owner decision); the per-community
+  federation page reads its own scoped request and shows them read-only.
 
 - `app/Support/Authorization/AdminTier.php` is the canonical predicate. It
   **deliberately returns `false` for `broker`/`coordinator`** — a broker is an

@@ -19,15 +19,20 @@ use Illuminate\Support\Facades\Log;
  * by the server: errors in the last 24 hours and 7 days (the events count
  * request, `dataset=errors`, as `scripts/postdeploy-watch.mjs` asks it) and
  * unresolved problems seen in the last 14 days (the issues request, one row,
- * total from the `X-Hits` header).
+ * total from the `X-Hits` header). The service sends no `X-Hits` at all when
+ * a project has none: a successful answer with no header whose body is
+ * exactly an empty list is a real 0. Anything else without a valid header is
+ * "not available", never a count of rows.
  *
  * 🔴 Switched off until the platform's owner stores a read-only key on the
  * server. Without the key, the organisation or the server's project id, or
  * with any of them malformed, or an address that is not https, NO request is
  * made and the answer is `{connected: false}`.
  *
- * 🔴 Counts only. An issue's title can name a real member: the issues body is
- * never read (only its header), the events body is read for the one count and
+ * 🔴 Counts only. An issue's title can name a real member: nothing in the
+ * issues body is read or kept. Its header gives the total; without the header
+ * the body is only checked for being an empty list (no rows, so no title).
+ * The events body is read for the one count and
  * nothing else, and nothing from either is passed on.
  *
  * 🔴 The key goes only in the Authorization header, of requests to the https
@@ -191,9 +196,11 @@ final class RecentErrorsService
     }
 
     /**
-     * The total comes from the `X-Hits` header; the body (which holds the
-     * issue's title) is never read. No header, or not a whole number: the
-     * figure is not available, never guessed from the row count.
+     * The total comes from the `X-Hits` header. No header (or an empty one)
+     * with a body that is exactly an empty list: 0, as the service answers for
+     * a project with no unresolved problems. Otherwise, no header or not a
+     * whole number: the figure is not available, never guessed from the row
+     * count. Nothing in a row (which holds the issue's title) is read.
      *
      * @param array{token: string, org: string, base: string, projects: array<string, string>} $settings
      */
@@ -212,6 +219,11 @@ final class RecentErrorsService
         }
 
         $hits = trim($response->header('X-Hits'));
+        if ($hits === '') {
+            // Only "is it an empty list?": an empty list has no row to read.
+            // Decoded as objects, so `{}` (an object, not a list) is not [].
+            return json_decode($response->body()) === [] ? 0 : null;
+        }
         if (preg_match('/^[0-9]{1,12}$/', $hits) !== 1) {
             return null;
         }

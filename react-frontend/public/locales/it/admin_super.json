@@ -916,7 +916,10 @@
     "apply_to_n_tenants_many": "Applica a {{count}} tenant",
     "bulk_move_confirm_message_with_grant_many": "Sposta {{count}} utente/i e concedi l'accesso super amministratore al tenant.",
     "bulk_move_confirm_message_many": "Sposta {{count}} utente/i.",
-    "bulk_update_confirm_message_many": "Applica questo aggiornamento a {{count}} tenant."
+    "bulk_update_confirm_message_many": "Applica questo aggiornamento a {{count}} tenant.",
+    "tenant_federation_read_failed": "I dati di federazione di questa comunità non sono disponibili al momento. Ricarica la pagina per riprovare.",
+    "manage_whitelist_in_platform_team": "Modifica la whitelist nel pannello del team della piattaforma",
+    "manage_partnerships_in_platform_team": "Gestisci le partnership nel pannello del team della piattaforma"
   },
   "tenant_form": {
     "active": "Attivo",

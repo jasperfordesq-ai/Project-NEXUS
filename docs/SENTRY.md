@@ -39,6 +39,21 @@ SENTRY_SEND_DEFAULT_PII=false
 
 When `BUILD_COMMIT` is present, backend events can be tied to the deployed commit. Keep DSNs and webhook URLs in environment files or production secret stores, never in committed documentation.
 
+### Reading counts back (Platform team panel → Recent errors)
+
+The Recent errors page reads counts from Sentry's API on the server. It is off until four things are set on the server:
+
+```env
+SENTRY_AUTH_TOKEN_MONITOR=   # a read-only API key
+SENTRY_ORG=                  # the organisation's slug
+SENTRY_PROJECT_PHP=          # the project number(s); REACT and WEBUK are optional
+SENTRY_PROJECT_REACT=
+SENTRY_PROJECT_WEBUK=
+SENTRY_API_BASE=             # the API address of the organisation's region
+```
+
+`SENTRY_API_BASE` defaults to `https://sentry.io/api/0`, which only answers for organisations in the US region. An organisation in another region must use that region's address (the EU region's is `https://de.sentry.io/api/0`); with the wrong address every request fails and the page shows each part as not available. The address must be `https://`. Storing the key is the platform owner's decision.
+
 ## Frontend
 
 React Sentry integration lives in `react-frontend/src/lib/sentry.ts`. It is **not** initialized from `main.tsx`. The only production call site is `react-frontend/src/contexts/CookieConsentContext.tsx:296`, which lazily imports the module and calls `initSentryAfterIdle()` from a delayed-idle callback. That effect is gated on analytics consent **and** `!isAuthEntryPath(location.pathname)`, so Sentry also never initializes while the user is on a login/register entry path — it must not compete with auth startup.

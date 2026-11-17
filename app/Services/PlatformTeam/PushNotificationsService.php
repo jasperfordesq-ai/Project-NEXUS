@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace App\Services\PlatformTeam;
 
+use App\Console\Commands\PruneLogs;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -76,22 +77,30 @@ final class PushNotificationsService
         return $value >= 1 && $value <= self::MAX_DAYS ? $value : null;
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * `kept_days`: how long the nightly clean-up (nexus:prune-logs) keeps
+     * push_log rows, read from its own policy so the page and the clean-up
+     * cannot disagree. MAX_DAYS stays well inside it.
+     *
+     * @return array<string, mixed>
+     */
     public function report(int $days): array
     {
         $result = $this->guarded(fn (): array => $this->read($days));
+        $keptDays = PruneLogs::retentionDaysFor('push_log');
 
         if (!$result['available']) {
             return [
                 'available' => false,
                 'days' => $days,
+                'kept_days' => $keptDays,
                 'by_day' => null,
                 'by_community' => null,
                 'no_community' => null,
             ];
         }
 
-        return ['available' => true, 'days' => $days] + $result;
+        return ['available' => true, 'days' => $days, 'kept_days' => $keptDays] + $result;
     }
 
     /**

@@ -29240,7 +29240,9 @@ export default interface Resources {
       "manage": "Manage",
       "manage_individual_tenants": "Manage Individual Tenants",
       "manage_individual_users": "Manage Individual Users",
+      "manage_partnerships_in_platform_team": "Manage partnerships in the Platform team panel",
       "manage_sa_from": "Manage super-admin access from",
+      "manage_whitelist_in_platform_team": "Change the whitelist in the Platform team panel",
       "move": "Move",
       "move_and_promote": "Move and Promote",
       "move_and_promote_desc": "Move this user to a hub community and grant them super admin access over that hub and its branches.",
@@ -29450,6 +29452,7 @@ export default interface Resources {
       "tenant_association": "Tenant Association",
       "tenant_deactivated": "Tenant Deactivated",
       "tenant_feature_toggled": "Tenant Feature Toggled",
+      "tenant_federation_read_failed": "This community's federation details are unavailable right now. Please reload the page to try again.",
       "tenant_hierarchy_desc": "View the hierarchical structure of tenants and their relationships",
       "tenant_hierarchy_title": "Tenant Hierarchy",
       "tenant_id_compact": "(ID: {{id}})",
@@ -57508,7 +57511,7 @@ export default interface Resources {
           "name": "Speed measurements"
         },
         "prune_logs": {
-          "deletes": "Deletes old rows from the platform's own logs, such as scheduled job runs, missing pages, activity and partner connections.",
+          "deletes": "Deletes old rows from the platform's own logs, such as scheduled job runs, missing pages, activity, partner connections and push notifications.",
           "name": "Old log records"
         },
         "prune_match_notifications": {
@@ -57655,7 +57658,11 @@ export default interface Resources {
       },
       "never_shown": "This page never shows a key or any part of one.",
       "no_expiry": "Expiry dates for keys are not recorded anywhere, so none are shown.",
+      "optional_adds": {
+        "expo": "Optional. A key adds extra security when phone notifications are sent. Without one, they are still sent."
+      },
       "status": {
+        "not_needed": "Not needed — works without a key",
         "not_set_up": "Not set up",
         "set_up": "Set up"
       },
@@ -57791,6 +57798,7 @@ export default interface Resources {
         "decision": "Whether to do it is a decision for the platform's owner.",
         "meanwhile": "Until then, the nightly error report you already receive is the place to look.",
         "needed": "The error service gives these figures only to a read-only access key of its own, stored on this server. That has not been done.",
+        "settings": "Switching it on needs four settings on the server: the read-only key (SENTRY_AUTH_TOKEN_MONITOR), the organisation (SENTRY_ORG), the project number or numbers (SENTRY_PROJECT_PHP, and if wanted SENTRY_PROJECT_REACT and SENTRY_PROJECT_WEBUK), and the address for the organisation's region (SENTRY_API_BASE). The address is needed for any organisation outside the US region.",
         "title": "Not connected"
       },
       "project": {
@@ -58092,6 +58100,7 @@ export default interface Resources {
         "partial": "Partly accepted"
       },
       "intro": "How many notifications were sent to members’ phones and browsers, by day and by community. “Accepted by the push service” means the service took the notification, not that a phone showed it. Some kinds of notification are sent without being recorded here (event reminders, emergency alerts and some others), so the real numbers are at least these.",
+      "kept_note": "Each record is kept for {{count, number}} days, then the nightly clean-up deletes it.",
       "load_error_title": "The push notification figures could not be loaded",
       "loading": "Loading push notification figures",
       "nav": "Push notifications",

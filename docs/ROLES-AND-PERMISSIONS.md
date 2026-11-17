@@ -358,7 +358,10 @@ plans and subscriptions, registration policy, cron jobs, the enterprise
 dashboard, roles and permissions, monitoring, outbound webhooks, the matching
 diagnostics, the Tests page), and the platform-wide half of the super admin
 panel (the federation dashboard with its whitelist, partnerships and audit
-pages, platform billing and revenue, the provisioning queue, pilot inquiries,
+pages — their endpoints platform team only, the whitelist and partnership
+endpoints since 17 November 2026; the per-community federation page that stays
+in the super admin panel shows that community's whitelist status and
+partnerships read-only from its own scoped request — platform billing and revenue, the provisioning queue, pilot inquiries,
 platform capabilities, the translation key, regional analytics subscriptions
 and the national dashboard).
 
@@ -567,7 +570,9 @@ is digits; otherwise it answers `{connected: false}` and makes no outside
 request. Connected, per configured project (php always; react and webuk when
 set) three GETs with a 5-second limit and no redirects: errors in 24 hours and
 7 days (`events/`, `dataset=errors`) and unresolved issues seen in 14 days
-(`issues/?limit=1`, total from `X-Hits`, the body never read). Cached 5
+(`issues/?limit=1`, total from `X-Hits`; with no such header the body is
+decoded only to see whether it is an empty list, which is a real zero — no row
+or title is read or kept). Cached 5
 minutes; `?refresh=1` asks again, 6 a minute per caller. A failed project is
 `available: false` with null figures and one `error` log line (project key,
 status, exception class): 🔴 never the token, the address or a response body.
@@ -729,9 +734,19 @@ gets an answer:
 | `GET /v2/admin/pages` | Pages |
 | invite codes, the sign-up pause status | Community settings → Joining |
 | `GET /v2/admin/matching/stats` | Smart matching |
-| federation whitelist (read, add, remove) and partnerships (list, suspend, terminate, reactivate) under `/v2/admin/super/federation/` | the per-community federation switches page, which stays in the super admin panel — open to a global super admin, as before. Reactivate is not called by that page but stays open with suspend, because it is its undo |
 | `GET /v2/admin/super/audit`, `GET /v2/admin/super/tenants` | the super admin audit log and community pages (tier A, confined to the caller's branch) |
 | everything under `/v2/admin/national/kiss/` | the national dashboard's endpoints are not changed (they also admit holders of `national.kiss_dashboard.view`); only the screen moved |
+
+The federation whitelist (read, add, remove) and partnerships (list, suspend,
+reactivate, terminate) under `/v2/admin/super/federation/` were on this list
+until 17 November 2026, because the per-community federation switches page
+called them. Owner decision that day: they are platform team only, like the
+rest of the federation dashboard. That page, which stays in the super admin
+panel, now reads only its own scoped request
+(`GET /v2/admin/super/federation/tenant/{id}/features`, confined to the
+caller's branch) and shows the community's whitelist status and partnerships
+read-only; a platform team member sees a link to the panel pages that change
+them.
 
 **Not in the panel.** Community billing (`/admin/billing*`), the Impact report
 and the SEO overview stay in the admin panel (owner, 15 November 2026). Controls

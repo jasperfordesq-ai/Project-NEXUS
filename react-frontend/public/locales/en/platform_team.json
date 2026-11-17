@@ -682,6 +682,7 @@
     "nav": "Push notifications",
     "intro": "How many notifications were sent to members’ phones and browsers, by day and by community. “Accepted by the push service” means the service took the notification, not that a phone showed it. Some kinds of notification are sent without being recorded here (event reminders, emergency alerts and some others), so the real numbers are at least these.",
     "timezone_note": "Days run in the server’s time (UTC).",
+    "kept_note": "Each record is kept for {{count, number}} days, then the nightly clean-up deletes it.",
     "days_picker": "How many days to show",
     "days_option": "Last {{count, number}} days",
     "loading": "Loading push notification figures",
@@ -749,6 +750,7 @@
     "not_connected": {
       "title": "Not connected",
       "needed": "The error service gives these figures only to a read-only access key of its own, stored on this server. That has not been done.",
+      "settings": "Switching it on needs four settings on the server: the read-only key (SENTRY_AUTH_TOKEN_MONITOR), the organisation (SENTRY_ORG), the project number or numbers (SENTRY_PROJECT_PHP, and if wanted SENTRY_PROJECT_REACT and SENTRY_PROJECT_WEBUK), and the address for the organisation's region (SENTRY_API_BASE). The address is needed for any organisation outside the US region.",
       "decision": "Whether to do it is a decision for the platform's owner.",
       "meanwhile": "Until then, the nightly error report you already receive is the place to look."
     },
@@ -765,7 +767,11 @@
     "load_error_title": "Keys and connections could not be loaded",
     "status": {
       "set_up": "Set up",
-      "not_set_up": "Not set up"
+      "not_set_up": "Not set up",
+      "not_needed": "Not needed — works without a key"
+    },
+    "optional_adds": {
+      "expo": "Optional. A key adds extra security when phone notifications are sent. Without one, they are still sent."
     },
     "group": {
       "email": "Email",
@@ -859,7 +865,7 @@
       },
       "prune_logs": {
         "name": "Old log records",
-        "deletes": "Deletes old rows from the platform's own logs, such as scheduled job runs, missing pages, activity and partner connections."
+        "deletes": "Deletes old rows from the platform's own logs, such as scheduled job runs, missing pages, activity, partner connections and push notifications."
       },
       "prune_match_notifications": {
         "name": "Match email records",

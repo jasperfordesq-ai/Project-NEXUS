@@ -33,6 +33,9 @@ use Illuminate\Support\Facades\Log;
  *   - nested arrays are flattened; only string leaves are phrases;
  *   - keys ending _zero/_one/_two/_few/_many/_other are one phrase per base
  *     key, and a language has it when it has any of its forms;
+ *   - a phrase whose every English form is empty (after trimming) is not a
+ *     phrase: it is left out of `keys` and is never missing or the same as
+ *     English, whatever the language has there;
  *   - "same as English" = identical after trimming, and the English text has
  *     a letter once placeholders ({{x}}, {x}, :x, %s) and tags are removed.
  *
@@ -144,7 +147,7 @@ final class TranslationCoverageService
                     return null;
                 }
                 $jsonFlat = $read;
-                $out["{$namespace}.json"] = self::group($jsonFlat);
+                $out["{$namespace}.json"] = self::englishGroups($jsonFlat);
             }
             if (isset($kinds['php'])) {
                 $read = $this->read($dir . "/{$namespace}.php", 'php');
@@ -154,7 +157,7 @@ final class TranslationCoverageService
                     return null;
                 }
                 // Only what the .json does not already serve.
-                $out["{$namespace}.php"] = self::group(array_diff_key($read, $jsonFlat));
+                $out["{$namespace}.php"] = self::englishGroups(array_diff_key($read, $jsonFlat));
             }
         }
 
@@ -270,6 +273,22 @@ final class TranslationCoverageService
                 self::flatten($value, $full, $out);
             }
         }
+    }
+
+    /**
+     * English phrase groups with the empty ones left out: a group whose every
+     * English form is empty (after trimming) is not a phrase, so it can never
+     * be missing or the same as English.
+     *
+     * @param array<string, string> $flat
+     * @return array<string, array<string, string>>
+     */
+    private static function englishGroups(array $flat): array
+    {
+        return array_filter(
+            self::group($flat),
+            static fn (array $forms): bool => array_filter($forms, static fn (string $text): bool => trim($text) !== '') !== []
+        );
     }
 
     /**

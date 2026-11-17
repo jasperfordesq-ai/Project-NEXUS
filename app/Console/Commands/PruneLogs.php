@@ -22,7 +22,7 @@ class PruneLogs extends Command
     protected $signature = 'nexus:prune-logs
                             {--chunk=1000 : Number of rows to delete per iteration}';
 
-    protected $description = 'Prune old rows from unbounded logging tables (cron_logs, error_404_log, activity_log, api_logs, federation_api_logs, federation_messages, sign_in_failure_hours)';
+    protected $description = 'Prune old rows from unbounded logging tables (cron_logs, error_404_log, activity_log, api_logs, federation_api_logs, federation_messages, sign_in_failure_hours, push_log)';
 
     /**
      * Retention policy per table (in days) and the timestamp column to filter on.
@@ -42,7 +42,26 @@ class PruneLogs extends Command
         ['table' => 'federation_messages',   'days' => 90,  'column' => 'created_at'],
         // Failed sign-ins counted by the hour (Platform team panel → Security). Counts only.
         ['table' => 'sign_in_failure_hours', 'days' => 90,  'column' => 'hour_start'],
+        // One row per push notification sent (Platform team panel → Push notifications).
+        // Pruned across every community; idx_push_log_created_at serves this delete.
+        ['table' => 'push_log',              'days' => 180, 'column' => 'created_at'],
     ];
+
+    /**
+     * How many days the nightly clean-up keeps rows of $table, or null when
+     * the table is not cleaned up by this command. Lets a screen state the
+     * period without repeating the number.
+     */
+    public static function retentionDaysFor(string $table): ?int
+    {
+        foreach (self::RETENTION as $policy) {
+            if ($policy['table'] === $table) {
+                return $policy['days'];
+            }
+        }
+
+        return null;
+    }
 
     public function handle(): int
     {

@@ -24,7 +24,7 @@ class ConnectionsTest extends TestCase
 
     private const URI = '/v2/platform-team/connections';
 
-    private const ROW_KEYS = ['configured', 'group', 'key'];
+    private const ROW_KEYS = ['configured', 'group', 'key', 'optional'];
 
     private const EXPECTED_KEYS = [
         'gmail_api', 'postmark', 'smtp', 'pusher', 'fcm', 'expo', 'web_push', 'stripe', 'stripe_webhook',
@@ -75,10 +75,38 @@ class ConnectionsTest extends TestCase
             sort($rowKeys);
             $this->assertSame(self::ROW_KEYS, $rowKeys);
             $this->assertIsBool($row['configured']);
+            $this->assertIsBool($row['optional']);
             $this->assertIsString($row['group']);
             $keys[] = $row['key'];
         }
         $this->assertSame(self::EXPECTED_KEYS, $keys);
+    }
+
+    /**
+     * Optional = the code that uses the service does its job without the key.
+     * FCMPushService::sendToExpoTokens() and CheckExpoPushReceipts send to
+     * Expo with or without `services.expo.access_token` (it is only added as a
+     * Bearer header when set), and the phone app registers Expo tokens. Every
+     * other row's key is the service itself.
+     */
+    public function test_only_the_expo_key_is_marked_optional_set_or_not(): void
+    {
+        foreach (['', 'expo_PLANTED_tok'] as $token) {
+            config(['services.expo.access_token' => $token]);
+            $this->actAsPlatformTeam();
+            $data = $this->apiGet(self::URI)->assertStatus(200)->json('data');
+
+            $optional = [];
+            foreach ($data['connections'] as $row) {
+                if ($row['optional'] === true) {
+                    $optional[] = $row['key'];
+                }
+                if ($row['key'] === 'expo') {
+                    $this->assertSame($token !== '', $row['configured']);
+                }
+            }
+            $this->assertSame(['expo'], $optional);
+        }
     }
 
     public function test_no_piece_of_any_value_leaves_the_server(): void

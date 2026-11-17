@@ -51,6 +51,8 @@ export interface PushCommunity extends CommunityCounts {
 export interface PushReport {
   available: boolean;
   days: number;
+  /** How many days the nightly clean-up keeps the record (absent from an older server). */
+  kept_days?: number | null;
   /** All null when the record could not be read. */
   by_day: PushDay[] | null;
   by_community: PushCommunity[] | null;
@@ -140,6 +142,11 @@ export function PushNotificationsPage() {
           <h1 className="text-2xl font-semibold text-foreground">{t('push_notifications.title')}</h1>
           <p className="mt-2 max-w-2xl text-base text-muted">{t('push_notifications.intro')}</p>
           <p className="mt-2 max-w-2xl text-sm text-muted">{t('push_notifications.timezone_note')}</p>
+          {typeof report?.kept_days === 'number' ? (
+            <p className="mt-2 max-w-2xl text-sm text-muted">
+              {t('push_notifications.kept_note', { count: report.kept_days })}
+            </p>
+          ) : null}
         </div>
         <FiguresRefresh
           onRefresh={() => void load(days, true)}

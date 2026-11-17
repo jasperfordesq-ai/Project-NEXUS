@@ -260,6 +260,39 @@ class PruneLogsTest extends TestCase
     }
 
     // ---------------------------------------------------------------
+    // push_log (created_at, 180-day retention, every community)
+    // ---------------------------------------------------------------
+
+    public function test_prune_logs_deletes_push_log_rows_older_than_180_days_in_every_community(): void
+    {
+        $otherTenant = 2;
+        $row = static fn (int $tenantId, int $daysAgo): array => [
+            'tenant_id'     => $tenantId,
+            'activity_type' => 'prune_logs_test',
+            'status'        => 'delivered',
+            'created_at'    => now()->subDays($daysAgo)->toDateTimeString(),
+        ];
+
+        $oldHere = DB::table('push_log')->insertGetId($row(self::TENANT_ID, 181));
+        $keptHere = DB::table('push_log')->insertGetId($row(self::TENANT_ID, 179));
+        $oldThere = DB::table('push_log')->insertGetId($row($otherTenant, 200));
+        $keptThere = DB::table('push_log')->insertGetId($row($otherTenant, 179));
+
+        $this->artisan('nexus:prune-logs')->assertExitCode(0);
+
+        $this->assertDatabaseMissing('push_log', ['id' => $oldHere]);
+        $this->assertDatabaseMissing('push_log', ['id' => $oldThere]);
+        $this->assertDatabaseHas('push_log', ['id' => $keptHere]);
+        $this->assertDatabaseHas('push_log', ['id' => $keptThere]);
+    }
+
+    public function test_retention_days_for_reports_the_push_log_policy(): void
+    {
+        $this->assertSame(180, \App\Console\Commands\PruneLogs::retentionDaysFor('push_log'));
+        $this->assertNull(\App\Console\Commands\PruneLogs::retentionDaysFor('no_such_table'));
+    }
+
+    // ---------------------------------------------------------------
     // Command returns 0 even when no tables have qualifying rows
     // ---------------------------------------------------------------
 

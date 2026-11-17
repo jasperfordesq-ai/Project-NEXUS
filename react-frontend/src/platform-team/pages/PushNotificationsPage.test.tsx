@@ -62,6 +62,20 @@ describe('PushNotificationsPage', () => {
     expect(screen.getByText('push_notifications.timezone_note')).toBeInTheDocument();
   });
 
+  it('says how long the record is kept, with the number the server sends', async () => {
+    apiGet.mockResolvedValue(reply(report({ kept_days: 180 })));
+    render(<PushNotificationsPage />);
+
+    expect(await screen.findByText('push_notifications.kept_note|180')).toBeInTheDocument();
+  });
+
+  it('says nothing about keeping when an older server does not send the number', async () => {
+    render(<PushNotificationsPage />);
+
+    await screen.findByTestId('push-day-2026-11-15');
+    expect(screen.queryByText(/push_notifications\.kept_note/)).not.toBeInTheDocument();
+  });
+
   it('shows the four figures for each day, a quiet day included', async () => {
     render(<PushNotificationsPage />);
 

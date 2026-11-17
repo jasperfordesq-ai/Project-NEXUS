@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Cache;
  * answer per number of days). Every answer carries `generated_at`, the time
  * its figures were worked out. `$refresh` works them out again and replaces
  * the kept answer; the controller limits refreshes to
- * REFRESHES_PER_MINUTE per person.
+ * REFRESHES_PER_MINUTE per page and per person (refreshLimitAction()).
  *
  * - A computation that throws is never kept: the error goes to the caller.
  * - An answer with any part not available (hasUnavailablePart()) is kept for
@@ -38,6 +38,17 @@ final class PlatformFiguresCache
     public const REFRESHES_PER_MINUTE = 6;
 
     private const PREFIX = 'platform_team_figures:';
+
+    /**
+     * The rate-limit action for "Check again" on the page a cache key belongs
+     * to: `platform_team_figures_refresh:<page>`, <page> being the key up to
+     * its first `:` (`push_notifications:7` → `push_notifications`). One limit
+     * per page, so one page's refreshes never use up another's.
+     */
+    public static function refreshLimitAction(string $key): string
+    {
+        return 'platform_team_figures_refresh:' . explode(':', $key, 2)[0];
+    }
 
     /** Did the request ask for fresh figures (`?refresh=1`)? */
     public static function wantsRefresh(mixed $value): bool

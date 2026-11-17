@@ -16,6 +16,11 @@ namespace App\Services\PlatformTeam;
  * uses the service reads the environment directly, the same environment value,
  * the same way) as the code that uses it.
  *
+ * `optional` says the code that uses the service does its job without the key,
+ * and the key only adds something extra; the page then shows an unset key as
+ * "not needed" rather than as a gap. Established from the code, row by row:
+ * only `expo` is optional today (see its row).
+ *
  * 🔴 Booleans only. Never a value, a masked value, a length, or any character
  * of one: every row is built from a bool, so nothing else can leave.
  * Platform-wide: these are server settings, not any community's.
@@ -23,13 +28,30 @@ namespace App\Services\PlatformTeam;
 final class ConnectionsService
 {
     /**
-     * @return array{connections: list<array{key: string, group: string, configured: bool}>}
+     * Rows whose key the service works without.
+     *
+     * `expo`: the phone app registers Expo push tokens, and
+     * FCMPushService::sendToExpoTokens() and CheckExpoPushReceipts send them
+     * to Expo's push service with or without `services.expo.access_token`;
+     * the token is added as a Bearer header only when it is set (Expo's
+     * optional "enhanced push security"). Expo tokens do not need `fcm` either:
+     * that key is used only for tokens that are not Expo's.
+     */
+    private const OPTIONAL = ['expo'];
+
+    /**
+     * @return array{connections: list<array{key: string, group: string, configured: bool, optional: bool}>}
      */
     public function report(): array
     {
         $rows = [];
         foreach ($this->checks() as $key => [$group, $check]) {
-            $rows[] = ['key' => $key, 'group' => $group, 'configured' => (bool) $check()];
+            $rows[] = [
+                'key' => $key,
+                'group' => $group,
+                'configured' => (bool) $check(),
+                'optional' => in_array($key, self::OPTIONAL, true),
+            ];
         }
 
         return ['connections' => $rows];
@@ -58,6 +80,7 @@ final class ConnectionsService
             // As FCMPushService::isConfiguredStatic(): the service account file, or the legacy server key.
             'fcm' => ['notifications', fn () => $this->fileExists(config('services.fcm.service_account_path'))
                 || $set('services.fcm.server_key')],
+            // Optional: see self::OPTIONAL.
             'expo' => ['notifications', fn () => $set('services.expo.access_token')],
             'web_push' => ['notifications', fn () => $set('services.vapid.public_key', 'services.vapid.private_key')],
             'stripe' => ['payments', fn () => $set('services.stripe.secret')],

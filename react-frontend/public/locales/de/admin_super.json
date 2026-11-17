@@ -907,7 +907,10 @@
     "partner_api_disable_title": "Deaktivieren Sie die Partner-API",
     "partner_api_disable_confirm": "Alle Integrationen von Drittanbieter-Partnern werden sofort eingestellt, einschließlich Wallet-Vorgängen und Webhook-Bereitstellung. Vorhandene Token und Abonnements bleiben erhalten und werden fortgesetzt, wenn Sie es wieder einschalten.",
     "partner_api_disable_action": "Deaktivieren Sie die Partner-API",
-    "partner_api_reason_placeholder": "z.B. Ausstehende Zugriffsprüfung für externe Partner"
+    "partner_api_reason_placeholder": "z.B. Ausstehende Zugriffsprüfung für externe Partner",
+    "tenant_federation_read_failed": "Die Föderationsdaten dieser Community sind gerade nicht verfügbar. Bitte laden Sie die Seite neu, um es noch einmal zu versuchen.",
+    "manage_whitelist_in_platform_team": "Die Whitelist im Plattform-Team-Bereich ändern",
+    "manage_partnerships_in_platform_team": "Partnerschaften im Plattform-Team-Bereich verwalten"
   },
   "tenant_form": {
     "active": "Aktiv",

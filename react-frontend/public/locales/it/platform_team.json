@@ -682,6 +682,7 @@
     "nav": "Notifiche push",
     "intro": "Quante notifiche sono state inviate ai telefoni e ai browser dei membri, per giorno e per comunità. «Accettate dal servizio push» significa che il servizio ha preso in carico la notifica, non che un telefono l’abbia mostrata. Alcuni tipi di notifica vengono inviati senza essere registrati qui (promemoria degli eventi, avvisi di emergenza e alcuni altri), quindi i numeri reali sono almeno questi.",
     "timezone_note": "I giorni seguono l’ora del server (UTC).",
+    "kept_note": "Ogni registrazione viene conservata per {{count, number}} giorni, poi la pulizia notturna la cancella.",
     "days_picker": "Quanti giorni mostrare",
     "days_option": "Ultimi {{count, number}} giorni",
     "loading": "Caricamento dei dati sulle notifiche push",
@@ -749,6 +750,7 @@
     "not_connected": {
       "title": "Non collegato",
       "needed": "Il servizio errori fornisce questi numeri solo a una sua chiave di accesso in sola lettura, salvata su questo server. Non è stato fatto.",
+      "settings": "Per attivarla servono quattro impostazioni sul server: la chiave di sola lettura (SENTRY_AUTH_TOKEN_MONITOR), l'organizzazione (SENTRY_ORG), il numero o i numeri di progetto (SENTRY_PROJECT_PHP e, se si vuole, SENTRY_PROJECT_REACT e SENTRY_PROJECT_WEBUK) e l'indirizzo della regione dell'organizzazione (SENTRY_API_BASE). L'indirizzo serve per qualsiasi organizzazione fuori dalla regione degli Stati Uniti.",
       "decision": "Se farlo è una decisione del proprietario della piattaforma.",
       "meanwhile": "Fino ad allora, il rapporto notturno sugli errori che ricevi già è il posto dove guardare."
     },
@@ -765,7 +767,11 @@
     "load_error_title": "Impossibile caricare chiavi e collegamenti",
     "status": {
       "set_up": "Configurato",
-      "not_set_up": "Non configurato"
+      "not_set_up": "Non configurato",
+      "not_needed": "Non necessaria: funziona senza chiave"
+    },
+    "optional_adds": {
+      "expo": "Facoltativa. Una chiave aggiunge sicurezza all'invio delle notifiche sul telefono. Senza, vengono inviate comunque."
     },
     "group": {
       "email": "Posta elettronica",
@@ -859,7 +865,7 @@
       },
       "prune_logs": {
         "name": "Vecchie righe dei registri",
-        "deletes": "Cancella le vecchie righe dai registri della piattaforma, come esecuzioni di attività pianificate, pagine non trovate, attività e collegamenti dei partner."
+        "deletes": "Cancella le vecchie righe dai registri della piattaforma, come esecuzioni di attività pianificate, pagine non trovate, attività, collegamenti dei partner e notifiche push."
       },
       "prune_match_notifications": {
         "name": "Registrazioni delle e-mail di abbinamento",

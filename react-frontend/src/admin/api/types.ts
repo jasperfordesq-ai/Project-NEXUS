@@ -2014,7 +2014,24 @@ export interface TenantFederationFeatures {
   events_enabled: boolean;
   groups_enabled: boolean;
   features?: Record<string, boolean>;
-  partnerships?: FederationPartnership[];
+  partnerships?: TenantFederationPartnership[];
+}
+
+/**
+ * One row of `partnerships` in GET /v2/admin/super/federation/tenant/{id}/features
+ * (`FederationPartnershipService::getTenantPartnerships()`): the
+ * `federation_partnerships` columns plus the other side's id, name and domain,
+ * seen from the requested community.
+ */
+export interface TenantFederationPartnership {
+  id: number;
+  tenant_id: number;
+  partner_tenant_id: number;
+  status: 'pending' | 'active' | 'suspended' | 'terminated' | 'rejected';
+  partner_id: number;
+  partner_name: string | null;
+  partner_domain: string | null;
+  created_at?: string | null;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

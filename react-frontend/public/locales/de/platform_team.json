@@ -682,6 +682,7 @@
     "nav": "Push-Benachrichtigungen",
     "intro": "Wie viele Benachrichtigungen an die Handys und Browser der Mitglieder gesendet wurden, nach Tag und nach Gemeinschaft. „Vom Push-Dienst angenommen“ heißt, dass der Dienst die Benachrichtigung entgegengenommen hat, nicht dass ein Handy sie angezeigt hat. Manche Arten von Benachrichtigungen werden gesendet, ohne hier erfasst zu werden (Erinnerungen an Veranstaltungen, Notfallwarnungen und einige andere). Die tatsächlichen Zahlen sind also mindestens so hoch.",
     "timezone_note": "Die Tage richten sich nach der Serverzeit (UTC).",
+    "kept_note": "Jeder Eintrag wird {{count, number}} Tage lang aufbewahrt und dann von der nächtlichen Bereinigung gelöscht.",
     "days_picker": "Wie viele Tage angezeigt werden",
     "days_option": "Letzte {{count, number}} Tage",
     "loading": "Zahlen zu Push-Benachrichtigungen werden geladen",
@@ -749,6 +750,7 @@
     "not_connected": {
       "title": "Nicht verbunden",
       "needed": "Der Fehlerdienst gibt diese Zahlen nur an einen eigenen Zugangsschlüssel mit reinem Leserecht heraus, der auf diesem Server gespeichert ist. Das ist nicht geschehen.",
+      "settings": "Zum Einschalten braucht der Server vier Einstellungen: den Nur-Lese-Schlüssel (SENTRY_AUTH_TOKEN_MONITOR), die Organisation (SENTRY_ORG), die Projektnummer oder -nummern (SENTRY_PROJECT_PHP und bei Bedarf SENTRY_PROJECT_REACT und SENTRY_PROJECT_WEBUK) und die Adresse für die Region der Organisation (SENTRY_API_BASE). Die Adresse ist für jede Organisation außerhalb der US-Region nötig.",
       "decision": "Ob das geschehen soll, entscheidet der Eigentümer der Plattform.",
       "meanwhile": "Bis dahin ist der nächtliche Fehlerbericht, den Sie bereits erhalten, die richtige Stelle zum Nachsehen."
     },
@@ -765,7 +767,11 @@
     "load_error_title": "Schlüssel und Verbindungen konnten nicht geladen werden",
     "status": {
       "set_up": "Eingerichtet",
-      "not_set_up": "Nicht eingerichtet"
+      "not_set_up": "Nicht eingerichtet",
+      "not_needed": "Nicht nötig – funktioniert ohne Schlüssel"
+    },
+    "optional_adds": {
+      "expo": "Optional. Ein Schlüssel macht das Senden von Handy-Benachrichtigungen sicherer. Ohne ihn werden sie trotzdem gesendet."
     },
     "group": {
       "email": "E-Mail",
@@ -859,7 +865,7 @@
       },
       "prune_logs": {
         "name": "Alte Protokolleinträge",
-        "deletes": "Löscht alte Zeilen aus den Protokollen der Plattform, etwa Läufe geplanter Aufgaben, nicht gefundene Seiten, Aktivitäten und Partnerverbindungen."
+        "deletes": "Löscht alte Zeilen aus den Protokollen der Plattform, etwa Läufe geplanter Aufgaben, nicht gefundene Seiten, Aktivitäten, Partnerverbindungen und Push-Benachrichtigungen."
       },
       "prune_match_notifications": {
         "name": "Aufzeichnungen zu Treffer-E-Mails",

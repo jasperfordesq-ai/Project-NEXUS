@@ -1158,12 +1158,14 @@ class RegionalPanelIsolationTest extends TestCase
         $this->withTenant($this->hubId);
         Sanctum::actingAs($platform);
 
-        // The federation whitelist, not the overview: the overview has been the
+        // The super admin audit log: the federation overview has been the
         // platform team's (is_god AND super admin) since 15 Nov 2026 (E-128,
-        // O-291, owner decision), while the whitelist is still open to any
-        // global super admin. This account has no is_god flag.
-        $this->assertSame(200, $this->apiGet('/v2/admin/super/federation/whitelist')->getStatusCode());
+        // O-291), and the whitelist since 17 Nov 2026 (owner decision, O-292),
+        // while the audit log stays open to any global super admin. This
+        // account has no is_god flag.
+        $this->assertSame(200, $this->apiGet('/v2/admin/super/audit')->getStatusCode());
         $this->assertSame(403, $this->apiGet('/v2/admin/super/federation')->getStatusCode());
+        $this->assertSame(403, $this->apiGet('/v2/admin/super/federation/whitelist')->getStatusCode());
     }
 
     public function test_an_ordinary_admin_reaches_neither_tier(): void

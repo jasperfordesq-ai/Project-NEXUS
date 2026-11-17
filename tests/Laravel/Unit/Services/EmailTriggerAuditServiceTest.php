@@ -329,6 +329,122 @@ class EmailTriggerAuditServiceTest extends TestCase
         $this->assertNotContains('notification_queue_marked_sent_without_email_log', $codes);
     }
 
+    /** @return list<array<string,mixed>> */
+    private function sentWithoutLogIssues(): array
+    {
+        $result = app(EmailTriggerAuditService::class)->run(2, 24);
+
+        return array_values(array_filter(
+            $result['issues'],
+            fn (array $issue) => $issue['code'] === 'notification_queue_marked_sent_without_email_log'
+        ));
+    }
+
+    /** @param list<array<string,mixed>> $issues */
+    private function flaggedCount(array $issues): int
+    {
+        return array_sum(array_map(fn (array $issue) => (int) ($issue['params']['count'] ?? 0), $issues));
+    }
+
+    /**
+     * A sent instant queue row plus, optionally, one email_log row after it.
+     * Returns how many MORE tenant-2 queue rows the check flags than before
+     * (other rows in the local database may already be flagged), and the issues.
+     *
+     * @return array{0: int, 1: list<array<string,mixed>>}
+     */
+    private function queueRowWithEmail(string $activityType, ?string $emailCategory, string $emailStatus = 'delivered'): array
+    {
+        $before = $this->flaggedCount($this->sentWithoutLogIssues());
+
+        $userId = DB::table('users')->insertGetId([
+            'tenant_id' => 2,
+            'name' => 'Queue Category Evidence User',
+            'email' => 'queue-category-evidence-' . bin2hex(random_bytes(4)) . '@example.test',
+            'role' => 'member',
+            'status' => 'active',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('notification_queue')->insert([
+            'tenant_id' => 2,
+            'user_id' => $userId,
+            'activity_type' => $activityType,
+            'content_snippet' => 'Queue category audit row',
+            'link' => '/connections',
+            'status' => 'sent',
+            'frequency' => 'instant',
+            'sent_at' => now()->subMinute(),
+            'created_at' => now()->subMinutes(3),
+        ]);
+
+        if ($emailCategory !== null) {
+            DB::table('email_log')->insert([
+                'tenant_id' => 2,
+                'user_id' => $userId,
+                'recipient_email' => 'queue-category-evidence@example.test',
+                'category' => $emailCategory,
+                'subject' => 'Queue category audit row',
+                'provider' => 'sendgrid',
+                'status' => $emailStatus,
+                'created_at' => now()->subMinutes(2),
+                'updated_at' => now()->subMinutes(2),
+            ]);
+        }
+
+        $issues = $this->sentWithoutLogIssues();
+
+        return [$this->flaggedCount($issues) - $before, $issues];
+    }
+
+    /**
+     * Measured on live data (17 Nov 2026): every `connection_request` row
+     * marked sent had a delivered `connection` email after it, yet each was
+     * flagged critical, because `connection` was not an evidence category.
+     */
+    public function test_a_connection_request_with_a_delivered_connection_email_is_not_flagged(): void
+    {
+        if (!Schema::hasTable('notification_queue') || !Schema::hasTable('email_log')) {
+            $this->markTestSkipped('Notification queue/email log tables are not available.');
+        }
+
+        [$added] = $this->queueRowWithEmail('connection_request', 'connection');
+
+        $this->assertSame(0, $added);
+    }
+
+    public function test_a_sent_queue_row_with_no_email_at_all_is_still_flagged_critical(): void
+    {
+        if (!Schema::hasTable('notification_queue') || !Schema::hasTable('email_log')) {
+            $this->markTestSkipped('Notification queue/email log tables are not available.');
+        }
+
+        [$added, $issues] = $this->queueRowWithEmail('connection_request', null);
+
+        $this->assertSame(1, $added);
+        $this->assertNotSame([], $issues);
+        $this->assertSame('critical', $issues[0]['severity']);
+    }
+
+    /**
+     * The cause, pinned: every category under which the instant/digest queue
+     * sender logs an email (CronJobRunner::resolveNotificationQueueAuditCategory)
+     * must count as evidence for a sent queue row.
+     */
+    public function test_every_category_the_queue_sender_logs_under_is_evidence(): void
+    {
+        $evidence = (new \ReflectionMethod(EmailTriggerAuditService::class, 'notificationQueueEvidenceCategories'))
+            ->invoke(app(EmailTriggerAuditService::class));
+
+        foreach (\App\Services\CronJobRunner::notificationQueueAuditCategories() as $category) {
+            $this->assertContains($category, $evidence, "Queue emails logged as '{$category}' would be flagged as never sent");
+        }
+        foreach (['connection', 'group', 'exchange', 'job_alert', 'message', 'notification_queue'] as $category) {
+            $this->assertContains($category, \App\Services\CronJobRunner::notificationQueueAuditCategories());
+        }
+    }
+
     public function test_run_detects_recent_group_join_without_owner_notification_queue(): void
     {
         if (!Schema::hasTable('groups') || !Schema::hasTable('group_members') || !Schema::hasTable('notification_queue')) {

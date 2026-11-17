@@ -2593,7 +2593,9 @@ class AdminSuperController extends BaseApiController
     /** GET /api/v2/super-admin/federation/whitelist */
     public function federationGetWhitelist(): JsonResponse
     {
-        $this->requireSuperAdmin();
+        // Platform team only (owner decision 17 Nov 2026, closes O-292): the
+        // whitelist and the partnerships are installation-wide.
+        $this->requireGodPlatformAdmin();
 
         $whitelisted = $this->federationFeatureService->getWhitelistedTenants();
 
@@ -2603,7 +2605,9 @@ class AdminSuperController extends BaseApiController
     /** POST /api/v2/super-admin/federation/whitelist */
     public function federationAddToWhitelist(): JsonResponse
     {
-        $userId = $this->requirePlatformSuperAdmin();
+        // Platform team only (owner decision 17 Nov 2026, closes O-292): the
+        // whitelist and the partnerships are installation-wide.
+        $userId = $this->requireGodPlatformAdmin();
 
         $input = $this->getAllInput();
         $tenantId = (int) ($input['tenant_id'] ?? 0);
@@ -2625,7 +2629,9 @@ class AdminSuperController extends BaseApiController
     /** DELETE /api/v2/super-admin/federation/whitelist/{tenantId} */
     public function federationRemoveFromWhitelist($tenantId): JsonResponse
     {
-        $userId = $this->requirePlatformSuperAdmin();
+        // Platform team only (owner decision 17 Nov 2026, closes O-292): the
+        // whitelist and the partnerships are installation-wide.
+        $userId = $this->requireGodPlatformAdmin();
 
         $tenantId = (int) $tenantId;
 
@@ -2645,7 +2651,9 @@ class AdminSuperController extends BaseApiController
     /** GET /api/v2/super-admin/federation/partnerships */
     public function federationPartnerships(): JsonResponse
     {
-        $this->requireSuperAdmin();
+        // Platform team only (owner decision 17 Nov 2026, closes O-292): the
+        // whitelist and the partnerships are installation-wide.
+        $this->requireGodPlatformAdmin();
 
         $partnerships = $this->federationPartnershipService->getAllPartnerships(null, 100);
         $stats = $this->federationPartnershipService->getStats();
@@ -2659,7 +2667,9 @@ class AdminSuperController extends BaseApiController
     /** POST /api/v2/super-admin/federation/partnerships/{id}/suspend */
     public function federationSuspendPartnership($id): JsonResponse
     {
-        $userId = $this->requirePlatformSuperAdmin();
+        // Platform team only (owner decision 17 Nov 2026, closes O-292): the
+        // whitelist and the partnerships are installation-wide.
+        $userId = $this->requireGodPlatformAdmin();
 
         $partnershipId = (int) $id;
 
@@ -2685,7 +2695,8 @@ class AdminSuperController extends BaseApiController
     {
         // Same check as suspend and terminate, on purpose (E-128): it is the
         // undo of suspend, so whoever may suspend must be able to put it back.
-        $userId = $this->requirePlatformSuperAdmin();
+        // Platform team only since 17 Nov 2026 (owner decision, O-292).
+        $userId = $this->requireGodPlatformAdmin();
 
         $partnershipId = (int) $id;
 
@@ -2706,7 +2717,9 @@ class AdminSuperController extends BaseApiController
     /** POST /api/v2/super-admin/federation/partnerships/{id}/terminate */
     public function federationTerminatePartnership($id): JsonResponse
     {
-        $userId = $this->requirePlatformSuperAdmin();
+        // Platform team only (owner decision 17 Nov 2026, closes O-292): the
+        // whitelist and the partnerships are installation-wide.
+        $userId = $this->requireGodPlatformAdmin();
 
         $partnershipId = (int) $id;
 

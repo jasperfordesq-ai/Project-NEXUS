@@ -17331,7 +17331,8 @@ CREATE TABLE `push_log` (
   KEY `push_log_tenant_created_idx` (`tenant_id`,`created_at`),
   KEY `push_log_tenant_status_idx` (`tenant_id`,`status`),
   KEY `push_log_activity_type_idx` (`activity_type`),
-  KEY `push_log_user_id_idx` (`user_id`)
+  KEY `push_log_user_id_idx` (`user_id`),
+  KEY `idx_push_log_created_at` (`created_at`)
 ) ENGINE=InnoDB AUTO_INCREMENT=226 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `push_subscriptions`;

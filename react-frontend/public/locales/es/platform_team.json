@@ -682,6 +682,7 @@
     "nav": "Notificaciones push",
     "intro": "Cuántas notificaciones se enviaron a los teléfonos y navegadores de los miembros, por día y por comunidad. «Aceptada por el servicio push» significa que el servicio recibió la notificación, no que un teléfono la mostrara. Algunos tipos de notificación se envían sin registrarse aquí (recordatorios de eventos, alertas de emergencia y algunos otros), así que las cifras reales son al menos estas.",
     "timezone_note": "Los días siguen la hora del servidor (UTC).",
+    "kept_note": "Cada registro se conserva durante {{count, number}} días y después la limpieza nocturna lo borra.",
     "days_picker": "Cuántos días mostrar",
     "days_option": "Últimos {{count, number}} días",
     "loading": "Cargando las cifras de notificaciones push",
@@ -749,6 +750,7 @@
     "not_connected": {
       "title": "Sin conectar",
       "needed": "El servicio de errores solo da estas cifras a una clave de acceso propia de solo lectura, guardada en este servidor. Eso no se ha hecho.",
+      "settings": "Para activarla, el servidor necesita cuatro ajustes: la clave de solo lectura (SENTRY_AUTH_TOKEN_MONITOR), la organización (SENTRY_ORG), el número o los números de proyecto (SENTRY_PROJECT_PHP y, si se quiere, SENTRY_PROJECT_REACT y SENTRY_PROJECT_WEBUK) y la dirección de la región de la organización (SENTRY_API_BASE). La dirección hace falta para cualquier organización fuera de la región de EE. UU.",
       "decision": "Hacerlo o no es una decisión del propietario de la plataforma.",
       "meanwhile": "Mientras tanto, el informe nocturno de errores que ya recibe es el lugar donde mirar."
     },
@@ -765,7 +767,11 @@
     "load_error_title": "No se pudieron cargar las claves y conexiones",
     "status": {
       "set_up": "Configurado",
-      "not_set_up": "Sin configurar"
+      "not_set_up": "Sin configurar",
+      "not_needed": "No hace falta: funciona sin clave"
+    },
+    "optional_adds": {
+      "expo": "Opcional. Una clave añade seguridad al enviar notificaciones al teléfono. Sin ella, se siguen enviando."
     },
     "group": {
       "email": "Correo electrónico",
@@ -859,7 +865,7 @@
       },
       "prune_logs": {
         "name": "Registros antiguos",
-        "deletes": "Borra filas antiguas de los registros de la plataforma, como ejecuciones de tareas programadas, páginas no encontradas, actividad y conexiones de socios."
+        "deletes": "Borra filas antiguas de los registros de la plataforma, como ejecuciones de tareas programadas, páginas no encontradas, actividad, conexiones de socios y notificaciones push."
       },
       "prune_match_notifications": {
         "name": "Registros de correos de coincidencias",

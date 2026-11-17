@@ -30,7 +30,7 @@ class PushNotificationsTest extends TestCase
     private const URI = '/v2/platform-team/push-notifications';
 
     /** Exactly what the page shows. Anything else must not leave the server. */
-    private const TOP_KEYS = ['available', 'by_community', 'by_day', 'days', 'generated_at', 'no_community'];
+    private const TOP_KEYS = ['available', 'by_community', 'by_day', 'days', 'generated_at', 'kept_days', 'no_community'];
 
     private const DAY_KEYS = ['accepted', 'date', 'failed', 'nobody_to_send_to', 'partial'];
 
@@ -140,6 +140,24 @@ class PushNotificationsTest extends TestCase
         foreach (['planted-token-fragment-abc123', 'Planted push title', '987654', 'new_message'] as $planted) {
             $this->assertStringNotContainsString($planted, $body);
         }
+    }
+
+    /** The page says how long the record is kept; the number is the nightly clean-up's own. */
+    public function test_it_says_how_many_days_the_record_is_kept(): void
+    {
+        $this->actAsPlatformTeam();
+
+        $this->assertSame(180, $this->data()['kept_days']);
+        $this->assertSame(\App\Console\Commands\PruneLogs::retentionDaysFor('push_log'), (new PushNotificationsService())->report(7)['kept_days']);
+    }
+
+    /** The longest window the page offers is inside what the clean-up keeps, so no day shown is half-deleted. */
+    public function test_the_longest_window_offered_is_within_the_kept_period(): void
+    {
+        $this->assertLessThanOrEqual(
+            (int) \App\Console\Commands\PruneLogs::retentionDaysFor('push_log'),
+            PushNotificationsService::MAX_DAYS,
+        );
     }
 
     public function test_it_counts_each_day_by_outcome_and_lists_quiet_days_with_zeros(): void

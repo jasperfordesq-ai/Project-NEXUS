@@ -49,9 +49,12 @@ class TranslationCoverageTest extends TestCase
 
     protected function tearDown(): void
     {
-        Cache::forget(TranslationCoverageService::CACHE_KEY);
-        $this->removeTree($this->dir);
-        parent::tearDown();
+        try {
+            Cache::forget(TranslationCoverageService::CACHE_KEY);
+            $this->removeTree($this->dir);
+        } finally {
+            parent::tearDown();
+        }
     }
 
     private function removeTree(string $path): void
@@ -192,6 +195,33 @@ class TranslationCoverageTest extends TestCase
 
         // 5 phrases of `emails` (no file) + the empty one.
         $this->assertSame(6, $fr['missing']);
+    }
+
+    /**
+     * Measured on the live server (17 Nov 2026): three phrases in
+     * `govuk_alpha.php` whose English text is the empty string were counted as
+     * "missing" in every language. A phrase with no English text is not a phrase.
+     */
+    public function test_a_phrase_whose_english_text_is_empty_is_never_counted(): void
+    {
+        $this->english();
+        $this->writePhp('en', 'pages', [
+            'intro' => '',
+            'other_intro' => '   ',
+            'blank_one' => '',
+            'blank_other' => ' ',
+            'real' => 'Real words',
+        ]);
+        // German: empty where English is empty, text where English is empty, the real one empty.
+        $this->writePhp('de', 'pages', ['intro' => '', 'other_intro' => 'Etwas', 'real' => '']);
+        // Spanish: the real one translated, nothing where English is empty.
+        $this->writePhp('es', 'pages', ['real' => 'Palabras reales']);
+
+        $rows = $this->byLocale($this->data());
+
+        // 8 from the base fixture + `real`; the English-empty ones are left out.
+        $this->assertSame(['keys' => 9, 'missing' => 9, 'same_as_english' => 0], array_intersect_key($rows['de'], ['keys' => 1, 'missing' => 1, 'same_as_english' => 1]));
+        $this->assertSame(['keys' => 9, 'missing' => 8, 'same_as_english' => 0], array_intersect_key($rows['es'], ['keys' => 1, 'missing' => 1, 'same_as_english' => 1]));
     }
 
     public function test_a_namespace_with_both_files_is_counted_once_from_the_file_that_serves_each_phrase(): void

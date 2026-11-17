@@ -690,6 +690,7 @@
     "nav": "Powiadomienia push",
     "intro": "Ile powiadomień wysłano na telefony i do przeglądarek członków, według dni i społeczności. „Przyjęte przez usługę push” oznacza, że usługa przyjęła powiadomienie, a nie że telefon je wyświetlił. Niektóre rodzaje powiadomień są wysyłane bez zapisu tutaj (przypomnienia o wydarzeniach, alerty alarmowe i kilka innych), więc rzeczywiste liczby są co najmniej takie.",
     "timezone_note": "Dni liczone są według czasu serwera (UTC).",
+    "kept_note": "Każdy wpis jest przechowywany przez {{count, number}} dni, a potem usuwa go nocne czyszczenie.",
     "days_picker": "Ile dni pokazać",
     "days_option": "Ostatnie dni: {{count, number}}",
     "loading": "Wczytywanie liczb powiadomień push",
@@ -757,6 +758,7 @@
     "not_connected": {
       "title": "Brak połączenia",
       "needed": "Usługa błędów podaje te liczby tylko własnemu kluczowi dostępu tylko do odczytu, zapisanemu na tym serwerze. Tego nie zrobiono.",
+      "settings": "Aby to włączyć, serwer potrzebuje czterech ustawień: klucza tylko do odczytu (SENTRY_AUTH_TOKEN_MONITOR), organizacji (SENTRY_ORG), numeru lub numerów projektu (SENTRY_PROJECT_PHP oraz w razie potrzeby SENTRY_PROJECT_REACT i SENTRY_PROJECT_WEBUK) oraz adresu regionu organizacji (SENTRY_API_BASE). Adres jest potrzebny każdej organizacji spoza regionu USA.",
       "decision": "Czy to zrobić, decyduje właściciel platformy.",
       "meanwhile": "Do tego czasu warto zaglądać do nocnego raportu o błędach, który już otrzymujesz."
     },
@@ -773,7 +775,11 @@
     "load_error_title": "Nie udało się wczytać kluczy i połączeń",
     "status": {
       "set_up": "Skonfigurowane",
-      "not_set_up": "Nieskonfigurowane"
+      "not_set_up": "Nieskonfigurowane",
+      "not_needed": "Niepotrzebny – działa bez klucza"
+    },
+    "optional_adds": {
+      "expo": "Opcjonalny. Klucz zwiększa bezpieczeństwo wysyłania powiadomień na telefon. Bez niego powiadomienia i tak są wysyłane."
     },
     "group": {
       "email": "Poczta e-mail",
@@ -867,7 +873,7 @@
       },
       "prune_logs": {
         "name": "Stare wpisy w dziennikach",
-        "deletes": "Usuwa stare wiersze z dzienników platformy, np. uruchomienia zaplanowanych zadań, nieznalezione strony, aktywność i połączenia partnerów."
+        "deletes": "Usuwa stare wiersze z dzienników platformy, np. uruchomienia zaplanowanych zadań, nieznalezione strony, aktywność, połączenia partnerów i powiadomienia push."
       },
       "prune_match_notifications": {
         "name": "Zapisy e-maili o dopasowaniach",

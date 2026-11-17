@@ -682,6 +682,7 @@
     "nav": "Notifications push",
     "intro": "Combien de notifications ont été envoyées aux téléphones et navigateurs des membres, par jour et par communauté. « Acceptées par le service push » signifie que le service a pris la notification, pas qu’un téléphone l’a affichée. Certains types de notification sont envoyés sans être enregistrés ici (rappels d’événements, alertes d’urgence et quelques autres) : les chiffres réels sont donc au moins ceux-ci.",
     "timezone_note": "Les jours suivent l’heure du serveur (UTC).",
+    "kept_note": "Chaque enregistrement est conservé {{count, number}} jours, puis le nettoyage nocturne le supprime.",
     "days_picker": "Nombre de jours à afficher",
     "days_option": "{{count, number}} derniers jours",
     "loading": "Chargement des chiffres des notifications push",
@@ -749,6 +750,7 @@
     "not_connected": {
       "title": "Non connecté",
       "needed": "Le service d’erreurs ne donne ces chiffres qu’à une clé d’accès à lui, en lecture seule, enregistrée sur ce serveur. Cela n’a pas été fait.",
+      "settings": "Pour l'activer, le serveur a besoin de quatre réglages : la clé en lecture seule (SENTRY_AUTH_TOKEN_MONITOR), l'organisation (SENTRY_ORG), le ou les numéros de projet (SENTRY_PROJECT_PHP et, si besoin, SENTRY_PROJECT_REACT et SENTRY_PROJECT_WEBUK) et l'adresse de la région de l'organisation (SENTRY_API_BASE). L'adresse est nécessaire pour toute organisation hors de la région des États-Unis.",
       "decision": "Le faire ou non est une décision du propriétaire de la plateforme.",
       "meanwhile": "D’ici là, le rapport d’erreurs que vous recevez déjà chaque nuit est l’endroit où regarder."
     },
@@ -765,7 +767,11 @@
     "load_error_title": "Impossible de charger les clés et connexions",
     "status": {
       "set_up": "Configuré",
-      "not_set_up": "Non configuré"
+      "not_set_up": "Non configuré",
+      "not_needed": "Pas nécessaire : fonctionne sans clé"
+    },
+    "optional_adds": {
+      "expo": "Facultatif. Une clé renforce la sécurité de l'envoi des notifications sur téléphone. Sans clé, elles sont quand même envoyées."
     },
     "group": {
       "email": "E-mail",
@@ -859,7 +865,7 @@
       },
       "prune_logs": {
         "name": "Anciennes lignes de journal",
-        "deletes": "Supprime les anciennes lignes des journaux de la plateforme : exécutions de tâches planifiées, pages introuvables, activité, connexions des partenaires."
+        "deletes": "Supprime les anciennes lignes des journaux de la plateforme : exécutions de tâches planifiées, pages introuvables, activité, connexions des partenaires, notifications push."
       },
       "prune_match_notifications": {
         "name": "Relevés des e-mails de correspondance",
