@@ -57,7 +57,7 @@ final class PlatformHealthService
     /** The queue verdict is re-written every few minutes; older than this says nothing about now. */
     private const QUEUE_VERDICT_STALE_SECONDS = 3600;
 
-    /** backup:verify runs once a day; a verdict older than this says nothing about now. Also read by AssuranceFactsService. */
+    /** backup:verify runs every six hours; a verdict older than this says nothing about now. Also read by AssuranceFactsService. */
     public const BACKUP_VERDICT_STALE_SECONDS = 26 * 3600;
 
     public function __construct(
@@ -434,7 +434,7 @@ final class PlatformHealthService
     }
 
     /**
-     * The verdict `backup:verify` leaves every morning (BackupVerify::VERDICT_KEY).
+     * The verdict `backup:verify` leaves four times a day (BackupVerify::VERDICT_KEY).
      * Older than BACKUP_VERDICT_STALE_SECONDS, or none at all (a developer's
      * computer), says nothing about now: unknown.
      *

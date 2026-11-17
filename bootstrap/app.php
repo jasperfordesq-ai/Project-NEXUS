@@ -171,10 +171,19 @@ $app = Application::configure(basePath: dirname(__DIR__))
         // local log, so a stopped cron / unreachable DB / full disk would let
         // backups silently lapse until a restore is needed and there's nothing
         // to restore. This alarms (log -> Sentry -> Slack + non-zero exit) if the
-        // newest nexus_db_*.sql.gz is missing, zero-byte, or > ~26h old. Runs
-        // mid-morning, well after the 02:00 nightly backup window + retries.
+        // newest nexus_db_*.sql.gz is missing, zero-byte, or > ~26h old.
+        //
+        // 🔴 Four times a day (03:30, 09:30, 15:30, 21:30), not once. Each run
+        // leaves the verdict the Platform team's backup card reads, and the
+        // card stops trusting a verdict after 26 hours. At one run a day a
+        // single missed run blanked the card for a day (17 Nov 2026) while
+        // the backups were fine. Six hours apart, three runs in a row have to
+        // be missed first. A lost 02:00 backup is still first reported at
+        // 09:30 (at 03:30 the previous night's is 25.5h old, inside the
+        // limit), then again at each later run until it is put right.
+        // Pinned by BackupVerifyScheduleTest.
         $schedule->command('backup:verify')
-            ->dailyAt('09:30')
+            ->cron('30 3,9,15,21 * * *')
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground()

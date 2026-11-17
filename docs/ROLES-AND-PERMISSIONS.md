@@ -792,7 +792,9 @@ error text are never selected. A record that cannot be read gives
 `readable: false`, never "no record". Two home page cards read alongside it:
 `clean_up` (the worst state on the page) and `backup` (the verdict
 `backup:verify` now writes to `backup:verify:status`; older than 26 hours is
-`unknown`). Neither carries anything about a member or a community.
+`unknown`; the command runs four times a day, at 03:30, 09:30, 15:30 and
+21:30, so one missed run does not blank the card). Neither carries anything
+about a member or a community.
 
 Agreements and renewals (`/platform-team/agreements`;
 `PlatformAgreementService`, 16 November 2026): the platform team's own list

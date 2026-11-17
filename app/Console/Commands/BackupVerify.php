@@ -28,7 +28,9 @@ use Illuminate\Support\Facades\Log;
  * threshold (~26h, giving the nightly run + retries headroom). It does NOT take
  * a backup — it only verifies one exists and is fresh.
  *
- * Scheduled daily via bootstrap/app.php. Modelled on StuckStripeWebhookCheck /
+ * Scheduled four times a day via bootstrap/app.php (03:30, 09:30, 15:30,
+ * 21:30), so one missed run does not leave the Platform team's backup card
+ * without an answer. Modelled on StuckStripeWebhookCheck /
  * SloCheck: each alert leg is guarded and non-fatal, degrading to log-only when
  * Sentry/Slack are unconfigured.
  *
