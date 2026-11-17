@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace App\Services\PlatformTeam;
 
+use App\Support\Scheduling\CleanUpStepFailures;
 use App\Support\Scheduling\ScheduledCommandStamps;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -28,7 +29,10 @@ use Illuminate\Support\Facades\Log;
  *     rows after 30 days, so an older run is no longer known. 🔴 These jobs
  *     catch their own steps' errors and still record `success`, so their
  *     rows carry `checked_by: finished_only`: a success means the job
- *     finished, not that every step worked.
+ *     finished, not that every step worked. The four in NOTES_STEPS note
+ *     each failed step (CleanUpStepFailures); once they have, their row
+ *     carries `checked_by: record` and `steps_failed` (null for every other
+ *     row), and a last run with a failed step is `failing`.
  *   - `retention:enforce` additionally reads `tenant_retention_runs`
  *     (`completed` / `failed`), its own record of each pass.
  *
@@ -82,7 +86,14 @@ final class CleanUpJobsService
         'purge_verification_sessions' => ['source' => 'runner', 'name' => 'purge-verification-sessions', 'how_often' => 'weekly'],
     ];
 
-    /** @return array{jobs: list<array{key: string, how_often: string, last_ok_at: ?string, last_failed_at: ?string, status: string, readable: bool, checked_by: 'record'|'finished_only'}>} */
+    /**
+     * The runner jobs (`cron_logs.job_id`) that note each failed step through
+     * CleanUpStepFailures (16 Nov 2026). For them, a last run with a failed
+     * step is `failing` with `steps_failed`, although its log says success.
+     */
+    public const NOTES_STEPS = ['cleanup', 'cleanup-sessions', 'abuse-cleanup', 'gamification-cleanup'];
+
+    /** @return array{jobs: list<array{key: string, how_often: string, last_ok_at: ?string, last_failed_at: ?string, status: string, readable: bool, checked_by: 'record'|'finished_only', steps_failed: ?int}>} */
     public function report(): array
     {
         $runner = $this->runnerTimes();
@@ -122,18 +133,30 @@ final class CleanUpJobsService
                 $failed = null;
             }
 
+            // The runner jobs that note their failed steps (CleanUpStepFailures):
+            // null until the first noted run, then that run's count.
+            $steps = $readable && in_array($job['name'], self::NOTES_STEPS, true)
+                ? CleanUpStepFailures::lastRun($job['name'])
+                : null;
+            $status = $readable ? self::status($ok, $failed, $job['how_often']) : self::UNKNOWN;
+            if ($steps !== null && $steps['steps_failed'] > 0) {
+                $status = self::FAILING;
+                $failed = self::newer($failed, $steps['last_failed_at']);
+            }
+
             $jobs[] = [
                 'key' => $key,
                 'how_often' => $job['how_often'],
                 'last_ok_at' => $ok,
                 'last_failed_at' => $failed,
-                'status' => $readable ? self::status($ok, $failed, $job['how_often']) : self::UNKNOWN,
+                'status' => $status,
                 'readable' => $readable,
                 // What a success in the record proves. The runner's jobs catch
                 // their own steps' errors and still log success, so for them
-                // it proves only that the job finished (CronJobRunner is not
-                // changed for this; the page says so in words).
-                'checked_by' => $job['source'] === 'runner' ? 'finished_only' : 'record',
+                // it proves only that the job finished — unless the job notes
+                // its failed steps and has done so at least once.
+                'checked_by' => $job['source'] === 'runner' && $steps === null ? 'finished_only' : 'record',
+                'steps_failed' => $steps !== null ? $steps['steps_failed'] : null,
             ];
         }
 

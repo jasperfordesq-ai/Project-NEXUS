@@ -110,6 +110,28 @@ describe('AccessReviewPage', () => {
     expect(within(first).getAllByRole('radio')).toHaveLength(2);
   });
 
+  // A suspended or banned senior account is the first thing a reviewer needs to see.
+  it('says in words when an account is not active, and nothing for an active one', async () => {
+    apiGet.mockResolvedValue(
+      ok(
+        review({
+          accounts: [
+            account(),
+            account({ id: 2, name: 'Blair Example', level: 'global_super_admin', status: 'suspended' }),
+            account({ id: 3, name: 'Casey Other', level: 'tenant_super_admin', status: 'something_new' }),
+          ],
+        }),
+      ),
+    );
+    render(<AccessReviewPage />);
+
+    expect(await within(await screen.findByTestId('review-account-2')).findByText('Suspended')).toBeInTheDocument();
+    expect(within(screen.getByTestId('review-account-3')).getByText('Not active')).toBeInTheDocument();
+    const active = screen.getByTestId('review-account-1');
+    expect(within(active).queryByText('Suspended')).not.toBeInTheDocument();
+    expect(within(active).queryByText('Not active')).not.toBeInTheDocument();
+  });
+
   it('says plainly that recording a review changes nobody\'s access', async () => {
     render(<AccessReviewPage />);
 

@@ -39,7 +39,10 @@
     "group_joining": "Aanmelden en rollen",
     "group_site": "Site en zoeken",
     "group_reports": "Rapporten",
-    "group_matching": "Matching"
+    "group_matching": "Matching",
+    "group_jobs": "Geplande taken",
+    "group_tools": "Hulpmiddelen",
+    "group_phone": "Telefoon-app"
   },
   "breadcrumbs": {
     "aria_label": "Waar je bent",
@@ -146,7 +149,7 @@
     "load_error_title": "We konden de mislukte taken nu niet laden",
     "empty_title": "Er wacht niets",
     "empty_text": "Er is geen achtergrondtaak mislukt, of ze zijn allemaal afgehandeld.",
-    "count": "Wachten op een blik: {{count}}",
+    "count": "Wachten op een blik: {{count, number}}",
     "unknown_job": "Naam niet vastgelegd",
     "no_reason": "Er is geen reden vastgelegd.",
     "queue": "Wachtrij:",
@@ -173,11 +176,13 @@
       "title": "App-versies in gebruik",
       "coverage": "Deze cijfers gelden alleen voor telefoons die zich hebben aangemeld nadat de app-versie werd bijgehouden. In het begin staan de meeste aanmeldingen dus als ‘niet vastgelegd’.",
       "version": "Versie {{version}}",
-      "sign_ins_one": "{{count}} aanmelding",
-      "sign_ins_other": "{{count}} aanmeldingen",
-      "not_recorded_one": "{{count}} aanmelding zonder vastgelegde versie",
-      "not_recorded_other": "{{count}} aanmeldingen zonder vastgelegde versie",
-      "none_yet": "Er is nog van geen enkele telefoon een app-versie vastgelegd."
+      "sign_ins_one": "{{count, number}} aanmelding",
+      "sign_ins_other": "{{count, number}} aanmeldingen",
+      "not_recorded_one": "{{count, number}} aanmelding zonder vastgelegde versie",
+      "not_recorded_other": "{{count, number}} aanmeldingen zonder vastgelegde versie",
+      "none_yet": "Er is nog van geen enkele telefoon een app-versie vastgelegd.",
+      "unreadable": "Deze cijfers konden nu niet worden gelezen.",
+      "not_recorded_unknown": "Aanmeldingen zonder vastgelegde versie: niet bekend"
     }
   },
   "senior_accounts": {
@@ -186,9 +191,9 @@
     "read_only_note": "Deze pagina laat deze accounts alleen zien. Hier wordt geen toegang gegeven of afgenomen.",
     "loading": "De accounts op hoog niveau worden geladen",
     "load_error_title": "We konden de accounts op hoog niveau nu niet laden",
-    "without_two_step": "Inloggen in twee stappen staat uit bij {{count}} van deze {{total}} accounts.",
+    "without_two_step": "Inloggen in twee stappen staat uit bij {{count, number}} van deze {{total}} accounts.",
     "all_have_two_step": "Inloggen in twee stappen staat aan bij alle {{total}} accounts.",
-    "truncated": "Alleen de eerste {{count}} accounts worden getoond.",
+    "truncated": "Alleen de eerste {{count, number}} accounts worden getoond.",
     "none_at_level": "Geen accounts op dit niveau.",
     "level": {
       "platform_team": "Platformteam",
@@ -234,8 +239,8 @@
     "too_many": "Dat zijn veel zoekopdrachten. Wacht een minuut en probeer het dan opnieuw.",
     "none": "Geen account gebruikt dat adres",
     "none_note": "Alle gemeenschappen zijn nagekeken. Gewiste accounts worden nooit gevonden.",
-    "found": "Gevonden accounts: {{count}}",
-    "truncated": "Alleen de eerste {{count}} accounts worden getoond.",
+    "found": "Gevonden accounts: {{count, number}}",
+    "truncated": "Alleen de eerste {{count, number}} accounts worden getoond.",
     "role_label": "Rol:",
     "role": {
       "member": "Lid",
@@ -287,10 +292,10 @@
     "not_recorded": "Niet vastgelegd",
     "by": "Door:",
     "when": "Wanneer:",
-    "truncated": "Alleen de nieuwste {{count}} worden getoond.",
+    "truncated": "Alleen de nieuwste {{count, number}} worden getoond.",
     "two_step": {
       "title": "Inloggen in twee stappen bij accounts op hoog niveau",
-      "off": "Inloggen in twee stappen staat uit bij {{count}} van de {{total}} accounts op hoog niveau.",
+      "off": "Inloggen in twee stappen staat uit bij {{count, number}} van de {{total}} accounts op hoog niveau.",
       "all_on": "Inloggen in twee stappen staat aan bij alle {{total}} accounts op hoog niveau.",
       "link": "Bekijk de accounts op hoog niveau"
     },
@@ -309,7 +314,9 @@
       "most_from_one_15m": "De meeste vanaf één adres in de afgelopen 15 minuten",
       "checks_title": "Mislukte wachtwoordcontroles",
       "refused_title": "Geweigerd door de blokkering",
-      "col_refused": "Geweigerd door de blokkering in de afgelopen 24 uur:"
+      "col_refused": "Geweigerd door de blokkering in de afgelopen 24 uur:",
+      "no_community": "Niet gekoppeld aan een gemeenschap",
+      "by_community_title": "Per gemeenschap, afgelopen 24 uur"
     },
     "access": {
       "title": "Toegang op hoog niveau gegeven en ingetrokken",
@@ -337,7 +344,7 @@
     "loading": "De gemeenschappen worden geladen",
     "load_error_title": "We konden de gemeenschappen nu niet laden",
     "empty": "Er zijn nog geen gemeenschappen.",
-    "community_count": "Gemeenschappen: {{count}}",
+    "community_count": "Gemeenschappen: {{count, number}}",
     "on": "Aan",
     "off": "Uit",
     "held": "Hier aan, maar uitgezet voor het hele platform",
@@ -348,7 +355,7 @@
     "modules_note": "De onderdelen waarmee elke gemeenschap begint. Een gemeenschap kan er toch een uitzetten.",
     "switch_column": "Schakelaar",
     "count_column": "Hoeveel",
-    "on_in": "Aan in {{count}} van {{total}}",
+    "on_in": "Aan in {{count, number}} van {{total}}",
     "on_everywhere": "Aan in elke gemeenschap.",
     "off_everywhere": "Uit in elke gemeenschap.",
     "off_in": "Uit in: {{names}}",
@@ -433,7 +440,7 @@
       "emails_kept_90_days": "E-mailgegevens worden 90 dagen bewaard, dus deze maand kan niet worden getoond."
     },
     "totals_heading": "Alle gemeenschappen samen",
-    "communities_heading": "Elke gemeenschap ({{count}})",
+    "communities_heading": "Elke gemeenschap ({{count, number}})",
     "empty": "Er zijn nog geen gemeenschappen.",
     "emails_heading": "E-mails",
     "ai_heading": "AI-chat",
@@ -470,8 +477,8 @@
     "loading": "Gezondheid van de gemeenschappen laden",
     "load_error_title": "We konden de gezondheid van de gemeenschappen nu niet laden",
     "empty": "Er zijn nog geen gemeenschappen.",
-    "community_count": "Gemeenschappen: {{count}}",
-    "quiet_count": "Stille gemeenschappen: {{count}}",
+    "community_count": "Gemeenschappen: {{count, number}}",
+    "quiet_count": "Stille gemeenschappen: {{count, number}}",
     "quiet_names": "Stil: {{names}}",
     "none_quiet": "Geen enkele gemeenschap is stil.",
     "quiet_rule": "Een gemeenschap heet stil als ze aanstaat en er ofwel in de afgelopen {{days}} dagen geen lid actief was, ofwel er deze maand en vorige maand geen enkele ruil was.",
@@ -503,7 +510,7 @@
     "loading": "Inrichting van gemeenschappen laden",
     "load_error_title": "We konden de inrichting van gemeenschappen nu niet laden",
     "empty": "Er zijn nog geen gemeenschappen.",
-    "community_count": "Gemeenschappen: {{count}}",
+    "community_count": "Gemeenschappen: {{count, number}}",
     "truncated": "De {{shown}} nieuwste van {{total}} gemeenschappen worden getoond.",
     "terms_note": "Voorwaarden worden automatisch toegevoegd als een gemeenschap wordt aangemaakt, dus een vinkje bij voorwaarden zegt minder dan de andere.",
     "not_recorded": "Nergens wordt bijgehouden of het e-mailverkeer van een gemeenschap is getest, dus deze pagina toont dat niet.",
@@ -534,8 +541,8 @@
     "read_only": "Deze pagina toont alleen. Een functie wordt aan- of uitgezet in het beheerpaneel van die gemeenschap.",
     "loading": "De onafgemaakte functies worden geladen",
     "load_error_title": "We konden de onafgemaakte functies nu niet laden",
-    "summary": "Functies in de lijst: {{count}}",
-    "summary_on_somewhere": "Aan in minstens één gemeenschap: {{count}}",
+    "summary": "Functies in de lijst: {{count, number}}",
+    "summary_on_somewhere": "Aan in minstens één gemeenschap: {{count, number}}",
     "stage": {
       "alpha": "Vroege test (alfa)",
       "beta": "Late test (bèta)"
@@ -545,7 +552,7 @@
     "note": {
       "not_for_use": "Niet voor gebruik. Mag voor geen enkele gemeenschap worden aangezet."
     },
-    "on_in": "Gemeenschappen waar ze aanstaat: {{count}}",
+    "on_in": "Gemeenschappen waar ze aanstaat: {{count, number}}",
     "on_names": "Aan in: {{names}}",
     "on_nowhere": "Staat in geen enkele gemeenschap aan"
   },
@@ -558,8 +565,8 @@
     "loading": "Gegevensverzoeken laden",
     "load_error_title": "We konden de gegevensverzoeken nu niet laden",
     "empty": "Er zijn nog geen gemeenschappen.",
-    "community_count": "Gemeenschappen: {{count}}",
-    "overdue_count": "Gemeenschappen met een te laat verzoek: {{count}}",
+    "community_count": "Gemeenschappen: {{count, number}}",
+    "overdue_count": "Gemeenschappen met een te laat verzoek: {{count, number}}",
     "overdue_names": "Te laat: {{names}}",
     "none_overdue": "Geen enkele gemeenschap heeft een te laat verzoek.",
     "overdue_unknown": "We kunnen nu niet zeggen of er een verzoek te laat is.",
@@ -588,7 +595,7 @@
       "portability": "Een overdracht",
       "objection": "Een bezwaar"
     },
-    "completed_without_date": "Afgehandelde verzoeken zonder afhandeldatum, dus niet in het 90-dagengetal: {{count}}"
+    "completed_without_date": "Afgehandelde verzoeken zonder afhandeldatum, dus niet in het 90-dagengetal: {{count, number}}"
   },
   "legal_documents": {
     "title": "Juridische documenten",
@@ -598,8 +605,8 @@
     "counts_only": "Alleen aantallen. Op deze pagina wordt geen lid genoemd.",
     "loading": "Juridische documenten laden",
     "load_error_title": "We konden de juridische documenten nu niet laden",
-    "community_count": "Gemeenschappen: {{count}}",
-    "no_privacy_count": "Gemeenschappen zonder gepubliceerde privacyverklaring: {{count}}",
+    "community_count": "Gemeenschappen: {{count, number}}",
+    "no_privacy_count": "Gemeenschappen zonder gepubliceerde privacyverklaring: {{count, number}}",
     "no_privacy_names": "Zonder: {{names}}",
     "all_have_privacy": "Elke gemeenschap heeft een gepubliceerde privacyverklaring.",
     "privacy_unknown": "We kunnen nu niet zien welke gemeenschappen een privacyverklaring hebben.",
@@ -610,8 +617,8 @@
     "date_unknown": "datum niet vastgelegd",
     "no_acceptance_needed": "Leden wordt niet gevraagd dit document te accepteren.",
     "members_not_available": "Wie heeft geaccepteerd: niet beschikbaar",
-    "members_not_accepted": "Nog niet geaccepteerd: {{count}} van {{asked}} gevraagde leden",
-    "all_accepted": "Geaccepteerd door alle gevraagde leden ({{count}})",
+    "members_not_accepted": "Nog niet geaccepteerd: {{count, number}} van {{asked}} gevraagde leden",
+    "all_accepted": "Geaccepteerd door alle gevraagde leden ({{count, number}})",
     "status": {
       "published": "Gepubliceerd",
       "not_published": "Niet gepubliceerd",
@@ -662,10 +669,10 @@
     "history_title": "Recente controles",
     "history_none": "Nog geen controles.",
     "history_by": "Vastgelegd door {{name}}",
-    "history_accounts_one": "{{count}} gebruikersaccount",
-    "history_accounts_other": "{{count}} gebruikersaccounts",
-    "history_removals_one": "{{count}} gemarkeerd als moet weg",
-    "history_removals_other": "{{count}} gemarkeerd als moet weg",
+    "history_accounts_one": "{{count, number}} gebruikersaccount",
+    "history_accounts_other": "{{count, number}} gebruikersaccounts",
+    "history_removals_one": "{{count, number}} gemarkeerd als moet weg",
+    "history_removals_other": "{{count, number}} gemarkeerd als moet weg",
     "erased": "Gewist account",
     "refresh_failed": "De beoordeling kon niet opnieuw worden geladen. Wat je ziet is van eerder.",
     "note_no_names": "Noem geen mensen bij naam in de notitie. Die wordt bij het verslag bewaard."
@@ -676,12 +683,12 @@
     "intro": "Hoeveel meldingen er naar de telefoons en browsers van leden zijn gestuurd, per dag en per gemeenschap. „Aangenomen door de pushdienst” betekent dat de dienst de melding heeft aangenomen, niet dat een telefoon hem heeft getoond. Sommige soorten meldingen worden verstuurd zonder hier te worden vastgelegd (herinneringen aan evenementen, noodmeldingen en enkele andere), dus de echte aantallen zijn minstens deze.",
     "timezone_note": "De dagen volgen de tijd van de server (UTC).",
     "days_picker": "Hoeveel dagen tonen",
-    "days_option": "Laatste {{count}} dagen",
+    "days_option": "Laatste {{count, number}} dagen",
     "loading": "Cijfers over pushmeldingen laden",
     "load_error_title": "De cijfers over pushmeldingen konden niet worden geladen",
     "not_available": "Niet beschikbaar: het overzicht van pushmeldingen kon niet worden gelezen. Dat betekent niet dat er geen zijn verstuurd.",
     "by_day_heading": "Elke dag",
-    "by_community_heading": "Elke gemeenschap ({{count}})",
+    "by_community_heading": "Elke gemeenschap ({{count, number}})",
     "by_community_note": "Totalen over de hele periode. „Niemand om naar te sturen” staat alleen per dag.",
     "no_community_heading": "Niet aan een gemeenschap gekoppeld",
     "no_community_note": "Meldingen die zonder gemeenschap zijn vastgelegd. Ze tellen mee in de dagcijfers.",
@@ -702,8 +709,8 @@
     "no_record_title": "Deze server houdt geen verslag van uitrols bij",
     "no_record_text": "Alleen de live server houdt er een bij, dus op de computer van een ontwikkelaar is dit normaal.",
     "empty": "Er is nog niets vastgelegd.",
-    "skipped": "Regels in het verslag die niet gelezen konden worden en zijn overgeslagen: {{count}}",
-    "count": "Getoonde uitrols en terugdraaiingen: {{count}}",
+    "skipped": "Regels in het verslag die niet gelezen konden worden en zijn overgeslagen: {{count, number}}",
+    "count": "Getoonde uitrols en terugdraaiingen: {{count, number}}",
     "not_recorded": "Niet vastgelegd",
     "kind": {
       "deploy": "Uitrol",
@@ -903,7 +910,8 @@
         "deletes": "Verwijdert afgeronde of verlopen identiteitscontroles ouder dan 180 dagen. Wat er bij elke controle gebeurde, blijft bewaard."
       }
     },
-    "finished_only": "Deze taak legt vast dat hij klaar is, niet dat elke stap gelukt is."
+    "finished_only": "Deze taak legt vast dat hij klaar is, niet dat elke stap gelukt is.",
+    "steps_failed": "Stappen die bij de laatste run mislukten: {{count, number}}"
   },
   "search_rebuild": {
     "title": "Zoekfunctie opnieuw opbouwen",
@@ -930,10 +938,10 @@
       "never": "Nooit vanaf deze pagina uitgevoerd",
       "queued": "Wacht om te starten",
       "running": "Loopt sinds {{time}}",
-      "done_one": "Klaar {{time}}: {{count}} item bijgewerkt",
-      "done_other": "Klaar {{time}}: {{count}} items bijgewerkt",
-      "done_with_errors_one": "Klaar {{time}} met {{count}} item dat niet kon worden bijgewerkt",
-      "done_with_errors_other": "Klaar {{time}} met {{count}} items die niet konden worden bijgewerkt",
+      "done_one": "Klaar {{time}}: {{count, number}} item bijgewerkt",
+      "done_other": "Klaar {{time}}: {{count, number}} items bijgewerkt",
+      "done_with_errors_one": "Klaar {{time}} met {{count, number}} item dat niet kon worden bijgewerkt",
+      "done_with_errors_other": "Klaar {{time}} met {{count, number}} items die niet konden worden bijgewerkt",
       "failed": "Mislukt"
     },
     "check_failed": "Kon om {{time}} niet opnieuw controleren"
@@ -1048,8 +1056,8 @@
     },
     "data_requests": {
       "title": "Verzoeken over persoonsgegevens",
-      "open": "Open, over alle gemeenschappen: {{count}}",
-      "overdue": "Langer dan 30 dagen open: {{count}}"
+      "open": "Open, over alle gemeenschappen: {{count, number}}",
+      "overdue": "Langer dan 30 dagen open: {{count, number}}"
     },
     "failed_sign_ins": {
       "title": "Overzicht van mislukte aanmeldingen",
@@ -1082,8 +1090,8 @@
     },
     "status": {
       "ok": "In orde",
-      "warning_one": "Certificaat verloopt over {{count}} dag",
-      "warning_other": "Certificaat verloopt over {{count}} dagen",
+      "warning_one": "Certificaat verloopt over {{count, number}} dag",
+      "warning_other": "Certificaat verloopt over {{count, number}} dagen",
       "failing": "Werkt niet",
       "unknown": "Nog niet gecontroleerd",
       "not_checkable": "Geen webadres dat we kunnen controleren",
@@ -1105,5 +1113,8 @@
     "too_many": "Te veel controles in een minuut. Wacht even en probeer het opnieuw.",
     "check_now_for": "{{name}} nu controleren",
     "check_platform_now": "De adressen van het platform nu controleren"
+  },
+  "shared": {
+    "figures_from": "Cijfers van {{time}}"
   }
 }

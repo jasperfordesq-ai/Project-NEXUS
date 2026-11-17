@@ -39,7 +39,10 @@
     "group_joining": "参加と役割",
     "group_site": "サイトと検索",
     "group_reports": "レポート",
-    "group_matching": "マッチング"
+    "group_matching": "マッチング",
+    "group_jobs": "定期実行ジョブ",
+    "group_tools": "ツール",
+    "group_phone": "スマホアプリ"
   },
   "breadcrumbs": {
     "aria_label": "現在の場所",
@@ -146,7 +149,7 @@
     "load_error_title": "いま失敗した処理を読み込めませんでした",
     "empty_title": "待機中のものはありません",
     "empty_text": "失敗したバックグラウンド処理はないか、すべて対応済みです。",
-    "count": "確認待ち：{{count}}",
+    "count": "確認待ち：{{count, number}}",
     "unknown_job": "名前の記録なし",
     "no_reason": "理由は記録されていません。",
     "queue": "キュー：",
@@ -173,11 +176,13 @@
       "title": "使用中のアプリのバージョン",
       "coverage": "この数字は、アプリのバージョンの記録を始めた後にサインインしたスマートフォンだけが対象です。そのため、最初はほとんどのサインインが「記録なし」になります。",
       "version": "バージョン {{version}}",
-      "sign_ins_one": "{{count}} 件のサインイン",
-      "sign_ins_other": "{{count}} 件のサインイン",
-      "not_recorded_one": "バージョンの記録がないサインイン：{{count}} 件",
-      "not_recorded_other": "バージョンの記録がないサインイン：{{count}} 件",
-      "none_yet": "アプリのバージョンを記録したスマートフォンはまだありません。"
+      "sign_ins_one": "{{count, number}} 件のサインイン",
+      "sign_ins_other": "{{count, number}} 件のサインイン",
+      "not_recorded_one": "バージョンの記録がないサインイン：{{count, number}} 件",
+      "not_recorded_other": "バージョンの記録がないサインイン：{{count, number}} 件",
+      "none_yet": "アプリのバージョンを記録したスマートフォンはまだありません。",
+      "unreadable": "この数値は今は読み取れませんでした。",
+      "not_recorded_unknown": "バージョンの記録がないサインイン：不明"
     }
   },
   "senior_accounts": {
@@ -186,9 +191,9 @@
     "read_only_note": "このページはこれらのアカウントを表示するだけです。ここで権限を与えたり取り消したりすることはできません。",
     "loading": "上位アカウントを読み込んでいます",
     "load_error_title": "いま上位アカウントを読み込めませんでした",
-    "without_two_step": "これら{{total}}件のアカウントのうち{{count}}件で、2段階サインインが無効です。",
+    "without_two_step": "これら{{total}}件のアカウントのうち{{count, number}}件で、2段階サインインが無効です。",
     "all_have_two_step": "これら{{total}}件のアカウントすべてで、2段階サインインが有効です。",
-    "truncated": "最初の{{count}}件のアカウントのみ表示しています。",
+    "truncated": "最初の{{count, number}}件のアカウントのみ表示しています。",
     "none_at_level": "このレベルのアカウントはありません。",
     "level": {
       "platform_team": "プラットフォームチーム",
@@ -234,8 +239,8 @@
     "too_many": "検索の回数が多すぎます。1分待ってから、もう一度お試しください。",
     "none": "そのアドレスを使っているアカウントはありません",
     "none_note": "すべてのコミュニティを確認しました。消去されたアカウントは見つかりません。",
-    "found": "見つかったアカウント：{{count}}",
-    "truncated": "最初の{{count}}件のアカウントのみ表示しています。",
+    "found": "見つかったアカウント：{{count, number}}",
+    "truncated": "最初の{{count, number}}件のアカウントのみ表示しています。",
     "role_label": "ロール：",
     "role": {
       "member": "メンバー",
@@ -287,10 +292,10 @@
     "not_recorded": "記録なし",
     "by": "実行者：",
     "when": "日時：",
-    "truncated": "最新の{{count}}件のみ表示しています。",
+    "truncated": "最新の{{count, number}}件のみ表示しています。",
     "two_step": {
       "title": "上位アカウントの2段階サインイン",
-      "off": "上位アカウント{{total}}件のうち{{count}}件で、2段階サインインが無効です。",
+      "off": "上位アカウント{{total}}件のうち{{count, number}}件で、2段階サインインが無効です。",
       "all_on": "上位アカウント{{total}}件すべてで、2段階サインインが有効です。",
       "link": "上位アカウントを見る"
     },
@@ -309,7 +314,9 @@
       "most_from_one_15m": "過去15分間に1つのアドレスからの最多件数",
       "checks_title": "パスワード確認の失敗",
       "refused_title": "ロックによる拒否",
-      "col_refused": "過去24時間のロックによる拒否："
+      "col_refused": "過去24時間のロックによる拒否：",
+      "no_community": "どのコミュニティにも属さない",
+      "by_community_title": "コミュニティ別（過去24時間）"
     },
     "access": {
       "title": "上位権限の付与と取り消し",
@@ -337,7 +344,7 @@
     "loading": "コミュニティを読み込んでいます",
     "load_error_title": "いまコミュニティを読み込めませんでした",
     "empty": "コミュニティはまだありません。",
-    "community_count": "コミュニティ：{{count}}",
+    "community_count": "コミュニティ：{{count, number}}",
     "on": "有効",
     "off": "無効",
     "held": "ここでは有効ですが、プラットフォーム全体で無効になっています",
@@ -348,7 +355,7 @@
     "modules_note": "すべてのコミュニティが最初から持っている部分です。コミュニティが無効にすることもできます。",
     "switch_column": "スイッチ",
     "count_column": "件数",
-    "on_in": "{{total}}件中{{count}}件で有効",
+    "on_in": "{{total}}件中{{count, number}}件で有効",
     "on_everywhere": "すべてのコミュニティで有効です。",
     "off_everywhere": "すべてのコミュニティで無効です。",
     "off_in": "無効のコミュニティ：{{names}}",
@@ -433,7 +440,7 @@
       "emails_kept_90_days": "メールの記録は90日間だけ保存されるため、この月は表示できません。"
     },
     "totals_heading": "すべてのコミュニティの合計",
-    "communities_heading": "各コミュニティ（{{count}}）",
+    "communities_heading": "各コミュニティ（{{count, number}}）",
     "empty": "まだコミュニティがありません。",
     "emails_heading": "メール",
     "ai_heading": "AIチャット",
@@ -470,8 +477,8 @@
     "loading": "コミュニティの状態を読み込んでいます",
     "load_error_title": "いまはコミュニティの状態を読み込めませんでした",
     "empty": "まだコミュニティがありません。",
-    "community_count": "コミュニティ数：{{count}}",
-    "quiet_count": "静かなコミュニティ：{{count}}",
+    "community_count": "コミュニティ数：{{count, number}}",
+    "quiet_count": "静かなコミュニティ：{{count, number}}",
     "quiet_names": "静か：{{names}}",
     "none_quiet": "静かなコミュニティはありません。",
     "quiet_rule": "有効になっているコミュニティで、過去{{days}}日間に活動したメンバーがいない場合、または今月も先月も交換が一度もない場合に「静か」とします。",
@@ -503,7 +510,7 @@
     "loading": "コミュニティの準備状況を読み込んでいます",
     "load_error_title": "コミュニティの準備状況を今は読み込めませんでした",
     "empty": "まだコミュニティがありません。",
-    "community_count": "コミュニティ数: {{count}}",
+    "community_count": "コミュニティ数: {{count, number}}",
     "truncated": "{{total}} 件のコミュニティのうち、新しい {{shown}} 件を表示しています。",
     "terms_note": "利用規約はコミュニティ作成時に自動で追加されるため、利用規約のチェックは他の項目ほど意味を持ちません。",
     "not_recorded": "コミュニティのメール送信がテスト済みかどうかはどこにも記録されていないため、このページには表示しません。",
@@ -534,8 +541,8 @@
     "read_only": "このページは表示専用です。機能のオン・オフは、各コミュニティの管理パネルで切り替えます。",
     "loading": "未完成の機能を読み込んでいます",
     "load_error_title": "未完成の機能を今は読み込めませんでした",
-    "summary": "一覧の機能数：{{count}}",
-    "summary_on_somewhere": "1つ以上のコミュニティでオン：{{count}}",
+    "summary": "一覧の機能数：{{count, number}}",
+    "summary_on_somewhere": "1つ以上のコミュニティでオン：{{count, number}}",
     "stage": {
       "alpha": "初期テスト（アルファ）",
       "beta": "後期テスト（ベータ）"
@@ -545,7 +552,7 @@
     "note": {
       "not_for_use": "使用禁止です。どのコミュニティでもオンにしてはいけません。"
     },
-    "on_in": "オンにしているコミュニティ数：{{count}}",
+    "on_in": "オンにしているコミュニティ数：{{count, number}}",
     "on_names": "オン：{{names}}",
     "on_nowhere": "どのコミュニティでもオンになっていません"
   },
@@ -558,8 +565,8 @@
     "loading": "データに関する請求を読み込んでいます",
     "load_error_title": "現在、データに関する請求を読み込めませんでした",
     "empty": "まだコミュニティがありません。",
-    "community_count": "コミュニティ数：{{count}}",
-    "overdue_count": "期限を過ぎた請求があるコミュニティ：{{count}}",
+    "community_count": "コミュニティ数：{{count, number}}",
+    "overdue_count": "期限を過ぎた請求があるコミュニティ：{{count, number}}",
     "overdue_names": "期限切れ：{{names}}",
     "none_overdue": "期限を過ぎた請求があるコミュニティはありません。",
     "overdue_unknown": "現在、期限を過ぎた請求があるかどうかわかりません。",
@@ -588,7 +595,7 @@
       "portability": "データの移転",
       "objection": "異議"
     },
-    "completed_without_date": "完了日のない完了済みリクエスト（90日間の数には含まれません）：{{count}}"
+    "completed_without_date": "完了日のない完了済みリクエスト（90日間の数には含まれません）：{{count, number}}"
   },
   "legal_documents": {
     "title": "法的文書",
@@ -598,8 +605,8 @@
     "counts_only": "数のみです。このページにメンバーの名前は表示されません。",
     "loading": "法的文書を読み込んでいます",
     "load_error_title": "現在、法的文書を読み込めませんでした",
-    "community_count": "コミュニティ数：{{count}}",
-    "no_privacy_count": "プライバシー通知が公開されていないコミュニティ：{{count}}",
+    "community_count": "コミュニティ数：{{count, number}}",
+    "no_privacy_count": "プライバシー通知が公開されていないコミュニティ：{{count, number}}",
     "no_privacy_names": "未公開：{{names}}",
     "all_have_privacy": "すべてのコミュニティでプライバシー通知が公開されています。",
     "privacy_unknown": "どのコミュニティにプライバシー通知があるか、今は確認できません。",
@@ -610,8 +617,8 @@
     "date_unknown": "日付の記録なし",
     "no_acceptance_needed": "この文書はメンバーに承諾を求めていません。",
     "members_not_available": "承諾した人：表示できません",
-    "members_not_accepted": "未承諾：承諾を求められた{{asked}}人中{{count}}人",
-    "all_accepted": "承諾を求められた全員が承諾済み（{{count}}人）",
+    "members_not_accepted": "未承諾：承諾を求められた{{asked}}人中{{count, number}}人",
+    "all_accepted": "承諾を求められた全員が承諾済み（{{count, number}}人）",
     "status": {
       "published": "公開済み",
       "not_published": "未公開",
@@ -662,10 +669,10 @@
     "history_title": "最近の見直し",
     "history_none": "まだ見直しはありません。",
     "history_by": "記録者：{{name}}",
-    "history_accounts_one": "{{count}} 件のアカウント",
-    "history_accounts_other": "{{count}} 件のアカウント",
-    "history_removals_one": "外すべき：{{count}} 件",
-    "history_removals_other": "外すべき：{{count}} 件",
+    "history_accounts_one": "{{count, number}} 件のアカウント",
+    "history_accounts_other": "{{count, number}} 件のアカウント",
+    "history_removals_one": "外すべき：{{count, number}} 件",
+    "history_removals_other": "外すべき：{{count, number}} 件",
     "erased": "消去されたアカウント",
     "refresh_failed": "レビューを再読み込みできませんでした。表示されているのは以前の内容です。",
     "note_no_names": "メモに人の名前を書かないでください。メモは記録と一緒に保存されます。"
@@ -676,12 +683,12 @@
     "intro": "メンバーの携帯電話やブラウザに送られた通知の数を、日ごと・コミュニティごとに示します。「プッシュサービスが受け付けた」とは、サービスが通知を受け取ったという意味で、携帯電話に表示されたという意味ではありません。一部の種類の通知（イベントのリマインダー、緊急アラートなど）は、ここに記録されずに送られます。そのため、実際の数はこれ以上です。",
     "timezone_note": "日付はサーバーの時刻（UTC）で区切っています。",
     "days_picker": "表示する日数",
-    "days_option": "直近{{count}}日",
+    "days_option": "直近{{count, number}}日",
     "loading": "プッシュ通知の数を読み込んでいます",
     "load_error_title": "プッシュ通知の数を読み込めませんでした",
     "not_available": "利用できません：プッシュ通知の記録を読み取れませんでした。何も送られなかったという意味ではありません。",
     "by_day_heading": "日ごと",
-    "by_community_heading": "各コミュニティ（{{count}}）",
+    "by_community_heading": "各コミュニティ（{{count, number}}）",
     "by_community_note": "期間全体の合計です。「送り先なし」は日ごとにのみ表示します。",
     "no_community_heading": "コミュニティに結び付いていないもの",
     "no_community_note": "コミュニティなしで記録された通知です。日ごとの数には含まれています。",
@@ -702,8 +709,8 @@
     "no_record_title": "このサーバーにはデプロイの記録がありません",
     "no_record_text": "記録を持つのは本番サーバーだけなので、開発者のパソコンではこれが正常です。",
     "empty": "まだ何も記録されていません。",
-    "skipped": "読み取れずにスキップした記録の行数：{{count}}",
-    "count": "表示中のデプロイとロールバック：{{count}}件",
+    "skipped": "読み取れずにスキップした記録の行数：{{count, number}}",
+    "count": "表示中のデプロイとロールバック：{{count, number}}件",
     "not_recorded": "記録なし",
     "kind": {
       "deploy": "デプロイ",
@@ -903,7 +910,8 @@
         "deletes": "180日を過ぎた、完了済みまたは期限切れの本人確認を削除します。各確認で何があったかの記録は残ります。"
       }
     },
-    "finished_only": "このジョブが記録するのは終了したことだけで、すべての手順がうまくいったことではありません。"
+    "finished_only": "このジョブが記録するのは終了したことだけで、すべての手順がうまくいったことではありません。",
+    "steps_failed": "前回の実行で失敗した手順: {{count, number}}"
   },
   "search_rebuild": {
     "title": "検索の再構築",
@@ -930,10 +938,10 @@
       "never": "このページから実行されたことはありません",
       "queued": "開始を待っています",
       "running": "{{time}} から実行中",
-      "done_one": "{{time}} に完了：{{count}} 件を更新しました",
-      "done_other": "{{time}} に完了：{{count}} 件を更新しました",
-      "done_with_errors_one": "{{time}} に完了：{{count}} 件を更新できませんでした",
-      "done_with_errors_other": "{{time}} に完了：{{count}} 件を更新できませんでした",
+      "done_one": "{{time}} に完了：{{count, number}} 件を更新しました",
+      "done_other": "{{time}} に完了：{{count, number}} 件を更新しました",
+      "done_with_errors_one": "{{time}} に完了：{{count, number}} 件を更新できませんでした",
+      "done_with_errors_other": "{{time}} に完了：{{count, number}} 件を更新できませんでした",
       "failed": "失敗しました"
     },
     "check_failed": "{{time}} に再確認できませんでした"
@@ -1048,8 +1056,8 @@
     },
     "data_requests": {
       "title": "個人データに関する依頼",
-      "open": "全コミュニティで未処理: {{count}}",
-      "overdue": "30日を超えて未処理: {{count}}"
+      "open": "全コミュニティで未処理: {{count, number}}",
+      "overdue": "30日を超えて未処理: {{count, number}}"
     },
     "failed_sign_ins": {
       "title": "失敗したサインインの記録",
@@ -1082,8 +1090,8 @@
     },
     "status": {
       "ok": "問題なし",
-      "warning_one": "証明書はあと{{count}}日で期限切れになります",
-      "warning_other": "証明書はあと{{count}}日で期限切れになります",
+      "warning_one": "証明書はあと{{count, number}}日で期限切れになります",
+      "warning_other": "証明書はあと{{count, number}}日で期限切れになります",
       "failing": "動作していません",
       "unknown": "まだ確認されていません",
       "not_checkable": "確認できるウェブアドレスではありません",
@@ -1105,5 +1113,8 @@
     "too_many": "1分間の確認回数が多すぎます。少し待ってからもう一度お試しください。",
     "check_now_for": "{{name}} を今すぐ確認",
     "check_platform_now": "プラットフォームのアドレスを今すぐ確認"
+  },
+  "shared": {
+    "figures_from": "{{time}} 時点の数値"
   }
 }

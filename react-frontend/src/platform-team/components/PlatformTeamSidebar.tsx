@@ -140,18 +140,32 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
           title: t('sidebar.group_health'),
           items: [
             { label: tNav('monitoring'), icon: Heart, path: `${P}/enterprise/monitoring` },
+            { label: t('deployments.title'), icon: Rocket, path: `${P}/deployments` },
+            { label: t('errors.title'), icon: Bug, path: `${P}/errors` },
+            { label: t('home.card.failed_jobs'), icon: RotateCcw, path: `${P}/failed-jobs` },
+            { label: t('domains.title'), icon: GlobeLock, path: `${P}/domains` },
+            { label: tNav('error_404_tracking'), icon: AlertTriangle, path: `${P}/404-errors` },
+            { label: t('nav.tests'), icon: Stethoscope, path: `${P}/tests` },
+          ],
+        },
+        {
+          // The scheduled jobs: their list, their record, how they are set up.
+          key: 'jobs',
+          title: t('sidebar.group_jobs'),
+          items: [
             { label: tNav('cron_jobs'), icon: Timer, path: `${P}/cron-jobs` },
             { label: tNav('cron_logs'), icon: FileText, path: `${P}/cron-jobs/logs` },
             { label: tNav('cron_setup'), icon: Wrench, path: `${P}/cron-jobs/setup` },
             { label: tNav('cron_settings'), icon: Settings, path: `${P}/cron-jobs/settings` },
-            { label: tNav('prerender_engine'), icon: Zap, path: `${P}/seo/prerender` },
-            { label: t('home.card.failed_jobs'), icon: RotateCcw, path: `${P}/failed-jobs` },
-            { label: t('deployments.title'), icon: Rocket, path: `${P}/deployments` },
-            { label: t('errors.title'), icon: Bug, path: `${P}/errors` },
+          ],
+        },
+        {
+          // Things to run by hand when something needs rebuilding.
+          key: 'tools',
+          title: t('sidebar.group_tools'),
+          items: [
             { label: t('search_rebuild.title'), icon: SearchCheck, path: `${P}/search-rebuild` },
-            { label: t('domains.title'), icon: GlobeLock, path: `${P}/domains` },
-            { label: tNav('error_404_tracking'), icon: AlertTriangle, path: `${P}/404-errors` },
-            { label: t('nav.tests'), icon: Stethoscope, path: `${P}/tests` },
+            { label: tNav('prerender_engine'), icon: Zap, path: `${P}/seo/prerender` },
           ],
         },
         {
@@ -172,14 +186,21 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
             { label: t('glance.nav'), icon: Grid3x3, path: `${P}/communities` },
             { label: t('community_health.nav'), icon: HeartPulse, path: `${P}/community-health` },
             { label: t('community_setup.nav'), icon: ListChecks, path: `${P}/community-setup` },
+            { label: t('usage.nav'), icon: Gauge, path: `${P}/usage` },
+            { label: t('unfinished_features.nav'), icon: FlaskConical, path: `${P}/unfinished-features` },
+            { label: tNav('platform_capabilities'), icon: SlidersHorizontal, path: `${P}/platform-capabilities` },
             { label: t('notices.title'), icon: Megaphone, path: `${P}/notices` },
             { label: tSuper('nav.provisioning_queue'), icon: Building2, path: `${P}/provisioning-requests` },
             { label: tSuper('nav.pilot_inquiries'), icon: FileSearch, path: `${P}/platform/pilot-inquiries` },
-            { label: tNav('platform_capabilities'), icon: SlidersHorizontal, path: `${P}/platform-capabilities` },
-            { label: t('unfinished_features.nav'), icon: FlaskConical, path: `${P}/unfinished-features` },
+          ],
+        },
+        {
+          // The phone app across every community: who has it, and what it is sent.
+          key: 'phone',
+          title: t('sidebar.group_phone'),
+          items: [
             { label: t('phone_app.title'), icon: Smartphone, path: `${P}/phone-app` },
             { label: t('push_notifications.nav'), icon: BellRing, path: `${P}/push-notifications` },
-            { label: t('usage.nav'), icon: Gauge, path: `${P}/usage` },
           ],
         },
         {
@@ -368,7 +389,7 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
 
   return (
     <aside
-      className={`fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-divider bg-surface transition-all duration-300 ${
+      className={`fixed start-0 top-0 z-40 flex h-screen flex-col border-e border-divider bg-surface transition-all duration-300 ${
         collapsed ? 'w-16' : 'w-64'
       }`}
     >
@@ -387,7 +408,12 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
           className="text-muted"
           aria-label={collapsed ? t('sidebar.expand') : t('sidebar.collapse')}
         >
-          {collapsed ? <PanelLeft size={18} /> : <PanelLeftClose size={18} />}
+          {/* Mirrored in a right-to-left language, where the menu is on the right. */}
+          {collapsed ? (
+            <PanelLeft size={18} className="rtl:-scale-x-100" />
+          ) : (
+            <PanelLeftClose size={18} className="rtl:-scale-x-100" />
+          )}
         </Button>
       </div>
 

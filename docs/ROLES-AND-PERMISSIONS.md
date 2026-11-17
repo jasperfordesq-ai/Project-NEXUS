@@ -320,6 +320,16 @@ The code keeps the names it had: `is_god`, `requireGod()`, `isGodUser()`.
 - `is_tenant_super_admin` is not a platform super admin.
 - A global super admin without `is_god` is **not** on the platform team.
 
+**Kept figures (16 November 2026).** Six read endpoints that count across every
+community — `community-health`, `usage` (per month), `community-setup`,
+`data-requests`, `legal-documents`, `push-notifications` (per `days`) — serve a
+kept answer for up to five minutes (`App\Services\PlatformTeam\PlatformFiguresCache`),
+30 seconds when any part was not available, and never a failed computation.
+Each answer carries `generated_at`. `?refresh=1` works the figures out again and
+replaces the kept answer, at most six times a minute per caller across the six
+(`429` beyond that). The kept answer is shared by every platform team member:
+it holds counts about communities, nothing about the person asking.
+
 **One definition, three callers.**
 
 | Where | What |

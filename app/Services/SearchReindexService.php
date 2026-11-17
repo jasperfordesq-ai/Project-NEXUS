@@ -70,10 +70,27 @@ final class SearchReindexService
      *                                'error' (script type name, row id, message) |
      *                                'done' (label, indexed, errors). A dry run
      *                                stops after 'start'.
-     * @return array<string, array{rows: int, indexed: int, errors: int}> keyed by the kinds processed
+     * @param int|null      $afterId    window mode: only rows whose id is above this
+     * @param int|null      $limit      window mode: read at most this many rows per kind
+     * @param callable|null $shouldStop window mode: fn(): bool, asked after each row
+     *                                  but the window's last; true stops the kind
+     *                                  there (so at least one row is always handled)
+     * @return array<string, array{rows: int, indexed: int, errors: int, last_id?: int|null, finished?: bool}>
+     *         keyed by the kinds processed. In window mode (any of the last
+     *         three given) each kind also gives the id of the last row it
+     *         handled (`last_id`, null if none) and whether that kind has no
+     *         rows left after it (`finished`). Without them the statements
+     *         and the result are the script's, unchanged.
      */
-    public function reindexTenant(int $tenantId, ?string $type = null, bool $dryRun = false, ?callable $progress = null): array
-    {
+    public function reindexTenant(
+        int $tenantId,
+        ?string $type = null,
+        bool $dryRun = false,
+        ?callable $progress = null,
+        ?int $afterId = null,
+        ?int $limit = null,
+        ?callable $shouldStop = null,
+    ): array {
         if ($type !== null && !in_array($type, self::TYPES, true)) {
             throw new \InvalidArgumentException('Unknown search entry type: ' . $type);
         }
@@ -86,7 +103,11 @@ final class SearchReindexService
             if ($type !== null && $type !== $kind) {
                 continue;
             }
-            $result[$kind] = $this->indexRows($kind, $this->rows($kind, $tenantId), $dryRun, $report);
+            if ($afterId === null && $limit === null && $shouldStop === null) {
+                $result[$kind] = $this->indexRows($kind, $this->rows($kind, $tenantId), $dryRun, $report);
+                continue;
+            }
+            $result[$kind] = $this->indexWindow($kind, $tenantId, max(0, (int) $afterId), $limit, $dryRun, $report, $shouldStop);
         }
 
         return $result;
@@ -96,13 +117,18 @@ final class SearchReindexService
      * Same as the script's batchIndex(): one row at a time in batches of 100;
      * a row that throws is counted and the rest carry on.
      *
+     * Window mode only: $shouldStop is asked before each row but the first;
+     * when it says stop, the rows already handled are reported as the whole
+     * and $handled says how many that was.
+     *
      * @param list<array<string, mixed>> $rows
      * @return array{rows: int, indexed: int, errors: int}
      */
-    private function indexRows(string $kind, array $rows, bool $dryRun, callable $report): array
+    private function indexRows(string $kind, array $rows, bool $dryRun, callable $report, ?callable $shouldStop = null, ?int &$handled = null): array
     {
         $label = self::LABELS[$kind];
         $total = count($rows);
+        $handled = 0;
 
         if ($total === 0) {
             $report('empty', $label);
@@ -113,6 +139,8 @@ final class SearchReindexService
         $report('start', $label, $total);
 
         if ($dryRun) {
+            $handled = $total;
+
             return ['rows' => $total, 'indexed' => 0, 'errors' => 0];
         }
 
@@ -121,6 +149,12 @@ final class SearchReindexService
 
         foreach (array_chunk($rows, self::BATCH) as $batchIndex => $batch) {
             foreach ($batch as $row) {
+                if ($handled > 0 && $shouldStop !== null && $shouldStop()) {
+                    $report('done', $label, $indexed, $errors);
+
+                    return ['rows' => $handled, 'indexed' => $indexed, 'errors' => $errors];
+                }
+                $handled++;
                 try {
                     $this->indexer->index($kind, $row);
                     $indexed++;
@@ -140,21 +174,64 @@ final class SearchReindexService
         return ['rows' => $total, 'indexed' => $indexed, 'errors' => $errors];
     }
 
+    /**
+     * One window of one kind, for the platform team's rebuild, which runs as a
+     * chain of short jobs: rows above $afterId, at most $limit of them, cut
+     * short when $shouldStop says so. Row handling, per-row errors and
+     * progress events are indexRows()'s.
+     *
+     * @return array{rows: int, indexed: int, errors: int, last_id: int|null, finished: bool}
+     */
+    private function indexWindow(string $kind, int $tenantId, int $afterId, ?int $limit, bool $dryRun, callable $report, ?callable $shouldStop): array
+    {
+        $limit = $limit !== null ? max(1, $limit) : null;
+        $rows = $this->rows($kind, $tenantId, $afterId, $limit);
+        $fetched = count($rows);
+
+        // The stop is never asked before the first row, so a chain of windows
+        // always moves on.
+        $handled = 0;
+        $counts = $this->indexRows($kind, $rows, $dryRun, $report, $shouldStop, $handled);
+        $stopped = $handled < $fetched;
+
+        return $counts + [
+            'last_id' => $handled === 0 ? null : (int) $rows[$handled - 1]['id'],
+            'finished' => !$stopped && ($limit === null || $fetched < $limit),
+        ];
+    }
+
     /** @return list<array<string, mixed>> */
-    private function rows(string $kind, int $tenantId): array
+    private function rows(string $kind, int $tenantId, ?int $afterId = null, ?int $limit = null): array
     {
         return match ($kind) {
-            'listing' => $this->listingRows($tenantId),
-            'user' => $this->userRows($tenantId),
-            'event' => $this->eventRows($tenantId),
-            'group' => $this->groupRows($tenantId),
-            'marketplace' => $this->marketplaceRows($tenantId),
+            'listing' => $this->listingRows($tenantId, $afterId, $limit),
+            'user' => $this->userRows($tenantId, $afterId, $limit),
+            'event' => $this->eventRows($tenantId, $afterId, $limit),
+            'group' => $this->groupRows($tenantId, $afterId, $limit),
+            'marketplace' => $this->marketplaceRows($tenantId, $afterId, $limit),
         };
     }
 
-    /** All active listings. @return list<array<string, mixed>> */
-    private function listingRows(int $tenantId): array
+    /**
+     * Window mode only: "AND <id column> > ?" for the WHERE, " LIMIT n" for the
+     * end, and the extra binding. All empty when no window is asked for, so
+     * the script's statements go out exactly as before.
+     *
+     * @return array{0: string, 1: string, 2: list<int>}
+     */
+    private function window(string $idColumn, ?int $afterId, ?int $limit): array
     {
+        $where = $afterId !== null ? "\n           AND {$idColumn} > ?" : '';
+        $bindings = $afterId !== null ? [$afterId] : [];
+        $tail = $limit !== null ? "\n         LIMIT " . max(1, $limit) : '';
+
+        return [$where, $tail, $bindings];
+    }
+
+    /** All active listings. @return list<array<string, mixed>> */
+    private function listingRows(int $tenantId, ?int $afterId = null, ?int $limit = null): array
+    {
+        [$after, $tail, $extra] = $this->window('l.id', $afterId, $limit);
         $rows = array_map(fn($r) => (array) $r, DB::select(
             "SELECT l.id, l.tenant_id, l.user_id, l.category_id, l.type,
                 l.title, l.description, l.location, l.status,
@@ -166,12 +243,12 @@ final class SearchReindexService
          LEFT JOIN users u ON l.user_id = u.id
          LEFT JOIN categories c ON c.id = l.category_id
          LEFT JOIN listing_skill_tags lst ON lst.listing_id = l.id
-         WHERE l.tenant_id = ? AND l.status = 'active'
+         WHERE l.tenant_id = ? AND l.status = 'active'{$after}
          GROUP BY l.id, l.tenant_id, l.user_id, l.category_id, l.type,
                   l.title, l.description, l.location, l.status, l.created_at,
                   u.first_name, u.last_name, c.name
-         ORDER BY l.id",
-            [$tenantId]
+         ORDER BY l.id{$tail}",
+            [$tenantId, ...$extra]
         ));
 
         // Convert skill_tags_csv string to array for Meilisearch
@@ -183,22 +260,26 @@ final class SearchReindexService
     }
 
     /** All active members. @return list<array<string, mixed>> */
-    private function userRows(int $tenantId): array
+    private function userRows(int $tenantId, ?int $afterId = null, ?int $limit = null): array
     {
+        [$after, $tail, $extra] = $this->window('id', $afterId, $limit);
+
         return array_map(fn($r) => (array) $r, DB::select(
             "SELECT id, tenant_id, first_name, last_name, organization_name,
                 profile_type, bio, skills, location, avatar_url, status,
                 UNIX_TIMESTAMP(created_at) as created_at
          FROM users
-         WHERE tenant_id = ? AND status = 'active'
-         ORDER BY id",
-            [$tenantId]
+         WHERE tenant_id = ? AND status = 'active'{$after}
+         ORDER BY id{$tail}",
+            [$tenantId, ...$extra]
         ));
     }
 
     /** All upcoming events. @return list<array<string, mixed>> */
-    private function eventRows(int $tenantId): array
+    private function eventRows(int $tenantId, ?int $afterId = null, ?int $limit = null): array
     {
+        [$after, $tail, $extra] = $this->window('e.id', $afterId, $limit);
+
         return array_map(fn($r) => (array) $r, DB::select(
             "SELECT e.id, e.tenant_id, e.title, e.description, e.location,
                 COALESCE(e.status, 'active') as status,
@@ -225,15 +306,17 @@ final class SearchReindexService
                    AND (e.publication_status IS NULL OR e.publication_status = 'published')
                    AND e.operational_status = 'postponed'
                )
-           )
-         ORDER BY e.id",
-            [$tenantId]
+           ){$after}
+         ORDER BY e.id{$tail}",
+            [$tenantId, ...$extra]
         ));
     }
 
     /** All active groups. @return list<array<string, mixed>> */
-    private function groupRows(int $tenantId): array
+    private function groupRows(int $tenantId, ?int $afterId = null, ?int $limit = null): array
     {
+        [$after, $tail, $extra] = $this->window('g.id', $afterId, $limit);
+
         return array_map(fn($r) => (array) $r, DB::select(
             "SELECT g.id, g.tenant_id, g.name, g.description,
                 IF(g.is_active, 'active', 'inactive') as status,
@@ -241,15 +324,16 @@ final class SearchReindexService
                 COALESCE(g.cached_member_count, 0) as members_count,
                 UNIX_TIMESTAMP(g.created_at) as created_at
          FROM `groups` g
-         WHERE g.tenant_id = ? AND g.is_active = 1
-         ORDER BY g.id",
-            [$tenantId]
+         WHERE g.tenant_id = ? AND g.is_active = 1{$after}
+         ORDER BY g.id{$tail}",
+            [$tenantId, ...$extra]
         ));
     }
 
     /** All active, approved marketplace listings. @return list<array<string, mixed>> */
-    private function marketplaceRows(int $tenantId): array
+    private function marketplaceRows(int $tenantId, ?int $afterId = null, ?int $limit = null): array
     {
+        [$after, $tail, $extra] = $this->window('ml.id', $afterId, $limit);
         $rows = array_map(fn($r) => (array) $r, DB::select(
             "SELECT ml.id, ml.tenant_id, ml.category_id,
                 ml.title, ml.description, ml.tagline, ml.location,
@@ -259,9 +343,9 @@ final class SearchReindexService
          FROM marketplace_listings ml
          WHERE ml.tenant_id = ?
            AND ml.status = 'active'
-           AND ml.moderation_status = 'approved'
-         ORDER BY ml.id",
-            [$tenantId]
+           AND ml.moderation_status = 'approved'{$after}
+         ORDER BY ml.id{$tail}",
+            [$tenantId, ...$extra]
         ));
 
         // Ensure numeric types for Meilisearch filterable attributes

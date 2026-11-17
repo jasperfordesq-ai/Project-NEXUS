@@ -36,8 +36,12 @@ interface AppVersionRow {
  * then left out, not shown as an error.
  */
 type PhoneAppReply = NativeAppPlatformStats & {
-  /** null when the server could not read them; the section is then hidden. */
+  /**
+   * Absent: an older server, so no section. null: the server could not read
+   * them, so the section says so, never "none yet".
+   */
   versions?: AppVersionRow[] | null;
+  /** null when it could not be read: "Not known", never 0. */
   version_not_recorded?: number | null;
 };
 
@@ -45,8 +49,25 @@ type PhoneAppReply = NativeAppPlatformStats & {
  * Live phone-app sign-ins counted by app version, newest first (the server
  * orders them). Counts only: no member, no device.
  */
-function AppVersionsInUse({ versions, notRecorded }: { versions: AppVersionRow[]; notRecorded: number }) {
+function AppVersionsInUse({
+  versions,
+  notRecorded,
+}: {
+  versions: AppVersionRow[] | null;
+  notRecorded: number | null;
+}) {
   const { t } = useTranslation('platform_team');
+
+  if (versions === null) {
+    return (
+      <section aria-labelledby="phone-app-versions-title" className="mt-8">
+        <h2 id="phone-app-versions-title" className="text-lg font-semibold text-foreground">
+          {t('phone_app.versions.title')}
+        </h2>
+        <p className="mt-3 text-sm text-foreground">{t('phone_app.versions.unreadable')}</p>
+      </section>
+    );
+  }
 
   return (
     <section aria-labelledby="phone-app-versions-title" className="mt-8">
@@ -73,7 +94,9 @@ function AppVersionsInUse({ versions, notRecorded }: { versions: AppVersionRow[]
       )}
 
       <p className="mt-3 text-sm text-muted">
-        {t('phone_app.versions.not_recorded', { count: notRecorded })}
+        {notRecorded === null
+          ? t('phone_app.versions.not_recorded_unknown')
+          : t('phone_app.versions.not_recorded', { count: notRecorded })}
       </p>
     </section>
   );
@@ -131,8 +154,11 @@ export function PhoneAppPage() {
       ) : (
         <>
           <PhoneAppAllCommunities platform={stats} />
-          {Array.isArray(stats.versions) ? (
-            <AppVersionsInUse versions={stats.versions} notRecorded={Number(stats.version_not_recorded ?? 0)} />
+          {stats.versions !== undefined ? (
+            <AppVersionsInUse
+              versions={Array.isArray(stats.versions) ? stats.versions : null}
+              notRecorded={typeof stats.version_not_recorded === 'number' ? stats.version_not_recorded : null}
+            />
           ) : null}
         </>
       )}

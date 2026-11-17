@@ -245,9 +245,9 @@ export function SecurityPage() {
                     {overview.two_step.without_two_step > 0
                       ? t('security.two_step.off', {
                           count: overview.two_step.without_two_step,
-                          total: overview.two_step.senior_total,
+                          total: number(overview.two_step.senior_total),
                         })
-                      : t('security.two_step.all_on', { total: overview.two_step.senior_total })}
+                      : t('security.two_step.all_on', { total: number(overview.two_step.senior_total) })}
                   </p>
                   <Link
                     to={tenantPath('/platform-team/senior-accounts')}
@@ -301,17 +301,21 @@ export function SecurityPage() {
                     {overview.failed_sign_ins.by_community.length === 0 ? (
                       <p className="text-sm text-muted">{t('security.failed.empty')}</p>
                     ) : (
+                      <>
+                      <h3 className="text-base font-semibold text-foreground">
+                        {t('security.failed.by_community_title')}
+                      </h3>
                       <ul className="flex flex-col gap-2">
                         {overview.failed_sign_ins.by_community.map((row) => (
                           <li key={row.community?.id ?? 0} data-testid={`failed-community-${row.community?.id ?? 0}`}>
                             <Card>
                               <CardBody className="flex flex-wrap items-baseline justify-between gap-2 p-4">
-                                <h3 className="min-w-0 break-words text-base font-semibold text-foreground">
+                                <h4 className="min-w-0 break-words text-base font-semibold text-foreground">
                                   {row.community === null
-                                    ? t('senior_accounts.no_community')
+                                    ? t('security.failed.no_community')
                                     : (row.community.name ??
                                       t('senior_accounts.unnamed_community', { id: row.community.id }))}
-                                </h3>
+                                </h4>
                                 <dl className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
                                   {fact(t('security.failed.col_failed'), number(row.failed))}
                                   {fact(
@@ -324,6 +328,7 @@ export function SecurityPage() {
                           </li>
                         ))}
                       </ul>
+                      </>
                     )}
                   </>
                 )}

@@ -21,10 +21,11 @@
  * available", never as zero: "everyone has accepted" would be a comforting lie.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Card, CardBody, Chip, Spinner } from '@/components/ui';
+import { Card, CardBody, Chip, Spinner } from '@/components/ui';
 import { LoadError } from '@/components/feedback/LoadError';
+import { FiguresRefresh, withRefresh } from '../components/FiguresRefresh';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { joinList } from '@/lib/listFormat';
@@ -35,7 +36,6 @@ import CircleHelp from 'lucide-react/icons/circle-help';
 import Eye from 'lucide-react/icons/eye';
 import FileX from 'lucide-react/icons/file-x';
 import ShieldAlert from 'lucide-react/icons/shield-alert';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
 
 export interface LegalDocument {
   type: string;
@@ -61,6 +61,8 @@ export interface LegalDocuments {
   unavailable: string[];
   totals: { communities: number; no_privacy_notice: number | null };
   communities: LegalDocumentsRow[];
+  /** When the server worked these figures out (absent from an older server). */
+  generated_at?: string | null;
 }
 
 /** The document kinds the server knows; anything else is shown by its raw kind. */
@@ -71,23 +73,33 @@ export function LegalDocumentsPage() {
   usePageTitle(t('legal_documents.title'));
 
   const [data, setData] = useState<LegalDocuments | null>(null);
+  const [refused, setRefused] = useState(false);
+  /** Figures are on screen: a refused "Check again" keeps them. */
+  const shown = useRef(false);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (refresh = false) => {
+    setRefused(false);
     setLoading(true);
     setFailed(false);
     try {
-      const res = await api.get<LegalDocuments>('/v2/platform-team/legal-documents');
+      const res = await api.get<LegalDocuments>(withRefresh('/v2/platform-team/legal-documents', refresh));
       if (res.success && res.data && Array.isArray(res.data.communities) && res.data.totals) {
         setData(res.data);
+        shown.current = true;
+      } else if (refresh && shown.current && res.code === 'RATE_LIMIT_EXCEEDED') {
+        // Asked again too soon: keep what is on screen and say so.
+        setRefused(true);
       } else {
         setData(null);
+        shown.current = false;
         setFailed(true);
       }
     } catch (err) {
       logError('Failed to load legal documents', err);
       setData(null);
+      shown.current = false;
       setFailed(true);
     } finally {
       setLoading(false);
@@ -160,7 +172,7 @@ export function LegalDocumentsPage() {
       <span className="font-medium text-warning">
         {t('legal_documents.members_not_accepted', {
           count: document.members_not_accepted,
-          asked: document.members_asked,
+          asked: new Intl.NumberFormat(i18n.language).format(document.members_asked),
         })}
       </span>
     );
@@ -180,10 +192,12 @@ export function LegalDocumentsPage() {
             {t('legal_documents.counts_only')}
           </p>
         </div>
-        <Button variant="tertiary" onPress={() => void load()} isDisabled={loading}>
-          <RefreshCw size={16} aria-hidden="true" />
-          {t('home.refresh')}
-        </Button>
+        <FiguresRefresh
+          onRefresh={() => void load(true)}
+          loading={loading}
+          generatedAt={data?.generated_at}
+          refused={refused}
+        />
       </div>
 
       {loading && !data ? (

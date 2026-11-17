@@ -95,7 +95,7 @@ export function PlatformTeamLayout() {
     <div className="min-h-screen bg-background">
       <a
         href="#main-content"
-        className="sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:left-4 focus-visible:top-4 focus-visible:z-[9999] focus-visible:rounded-lg focus-visible:bg-[var(--color-primary)] focus-visible:px-4 focus-visible:py-2 focus-visible:text-white focus-visible:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        className="sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:start-4 focus-visible:top-4 focus-visible:z-[9999] focus-visible:rounded-lg focus-visible:bg-[var(--color-primary)] focus-visible:px-4 focus-visible:py-2 focus-visible:text-white focus-visible:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
       >
         {t('layout.skip_to_main')}
       </a>
@@ -127,8 +127,8 @@ export function PlatformTeamLayout() {
         aria-modal="true"
         aria-label={t('layout.navigation')}
         inert={!mobileDrawerOpen || undefined}
-        className={`fixed left-0 top-0 z-40 h-[100dvh] w-64 max-w-[calc(100dvw-var(--safe-area-left)-var(--safe-area-right))] border-r border-divider bg-surface transition-transform duration-300 md:hidden ${
-          mobileDrawerOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed start-0 top-0 z-40 h-[100dvh] w-64 max-w-[calc(100dvw-var(--safe-area-left)-var(--safe-area-right))] border-e border-divider bg-surface transition-transform duration-300 md:hidden ${
+          mobileDrawerOpen ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full'
         }`}
       >
         <PlatformTeamSidebar collapsed={false} onToggle={closeMobileDrawer} />
@@ -138,7 +138,7 @@ export function PlatformTeamLayout() {
         id="main-content"
         tabIndex={-1}
         className={`min-h-screen pt-16 outline-none transition-all duration-300 ${
-          sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'
+          sidebarCollapsed ? 'md:ms-16' : 'md:ms-64'
         }`}
       >
         <div className="mx-auto w-full max-w-[1600px] p-3 sm:p-4 md:p-6">

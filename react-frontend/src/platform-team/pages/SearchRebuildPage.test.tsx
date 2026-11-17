@@ -19,7 +19,9 @@ vi.mock('@/contexts', () => ({ useToast: () => toast }));
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) =>
-      options && 'count' in options ? `${key}|${String(options.count)}` : key,
+      options && 'count' in options
+        ? `${key}|${String(options.count)}${'time' in options ? `|${String(options.time)}` : ''}`
+        : key,
     i18n: { language: 'en' },
   }),
 }));
@@ -93,6 +95,16 @@ describe('SearchRebuildPage', () => {
     expect(within(row(2)).getByText(/search_rebuild\.last\.done\|10/)).toBeInTheDocument();
     expect(within(row(3)).getByText(/search_rebuild\.last\.done_with_errors\|2/)).toBeInTheDocument();
     expect(within(row(4)).getByText('search_rebuild.last.failed')).toBeInTheDocument();
+  });
+
+  // Day, month, year, hour and minute, as every other page in the panel: no seconds.
+  it('writes when a rebuild finished the way the other pages write a time', async () => {
+    apiGet.mockResolvedValue(reply([community(2, DONE)]));
+    render(<SearchRebuildPage />);
+
+    await waitFor(() => expect(row(2)).toBeInTheDocument());
+    const when = new Date(DONE!.finished_at!).toLocaleString('en', { dateStyle: 'medium', timeStyle: 'short' });
+    expect(within(row(2)).getByText(`search_rebuild.last.done|10|${when}`)).toBeInTheDocument();
   });
 
   it('says so when the search service cannot be reached', async () => {

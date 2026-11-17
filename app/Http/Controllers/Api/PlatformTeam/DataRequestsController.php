@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\PlatformTeam;
 
 use App\Http\Controllers\Api\BaseApiController;
+use App\Http\Controllers\Api\PlatformTeam\Concerns\KeepsFigures;
 use App\Services\PlatformTeam\DataRequestsService;
 use Illuminate\Http\JsonResponse;
 
@@ -21,6 +22,8 @@ use Illuminate\Http\JsonResponse;
  */
 final class DataRequestsController extends BaseApiController
 {
+    use KeepsFigures;
+
     protected bool $isV2Api = true;
 
     /** GET /api/v2/platform-team/data-requests */
@@ -28,6 +31,6 @@ final class DataRequestsController extends BaseApiController
     {
         $this->requireGodPlatformAdmin();
 
-        return $this->respondWithData((new DataRequestsService())->overview());
+        return $this->keptFigures('data_requests', static fn (): array => (new DataRequestsService())->overview());
     }
 }

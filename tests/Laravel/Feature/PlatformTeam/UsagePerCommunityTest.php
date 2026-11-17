@@ -31,7 +31,7 @@ class UsagePerCommunityTest extends TestCase
 
     /** Exactly what the page shows. Anything else must not leave the server. */
     private const TOP_KEYS = [
-        'communities', 'is_current_month', 'month', 'not_recorded', 'platform_mail', 'source_notes', 'sources', 'totals',
+        'communities', 'generated_at', 'is_current_month', 'month', 'not_recorded', 'platform_mail', 'source_notes', 'sources', 'totals',
     ];
 
     private const ROW_KEYS = ['ai_chat', 'emails', 'group_file_bytes', 'id', 'is_active', 'name', 'slug'];
@@ -105,6 +105,10 @@ class UsagePerCommunityTest extends TestCase
     /** @return array<string, mixed> */
     private function data(string $query = ''): array
     {
+        // These tests are about the counting: drop the five-minute kept answer
+        // (PlatformFiguresCacheTest covers keeping it).
+        \Illuminate\Support\Facades\Cache::flush();
+
         return $this->apiGet(self::URI . $query)->assertStatus(200)->json('data');
     }
 

@@ -20,14 +20,14 @@
  * 🔴 Read-only. The only controls change the number of days or reload.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Card, CardBody, Spinner } from '@/components/ui';
 import { LoadError } from '@/components/feedback/LoadError';
+import { FiguresRefresh, withRefresh } from '../components/FiguresRefresh';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
 
 interface CommunityCounts {
   accepted: number;
@@ -54,6 +54,8 @@ export interface PushReport {
   by_day: PushDay[] | null;
   by_community: PushCommunity[] | null;
   no_community: CommunityCounts | null;
+  /** When the server worked these figures out (absent from an older server). */
+  generated_at?: string | null;
 }
 
 const DAY_CHOICES = [7, 14, 30] as const;
@@ -69,23 +71,33 @@ export function PushNotificationsPage() {
 
   const [days, setDays] = useState<number>(DEFAULT_DAYS);
   const [report, setReport] = useState<PushReport | null>(null);
+  const [refused, setRefused] = useState(false);
+  /** Figures are on screen: a refused "Check again" keeps them. */
+  const shown = useRef(false);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
 
-  const load = useCallback(async (wanted: number) => {
+  const load = useCallback(async (wanted: number, refresh = false) => {
+    setRefused(false);
     setLoading(true);
     setFailed(false);
     try {
-      const res = await api.get<PushReport>(`/v2/platform-team/push-notifications?days=${wanted}`);
+      const res = await api.get<PushReport>(withRefresh(`/v2/platform-team/push-notifications?days=${wanted}`, refresh));
       if (res.success && res.data && typeof res.data.available === 'boolean') {
         setReport(res.data);
+        shown.current = true;
+      } else if (refresh && shown.current && res.code === 'RATE_LIMIT_EXCEEDED') {
+        // Asked again too soon: keep what is on screen and say so.
+        setRefused(true);
       } else {
         setReport(null);
+        shown.current = false;
         setFailed(true);
       }
     } catch (err) {
       logError('Failed to load push notification figures', err);
       setReport(null);
+      shown.current = false;
       setFailed(true);
     } finally {
       setLoading(false);
@@ -129,10 +141,12 @@ export function PushNotificationsPage() {
           <p className="mt-2 max-w-2xl text-base text-muted">{t('push_notifications.intro')}</p>
           <p className="mt-2 max-w-2xl text-sm text-muted">{t('push_notifications.timezone_note')}</p>
         </div>
-        <Button variant="tertiary" onPress={() => void load(days)} isDisabled={loading}>
-          <RefreshCw size={16} aria-hidden="true" />
-          {t('home.refresh')}
-        </Button>
+        <FiguresRefresh
+          onRefresh={() => void load(days, true)}
+          loading={loading}
+          generatedAt={report?.generated_at}
+          refused={refused}
+        />
       </div>
 
       <div className="mb-6 flex flex-wrap items-center gap-2" role="group" aria-label={t('push_notifications.days_picker')}>

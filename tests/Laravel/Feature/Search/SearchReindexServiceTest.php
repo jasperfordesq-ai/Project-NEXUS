@@ -352,4 +352,71 @@ class SearchReindexServiceTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->service()->reindexTenant($this->testTenantId, 'bogus');
     }
+
+    /**
+     * The platform team's rebuild runs one community as a chain of short jobs
+     * (16 Nov 2026): each takes a window of rows of one kind, by id. Walking
+     * the windows one after another must send exactly the rows the script
+     * sends in one go, in the same order, with nothing twice.
+     */
+    public function test_windows_walked_one_after_another_send_exactly_the_scripts_rows(): void
+    {
+        $owner = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        foreach (range(1, 5) as $n) {
+            DB::table('groups')->insert([
+                'tenant_id' => $this->testTenantId, 'owner_id' => $owner->id, 'name' => "Window group {$n}", 'is_active' => 1, 'created_at' => now(),
+            ]);
+            DB::table('listings')->insert([
+                'tenant_id' => $this->testTenantId, 'user_id' => $owner->id, 'title' => "Window listing {$n}", 'type' => 'offer',
+                'description' => 'Body', 'status' => 'active', 'created_at' => now(),
+            ]);
+        }
+
+        foreach (['listing', 'user', 'event', 'group', 'marketplace'] as $type) {
+            $this->sent = [];
+            $after = 0;
+            $indexed = 0;
+            for ($slice = 0; $slice < 10000; $slice++) {
+                $result = $this->service()->reindexTenant($this->testTenantId, $type, false, null, $after, 2)[$type];
+                $this->assertSame(['rows', 'indexed', 'errors', 'last_id', 'finished'], array_keys($result));
+                $this->assertLessThanOrEqual(2, $result['rows'], 'a window never reads more than its limit');
+                $indexed += $result['indexed'];
+                if ($result['finished']) {
+                    break;
+                }
+                $this->assertGreaterThan($after, $result['last_id']);
+                $after = (int) $result['last_id'];
+            }
+
+            $expected = $this->scriptRows($type, $this->testTenantId);
+            $this->assertSame($expected, $this->sentOf($type), "the {$type} rows sent window by window differ from the script's");
+            $this->assertSame(count($expected), $indexed);
+        }
+    }
+
+    public function test_a_window_stops_early_when_told_to_and_says_where(): void
+    {
+        $owner = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        foreach (range(1, 3) as $n) {
+            DB::table('groups')->insert([
+                'tenant_id' => $this->testTenantId, 'owner_id' => $owner->id, 'name' => "Stop group {$n}", 'is_active' => 1,
+            ]);
+        }
+        $first = $this->scriptRows('group', $this->testTenantId)[0];
+
+        $result = $this->service()->reindexTenant($this->testTenantId, 'group', false, null, 0, 100, static fn (): bool => true)['group'];
+
+        $this->assertSame(1, $result['indexed'], 'at least one row is done before a stop, so a chain always moves on');
+        $this->assertSame((int) $first['id'], $result['last_id']);
+        $this->assertFalse($result['finished']);
+        $this->assertSame([$first], $this->sentOf('group'));
+    }
+
+    public function test_a_window_past_the_last_row_is_finished_and_sends_nothing(): void
+    {
+        $result = $this->service()->reindexTenant($this->testTenantId, 'group', false, null, PHP_INT_MAX - 1, 100)['group'];
+
+        $this->assertSame(['rows' => 0, 'indexed' => 0, 'errors' => 0, 'last_id' => null, 'finished' => true], $result);
+        $this->assertSame([], $this->sent);
+    }
 }

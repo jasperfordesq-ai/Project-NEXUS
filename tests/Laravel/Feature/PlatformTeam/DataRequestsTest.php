@@ -37,7 +37,7 @@ class DataRequestsTest extends TestCase
     /** Exactly what the page shows. Anything else must not leave the server. */
     private const TOP_KEYS = [
         'overdue_after_days', 'nearly_due_from_days', 'completed_window_days',
-        'request_types', 'unavailable', 'totals', 'communities',
+        'request_types', 'unavailable', 'totals', 'communities', 'generated_at',
     ];
 
     private const ROW_KEYS = [
@@ -92,6 +92,10 @@ class DataRequestsTest extends TestCase
     /** @return array<string, mixed> */
     private function data(): array
     {
+        // These tests are about the counting: drop the five-minute kept answer
+        // (PlatformFiguresCacheTest covers keeping it).
+        \Illuminate\Support\Facades\Cache::flush();
+
         return $this->apiGet(self::URI)->assertStatus(200)->json('data');
     }
 
@@ -160,8 +164,12 @@ class DataRequestsTest extends TestCase
         ] as $needle) {
             $this->assertStringNotContainsString($needle, $body, $needle);
         }
-        // The request's own id is never sent: only community ids appear as "id".
-        $this->assertNotContains($requestId, array_column($data['communities'], 'id'), 'a request id rode along');
+        // Every "id" sent is a community's id, never a request's. (Comparing
+        // with the request's own number would fail by chance whenever a
+        // community happens to have the same number.)
+        $communityIds = DB::table('tenants')->pluck('id')->map(static fn ($id): int => (int) $id)->all();
+        $this->assertSame([], array_values(array_diff(array_column($data['communities'], 'id'), $communityIds)), 'an id that is not a community rode along');
+        $this->assertGreaterThan(0, $requestId);
     }
 
     public function test_it_lists_every_community_including_those_with_nothing_open(): void

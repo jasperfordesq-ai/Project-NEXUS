@@ -39,7 +39,10 @@
     "group_joining": "Adhésion et rôles",
     "group_site": "Site et recherche",
     "group_reports": "Rapports",
-    "group_matching": "Mise en relation"
+    "group_matching": "Mise en relation",
+    "group_jobs": "Tâches planifiées",
+    "group_tools": "Outils",
+    "group_phone": "Application mobile"
   },
   "breadcrumbs": {
     "aria_label": "Où vous êtes",
@@ -146,7 +149,7 @@
     "load_error_title": "Nous n'avons pas pu charger les tâches en échec pour le moment",
     "empty_title": "Rien n'est en attente",
     "empty_text": "Aucune tâche en arrière-plan n'a échoué, ou toutes ont été traitées.",
-    "count": "En attente d’examen : {{count}}",
+    "count": "En attente d’examen : {{count, number}}",
     "unknown_job": "Nom non enregistré",
     "no_reason": "Aucune raison n'a été enregistrée.",
     "queue": "File :",
@@ -173,11 +176,13 @@
       "title": "Versions de l’application utilisées",
       "coverage": "Ces chiffres ne concernent que les téléphones connectés depuis que la version de l’application est enregistrée. Au début, la plupart des connexions seront donc comptées comme « non enregistrées ».",
       "version": "Version de l’application {{version}}",
-      "sign_ins_one": "{{count}} connexion",
-      "sign_ins_other": "{{count}} connexions",
-      "not_recorded_one": "{{count}} connexion sans version enregistrée",
-      "not_recorded_other": "{{count}} connexions sans version enregistrée",
-      "none_yet": "Aucun téléphone n’a encore enregistré sa version de l’application."
+      "sign_ins_one": "{{count, number}} connexion",
+      "sign_ins_other": "{{count, number}} connexions",
+      "not_recorded_one": "{{count, number}} connexion sans version enregistrée",
+      "not_recorded_other": "{{count, number}} connexions sans version enregistrée",
+      "none_yet": "Aucun téléphone n’a encore enregistré sa version de l’application.",
+      "unreadable": "Ces chiffres n'ont pas pu être lus pour l'instant.",
+      "not_recorded_unknown": "Connexions sans version enregistrée : non connu"
     }
   },
   "senior_accounts": {
@@ -186,9 +191,9 @@
     "read_only_note": "Cette page ne fait qu'afficher ces comptes. Rien ici ne donne ni ne retire un accès.",
     "loading": "Chargement des comptes à haut niveau",
     "load_error_title": "Nous n'avons pas pu charger les comptes à haut niveau pour le moment",
-    "without_two_step": "La connexion en deux étapes est désactivée pour {{count}} de ces {{total}} comptes.",
+    "without_two_step": "La connexion en deux étapes est désactivée pour {{count, number}} de ces {{total}} comptes.",
     "all_have_two_step": "La connexion en deux étapes est activée pour ces {{total}} comptes.",
-    "truncated": "Seuls les {{count}} premiers comptes sont affichés.",
+    "truncated": "Seuls les {{count, number}} premiers comptes sont affichés.",
     "none_at_level": "Aucun compte à ce niveau.",
     "level": {
       "platform_team": "Équipe de la plateforme",
@@ -234,8 +239,8 @@
     "too_many": "Cela fait beaucoup de recherches. Attendez une minute, puis réessayez.",
     "none": "Aucun compte n'utilise cette adresse",
     "none_note": "Toutes les communautés ont été vérifiées. Les comptes effacés ne sont jamais trouvés.",
-    "found": "Comptes trouvés : {{count}}",
-    "truncated": "Seuls les {{count}} premiers comptes sont affichés.",
+    "found": "Comptes trouvés : {{count, number}}",
+    "truncated": "Seuls les {{count, number}} premiers comptes sont affichés.",
     "role_label": "Rôle :",
     "role": {
       "member": "Membre",
@@ -287,10 +292,10 @@
     "not_recorded": "Non enregistré",
     "by": "Par :",
     "when": "Quand :",
-    "truncated": "Seuls les {{count}} plus récents sont affichés.",
+    "truncated": "Seuls les {{count, number}} plus récents sont affichés.",
     "two_step": {
       "title": "Connexion en deux étapes des comptes à haut niveau",
-      "off": "La connexion en deux étapes est désactivée pour {{count}} des {{total}} comptes à haut niveau.",
+      "off": "La connexion en deux étapes est désactivée pour {{count, number}} des {{total}} comptes à haut niveau.",
       "all_on": "La connexion en deux étapes est activée pour les {{total}} comptes à haut niveau.",
       "link": "Voir les comptes à haut niveau"
     },
@@ -309,7 +314,9 @@
       "most_from_one_15m": "Le plus depuis une seule adresse durant les 15 dernières minutes",
       "checks_title": "Vérifications de mot de passe échouées",
       "refused_title": "Refusées par le verrouillage",
-      "col_refused": "Refusées par le verrouillage au cours des dernières 24 heures :"
+      "col_refused": "Refusées par le verrouillage au cours des dernières 24 heures :",
+      "no_community": "Rattaché à aucune communauté",
+      "by_community_title": "Par communauté, dernières 24 heures"
     },
     "access": {
       "title": "Accès à haut niveau accordés et retirés",
@@ -337,7 +344,7 @@
     "loading": "Chargement des communautés",
     "load_error_title": "Nous n'avons pas pu charger les communautés pour le moment",
     "empty": "Il n'y a pas encore de communauté.",
-    "community_count": "Communautés : {{count}}",
+    "community_count": "Communautés : {{count, number}}",
     "on": "Activé",
     "off": "Désactivé",
     "held": "Activé ici, mais désactivé pour toute la plateforme",
@@ -348,7 +355,7 @@
     "modules_note": "Les parties avec lesquelles chaque communauté démarre. Une communauté peut tout de même en désactiver une.",
     "switch_column": "Interrupteur",
     "count_column": "Combien",
-    "on_in": "Activé dans {{count}} sur {{total}}",
+    "on_in": "Activé dans {{count, number}} sur {{total}}",
     "on_everywhere": "Activé dans toutes les communautés.",
     "off_everywhere": "Désactivé dans toutes les communautés.",
     "off_in": "Désactivé dans : {{names}}",
@@ -433,7 +440,7 @@
       "emails_kept_90_days": "Les traces des e-mails sont conservées 90 jours, ce mois ne peut donc pas être affiché."
     },
     "totals_heading": "Toutes les communautés ensemble",
-    "communities_heading": "Chaque communauté ({{count}})",
+    "communities_heading": "Chaque communauté ({{count, number}})",
     "empty": "Il n’y a pas encore de communauté.",
     "emails_heading": "E-mails",
     "ai_heading": "Chat IA",
@@ -470,8 +477,8 @@
     "loading": "Chargement de la santé des communautés",
     "load_error_title": "Nous n'avons pas pu charger la santé des communautés pour le moment",
     "empty": "Il n'y a pas encore de communauté.",
-    "community_count": "Communautés : {{count}}",
-    "quiet_count": "Communautés calmes : {{count}}",
+    "community_count": "Communautés : {{count, number}}",
+    "quiet_count": "Communautés calmes : {{count, number}}",
     "quiet_names": "Calmes : {{names}}",
     "none_quiet": "Aucune communauté n'est calme.",
     "quiet_rule": "Une communauté est dite calme lorsqu'elle est activée et que, soit aucun membre n'a été actif au cours des {{days}} derniers jours, soit il n'y a eu aucun échange ce mois-ci ni le mois dernier.",
@@ -503,7 +510,7 @@
     "loading": "Chargement de la mise en place des communautés",
     "load_error_title": "Nous n'avons pas pu charger la mise en place des communautés pour le moment",
     "empty": "Il n'y a encore aucune communauté.",
-    "community_count": "Communautés : {{count}}",
+    "community_count": "Communautés : {{count, number}}",
     "truncated": "Affichage des {{shown}} plus récentes sur {{total}} communautés.",
     "terms_note": "Les conditions d'utilisation sont ajoutées automatiquement à la création d'une communauté : une coche pour les conditions compte donc moins que les autres.",
     "not_recorded": "Le fait que l'envoi d'e-mails d'une communauté ait été testé n'est enregistré nulle part, donc cette page ne l'affiche pas.",
@@ -534,8 +541,8 @@
     "read_only": "Cette page sert uniquement à consulter. Une fonctionnalité s'active ou se désactive dans le panneau d'administration de la communauté concernée.",
     "loading": "Chargement des fonctionnalités inachevées",
     "load_error_title": "Nous n'avons pas pu charger les fonctionnalités inachevées pour le moment",
-    "summary": "Fonctionnalités listées : {{count}}",
-    "summary_on_somewhere": "Activées dans au moins une communauté : {{count}}",
+    "summary": "Fonctionnalités listées : {{count, number}}",
+    "summary_on_somewhere": "Activées dans au moins une communauté : {{count, number}}",
     "stage": {
       "alpha": "Test précoce (alpha)",
       "beta": "Test avancé (bêta)"
@@ -545,7 +552,7 @@
     "note": {
       "not_for_use": "Ne pas utiliser. Elle ne doit être activée pour aucune communauté."
     },
-    "on_in": "Communautés où elle est activée : {{count}}",
+    "on_in": "Communautés où elle est activée : {{count, number}}",
     "on_names": "Activée dans : {{names}}",
     "on_nowhere": "Activée dans aucune communauté"
   },
@@ -558,8 +565,8 @@
     "loading": "Chargement des demandes sur les données",
     "load_error_title": "Nous n’avons pas pu charger les demandes sur les données pour le moment",
     "empty": "Il n'y a pas encore de communauté.",
-    "community_count": "Communautés : {{count}}",
-    "overdue_count": "Communautés avec une demande en retard : {{count}}",
+    "community_count": "Communautés : {{count, number}}",
+    "overdue_count": "Communautés avec une demande en retard : {{count, number}}",
     "overdue_names": "En retard : {{names}}",
     "none_overdue": "Aucune communauté n’a de demande en retard.",
     "overdue_unknown": "Nous ne pouvons pas dire pour le moment si une demande est en retard.",
@@ -588,7 +595,7 @@
       "portability": "Un transfert",
       "objection": "Une opposition"
     },
-    "completed_without_date": "Demandes traitées sans date de traitement, donc absentes du chiffre sur 90 jours : {{count}}"
+    "completed_without_date": "Demandes traitées sans date de traitement, donc absentes du chiffre sur 90 jours : {{count, number}}"
   },
   "legal_documents": {
     "title": "Documents juridiques",
@@ -598,8 +605,8 @@
     "counts_only": "Des chiffres uniquement. Aucun membre n’est nommé sur cette page.",
     "loading": "Chargement des documents juridiques",
     "load_error_title": "Nous n’avons pas pu charger les documents juridiques pour le moment",
-    "community_count": "Communautés : {{count}}",
-    "no_privacy_count": "Communautés sans politique de confidentialité publiée : {{count}}",
+    "community_count": "Communautés : {{count, number}}",
+    "no_privacy_count": "Communautés sans politique de confidentialité publiée : {{count, number}}",
     "no_privacy_names": "Sans politique : {{names}}",
     "all_have_privacy": "Chaque communauté a une politique de confidentialité publiée.",
     "privacy_unknown": "Nous ne pouvons pas savoir pour le moment quelles communautés ont une politique de confidentialité.",
@@ -610,8 +617,8 @@
     "date_unknown": "date non enregistrée",
     "no_acceptance_needed": "Les membres ne sont pas invités à accepter ce document.",
     "members_not_available": "Qui l’a accepté : non disponible",
-    "members_not_accepted": "Pas encore accepté : {{count}} sur {{asked}} membres sollicités",
-    "all_accepted": "Accepté par tous les membres sollicités ({{count}})",
+    "members_not_accepted": "Pas encore accepté : {{count, number}} sur {{asked}} membres sollicités",
+    "all_accepted": "Accepté par tous les membres sollicités ({{count, number}})",
     "status": {
       "published": "Publié",
       "not_published": "Non publié",
@@ -662,10 +669,10 @@
     "history_title": "Revues récentes",
     "history_none": "Pas encore de revue.",
     "history_by": "Enregistrée par {{name}}",
-    "history_accounts_one": "{{count}} compte",
-    "history_accounts_other": "{{count}} comptes",
-    "history_removals_one": "{{count}} marqué à retirer",
-    "history_removals_other": "{{count}} marqués à retirer",
+    "history_accounts_one": "{{count, number}} compte",
+    "history_accounts_other": "{{count, number}} comptes",
+    "history_removals_one": "{{count, number}} marqué à retirer",
+    "history_removals_other": "{{count, number}} marqués à retirer",
     "erased": "Compte effacé",
     "refresh_failed": "La revue n’a pas pu être rechargée. Ce que vous voyez date d’avant.",
     "note_no_names": "Ne nommez personne dans la note. Elle est conservée avec l’enregistrement."
@@ -676,12 +683,12 @@
     "intro": "Combien de notifications ont été envoyées aux téléphones et navigateurs des membres, par jour et par communauté. « Acceptées par le service push » signifie que le service a pris la notification, pas qu’un téléphone l’a affichée. Certains types de notification sont envoyés sans être enregistrés ici (rappels d’événements, alertes d’urgence et quelques autres) : les chiffres réels sont donc au moins ceux-ci.",
     "timezone_note": "Les jours suivent l’heure du serveur (UTC).",
     "days_picker": "Nombre de jours à afficher",
-    "days_option": "{{count}} derniers jours",
+    "days_option": "{{count, number}} derniers jours",
     "loading": "Chargement des chiffres des notifications push",
     "load_error_title": "Les chiffres des notifications push n’ont pas pu être chargés",
     "not_available": "Non disponible : le registre des notifications push n’a pas pu être lu. Cela ne veut pas dire qu’aucune n’a été envoyée.",
     "by_day_heading": "Chaque jour",
-    "by_community_heading": "Chaque communauté ({{count}})",
+    "by_community_heading": "Chaque communauté ({{count, number}})",
     "by_community_note": "Totaux sur toute la période. « Personne à qui envoyer » n’apparaît que par jour.",
     "no_community_heading": "Sans communauté",
     "no_community_note": "Notifications enregistrées sans communauté. Elles sont comptées dans les chiffres de chaque jour.",
@@ -702,8 +709,8 @@
     "no_record_title": "Ce serveur ne tient aucun registre des déploiements",
     "no_record_text": "Seul le serveur en production en tient un : sur l'ordinateur d'un développeur, c'est normal.",
     "empty": "Rien n'a encore été enregistré.",
-    "skipped": "Lignes du registre illisibles, ignorées : {{count}}",
-    "count": "Déploiements et retours en arrière affichés : {{count}}",
+    "skipped": "Lignes du registre illisibles, ignorées : {{count, number}}",
+    "count": "Déploiements et retours en arrière affichés : {{count, number}}",
     "not_recorded": "Non enregistré",
     "kind": {
       "deploy": "Déploiement",
@@ -903,7 +910,8 @@
         "deletes": "Supprime les vérifications d'identité terminées ou expirées de plus de 180 jours. Le relevé de ce qui s'est passé pour chacune est conservé."
       }
     },
-    "finished_only": "Cette tâche enregistre qu’elle s’est terminée, pas que chaque étape a fonctionné."
+    "finished_only": "Cette tâche enregistre qu’elle s’est terminée, pas que chaque étape a fonctionné.",
+    "steps_failed": "Étapes en échec lors de la dernière exécution : {{count, number}}"
   },
   "search_rebuild": {
     "title": "Reconstruire la recherche",
@@ -930,10 +938,10 @@
       "never": "Jamais lancée depuis cette page",
       "queued": "En attente de démarrage",
       "running": "En cours depuis {{time}}",
-      "done_one": "Terminée {{time}} : {{count}} entrée mise à jour",
-      "done_other": "Terminée {{time}} : {{count}} entrées mises à jour",
-      "done_with_errors_one": "Terminée {{time}} avec {{count}} entrée qui n'a pas pu être mise à jour",
-      "done_with_errors_other": "Terminée {{time}} avec {{count}} entrées qui n'ont pas pu être mises à jour",
+      "done_one": "Terminée {{time}} : {{count, number}} entrée mise à jour",
+      "done_other": "Terminée {{time}} : {{count, number}} entrées mises à jour",
+      "done_with_errors_one": "Terminée {{time}} avec {{count, number}} entrée qui n'a pas pu être mise à jour",
+      "done_with_errors_other": "Terminée {{time}} avec {{count, number}} entrées qui n'ont pas pu être mises à jour",
       "failed": "Échec"
     },
     "check_failed": "Impossible de vérifier à nouveau à {{time}}"
@@ -1048,8 +1056,8 @@
     },
     "data_requests": {
       "title": "Demandes sur les données personnelles",
-      "open": "Ouvertes, dans toutes les communautés : {{count}}",
-      "overdue": "Ouvertes depuis plus de 30 jours : {{count}}"
+      "open": "Ouvertes, dans toutes les communautés : {{count, number}}",
+      "overdue": "Ouvertes depuis plus de 30 jours : {{count, number}}"
     },
     "failed_sign_ins": {
       "title": "Relevé des connexions échouées",
@@ -1082,8 +1090,8 @@
     },
     "status": {
       "ok": "Tout va bien",
-      "warning_one": "Le certificat expire dans {{count}} jour",
-      "warning_other": "Le certificat expire dans {{count}} jours",
+      "warning_one": "Le certificat expire dans {{count, number}} jour",
+      "warning_other": "Le certificat expire dans {{count, number}} jours",
       "failing": "Ne fonctionne pas",
       "unknown": "Pas encore vérifiée",
       "not_checkable": "Pas une adresse web que nous pouvons vérifier",
@@ -1105,5 +1113,8 @@
     "too_many": "Trop de vérifications en une minute. Attendez un instant et réessayez.",
     "check_now_for": "Vérifier {{name}} maintenant",
     "check_platform_now": "Vérifier maintenant les adresses de la plateforme"
+  },
+  "shared": {
+    "figures_from": "Chiffres de {{time}}"
   }
 }

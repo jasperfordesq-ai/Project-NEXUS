@@ -39,7 +39,7 @@ class CommunityHealthTest extends TestCase
         'last_sign_in_at', 'quiet',
     ];
 
-    private const TOP_KEYS = ['active_window_days', 'communities', 'totals', 'unavailable'];
+    private const TOP_KEYS = ['active_window_days', 'communities', 'generated_at', 'totals', 'unavailable'];
 
     private const TOTAL_KEYS = [
         'communities', 'quiet', 'members', 'active_members', 'new_members_this_month',

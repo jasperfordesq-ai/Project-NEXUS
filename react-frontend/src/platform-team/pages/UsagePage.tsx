@@ -18,16 +18,16 @@
  * 🔴 Read-only. The only controls change the month or reload.
  */
 
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Card, CardBody, Chip, Spinner } from '@/components/ui';
 import { LoadError } from '@/components/feedback/LoadError';
+import { FiguresRefresh, withRefresh } from '../components/FiguresRefresh';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import ChevronLeft from 'lucide-react/icons/chevron-left';
 import ChevronRight from 'lucide-react/icons/chevron-right';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
 
 interface EmailCounts {
   sent: number;
@@ -69,6 +69,8 @@ export interface UsageReport {
   platform_mail: EmailCounts | null;
   totals: { emails: EmailCounts | null; ai_chat: AiChatUse | null; group_file_bytes: number | null };
   not_recorded: NotRecorded[];
+  /** When the server worked these figures out (absent from an older server). */
+  generated_at?: string | null;
 }
 
 const KNOWN_NOT_RECORDED: readonly NotRecorded[] = ['maps', 'translation', 'other_storage'];
@@ -119,24 +121,34 @@ export function UsagePage() {
   const language = i18n.language;
 
   const [report, setReport] = useState<UsageReport | null>(null);
+  const [refused, setRefused] = useState(false);
+  /** Figures are on screen: a refused "Check again" keeps them. */
+  const shown = useRef(false);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
 
-  const load = useCallback(async (month?: string) => {
+  const load = useCallback(async (month?: string, refresh = false) => {
+    setRefused(false);
     setLoading(true);
     setFailed(false);
     try {
       const url = month ? `/v2/platform-team/usage?month=${encodeURIComponent(month)}` : '/v2/platform-team/usage';
-      const res = await api.get<UsageReport>(url);
+      const res = await api.get<UsageReport>(withRefresh(url, refresh));
       if (res.success && res.data && Array.isArray(res.data.communities) && typeof res.data.month === 'string') {
         setReport(res.data);
+        shown.current = true;
+      } else if (refresh && shown.current && res.code === 'RATE_LIMIT_EXCEEDED') {
+        // Asked again too soon: keep what is on screen and say so.
+        setRefused(true);
       } else {
         setReport(null);
+        shown.current = false;
         setFailed(true);
       }
     } catch (err) {
       logError('Failed to load usage per community', err);
       setReport(null);
+      shown.current = false;
       setFailed(true);
     } finally {
       setLoading(false);
@@ -176,7 +188,7 @@ export function UsagePage() {
   const emailFigures = (emails: EmailCounts | null, prefix: string) =>
     emails === null ? (
       <div className="col-span-full">
-        <dt className="text-xs text-muted">{t('usage.emails_heading')}</dt>
+        <dt className="sr-only">{t('usage.emails_heading')}</dt>
         <dd>{notAvailable(`${prefix}-sent`)}</dd>
       </div>
     ) : (
@@ -190,7 +202,7 @@ export function UsagePage() {
   const aiFigures = (ai: AiChatUse | null, prefix: string) =>
     ai === null ? (
       <div className="col-span-full">
-        <dt className="text-xs text-muted">{t('usage.ai_heading')}</dt>
+        <dt className="sr-only">{t('usage.ai_heading')}</dt>
         <dd>{notAvailable(`${prefix}-ai_requests`)}</dd>
       </div>
     ) : (
@@ -251,10 +263,12 @@ export function UsagePage() {
           <h1 className="text-2xl font-semibold text-foreground">{t('usage.title')}</h1>
           <p className="mt-2 max-w-2xl text-base text-muted">{t('usage.intro')}</p>
         </div>
-        <Button variant="tertiary" onPress={() => void load(report?.month)} isDisabled={loading}>
-          <RefreshCw size={16} aria-hidden="true" />
-          {t('home.refresh')}
-        </Button>
+        <FiguresRefresh
+          onRefresh={() => void load(report?.month, true)}
+          loading={loading}
+          generatedAt={report?.generated_at}
+          refused={refused}
+        />
       </div>
 
       {report ? (

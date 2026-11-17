@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\PlatformTeam;
 
 use App\Http\Controllers\Api\BaseApiController;
+use App\Http\Controllers\Api\PlatformTeam\Concerns\KeepsFigures;
 use App\Services\PlatformTeam\UsagePerCommunityService;
 use Illuminate\Http\JsonResponse;
 
@@ -20,6 +21,8 @@ use Illuminate\Http\JsonResponse;
  */
 final class UsagePerCommunityController extends BaseApiController
 {
+    use KeepsFigures;
+
     protected bool $isV2Api = true;
 
     /** GET /api/v2/platform-team/usage?month=YYYY-MM (default: this month) */
@@ -32,6 +35,6 @@ final class UsagePerCommunityController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', __('api.platform_usage_month_invalid'), 'month', 422);
         }
 
-        return $this->respondWithData((new UsagePerCommunityService())->report($month));
+        return $this->keptFigures('usage:' . $month->format('Y-m'), static fn (): array => (new UsagePerCommunityService())->report($month));
     }
 }

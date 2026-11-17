@@ -21,17 +21,17 @@
  * available", never as zero: "nothing overdue" would be a comforting lie.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Card, CardBody, Chip, Spinner } from '@/components/ui';
+import { Card, CardBody, Chip, Spinner } from '@/components/ui';
 import { LoadError } from '@/components/feedback/LoadError';
+import { FiguresRefresh, withRefresh } from '../components/FiguresRefresh';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { joinList } from '@/lib/listFormat';
 import { logError } from '@/lib/logger';
 import Clock from 'lucide-react/icons/clock';
 import Eye from 'lucide-react/icons/eye';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
 
 export type RequestType = 'access' | 'erasure' | 'rectification' | 'restriction' | 'portability' | 'objection';
 
@@ -80,6 +80,8 @@ export interface DataRequests {
   unavailable: string[];
   totals: DataRequestsTotals;
   communities: DataRequestsRow[];
+  /** When the server worked these figures out (absent from an older server). */
+  generated_at?: string | null;
 }
 
 /** The figure columns, in the order the table shows them. */
@@ -93,23 +95,33 @@ export function DataRequestsPage() {
   usePageTitle(t('data_requests.title'));
 
   const [data, setData] = useState<DataRequests | null>(null);
+  const [refused, setRefused] = useState(false);
+  /** Figures are on screen: a refused "Check again" keeps them. */
+  const shown = useRef(false);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (refresh = false) => {
+    setRefused(false);
     setLoading(true);
     setFailed(false);
     try {
-      const res = await api.get<DataRequests>('/v2/platform-team/data-requests');
+      const res = await api.get<DataRequests>(withRefresh('/v2/platform-team/data-requests', refresh));
       if (res.success && res.data && Array.isArray(res.data.communities) && res.data.totals) {
         setData(res.data);
+        shown.current = true;
+      } else if (refresh && shown.current && res.code === 'RATE_LIMIT_EXCEEDED') {
+        // Asked again too soon: keep what is on screen and say so.
+        setRefused(true);
       } else {
         setData(null);
+        shown.current = false;
         setFailed(true);
       }
     } catch (err) {
       logError('Failed to load data requests', err);
       setData(null);
+      shown.current = false;
       setFailed(true);
     } finally {
       setLoading(false);
@@ -191,10 +203,12 @@ export function DataRequestsPage() {
             {t('data_requests.counts_only')}
           </p>
         </div>
-        <Button variant="tertiary" onPress={() => void load()} isDisabled={loading}>
-          <RefreshCw size={16} aria-hidden="true" />
-          {t('home.refresh')}
-        </Button>
+        <FiguresRefresh
+          onRefresh={() => void load(true)}
+          loading={loading}
+          generatedAt={data?.generated_at}
+          refused={refused}
+        />
       </div>
 
       {loading && !data ? (

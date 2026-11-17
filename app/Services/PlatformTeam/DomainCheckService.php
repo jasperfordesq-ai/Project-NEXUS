@@ -232,11 +232,29 @@ final class DomainCheckService
                 if ($addresses === []) {
                     $errorKind = 'not_a_public_address';
                 } else {
-                    $expiry = $this->prober->certificateExpiry($host, (string) $addresses[0]);
-                    if ($expiry === null) {
-                        $errorKind = 'could_not_read_certificate';
-                    } else {
+                    // A host usually has several addresses, of both kinds. One
+                    // that answers is enough: a server with no route for the
+                    // newer kind gets "no answer" from those at once, and the
+                    // order the name service returns them in is not fixed.
+                    // The older kind is tried first (every server can reach
+                    // it); the reason kept, if none answers, is the first one's.
+                    $firstFailure = null;
+                    foreach (self::inTryOrder($addresses) as $address) {
+                        try {
+                            $expiry = $this->prober->certificateExpiry($host, $address);
+                        } catch (DomainProbeFailure $e) {
+                            $firstFailure ??= in_array($e->kind, self::ERROR_KINDS, true) ? $e->kind : 'could_not_read_certificate';
+                            continue;
+                        }
+                        if ($expiry === null) {
+                            $firstFailure ??= 'could_not_read_certificate';
+                            continue;
+                        }
                         $expiresAt = $expiry->setTimezone(new \DateTimeZone('UTC'))->format(DATE_ATOM);
+                        break;
+                    }
+                    if ($expiresAt === null) {
+                        $errorKind = $firstFailure ?? 'could_not_read_certificate';
                     }
                 }
             }
@@ -255,6 +273,31 @@ final class DomainCheckService
             'checked_at' => now()->toIso8601String(),
             'error_kind' => $errorKind,
         ], now()->addDays(self::KEEP_DAYS));
+    }
+
+    /** At most this many addresses of one host are tried (five seconds each at worst). */
+    private const MAX_ADDRESSES_TRIED = 3;
+
+    /**
+     * The addresses to try, older kind (IPv4) first, at most MAX_ADDRESSES_TRIED.
+     *
+     * @param array<int, mixed> $addresses
+     * @return list<string>
+     */
+    private static function inTryOrder(array $addresses): array
+    {
+        $older = [];
+        $newer = [];
+        foreach ($addresses as $address) {
+            $address = (string) $address;
+            if (str_contains($address, ':')) {
+                $newer[] = $address;
+            } else {
+                $older[] = $address;
+            }
+        }
+
+        return array_slice(array_merge($older, $newer), 0, self::MAX_ADDRESSES_TRIED);
     }
 
     /**

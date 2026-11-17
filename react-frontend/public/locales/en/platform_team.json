@@ -39,7 +39,10 @@
     "group_joining": "Joining and roles",
     "group_site": "Site and search",
     "group_reports": "Reports",
-    "group_matching": "Matching"
+    "group_matching": "Matching",
+    "group_jobs": "Scheduled jobs",
+    "group_tools": "Tools",
+    "group_phone": "Phone app"
   },
   "breadcrumbs": {
     "aria_label": "Where you are",
@@ -146,7 +149,7 @@
     "load_error_title": "We couldn't load the failed jobs just now",
     "empty_title": "Nothing is waiting",
     "empty_text": "No background job has failed, or every one has been dealt with.",
-    "count": "Waiting to be looked at: {{count}}",
+    "count": "Waiting to be looked at: {{count, number}}",
     "unknown_job": "Name not recorded",
     "no_reason": "No reason was recorded.",
     "queue": "Queue:",
@@ -173,11 +176,13 @@
       "title": "App versions in use",
       "coverage": "These figures only cover phones that signed in after the app version started being recorded, so at first most sign-ins will be counted as \"not recorded\".",
       "version": "Version {{version}}",
-      "sign_ins_one": "{{count}} sign-in",
-      "sign_ins_other": "{{count}} sign-ins",
-      "not_recorded_one": "{{count}} sign-in with no version recorded",
-      "not_recorded_other": "{{count}} sign-ins with no version recorded",
-      "none_yet": "No phone has recorded its app version yet."
+      "sign_ins_one": "{{count, number}} sign-in",
+      "sign_ins_other": "{{count, number}} sign-ins",
+      "not_recorded_one": "{{count, number}} sign-in with no version recorded",
+      "not_recorded_other": "{{count, number}} sign-ins with no version recorded",
+      "none_yet": "No phone has recorded its app version yet.",
+      "unreadable": "These figures could not be read just now.",
+      "not_recorded_unknown": "Sign-ins with no version recorded: not known"
     }
   },
   "senior_accounts": {
@@ -186,9 +191,9 @@
     "read_only_note": "This page only shows these accounts. Nothing here gives or takes away access.",
     "loading": "Loading the senior accounts",
     "load_error_title": "We couldn't load the senior accounts just now",
-    "without_two_step": "Two-step sign-in is off for {{count}} of these {{total}} accounts.",
+    "without_two_step": "Two-step sign-in is off for {{count, number}} of these {{total}} accounts.",
     "all_have_two_step": "Two-step sign-in is on for all {{total}} of these accounts.",
-    "truncated": "Only the first {{count}} accounts are shown.",
+    "truncated": "Only the first {{count, number}} accounts are shown.",
     "none_at_level": "No accounts at this level.",
     "level": {
       "platform_team": "Platform team",
@@ -234,8 +239,8 @@
     "too_many": "That is a lot of searches. Wait a minute, then try again.",
     "none": "No account uses that address",
     "none_note": "Every community was checked. Erased accounts are never found.",
-    "found": "Accounts found: {{count}}",
-    "truncated": "Only the first {{count}} accounts are shown.",
+    "found": "Accounts found: {{count, number}}",
+    "truncated": "Only the first {{count, number}} accounts are shown.",
     "role_label": "Role:",
     "role": {
       "member": "Member",
@@ -287,10 +292,10 @@
     "not_recorded": "Not recorded",
     "by": "By:",
     "when": "When:",
-    "truncated": "Only the newest {{count}} are shown.",
+    "truncated": "Only the newest {{count, number}} are shown.",
     "two_step": {
       "title": "Two-step sign-in on senior accounts",
-      "off": "Two-step sign-in is off for {{count}} of {{total}} senior accounts.",
+      "off": "Two-step sign-in is off for {{count, number}} of {{total}} senior accounts.",
       "all_on": "Two-step sign-in is on for all {{total}} senior accounts.",
       "link": "See the senior accounts"
     },
@@ -309,7 +314,9 @@
       "most_from_one_15m": "Most from one address in the last 15 minutes",
       "checks_title": "Failed password checks",
       "refused_title": "Refused by the lock-out",
-      "col_refused": "Refused by the lock-out in the last 24 hours:"
+      "col_refused": "Refused by the lock-out in the last 24 hours:",
+      "no_community": "Not tied to a community",
+      "by_community_title": "By community, last 24 hours"
     },
     "access": {
       "title": "Senior access given and removed",
@@ -337,7 +344,7 @@
     "loading": "Loading the communities",
     "load_error_title": "We couldn't load the communities just now",
     "empty": "There are no communities yet.",
-    "community_count": "Communities: {{count}}",
+    "community_count": "Communities: {{count, number}}",
     "on": "On",
     "off": "Off",
     "held": "On here, but switched off for the whole platform",
@@ -348,7 +355,7 @@
     "modules_note": "The parts every community starts with. A community can still switch one off.",
     "switch_column": "Switch",
     "count_column": "How many",
-    "on_in": "On in {{count}} of {{total}}",
+    "on_in": "On in {{count, number}} of {{total}}",
     "on_everywhere": "On in every community.",
     "off_everywhere": "Off in every community.",
     "off_in": "Off in: {{names}}",
@@ -433,7 +440,7 @@
       "emails_kept_90_days": "Email records are kept for 90 days, so this month cannot be shown."
     },
     "totals_heading": "All communities together",
-    "communities_heading": "Each community ({{count}})",
+    "communities_heading": "Each community ({{count, number}})",
     "empty": "There are no communities yet.",
     "emails_heading": "Emails",
     "ai_heading": "AI chat",
@@ -470,8 +477,8 @@
     "loading": "Loading community health",
     "load_error_title": "We couldn't load community health just now",
     "empty": "There are no communities yet.",
-    "community_count": "Communities: {{count}}",
-    "quiet_count": "Quiet communities: {{count}}",
+    "community_count": "Communities: {{count, number}}",
+    "quiet_count": "Quiet communities: {{count, number}}",
     "quiet_names": "Quiet: {{names}}",
     "none_quiet": "No community is quiet.",
     "quiet_rule": "A community is called quiet when it is switched on and either no member has been active in the last {{days}} days, or there has been no exchange this month and none last month.",
@@ -503,7 +510,7 @@
     "loading": "Loading community setup",
     "load_error_title": "We couldn't load community setup just now",
     "empty": "There are no communities yet.",
-    "community_count": "Communities: {{count}}",
+    "community_count": "Communities: {{count, number}}",
     "truncated": "Showing the {{shown}} newest of {{total}} communities.",
     "terms_note": "Terms are added automatically when a community is created, so a tick for terms means less than the others.",
     "not_recorded": "Whether a community's email sending has been tested is not recorded anywhere, so this page does not show it.",
@@ -534,8 +541,8 @@
     "read_only": "This page only shows. A feature is switched on or off in that community's own admin panel.",
     "loading": "Loading the unfinished features",
     "load_error_title": "We couldn't load the unfinished features just now",
-    "summary": "Features listed: {{count}}",
-    "summary_on_somewhere": "On in at least one community: {{count}}",
+    "summary": "Features listed: {{count, number}}",
+    "summary_on_somewhere": "On in at least one community: {{count, number}}",
     "stage": {
       "alpha": "Early test (alpha)",
       "beta": "Late test (beta)"
@@ -545,7 +552,7 @@
     "note": {
       "not_for_use": "Not for use. It must not be switched on for any community."
     },
-    "on_in": "Communities with it on: {{count}}",
+    "on_in": "Communities with it on: {{count, number}}",
     "on_names": "On in: {{names}}",
     "on_nowhere": "Not on in any community"
   },
@@ -558,8 +565,8 @@
     "loading": "Loading data requests",
     "load_error_title": "We couldn't load data requests just now",
     "empty": "There are no communities yet.",
-    "community_count": "Communities: {{count}}",
-    "overdue_count": "Communities with an overdue request: {{count}}",
+    "community_count": "Communities: {{count, number}}",
+    "overdue_count": "Communities with an overdue request: {{count, number}}",
     "overdue_names": "Overdue: {{names}}",
     "none_overdue": "No community has an overdue request.",
     "overdue_unknown": "We can't tell just now whether any request is overdue.",
@@ -588,7 +595,7 @@
       "portability": "A transfer",
       "objection": "An objection"
     },
-    "completed_without_date": "Completed requests with no completion date, so not in the 90-day figure: {{count}}"
+    "completed_without_date": "Completed requests with no completion date, so not in the 90-day figure: {{count, number}}"
   },
   "legal_documents": {
     "title": "Legal documents",
@@ -598,8 +605,8 @@
     "counts_only": "Counts only. No member is named on this page.",
     "loading": "Loading legal documents",
     "load_error_title": "We couldn't load legal documents just now",
-    "community_count": "Communities: {{count}}",
-    "no_privacy_count": "Communities without a published privacy notice: {{count}}",
+    "community_count": "Communities: {{count, number}}",
+    "no_privacy_count": "Communities without a published privacy notice: {{count, number}}",
     "no_privacy_names": "Without one: {{names}}",
     "all_have_privacy": "Every community has a published privacy notice.",
     "privacy_unknown": "We can't tell just now which communities have a privacy notice.",
@@ -610,8 +617,8 @@
     "date_unknown": "date not recorded",
     "no_acceptance_needed": "Members are not asked to accept this one.",
     "members_not_available": "Who has accepted: not available",
-    "members_not_accepted": "Not accepted yet: {{count}} of {{asked}} members asked",
-    "all_accepted": "Accepted by every member asked ({{count}})",
+    "members_not_accepted": "Not accepted yet: {{count, number}} of {{asked}} members asked",
+    "all_accepted": "Accepted by every member asked ({{count, number}})",
     "status": {
       "published": "Published",
       "not_published": "Not published",
@@ -662,10 +669,10 @@
     "history_title": "Recent reviews",
     "history_none": "No reviews yet.",
     "history_by": "Recorded by {{name}}",
-    "history_accounts_one": "{{count}} account",
-    "history_accounts_other": "{{count}} accounts",
-    "history_removals_one": "{{count}} marked for removal",
-    "history_removals_other": "{{count}} marked for removal",
+    "history_accounts_one": "{{count, number}} account",
+    "history_accounts_other": "{{count, number}} accounts",
+    "history_removals_one": "{{count, number}} marked for removal",
+    "history_removals_other": "{{count, number}} marked for removal",
     "erased": "Erased account",
     "refresh_failed": "The review could not be loaded again. What you see is from before.",
     "note_no_names": "Do not name people in the note. It is kept with the record."
@@ -676,12 +683,12 @@
     "intro": "How many notifications were sent to members’ phones and browsers, by day and by community. “Accepted by the push service” means the service took the notification, not that a phone showed it. Some kinds of notification are sent without being recorded here (event reminders, emergency alerts and some others), so the real numbers are at least these.",
     "timezone_note": "Days run in the server’s time (UTC).",
     "days_picker": "How many days to show",
-    "days_option": "Last {{count}} days",
+    "days_option": "Last {{count, number}} days",
     "loading": "Loading push notification figures",
     "load_error_title": "The push notification figures could not be loaded",
     "not_available": "Not available: the record of push notifications could not be read. This does not mean none were sent.",
     "by_day_heading": "Each day",
-    "by_community_heading": "Each community ({{count}})",
+    "by_community_heading": "Each community ({{count, number}})",
     "by_community_note": "Totals for the whole period. “Nobody to send to” is shown per day only.",
     "no_community_heading": "Not linked to a community",
     "no_community_note": "Notifications recorded without a community. They are included in the daily figures.",
@@ -702,8 +709,8 @@
     "no_record_title": "This server keeps no record of deployments",
     "no_record_text": "Only the live server keeps one, so on a developer's computer this is expected.",
     "empty": "Nothing has been recorded yet.",
-    "skipped": "Lines in the record that could not be read and were skipped: {{count}}",
-    "count": "Deployments and rollbacks shown: {{count}}",
+    "skipped": "Lines in the record that could not be read and were skipped: {{count, number}}",
+    "count": "Deployments and rollbacks shown: {{count, number}}",
     "not_recorded": "Not recorded",
     "kind": {
       "deploy": "Deployment",
@@ -903,7 +910,8 @@
         "deletes": "Deletes finished or expired identity checks older than 180 days. The record of what happened in each check is kept."
       }
     },
-    "finished_only": "This job records that it finished, not that every step worked."
+    "finished_only": "This job records that it finished, not that every step worked.",
+    "steps_failed": "Steps that failed on the last run: {{count, number}}"
   },
   "search_rebuild": {
     "title": "Rebuild search",
@@ -930,10 +938,10 @@
       "never": "Never run from this page",
       "queued": "Waiting to start",
       "running": "Running since {{time}}",
-      "done_one": "Finished {{time}}: {{count}} entry updated",
-      "done_other": "Finished {{time}}: {{count}} entries updated",
-      "done_with_errors_one": "Finished {{time}} with {{count}} entry that could not be updated",
-      "done_with_errors_other": "Finished {{time}} with {{count}} entries that could not be updated",
+      "done_one": "Finished {{time}}: {{count, number}} entry updated",
+      "done_other": "Finished {{time}}: {{count, number}} entries updated",
+      "done_with_errors_one": "Finished {{time}} with {{count, number}} entry that could not be updated",
+      "done_with_errors_other": "Finished {{time}} with {{count, number}} entries that could not be updated",
       "failed": "Failed"
     },
     "check_failed": "Could not check again at {{time}}"
@@ -1048,8 +1056,8 @@
     },
     "data_requests": {
       "title": "Requests about personal data",
-      "open": "Open, across all communities: {{count}}",
-      "overdue": "Open for more than 30 days: {{count}}"
+      "open": "Open, across all communities: {{count, number}}",
+      "overdue": "Open for more than 30 days: {{count, number}}"
     },
     "failed_sign_ins": {
       "title": "Record of failed sign-ins",
@@ -1082,8 +1090,8 @@
     },
     "status": {
       "ok": "Fine",
-      "warning_one": "Certificate runs out in {{count}} day",
-      "warning_other": "Certificate runs out in {{count}} days",
+      "warning_one": "Certificate runs out in {{count, number}} day",
+      "warning_other": "Certificate runs out in {{count, number}} days",
       "failing": "Not working",
       "unknown": "Not checked yet",
       "not_checkable": "Not a web address we can check",
@@ -1105,5 +1113,8 @@
     "too_many": "Too many checks in a minute. Wait a moment and try again.",
     "check_now_for": "Check {{name}} now",
     "check_platform_now": "Check the platform's addresses now"
+  },
+  "shared": {
+    "figures_from": "Figures from {{time}}"
   }
 }

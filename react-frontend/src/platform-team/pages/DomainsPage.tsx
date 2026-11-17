@@ -18,7 +18,7 @@
  * A list that cannot be loaded shows the error card, never an empty list.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { Fragment, useCallback, useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Card, CardBody, Chip, Spinner } from '@/components/ui';
 import { LoadError } from '@/components/feedback/LoadError';
@@ -94,6 +94,25 @@ const REFUSAL_KEYS: Record<string, 'domains.too_many'> = {
 };
 
 /** Something of its own the server would check (not the platform's address, a plain name). */
+/**
+ * An address with a line-break opportunity after each dot, so a long one
+ * wraps at a dot on a phone. It still breaks anywhere if one part alone is
+ * wider than the screen (`break-words` on the element).
+ */
+function hostWithBreaks(host: string): ReactNode {
+  const parts = host.split('.');
+  return parts.map((part, index) => (
+    <Fragment key={index}>
+      {part}
+      {index < parts.length - 1 ? (
+        <>
+          .<wbr />
+        </>
+      ) : null}
+    </Fragment>
+  ));
+}
+
 function hasOwnAddress(community: CommunityRow): boolean {
   return community.addresses.some((a) => !a.uses_platform_address && a.status !== 'not_checkable');
 }
@@ -186,7 +205,7 @@ export function DomainsPage() {
   const time = (iso: string | null): string | null => {
     if (!iso) return null;
     const d = new Date(iso);
-    return Number.isNaN(d.getTime()) ? null : d.toLocaleString(i18n.language);
+    return Number.isNaN(d.getTime()) ? null : d.toLocaleString(i18n.language, { dateStyle: 'medium', timeStyle: 'short' });
   };
 
   /** The state in words, with an icon. */
@@ -290,7 +309,7 @@ export function DomainsPage() {
                   <ul className="divide-y divide-divider">
                     {overview.platform.map((p) => (
                       <li key={p.host} className="flex flex-col gap-2 p-4 sm:flex-row sm:items-start sm:justify-between">
-                        <span className="min-w-0 break-all text-sm font-medium text-foreground">{p.host}</span>
+                        <span className="min-w-0 break-words text-sm font-medium text-foreground">{hostWithBreaks(p.host)}</span>
                         <div className="sm:max-w-[60%]">{renderStatus(p)}</div>
                       </li>
                     ))}
@@ -338,7 +357,7 @@ export function DomainsPage() {
                           <li key={a.kind} className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                             <div className="min-w-0">
                               <p className="text-xs text-muted">{t(KIND_KEYS[a.kind])}</p>
-                              <p className="break-all text-sm font-medium text-foreground">{a.host}</p>
+                              <p className="break-words text-sm font-medium text-foreground">{hostWithBreaks(a.host)}</p>
                             </div>
                             <div className="sm:max-w-[60%]">
                               {a.uses_platform_address ? (

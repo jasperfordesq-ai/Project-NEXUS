@@ -116,7 +116,10 @@ describe('SecurityPage', () => {
     expect(within(section).queryByText('security.failed.nothing_counted')).not.toBeInTheDocument();
     expect(within(screen.getByTestId('failed-community-2')).getByText('Sample Timebank')).toBeInTheDocument();
     expect(within(screen.getByTestId('failed-community-2')).getByText('30')).toBeInTheDocument();
-    expect(within(screen.getByTestId('failed-community-0')).getByText('senior_accounts.no_community')).toBeInTheDocument();
+    // A row with no community is named for what it is, not "None".
+    expect(within(screen.getByTestId('failed-community-0')).getByText('security.failed.no_community')).toBeInTheDocument();
+    // The per-community list has its own short heading.
+    expect(within(section).getByRole('heading', { name: 'security.failed.by_community_title' })).toBeInTheDocument();
   });
 
   // A locked-out attacker's guesses never reach the password check: shown apart, never added in.

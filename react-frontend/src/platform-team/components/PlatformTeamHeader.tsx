@@ -31,8 +31,8 @@ export function PlatformTeamHeader({ sidebarCollapsed, onSidebarToggle }: Platfo
 
   return (
     <header
-      className={`fixed top-0 right-0 z-30 flex h-16 items-center justify-between gap-2 border-b border-divider/70 bg-surface/90 px-3 shadow-sm shadow-black/[0.03] backdrop-blur-xl transition-all duration-300 sm:px-6 left-0 ${
-        sidebarCollapsed ? 'md:left-16' : 'md:left-64'
+      className={`fixed top-0 end-0 z-30 flex h-16 items-center justify-between gap-2 border-b border-divider/70 bg-surface/90 px-3 shadow-sm shadow-black/[0.03] backdrop-blur-xl transition-all duration-300 sm:px-6 start-0 ${
+        sidebarCollapsed ? 'md:start-16' : 'md:start-64'
       }`}
     >
       <div className="flex min-w-0 items-center gap-2 sm:gap-4">
@@ -52,7 +52,7 @@ export function PlatformTeamHeader({ sidebarCollapsed, onSidebarToggle }: Platfo
           variant="tertiary"
           size="sm"
           onPress={() => navigate(tenantPath('/admin'))}
-          startContent={<ArrowLeft size={16} aria-hidden="true" />}
+          startContent={<ArrowLeft size={16} aria-hidden="true" className="rtl:rotate-180" />}
           aria-label={t('header.back_to_admin')}
           className="min-w-0 bg-surface-secondary/70 px-2 text-muted hover:bg-surface-tertiary/70 sm:px-3"
         >

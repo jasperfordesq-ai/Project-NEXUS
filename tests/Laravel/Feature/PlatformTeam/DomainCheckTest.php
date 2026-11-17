@@ -51,6 +51,9 @@ class DomainCheckTest extends TestCase
      */
     public array $behaviour = [];
 
+    /** @var list<string> the address each certificate read was sent to, in order */
+    public array $triedAddresses = [];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -73,13 +76,21 @@ class DomainCheckTest extends TestCase
             {
                 $this->test->calls[] = ['publicAddresses', $host];
 
+                if (isset($this->test->behaviour[$host]['addresses'])) {
+                    return $this->test->behaviour[$host]['addresses'];
+                }
+
                 return ($this->test->behaviour[$host]['public'] ?? true) ? ['203.0.113.10'] : [];
             }
 
             public function certificateExpiry(string $host, string $ip): ?\DateTimeImmutable
             {
                 $this->test->calls[] = ['certificateExpiry', $host];
+                $this->test->triedAddresses[] = $ip;
                 $b = $this->test->behaviour[$host] ?? [];
+                if (isset($b['throw_for'][$ip])) {
+                    throw $b['throw_for'][$ip];
+                }
                 if (isset($b['throw'])) {
                     throw $b['throw'];
                 }
@@ -97,6 +108,52 @@ class DomainCheckTest extends TestCase
     {
         Carbon::setTestNow();
         parent::tearDown();
+    }
+
+    /**
+     * Found by running the real checker once (16 Nov 2026): every platform
+     * host has IPv4 and IPv6 addresses, and a server with no IPv6 route gets
+     * "no answer" from the IPv6 ones at once. Only the first address was
+     * tried, so the order the name service happened to return decided
+     * whether a working site showed as "not working".
+     */
+    public function test_a_host_is_fine_when_one_of_its_addresses_answers_even_if_another_does_not(): void
+    {
+        $host = $this->host('twofamilies');
+        $id = $this->community(['domain' => $host]);
+        $this->behaviour[$host] = [
+            'addresses' => ['2001:db8::10', '203.0.113.10'],
+            'throw_for' => ['2001:db8::10' => new DomainProbeFailure('no_answer', self::PLANTED_TEXT)],
+        ];
+
+        $row = app(DomainCheckService::class)->checkCommunity($id);
+
+        $address = collect($row['addresses'])->firstWhere('host', $host);
+        $this->assertSame('ok', $address['status']);
+        $this->assertNull($address['error_kind']);
+        // The older kind of address is tried first: it is the one every server can reach.
+        $this->assertSame('203.0.113.10', $this->triedAddresses[0]);
+    }
+
+    public function test_a_host_is_not_working_only_when_none_of_its_addresses_answers(): void
+    {
+        $host = $this->host('nonefamilies');
+        $id = $this->community(['domain' => $host]);
+        $this->behaviour[$host] = [
+            'addresses' => ['2001:db8::10', '203.0.113.10'],
+            'throw_for' => [
+                '2001:db8::10' => new DomainProbeFailure('no_answer', self::PLANTED_TEXT),
+                '203.0.113.10' => new DomainProbeFailure('certificate_not_trusted', self::PLANTED_TEXT),
+            ],
+        ];
+
+        $row = app(DomainCheckService::class)->checkCommunity($id);
+
+        $address = collect($row['addresses'])->firstWhere('host', $host);
+        $this->assertSame('failing', $address['status']);
+        // The reason kept is the first address's (the one every server can reach).
+        $this->assertSame('certificate_not_trusted', $address['error_kind']);
+        $this->assertCount(2, $this->triedAddresses);
     }
 
     /** @param array<string, mixed> $attributes */

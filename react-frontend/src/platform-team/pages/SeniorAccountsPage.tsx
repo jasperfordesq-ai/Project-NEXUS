@@ -37,6 +37,16 @@ export type SeniorLevel = (typeof SENIOR_LEVELS)[number];
 const KNOWN_STATUSES = ['inactive', 'suspended', 'banned', 'pending', 'rejected'] as const;
 type KnownStatus = (typeof KNOWN_STATUSES)[number];
 
+/**
+ * The wording key for an account that is not active (also used by the access
+ * review). An unknown state is "Not active", never left blank.
+ */
+export function accountStatusKey(status: string): `senior_accounts.status.${KnownStatus | 'other'}` {
+  return (KNOWN_STATUSES as readonly string[]).includes(status)
+    ? `senior_accounts.status.${status as KnownStatus}`
+    : 'senior_accounts.status.other';
+}
+
 export interface SeniorAccount {
   id: number;
   name: string | null;
@@ -97,10 +107,7 @@ export function SeniorAccountsPage() {
       : date.toLocaleDateString(i18n.language, { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
-  const statusLabel = (status: string): string =>
-    (KNOWN_STATUSES as readonly string[]).includes(status)
-      ? t(`senior_accounts.status.${status as KnownStatus}`)
-      : t('senior_accounts.status.other');
+  const statusLabel = (status: string): string => t(accountStatusKey(status));
 
   const withoutTwoStep = list ? list.accounts.filter((a) => !a.two_step_on).length : 0;
 
@@ -138,8 +145,8 @@ export function SeniorAccountsPage() {
               )}
               <p className="text-sm text-foreground">
                 {withoutTwoStep > 0
-                  ? t('senior_accounts.without_two_step', { count: withoutTwoStep, total: list.total })
-                  : t('senior_accounts.all_have_two_step', { total: list.total })}
+                  ? t('senior_accounts.without_two_step', { count: withoutTwoStep, total: new Intl.NumberFormat(i18n.language).format(list.total) })
+                  : t('senior_accounts.all_have_two_step', { total: new Intl.NumberFormat(i18n.language).format(list.total) })}
               </p>
             </CardBody>
           </Card>
@@ -178,9 +185,9 @@ export function SeniorAccountsPage() {
                               </h3>
                               <p className="break-all text-sm text-muted">{account.email}</p>
                               <dl className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
-                                <div className="flex gap-1">
-                                  <dt>{t('senior_accounts.community')}</dt>
-                                  <dd className="font-medium text-foreground">
+                                <div className="flex min-w-0 gap-1">
+                                  <dt className="shrink-0">{t('senior_accounts.community')}</dt>
+                                  <dd className="min-w-0 break-words font-medium text-foreground">
                                     {account.community === null
                                       ? t('senior_accounts.no_community')
                                       : (account.community.name ??

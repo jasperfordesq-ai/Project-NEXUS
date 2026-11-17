@@ -14,6 +14,7 @@ use App\Services\MeilisearchDocumentIndexer;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 /**
  * Platform team panel → Rebuild search (idea 31): the page's list, and the
@@ -111,15 +112,30 @@ final class SearchRebuildService
             && !$this->isStale($state);
     }
 
-    public function markQueued(int $tenantId): void
+    /**
+     * Mark a new rebuild as waiting and give it a run id. The rebuild runs as
+     * a chain of short jobs (ReindexTenantSearchJob), each carrying the run id
+     * and its place in the chain (`cursor`); a job whose run id or place does
+     * not match this record does nothing. Both stay internal: lastFor() never
+     * sends them to the page.
+     *
+     * @return string the run id
+     */
+    public function markQueued(int $tenantId): string
     {
+        $runId = (string) Str::uuid();
         $this->write($tenantId, [
             'state' => 'queued',
             'started_at' => null,
             'finished_at' => null,
             'counts' => null,
             'errors' => 0,
+            'run_id' => $runId,
+            'cursor' => ['kind' => 0, 'after_id' => 0],
+            'partial' => [],
         ]);
+
+        return $runId;
     }
 
     /** @return array<string, mixed>|null */

@@ -154,6 +154,20 @@ describe('DomainsPage', () => {
     expect(within(section).getByText('domains.status.ok')).toBeInTheDocument();
   });
 
+  // On a phone a long address wraps after a dot, not in the middle of a word.
+  it('offers a line break after each dot of an address, and nowhere else', async () => {
+    apiGet.mockResolvedValue(reply([community(1, [address({ host: 'accessible-minehead.timebank.example' })])], [
+      { host: 'app.platform.example', status: 'ok', resolves: true, certificate_expires_at: '2027-02-14T12:00:00+00:00', days_left: 90, checked_at: '2026-11-16T05:20:00+00:00', error_kind: null },
+    ]));
+    render(<DomainsPage />);
+
+    const own = await screen.findByText('accessible-minehead.timebank.example');
+    expect(own.querySelectorAll('wbr')).toHaveLength(2);
+    expect(own.innerHTML).toBe('accessible-minehead.<wbr>timebank.<wbr>example');
+    const platform = within(screen.getByTestId('domains-platform')).getByText('app.platform.example');
+    expect(platform.querySelectorAll('wbr')).toHaveLength(2);
+  });
+
   it('checks one community now, sending only its id, and shows the answer', async () => {
     apiGet.mockResolvedValue(reply([community(2, [address({ status: 'unknown', checked_at: null })])]));
     apiPost.mockResolvedValue({ success: true, data: community(2, [address({ status: 'warning', days_left: 3 })]) });

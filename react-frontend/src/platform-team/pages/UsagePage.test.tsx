@@ -146,6 +146,12 @@ describe('UsagePage', () => {
     const card = await screen.findByTestId('usage-community-2');
     expect(within(card).getByTestId('usage-2-sent')).toHaveTextContent('usage.not_available');
     expect(within(card).queryByTestId('usage-2-failed')).not.toBeInTheDocument();
+    // The section heading is shown once, not again beside "Not available"
+    // (a screen reader still hears what the figure is).
+    const shown = (scope: HTMLElement, text: string) =>
+      within(scope).getAllByText(text).filter((el) => !el.classList.contains('sr-only'));
+    expect(shown(card, 'usage.emails_heading')).toHaveLength(1);
+    expect(shown(screen.getByTestId('usage-totals'), 'usage.emails_heading')).toHaveLength(1);
     expect(screen.getByText('usage.unavailable.emails')).toBeInTheDocument();
     expect(within(screen.getByTestId('usage-platform-mail')).getByText('usage.not_available')).toBeInTheDocument();
   });
@@ -233,6 +239,40 @@ describe('UsagePage', () => {
       ['home.refresh', 'usage.next_month', 'usage.previous_month'].sort(),
     );
     expect(screen.queryAllByRole('link')).toHaveLength(0);
+  });
+
+  // The server keeps these figures for a short while. The first look uses the
+  // kept ones; "Check again" asks for them to be worked out again.
+  it('works the figures out again only when "Check again" is pressed, and says when they are from', async () => {
+    apiGet.mockResolvedValue({ success: true, data: { ...report(), generated_at: '2026-11-16T10:05:00+00:00' } });
+    render(<UsagePage />);
+
+    expect(await screen.findByText(/^shared\.figures_from/)).toBeInTheDocument();
+    expect(apiGet).toHaveBeenCalledTimes(1);
+    expect(apiGet).toHaveBeenLastCalledWith('/v2/platform-team/usage');
+    fireEvent.click(screen.getByRole('button', { name: 'home.refresh' }));
+    await waitFor(() => expect(apiGet).toHaveBeenLastCalledWith('/v2/platform-team/usage?month=2026-11&refresh=1'));
+  });
+
+  it('says nothing about when the figures are from when the server does not say', async () => {
+    render(<UsagePage />);
+
+    await waitFor(() => expect(apiGet).toHaveBeenCalled());
+    await screen.findByRole('button', { name: 'home.refresh' });
+    expect(screen.queryByText(/^shared\.figures_from/)).not.toBeInTheDocument();
+  });
+
+  it('keeps the figures on screen and says so when checking again is refused', async () => {
+    apiGet.mockResolvedValue({ success: true, data: { ...report(), generated_at: '2026-11-16T10:05:00+00:00' } });
+    render(<UsagePage />);
+    expect(await screen.findByText(/^shared\.figures_from/)).toBeInTheDocument();
+
+    apiGet.mockResolvedValue({ success: false, code: 'RATE_LIMIT_EXCEEDED', error: 'Too many requests' });
+    fireEvent.click(screen.getByRole('button', { name: 'home.refresh' }));
+
+    expect(await screen.findByText('translations.recount_refused')).toBeInTheDocument();
+    expect(screen.queryByTestId('load-error')).not.toBeInTheDocument();
+    expect(screen.getByText(/^shared\.figures_from/)).toBeInTheDocument();
   });
 });
 

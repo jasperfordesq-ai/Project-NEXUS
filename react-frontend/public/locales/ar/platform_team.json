@@ -39,7 +39,10 @@
     "group_joining": "الانضمام والأدوار",
     "group_site": "الموقع والبحث",
     "group_reports": "التقارير",
-    "group_matching": "المطابقة"
+    "group_matching": "المطابقة",
+    "group_jobs": "المهام المجدولة",
+    "group_tools": "الأدوات",
+    "group_phone": "تطبيق الهاتف"
   },
   "breadcrumbs": {
     "aria_label": "أين أنت",
@@ -146,7 +149,7 @@
     "load_error_title": "تعذّر علينا تحميل المهام الفاشلة الآن",
     "empty_title": "لا شيء بالانتظار",
     "empty_text": "لم تفشل أي مهمة في الخلفية، أو تمت معالجة كل المهام.",
-    "count": "بانتظار المراجعة: {{count}}",
+    "count": "بانتظار المراجعة: {{count, number}}",
     "unknown_job": "الاسم غير مسجّل",
     "no_reason": "لم يُسجَّل سبب.",
     "queue": "قائمة الانتظار:",
@@ -173,19 +176,21 @@
       "title": "إصدارات التطبيق المستخدمة",
       "coverage": "تشمل هذه الأرقام فقط الهواتف التي سجّلت الدخول بعد بدء تسجيل إصدار التطبيق، لذا ستُحسب معظم عمليات تسجيل الدخول في البداية على أنها «غير مسجّلة».",
       "version": "الإصدار {{version}}",
-      "sign_ins_zero": "لا عمليات تسجيل دخول ({{count}})",
-      "sign_ins_one": "عملية تسجيل دخول واحدة ({{count}})",
-      "sign_ins_two": "عمليتا تسجيل دخول ({{count}})",
-      "sign_ins_few": "{{count}} عمليات تسجيل دخول",
-      "sign_ins_many": "{{count}} عملية تسجيل دخول",
-      "sign_ins_other": "{{count}} عملية تسجيل دخول",
-      "not_recorded_zero": "لا عمليات تسجيل دخول بلا إصدار مسجّل ({{count}})",
-      "not_recorded_one": "عملية تسجيل دخول واحدة بلا إصدار مسجّل ({{count}})",
-      "not_recorded_two": "عمليتا تسجيل دخول بلا إصدار مسجّل ({{count}})",
-      "not_recorded_few": "{{count}} عمليات تسجيل دخول بلا إصدار مسجّل",
-      "not_recorded_many": "{{count}} عملية تسجيل دخول بلا إصدار مسجّل",
-      "not_recorded_other": "{{count}} عملية تسجيل دخول بلا إصدار مسجّل",
-      "none_yet": "لم يُسجَّل إصدار التطبيق لأي هاتف بعد."
+      "sign_ins_zero": "لا عمليات تسجيل دخول ({{count, number}})",
+      "sign_ins_one": "عملية تسجيل دخول واحدة ({{count, number}})",
+      "sign_ins_two": "عمليتا تسجيل دخول ({{count, number}})",
+      "sign_ins_few": "{{count, number}} عمليات تسجيل دخول",
+      "sign_ins_many": "{{count, number}} عملية تسجيل دخول",
+      "sign_ins_other": "{{count, number}} عملية تسجيل دخول",
+      "not_recorded_zero": "لا عمليات تسجيل دخول بلا إصدار مسجّل ({{count, number}})",
+      "not_recorded_one": "عملية تسجيل دخول واحدة بلا إصدار مسجّل ({{count, number}})",
+      "not_recorded_two": "عمليتا تسجيل دخول بلا إصدار مسجّل ({{count, number}})",
+      "not_recorded_few": "{{count, number}} عمليات تسجيل دخول بلا إصدار مسجّل",
+      "not_recorded_many": "{{count, number}} عملية تسجيل دخول بلا إصدار مسجّل",
+      "not_recorded_other": "{{count, number}} عملية تسجيل دخول بلا إصدار مسجّل",
+      "none_yet": "لم يُسجَّل إصدار التطبيق لأي هاتف بعد.",
+      "unreadable": "تعذّرت قراءة هذه الأرقام الآن.",
+      "not_recorded_unknown": "عمليات تسجيل الدخول بلا إصدار مسجّل: غير معروف"
     }
   },
   "senior_accounts": {
@@ -194,9 +199,9 @@
     "read_only_note": "هذه الصفحة تعرض هذه الحسابات فقط. لا شيء هنا يمنح صلاحية أو يسحبها.",
     "loading": "جارٍ تحميل الحسابات العليا",
     "load_error_title": "تعذّر علينا تحميل الحسابات العليا الآن",
-    "without_two_step": "التحقق بخطوتين متوقف في {{count}} من أصل {{total}} من هذه الحسابات.",
+    "without_two_step": "التحقق بخطوتين متوقف في {{count, number}} من أصل {{total}} من هذه الحسابات.",
     "all_have_two_step": "التحقق بخطوتين مفعّل في جميع هذه الحسابات وعددها {{total}}.",
-    "truncated": "تظهر أول {{count}} من الحسابات فقط.",
+    "truncated": "تظهر أول {{count, number}} من الحسابات فقط.",
     "none_at_level": "لا توجد حسابات في هذا المستوى.",
     "level": {
       "platform_team": "فريق المنصة",
@@ -242,8 +247,8 @@
     "too_many": "هذا عدد كبير من عمليات البحث. انتظر دقيقة ثم حاول مرة أخرى.",
     "none": "لا يوجد حساب يستخدم هذا العنوان",
     "none_note": "جرى البحث في جميع المجتمعات. الحسابات الممحوّة لا تظهر أبدًا.",
-    "found": "الحسابات التي وُجدت: {{count}}",
-    "truncated": "تظهر أول {{count}} من الحسابات فقط.",
+    "found": "الحسابات التي وُجدت: {{count, number}}",
+    "truncated": "تظهر أول {{count, number}} من الحسابات فقط.",
     "role_label": "الدور:",
     "role": {
       "member": "عضو",
@@ -295,10 +300,10 @@
     "not_recorded": "غير مسجّل",
     "by": "بواسطة:",
     "when": "متى:",
-    "truncated": "يظهر أحدث {{count}} فقط.",
+    "truncated": "يظهر أحدث {{count, number}} فقط.",
     "two_step": {
       "title": "التحقق بخطوتين في الحسابات العليا",
-      "off": "التحقق بخطوتين متوقف في {{count}} من أصل {{total}} من الحسابات العليا.",
+      "off": "التحقق بخطوتين متوقف في {{count, number}} من أصل {{total}} من الحسابات العليا.",
       "all_on": "التحقق بخطوتين مفعّل في جميع الحسابات العليا وعددها {{total}}.",
       "link": "عرض الحسابات العليا"
     },
@@ -317,7 +322,9 @@
       "most_from_one_15m": "الأكثر من عنوان واحد في آخر 15 دقيقة",
       "checks_title": "فحوص كلمة المرور الفاشلة",
       "refused_title": "المرفوضة بسبب القفل",
-      "col_refused": "المرفوضة بسبب القفل في آخر 24 ساعة:"
+      "col_refused": "المرفوضة بسبب القفل في آخر 24 ساعة:",
+      "no_community": "غير مرتبط بأي مجتمع",
+      "by_community_title": "حسب المجتمع، آخر 24 ساعة"
     },
     "access": {
       "title": "الصلاحيات العليا الممنوحة والمسحوبة",
@@ -345,7 +352,7 @@
     "loading": "جارٍ تحميل المجتمعات",
     "load_error_title": "تعذّر علينا تحميل المجتمعات الآن",
     "empty": "لا توجد مجتمعات بعد.",
-    "community_count": "المجتمعات: {{count}}",
+    "community_count": "المجتمعات: {{count, number}}",
     "on": "مفعّل",
     "off": "متوقف",
     "held": "مفعّل هنا، لكنه متوقف على مستوى المنصة كلها",
@@ -356,7 +363,7 @@
     "modules_note": "الأجزاء التي يبدأ بها كل مجتمع. ويستطيع المجتمع إيقاف أيٍّ منها.",
     "switch_column": "المفتاح",
     "count_column": "العدد",
-    "on_in": "مفعّل في {{count}} من {{total}}",
+    "on_in": "مفعّل في {{count, number}} من {{total}}",
     "on_everywhere": "مفعّل في كل المجتمعات.",
     "off_everywhere": "متوقف في كل المجتمعات.",
     "off_in": "متوقف في: {{names}}",
@@ -441,7 +448,7 @@
       "emails_kept_90_days": "تُحفظ سجلات البريد الإلكتروني لمدة 90 يومًا، لذا لا يمكن عرض هذا الشهر."
     },
     "totals_heading": "جميع المجتمعات معًا",
-    "communities_heading": "كل مجتمع ({{count}})",
+    "communities_heading": "كل مجتمع ({{count, number}})",
     "empty": "لا توجد مجتمعات بعد.",
     "emails_heading": "الرسائل الإلكترونية",
     "ai_heading": "المحادثة بالذكاء الاصطناعي",
@@ -478,8 +485,8 @@
     "loading": "جارٍ تحميل صحة المجتمعات",
     "load_error_title": "تعذّر علينا تحميل صحة المجتمعات الآن",
     "empty": "لا توجد مجتمعات بعد.",
-    "community_count": "المجتمعات: {{count}}",
-    "quiet_count": "المجتمعات الهادئة: {{count}}",
+    "community_count": "المجتمعات: {{count, number}}",
+    "quiet_count": "المجتمعات الهادئة: {{count, number}}",
     "quiet_names": "هادئة: {{names}}",
     "none_quiet": "لا يوجد مجتمع هادئ.",
     "quiet_rule": "يُعدّ المجتمع هادئًا إذا كان مفعّلًا، ولم يكن أي عضو نشطًا خلال آخر {{days}} يومًا، أو لم يحدث أي تبادل هذا الشهر ولا الشهر الماضي.",
@@ -511,7 +518,7 @@
     "loading": "جارٍ تحميل إعداد المجتمعات",
     "load_error_title": "تعذّر علينا تحميل إعداد المجتمعات الآن",
     "empty": "لا توجد مجتمعات بعد.",
-    "community_count": "المجتمعات: {{count}}",
+    "community_count": "المجتمعات: {{count, number}}",
     "truncated": "تُعرض أحدث {{shown}} من أصل {{total}} مجتمعاً.",
     "terms_note": "تُضاف الشروط تلقائياً عند إنشاء المجتمع، لذا فإن علامة الشروط تعني أقل من غيرها.",
     "not_recorded": "لا يُسجَّل في أي مكان ما إذا كان إرسال البريد الإلكتروني للمجتمع قد اختُبر، لذا لا تعرضه هذه الصفحة.",
@@ -542,8 +549,8 @@
     "read_only": "هذه الصفحة للعرض فقط. تُشغَّل الميزة أو تُوقَف من لوحة إدارة المجتمع نفسه.",
     "loading": "جارٍ تحميل الميزات غير المكتملة",
     "load_error_title": "تعذّر علينا تحميل الميزات غير المكتملة الآن",
-    "summary": "الميزات المدرجة: {{count}}",
-    "summary_on_somewhere": "مشغّلة في مجتمع واحد على الأقل: {{count}}",
+    "summary": "الميزات المدرجة: {{count, number}}",
+    "summary_on_somewhere": "مشغّلة في مجتمع واحد على الأقل: {{count, number}}",
     "stage": {
       "alpha": "اختبار مبكر (ألفا)",
       "beta": "اختبار متأخر (بيتا)"
@@ -553,7 +560,7 @@
     "note": {
       "not_for_use": "غير مخصصة للاستخدام. يجب ألا تُشغَّل لأي مجتمع."
     },
-    "on_in": "المجتمعات التي شغّلتها: {{count}}",
+    "on_in": "المجتمعات التي شغّلتها: {{count, number}}",
     "on_names": "مشغّلة في: {{names}}",
     "on_nowhere": "غير مشغّلة في أي مجتمع"
   },
@@ -566,8 +573,8 @@
     "loading": "جارٍ تحميل طلبات البيانات",
     "load_error_title": "تعذّر علينا تحميل طلبات البيانات الآن",
     "empty": "لا توجد مجتمعات بعد.",
-    "community_count": "المجتمعات: {{count}}",
-    "overdue_count": "المجتمعات التي لديها طلب متأخر: {{count}}",
+    "community_count": "المجتمعات: {{count, number}}",
+    "overdue_count": "المجتمعات التي لديها طلب متأخر: {{count, number}}",
     "overdue_names": "متأخرة: {{names}}",
     "none_overdue": "لا يوجد مجتمع لديه طلب متأخر.",
     "overdue_unknown": "لا يمكننا الآن معرفة ما إذا كان أي طلب متأخرًا.",
@@ -596,7 +603,7 @@
       "portability": "نقل البيانات",
       "objection": "اعتراض"
     },
-    "completed_without_date": "طلبات مكتملة بلا تاريخ إكمال، لذا ليست ضمن رقم الـ 90 يومًا: {{count}}"
+    "completed_without_date": "طلبات مكتملة بلا تاريخ إكمال، لذا ليست ضمن رقم الـ 90 يومًا: {{count, number}}"
   },
   "legal_documents": {
     "title": "المستندات القانونية",
@@ -606,8 +613,8 @@
     "counts_only": "أعداد فقط. لا يُذكر اسم أي عضو في هذه الصفحة.",
     "loading": "جارٍ تحميل المستندات القانونية",
     "load_error_title": "تعذّر علينا تحميل المستندات القانونية الآن",
-    "community_count": "المجتمعات: {{count}}",
-    "no_privacy_count": "مجتمعات بلا إشعار خصوصية منشور: {{count}}",
+    "community_count": "المجتمعات: {{count, number}}",
+    "no_privacy_count": "مجتمعات بلا إشعار خصوصية منشور: {{count, number}}",
     "no_privacy_names": "بدونه: {{names}}",
     "all_have_privacy": "لدى كل مجتمع إشعار خصوصية منشور.",
     "privacy_unknown": "لا يمكننا الآن معرفة المجتمعات التي لديها إشعار خصوصية.",
@@ -618,8 +625,8 @@
     "date_unknown": "التاريخ غير مسجّل",
     "no_acceptance_needed": "لا يُطلب من الأعضاء قبول هذا المستند.",
     "members_not_available": "من قَبِل: غير متاح",
-    "members_not_accepted": "لم يقبل بعد: {{count}} من أصل {{asked}} من الأعضاء المطلوب منهم القبول",
-    "all_accepted": "قبله جميع الأعضاء المطلوب منهم القبول ({{count}})",
+    "members_not_accepted": "لم يقبل بعد: {{count, number}} من أصل {{asked}} من الأعضاء المطلوب منهم القبول",
+    "all_accepted": "قبله جميع الأعضاء المطلوب منهم القبول ({{count, number}})",
     "status": {
       "published": "منشور",
       "not_published": "غير منشور",
@@ -670,19 +677,19 @@
     "history_title": "المراجعات الأخيرة",
     "history_none": "لا توجد مراجعات بعد.",
     "history_by": "سجّلها {{name}}",
-    "history_accounts_one": "حساب واحد ({{count}})",
-    "history_accounts_other": "{{count}} حسابات",
-    "history_removals_one": "حساب واحد ({{count}}) حُدِّد للإزالة",
-    "history_removals_other": "{{count}} حُدِّدت للإزالة",
+    "history_accounts_one": "حساب واحد ({{count, number}})",
+    "history_accounts_other": "{{count, number}} حسابات",
+    "history_removals_one": "حساب واحد ({{count, number}}) حُدِّد للإزالة",
+    "history_removals_other": "{{count, number}} حُدِّدت للإزالة",
     "erased": "حساب ممحو",
-    "history_accounts_zero": "لا حسابات ({{count}})",
-    "history_accounts_two": "حسابان ({{count}})",
-    "history_accounts_few": "{{count}} حسابات",
-    "history_accounts_many": "{{count}} حسابًا",
-    "history_removals_zero": "لم يُحدَّد أي حساب للإزالة ({{count}})",
-    "history_removals_two": "حسابان ({{count}}) حُدِّدا للإزالة",
-    "history_removals_few": "{{count}} حسابات حُدِّدت للإزالة",
-    "history_removals_many": "{{count}} حسابًا حُدِّد للإزالة",
+    "history_accounts_zero": "لا حسابات ({{count, number}})",
+    "history_accounts_two": "حسابان ({{count, number}})",
+    "history_accounts_few": "{{count, number}} حسابات",
+    "history_accounts_many": "{{count, number}} حسابًا",
+    "history_removals_zero": "لم يُحدَّد أي حساب للإزالة ({{count, number}})",
+    "history_removals_two": "حسابان ({{count, number}}) حُدِّدا للإزالة",
+    "history_removals_few": "{{count, number}} حسابات حُدِّدت للإزالة",
+    "history_removals_many": "{{count, number}} حسابًا حُدِّد للإزالة",
     "refresh_failed": "تعذّر تحميل المراجعة مرة أخرى. ما تراه هو من قبل.",
     "note_no_names": "لا تذكر أسماء أشخاص في الملاحظة. فهي تُحفظ مع السجل."
   },
@@ -692,12 +699,12 @@
     "intro": "عدد الإشعارات التي أُرسلت إلى هواتف الأعضاء ومتصفحاتهم، لكل يوم ولكل مجتمع. «قبلتها خدمة الإشعارات» تعني أن الخدمة استلمت الإشعار، لا أن الهاتف عرضه. بعض أنواع الإشعارات تُرسل دون أن تُسجَّل هنا (تذكيرات الفعاليات وتنبيهات الطوارئ وغيرها)، لذا فالأرقام الحقيقية لا تقل عن هذه.",
     "timezone_note": "الأيام محسوبة بتوقيت الخادم (UTC).",
     "days_picker": "عدد الأيام المعروضة",
-    "days_option": "عدد الأيام: {{count}}",
+    "days_option": "عدد الأيام: {{count, number}}",
     "loading": "جارٍ تحميل أرقام الإشعارات الفورية",
     "load_error_title": "تعذّر تحميل أرقام الإشعارات الفورية",
     "not_available": "غير متاح: تعذّرت قراءة سجل الإشعارات الفورية. هذا لا يعني أنه لم يُرسل أي إشعار.",
     "by_day_heading": "كل يوم",
-    "by_community_heading": "كل مجتمع ({{count}})",
+    "by_community_heading": "كل مجتمع ({{count, number}})",
     "by_community_note": "المجاميع للفترة كلها. «لا أحد للإرسال إليه» يظهر لكل يوم فقط.",
     "no_community_heading": "غير مرتبطة بمجتمع",
     "no_community_note": "إشعارات سُجّلت دون مجتمع. وهي محسوبة ضمن الأرقام اليومية.",
@@ -718,8 +725,8 @@
     "no_record_title": "لا يحتفظ هذا الخادم بسجل لعمليات النشر",
     "no_record_text": "الخادم المباشر وحده يحتفظ بسجل، لذلك هذا متوقّع على جهاز المطوّر.",
     "empty": "لم يُسجَّل شيء بعد.",
-    "skipped": "أسطر في السجل تعذّرت قراءتها وتم تخطيها: {{count}}",
-    "count": "عمليات النشر والتراجع المعروضة: {{count}}",
+    "skipped": "أسطر في السجل تعذّرت قراءتها وتم تخطيها: {{count, number}}",
+    "count": "عمليات النشر والتراجع المعروضة: {{count, number}}",
     "not_recorded": "غير مسجّل",
     "kind": {
       "deploy": "نشر",
@@ -919,7 +926,8 @@
         "deletes": "تحذف عمليات التحقق من الهوية المكتملة أو المنتهية الأقدم من 180 يومًا. ويُحتفظ بسجل ما جرى في كل عملية."
       }
     },
-    "finished_only": "تسجّل هذه المهمة أنها انتهت، لا أن كل خطوة نجحت."
+    "finished_only": "تسجّل هذه المهمة أنها انتهت، لا أن كل خطوة نجحت.",
+    "steps_failed": "الخطوات التي فشلت في آخر تشغيل: {{count, number}}"
   },
   "search_rebuild": {
     "title": "إعادة بناء البحث",
@@ -946,18 +954,18 @@
       "never": "لم يُشغَّل قط من هذه الصفحة",
       "queued": "في انتظار البدء",
       "running": "قيد التشغيل منذ {{time}}",
-      "done_zero": "انتهى {{time}}: لم يُحدَّث أي إدخال ({{count}})",
-      "done_one": "انتهى {{time}}: حُدِّث إدخال واحد ({{count}})",
-      "done_two": "انتهى {{time}}: حُدِّث إدخالان ({{count}})",
-      "done_few": "انتهى {{time}}: حُدِّثت {{count}} إدخالات",
-      "done_many": "انتهى {{time}}: حُدِّث {{count}} إدخالًا",
-      "done_other": "انتهى {{time}}: حُدِّث {{count}} إدخال",
-      "done_with_errors_zero": "انتهى {{time}}: لا إدخالات تعذّر تحديثها ({{count}})",
-      "done_with_errors_one": "انتهى {{time}} مع إدخال واحد تعذّر تحديثه ({{count}})",
-      "done_with_errors_two": "انتهى {{time}} مع إدخالين تعذّر تحديثهما ({{count}})",
-      "done_with_errors_few": "انتهى {{time}} مع {{count}} إدخالات تعذّر تحديثها",
-      "done_with_errors_many": "انتهى {{time}} مع {{count}} إدخالًا تعذّر تحديثه",
-      "done_with_errors_other": "انتهى {{time}} مع {{count}} إدخال تعذّر تحديثه",
+      "done_zero": "انتهى {{time}}: لم يُحدَّث أي إدخال ({{count, number}})",
+      "done_one": "انتهى {{time}}: حُدِّث إدخال واحد ({{count, number}})",
+      "done_two": "انتهى {{time}}: حُدِّث إدخالان ({{count, number}})",
+      "done_few": "انتهى {{time}}: حُدِّثت {{count, number}} إدخالات",
+      "done_many": "انتهى {{time}}: حُدِّث {{count, number}} إدخالًا",
+      "done_other": "انتهى {{time}}: حُدِّث {{count, number}} إدخال",
+      "done_with_errors_zero": "انتهى {{time}}: لا إدخالات تعذّر تحديثها ({{count, number}})",
+      "done_with_errors_one": "انتهى {{time}} مع إدخال واحد تعذّر تحديثه ({{count, number}})",
+      "done_with_errors_two": "انتهى {{time}} مع إدخالين تعذّر تحديثهما ({{count, number}})",
+      "done_with_errors_few": "انتهى {{time}} مع {{count, number}} إدخالات تعذّر تحديثها",
+      "done_with_errors_many": "انتهى {{time}} مع {{count, number}} إدخالًا تعذّر تحديثه",
+      "done_with_errors_other": "انتهى {{time}} مع {{count, number}} إدخال تعذّر تحديثه",
       "failed": "فشل"
     },
     "check_failed": "تعذّر التحقق مرة أخرى في {{time}}"
@@ -1072,8 +1080,8 @@
     },
     "data_requests": {
       "title": "الطلبات المتعلقة بالبيانات الشخصية",
-      "open": "المفتوحة، في كل المجتمعات: {{count}}",
-      "overdue": "المفتوحة منذ أكثر من 30 يومًا: {{count}}"
+      "open": "المفتوحة، في كل المجتمعات: {{count, number}}",
+      "overdue": "المفتوحة منذ أكثر من 30 يومًا: {{count, number}}"
     },
     "failed_sign_ins": {
       "title": "سجل محاولات تسجيل الدخول الفاشلة",
@@ -1106,12 +1114,12 @@
     },
     "status": {
       "ok": "سليم",
-      "warning_zero": "تنتهي صلاحية الشهادة اليوم ({{count}} يوم)",
-      "warning_one": "تنتهي صلاحية الشهادة خلال يوم واحد ({{count}})",
-      "warning_two": "تنتهي صلاحية الشهادة خلال يومين ({{count}})",
-      "warning_few": "تنتهي صلاحية الشهادة خلال {{count}} أيام",
-      "warning_many": "تنتهي صلاحية الشهادة خلال {{count}} يومًا",
-      "warning_other": "تنتهي صلاحية الشهادة خلال {{count}} يوم",
+      "warning_zero": "تنتهي صلاحية الشهادة اليوم ({{count, number}} يوم)",
+      "warning_one": "تنتهي صلاحية الشهادة خلال يوم واحد ({{count, number}})",
+      "warning_two": "تنتهي صلاحية الشهادة خلال يومين ({{count, number}})",
+      "warning_few": "تنتهي صلاحية الشهادة خلال {{count, number}} أيام",
+      "warning_many": "تنتهي صلاحية الشهادة خلال {{count, number}} يومًا",
+      "warning_other": "تنتهي صلاحية الشهادة خلال {{count, number}} يوم",
       "failing": "لا يعمل",
       "unknown": "لم يُفحص بعد",
       "not_checkable": "ليس عنوان ويب يمكننا فحصه",
@@ -1133,5 +1141,8 @@
     "too_many": "عدد كبير جدًا من عمليات الفحص في دقيقة واحدة. انتظر قليلًا ثم حاول مرة أخرى.",
     "check_now_for": "تحقّق من {{name}} الآن",
     "check_platform_now": "تحقّق من عناوين المنصة الآن"
+  },
+  "shared": {
+    "figures_from": "الأرقام كما كانت عند {{time}}"
   }
 }

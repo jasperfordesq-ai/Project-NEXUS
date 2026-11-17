@@ -284,13 +284,188 @@ class SearchRebuildTest extends TestCase
         $this->assertNull(Cache::get(SearchRebuildService::cacheKey($this->testTenantId)));
     }
 
-    public function test_the_job_runs_on_the_search_queue_once_with_a_generous_time_limit(): void
+    /**
+     * Start a rebuild as the page does (a fresh run id), then run every slice
+     * the chain hands to the queue, one after another, as a worker would.
+     *
+     * @return int how many slices ran
+     */
+    private function runRebuild(int $window = ReindexTenantSearchJob::WINDOW, int $timeBox = ReindexTenantSearchJob::TIME_BOX_SECONDS): int
+    {
+        Queue::fake();
+        $runId = app(SearchRebuildService::class)->markQueued($this->testTenantId);
+        $job = new ReindexTenantSearchJob($this->testTenantId, null, $runId, 0, 0, $window, $timeBox);
+
+        $ran = 0;
+        while ($job !== null) {
+            $this->assertLessThan(1000, ++$ran, 'the chain ends');
+            $before = Queue::pushed(ReindexTenantSearchJob::class)->count();
+            $this->app->call([$job, 'handle']);
+            $pushed = Queue::pushed(ReindexTenantSearchJob::class);
+            $this->assertLessThanOrEqual($before + 1, $pushed->count(), 'a slice hands over at most one next slice');
+            $job = $pushed->count() > $before ? $pushed->last() : null;
+        }
+
+        return $ran;
+    }
+
+    /** @return array<string, mixed> */
+    private function state(): array
+    {
+        return Cache::get(SearchRebuildService::cacheKey($this->testTenantId));
+    }
+
+    /**
+     * 16 Nov 2026: a whole community in one job outlived the queue's 90-second
+     * hand-out time, so the queue handed it out again and the second delivery
+     * landed in failed jobs. Each slice now finishes well inside that time.
+     */
+    public function test_each_slice_runs_on_the_search_queue_once_and_well_inside_the_queues_hand_out_time(): void
     {
         $job = new ReindexTenantSearchJob($this->testTenantId);
+        $retryAfter = (int) config('queue.connections.redis.retry_after');
 
         $this->assertSame('search', $job->queue);
         $this->assertSame(1, $job->tries);
-        $this->assertGreaterThanOrEqual(1800, $job->timeout);
+        $this->assertLessThan($retryAfter, $job->timeout, 'a slice is stopped before the queue would hand it out again');
+        $this->assertLessThan($job->timeout, ReindexTenantSearchJob::TIME_BOX_SECONDS, 'a slice stops itself before it is stopped');
+        $this->assertLessThanOrEqual(60, ReindexTenantSearchJob::TIME_BOX_SECONDS);
+    }
+
+    public function test_starting_a_rebuild_gives_the_run_an_id_that_the_first_slice_carries(): void
+    {
+        Queue::fake();
+        $this->actAsPlatformTeam();
+
+        $this->apiPost(self::URI, ['tenant_id' => $this->testTenantId])->assertStatus(200);
+
+        $runId = $this->state()['run_id'] ?? null;
+        $this->assertIsString($runId);
+        $this->assertNotSame('', $runId);
+        Queue::assertPushed(ReindexTenantSearchJob::class, fn (ReindexTenantSearchJob $job): bool => $job->runId === $runId
+            && $job->kindIndex === 0 && $job->afterId === 0);
+    }
+
+    public function test_a_community_with_more_rows_than_one_window_finishes_over_several_slices_with_the_same_totals(): void
+    {
+        $owner = $this->owner();
+        foreach (range(1, 5) as $n) {
+            DB::table('groups')->insert(['tenant_id' => $this->testTenantId, 'owner_id' => $owner, 'name' => "Slice group {$n}", 'is_active' => 1]);
+        }
+
+        // One window big enough for everything: the reference totals.
+        $wholeSlices = $this->runRebuild();
+        $whole = $this->state();
+        $wholeSent = $this->sent;
+        $this->assertSame('done', $whole['state']);
+
+        $this->sent = [];
+        $slices = $this->runRebuild(2);
+        $sliced = $this->state();
+
+        $this->assertSame('done', $sliced['state']);
+        $this->assertGreaterThanOrEqual($wholeSlices + 2, $slices, 'the groups alone took more than one window');
+        $this->assertSame($whole['counts'], $sliced['counts']);
+        $this->assertSame(0, $sliced['errors']);
+        $this->assertSame($wholeSent, $this->sent, 'every entry was sent once, in the same order');
+        $this->assertGreaterThanOrEqual(5, $sliced['counts']['group']);
+    }
+
+    public function test_a_slice_that_runs_out_of_time_carries_on_from_where_it_stopped(): void
+    {
+        $owner = $this->owner();
+        foreach (range(1, 3) as $n) {
+            DB::table('groups')->insert(['tenant_id' => $this->testTenantId, 'owner_id' => $owner, 'name' => "Timed group {$n}", 'is_active' => 1]);
+        }
+        $this->runRebuild();
+        $whole = $this->state();
+        $wholeSent = $this->sent;
+
+        // A time box of nothing: every slice stops after its first entry.
+        $this->sent = [];
+        $this->runRebuild(ReindexTenantSearchJob::WINDOW, 0);
+
+        $this->assertSame('done', $this->state()['state']);
+        $this->assertSame($whole['counts'], $this->state()['counts']);
+        $this->assertSame($wholeSent, $this->sent);
+    }
+
+    public function test_a_slice_from_another_run_does_nothing(): void
+    {
+        Queue::fake();
+        $runId = app(SearchRebuildService::class)->markQueued($this->testTenantId);
+        $before = $this->state();
+
+        // A stray retry from the failed-jobs page: an old run, and one from before run ids.
+        $this->app->call([new ReindexTenantSearchJob($this->testTenantId, null, 'an-older-run'), 'handle']);
+        $this->app->call([new ReindexTenantSearchJob($this->testTenantId), 'handle']);
+        (new ReindexTenantSearchJob($this->testTenantId, null, 'an-older-run'))->failed(new \RuntimeException('Worker stopped'));
+
+        $this->assertSame($before, $this->state(), 'the current run\'s record is untouched');
+        $this->assertSame($runId, $this->state()['run_id']);
+        $this->assertSame([], $this->sent);
+        Queue::assertNotPushed(ReindexTenantSearchJob::class);
+    }
+
+    public function test_a_slice_of_a_finished_run_does_not_start_it_again(): void
+    {
+        $this->runRebuild();
+        $done = $this->state();
+        $this->sent = [];
+
+        // Its first slice handed out again, e.g. "run again" on the failed-jobs page.
+        $this->app->call([new ReindexTenantSearchJob($this->testTenantId, null, $done['run_id']), 'handle']);
+
+        $this->assertSame($done, $this->state());
+        $this->assertSame([], $this->sent);
+    }
+
+    public function test_a_slice_already_done_in_the_current_run_does_nothing(): void
+    {
+        $owner = $this->owner();
+        foreach (range(1, 3) as $n) {
+            DB::table('groups')->insert(['tenant_id' => $this->testTenantId, 'owner_id' => $owner, 'name' => "Again group {$n}", 'is_active' => 1]);
+        }
+        Queue::fake();
+        $runId = app(SearchRebuildService::class)->markQueued($this->testTenantId);
+        $first = new ReindexTenantSearchJob($this->testTenantId, null, $runId);
+        $this->app->call([$first, 'handle']);
+        Queue::assertPushed(ReindexTenantSearchJob::class, 1);
+        $after = $this->state();
+        $this->sent = [];
+
+        // The same first slice delivered a second time.
+        $this->app->call([new ReindexTenantSearchJob($this->testTenantId, null, $runId), 'handle']);
+
+        $this->assertSame($after, $this->state());
+        $this->assertSame([], $this->sent);
+        Queue::assertPushed(ReindexTenantSearchJob::class, 1);
+    }
+
+    public function test_a_failing_slice_writes_failed_once(): void
+    {
+        Queue::fake();
+        $runId = app(SearchRebuildService::class)->markQueued($this->testTenantId);
+        $this->reachable = false;
+        $failedWrites = 0;
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Cache\Events\KeyWritten::class, function ($e) use (&$failedWrites): void {
+            if ($e->key === SearchRebuildService::cacheKey($this->testTenantId) && (($e->value['state'] ?? null) === 'failed')) {
+                $failedWrites++;
+            }
+        });
+
+        $job = new ReindexTenantSearchJob($this->testTenantId, null, $runId);
+        try {
+            $this->app->call([$job, 'handle']);
+            $this->fail('the slice should report that it could not run');
+        } catch (\RuntimeException $e) {
+            // What the worker does next with a job that threw.
+            $job->failed($e);
+        }
+
+        $this->assertSame('failed', $this->state()['state']);
+        $this->assertSame(1, $failedWrites);
+        Queue::assertNotPushed(ReindexTenantSearchJob::class);
     }
 
     public function test_the_job_records_running_then_done_with_counts_per_kind(): void
@@ -299,7 +474,7 @@ class SearchRebuildTest extends TestCase
             'tenant_id' => $this->testTenantId, 'owner_id' => $this->owner(), 'name' => 'Rebuild group', 'is_active' => 1,
         ]);
 
-        $this->app->call([new ReindexTenantSearchJob($this->testTenantId), 'handle']);
+        $this->runRebuild();
 
         $state = Cache::get(SearchRebuildService::cacheKey($this->testTenantId));
         $this->assertSame('done', $state['state']);
@@ -318,7 +493,7 @@ class SearchRebuildTest extends TestCase
         ]);
         $this->throwOnType = 'group';
 
-        $this->app->call([new ReindexTenantSearchJob($this->testTenantId), 'handle']);
+        $this->runRebuild();
 
         $state = Cache::get(SearchRebuildService::cacheKey($this->testTenantId));
         $this->assertSame('done', $state['state']);
@@ -328,10 +503,12 @@ class SearchRebuildTest extends TestCase
 
     public function test_the_job_writes_failed_before_it_lets_an_error_go(): void
     {
+        Queue::fake();
+        $runId = app(SearchRebuildService::class)->markQueued($this->testTenantId);
         $this->reachable = false;
 
         try {
-            $this->app->call([new ReindexTenantSearchJob($this->testTenantId), 'handle']);
+            $this->app->call([new ReindexTenantSearchJob($this->testTenantId, null, $runId), 'handle']);
             $this->fail('the job should report that it could not run');
         } catch (\RuntimeException) {
         }
@@ -344,7 +521,8 @@ class SearchRebuildTest extends TestCase
 
     public function test_a_job_given_up_by_the_queue_is_recorded_as_failed(): void
     {
-        $job = new ReindexTenantSearchJob($this->testTenantId);
+        $runId = app(SearchRebuildService::class)->markQueued($this->testTenantId);
+        $job = new ReindexTenantSearchJob($this->testTenantId, null, $runId);
 
         $job->failed(new \RuntimeException('Worker stopped'));
 
@@ -355,10 +533,10 @@ class SearchRebuildTest extends TestCase
     {
         Cache::put(SearchRebuildService::cacheKey($this->testTenantId), [
             'state' => 'running', 'started_at' => now()->subMinutes(3)->toIso8601String(), 'finished_at' => null,
-            'counts' => null, 'errors' => 0, 'updated_at' => now()->toIso8601String(),
+            'counts' => null, 'errors' => 0, 'updated_at' => now()->toIso8601String(), 'run_id' => 'run-1',
         ], now()->addDays(7));
 
-        (new ReindexTenantSearchJob($this->testTenantId))->failed(new MaxAttemptsExceededException('attempted too many times'));
+        (new ReindexTenantSearchJob($this->testTenantId, null, 'run-1'))->failed(new MaxAttemptsExceededException('attempted too many times'));
 
         $this->assertSame('running', Cache::get(SearchRebuildService::cacheKey($this->testTenantId))['state']);
     }

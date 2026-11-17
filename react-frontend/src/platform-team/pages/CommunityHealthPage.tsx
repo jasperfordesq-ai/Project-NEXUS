@@ -17,17 +17,17 @@
  * available", never as zero: "no exchanges" would be a comforting lie.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Card, CardBody, Chip, Spinner } from '@/components/ui';
+import { Card, CardBody, Chip, Spinner } from '@/components/ui';
 import { LoadError } from '@/components/feedback/LoadError';
+import { FiguresRefresh, withRefresh } from '../components/FiguresRefresh';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { joinList } from '@/lib/listFormat';
 import { logError } from '@/lib/logger';
 import Eye from 'lucide-react/icons/eye';
 import Moon from 'lucide-react/icons/moon';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
 
 export interface CommunityHealthRow {
   id: number;
@@ -62,6 +62,8 @@ export interface CommunityHealth {
   unavailable: string[];
   totals: CommunityHealthTotals;
   communities: CommunityHealthRow[];
+  /** When the server worked these figures out (absent from an older server). */
+  generated_at?: string | null;
 }
 
 /** The figure columns, in the order the table shows them. */
@@ -81,23 +83,33 @@ export function CommunityHealthPage() {
   usePageTitle(t('community_health.title'));
 
   const [health, setHealth] = useState<CommunityHealth | null>(null);
+  const [refused, setRefused] = useState(false);
+  /** Figures are on screen: a refused "Check again" keeps them. */
+  const shown = useRef(false);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (refresh = false) => {
+    setRefused(false);
     setLoading(true);
     setFailed(false);
     try {
-      const res = await api.get<CommunityHealth>('/v2/platform-team/community-health');
+      const res = await api.get<CommunityHealth>(withRefresh('/v2/platform-team/community-health', refresh));
       if (res.success && res.data && Array.isArray(res.data.communities) && res.data.totals) {
         setHealth(res.data);
+        shown.current = true;
+      } else if (refresh && shown.current && res.code === 'RATE_LIMIT_EXCEEDED') {
+        // Asked again too soon: keep what is on screen and say so.
+        setRefused(true);
       } else {
         setHealth(null);
+        shown.current = false;
         setFailed(true);
       }
     } catch (err) {
       logError('Failed to load community health', err);
       setHealth(null);
+      shown.current = false;
       setFailed(true);
     } finally {
       setLoading(false);
@@ -169,10 +181,12 @@ export function CommunityHealthPage() {
             {t('community_health.counts_only')}
           </p>
         </div>
-        <Button variant="tertiary" onPress={() => void load()} isDisabled={loading}>
-          <RefreshCw size={16} aria-hidden="true" />
-          {t('home.refresh')}
-        </Button>
+        <FiguresRefresh
+          onRefresh={() => void load(true)}
+          loading={loading}
+          generatedAt={health?.generated_at}
+          refused={refused}
+        />
       </div>
 
       {loading && !health ? (

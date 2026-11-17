@@ -131,11 +131,11 @@ export function CommunitiesAtAGlancePage() {
       <table className="w-full border-collapse text-sm" data-testid={`glance-${kind}`}>
         <caption className="sr-only">{caption}</caption>
         <thead>
-          <tr className="bg-surface-secondary text-left text-xs text-muted">
-            <th scope="col" className="sticky left-0 z-10 min-w-48 bg-surface-secondary px-3 py-2 font-medium">
+          <tr className="bg-surface-secondary text-start text-xs text-muted">
+            <th scope="col" className="sticky start-0 z-10 min-w-48 bg-surface-secondary px-3 py-2 text-start align-bottom font-medium">
               {t('glance.switch_column')}
             </th>
-            <th scope="col" className="min-w-28 px-3 py-2 font-medium">
+            <th scope="col" className="min-w-28 px-3 py-2 text-start align-bottom font-medium">
               {t('glance.count_column')}
             </th>
             {all.map((community) => (
@@ -153,7 +153,7 @@ export function CommunitiesAtAGlancePage() {
             const isHeld = kind === 'features' && held.has(key);
             return (
               <tr key={key} className="border-t border-divider">
-                <th scope="row" className="sticky left-0 z-10 bg-background px-3 py-2 text-left font-medium text-foreground">
+                <th scope="row" className="sticky start-0 z-10 bg-background px-3 py-2 text-start font-medium text-foreground">
                   {nameOf(key)}
                 </th>
                 <td className="px-3 py-2 text-muted">

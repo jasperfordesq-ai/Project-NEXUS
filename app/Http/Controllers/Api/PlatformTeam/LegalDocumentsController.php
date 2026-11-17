@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\PlatformTeam;
 
 use App\Http\Controllers\Api\BaseApiController;
+use App\Http\Controllers\Api\PlatformTeam\Concerns\KeepsFigures;
 use App\Services\PlatformTeam\LegalDocumentsService;
 use Illuminate\Http\JsonResponse;
 
@@ -21,6 +22,8 @@ use Illuminate\Http\JsonResponse;
  */
 final class LegalDocumentsController extends BaseApiController
 {
+    use KeepsFigures;
+
     protected bool $isV2Api = true;
 
     /** GET /api/v2/platform-team/legal-documents */
@@ -28,6 +31,6 @@ final class LegalDocumentsController extends BaseApiController
     {
         $this->requireGodPlatformAdmin();
 
-        return $this->respondWithData(app(LegalDocumentsService::class)->overview());
+        return $this->keptFigures('legal_documents', static fn (): array => app(LegalDocumentsService::class)->overview());
     }
 }

@@ -57245,12 +57245,12 @@ export default interface Resources {
       "error_failed": "The review could not be recorded. Nothing was saved. Try again.",
       "error_list_changed": "The list changed while you were reviewing. Load it again and check the new list.",
       "error_step_cancelled": "The review was not recorded: the sign-in code was not entered. Your choices are still here.",
-      "history_accounts_one": "{{count}} account",
-      "history_accounts_other": "{{count}} accounts",
+      "history_accounts_one": "{{count, number}} account",
+      "history_accounts_other": "{{count, number}} accounts",
       "history_by": "Recorded by {{name}}",
       "history_none": "No reviews yet.",
-      "history_removals_one": "{{count}} marked for removal",
-      "history_removals_other": "{{count}} marked for removal",
+      "history_removals_one": "{{count, number}} marked for removal",
+      "history_removals_other": "{{count, number}} marked for removal",
       "history_title": "Recent reviews",
       "intro": "Go through every senior account and say whether it should keep its access. A review is due at least every 90 days.",
       "keep": "Keep",
@@ -57299,7 +57299,7 @@ export default interface Resources {
       "email_invalid": "Type one whole email address, such as name@example.org.",
       "email_label": "Email address",
       "find": "Find",
-      "found": "Accounts found: {{count}}",
+      "found": "Accounts found: {{count, number}}",
       "intro": "Look an account up by its email address, in every community. If you need to, sign it out everywhere.",
       "level": {
         "global_super_admin": "Global super admin",
@@ -57326,7 +57326,7 @@ export default interface Resources {
       "status_deleted": "Deleted",
       "title": "Find an account",
       "too_many": "That is a lot of searches. Wait a minute, then try again.",
-      "truncated": "Only the first {{count}} accounts are shown."
+      "truncated": "Only the first {{count, number}} accounts are shown."
     },
     "agreements": {
       "change": "Change",
@@ -57415,8 +57415,8 @@ export default interface Resources {
       },
       "could_not_read": "Could not be read",
       "data_requests": {
-        "open": "Open, across all communities: {{count}}",
-        "overdue": "Open for more than 30 days: {{count}}",
+        "open": "Open, across all communities: {{count, number}}",
+        "overdue": "Open for more than 30 days: {{count, number}}",
         "title": "Requests about personal data"
       },
       "failed_sign_ins": {
@@ -57547,6 +57547,7 @@ export default interface Resources {
         "unknown": "No record yet",
         "unreadable": "Could not be read"
       },
+      "steps_failed": "Steps that failed on the last run: {{count, number}}",
       "title": "Clean-up jobs"
     },
     "community_health": {
@@ -57561,7 +57562,7 @@ export default interface Resources {
         "new_listings_this_month": "New listings this month",
         "new_members_this_month": "New members this month"
       },
-      "community_count": "Communities: {{count}}",
+      "community_count": "Communities: {{count, number}}",
       "counts_only": "Counts only. No member is named on this page.",
       "empty": "There are no communities yet.",
       "intro": "How busy each community is: its members, its exchanges and its new listings.",
@@ -57573,7 +57574,7 @@ export default interface Resources {
       "not_active": "Not active",
       "not_available": "Not available",
       "quiet": "Quiet",
-      "quiet_count": "Quiet communities: {{count}}",
+      "quiet_count": "Quiet communities: {{count, number}}",
       "quiet_names": "Quiet: {{names}}",
       "quiet_rule": "A community is called quiet when it is switched on and either no member has been active in the last {{days}} days, or there has been no exchange this month and none last month.",
       "quiet_unknown": "Can't tell if quiet",
@@ -57594,7 +57595,7 @@ export default interface Resources {
         "privacy_notice_published": "Privacy notice published",
         "terms_published": "Terms published"
       },
-      "community_count": "Communities: {{count}}",
+      "community_count": "Communities: {{count, number}}",
       "created_on": "Created {{date}}",
       "done": "Done",
       "empty": "There are no communities yet.",
@@ -57670,8 +57671,8 @@ export default interface Resources {
         "open_by_type": "Open, by kind",
         "overdue": "Overdue"
       },
-      "community_count": "Communities: {{count}}",
-      "completed_without_date": "Completed requests with no completion date, so not in the 90-day figure: {{count}}",
+      "community_count": "Communities: {{count, number}}",
+      "completed_without_date": "Completed requests with no completion date, so not in the 90-day figure: {{count, number}}",
       "counts_only": "Counts only. No member and no request is named on this page.",
       "empty": "There are no communities yet.",
       "intro": "Requests members have made about their own data, in every community: how many are waiting, and for how long.",
@@ -57684,7 +57685,7 @@ export default interface Resources {
       "not_active": "Not active",
       "not_available": "Not available",
       "nothing_open": "Nothing open",
-      "overdue_count": "Communities with an overdue request: {{count}}",
+      "overdue_count": "Communities with an overdue request: {{count, number}}",
       "overdue_names": "Overdue: {{names}}",
       "overdue_rule": "A request is overdue when it has been open for more than {{days}} days. The clock starts when the request was made. Open means waiting, or being worked on.",
       "overdue_unknown": "We can't tell just now whether any request is overdue.",
@@ -57703,7 +57704,7 @@ export default interface Resources {
     },
     "deployments": {
       "changes_label": "Changes it carried",
-      "count": "Deployments and rollbacks shown: {{count}}",
+      "count": "Deployments and rollbacks shown: {{count, number}}",
       "empty": "Nothing has been recorded yet.",
       "intro": "The last deployments and rollbacks this server recorded, newest first. Times are shown in your own time zone.",
       "kind": {
@@ -57721,7 +57722,7 @@ export default interface Resources {
         "success": "Succeeded",
         "unknown": "Outcome not recorded"
       },
-      "skipped": "Lines in the record that could not be read and were skipped: {{count}}",
+      "skipped": "Lines in the record that could not be read and were skipped: {{count, number}}",
       "time_taken": "Time taken",
       "title": "Deployments",
       "version": "Version code",
@@ -57762,8 +57763,8 @@ export default interface Resources {
         "ok": "Fine",
         "unknown": "Not checked yet",
         "warning_days_unknown": "Certificate runs out soon. How many days are left could not be read.",
-        "warning_one": "Certificate runs out in {{count}} day",
-        "warning_other": "Certificate runs out in {{count}} days"
+        "warning_one": "Certificate runs out in {{count, number}} day",
+        "warning_other": "Certificate runs out in {{count, number}} days"
       },
       "switched_off": "Switched off",
       "title": "Addresses and certificates",
@@ -57802,7 +57803,7 @@ export default interface Resources {
     "failed_jobs": {
       "action_failed": "That didn't work. Nothing was changed.",
       "cancel": "Keep it",
-      "count": "Waiting to be looked at: {{count}}",
+      "count": "Waiting to be looked at: {{count, number}}",
       "discard": "Discard",
       "discard_message": "The work it stood for will not be done, and this cannot be undone.",
       "discard_title": "Discard this job?",
@@ -57824,7 +57825,7 @@ export default interface Resources {
       "unknown_job": "Name not recorded"
     },
     "glance": {
-      "community_count": "Communities: {{count}}",
+      "community_count": "Communities: {{count, number}}",
       "count_column": "How many",
       "empty": "There are no communities yet.",
       "feature_name": {
@@ -57847,7 +57848,7 @@ export default interface Resources {
       "off_in": "Off in: {{names}}",
       "on": "On",
       "on_everywhere": "On in every community.",
-      "on_in": "On in {{count}} of {{total}}",
+      "on_in": "On in {{count, number}} of {{total}}",
       "read_only_note": "This page only shows the switches. To change one, open that community's own admin panel.",
       "switch_column": "Switch",
       "title": "Communities at a glance"
@@ -57957,20 +57958,20 @@ export default interface Resources {
       "skip_to_main": "Skip to main content"
     },
     "legal_documents": {
-      "all_accepted": "Accepted by every member asked ({{count}})",
+      "all_accepted": "Accepted by every member asked ({{count, number}})",
       "all_have_privacy": "Every community has a published privacy notice.",
-      "community_count": "Communities: {{count}}",
+      "community_count": "Communities: {{count, number}}",
       "counts_only": "Counts only. No member is named on this page.",
       "date_unknown": "date not recorded",
       "empty": "There are no communities yet.",
       "intro": "The terms, privacy notice and other legal documents of every community: which are published, and how many members have not accepted the current version.",
       "load_error_title": "We couldn't load legal documents just now",
       "loading": "Loading legal documents",
-      "members_not_accepted": "Not accepted yet: {{count}} of {{asked}} members asked",
+      "members_not_accepted": "Not accepted yet: {{count, number}} of {{asked}} members asked",
       "members_not_available": "Who has accepted: not available",
       "nav": "Legal documents",
       "no_acceptance_needed": "Members are not asked to accept this one.",
-      "no_privacy_count": "Communities without a published privacy notice: {{count}}",
+      "no_privacy_count": "Communities without a published privacy notice: {{count, number}}",
       "no_privacy_flag": "No privacy notice",
       "no_privacy_names": "Without one: {{names}}",
       "not_active": "Not active",
@@ -58069,19 +58070,21 @@ export default interface Resources {
       "versions": {
         "coverage": "These figures only cover phones that signed in after the app version started being recorded, so at first most sign-ins will be counted as \"not recorded\".",
         "none_yet": "No phone has recorded its app version yet.",
-        "not_recorded_one": "{{count}} sign-in with no version recorded",
-        "not_recorded_other": "{{count}} sign-ins with no version recorded",
-        "sign_ins_one": "{{count}} sign-in",
-        "sign_ins_other": "{{count}} sign-ins",
+        "not_recorded_one": "{{count, number}} sign-in with no version recorded",
+        "not_recorded_other": "{{count, number}} sign-ins with no version recorded",
+        "not_recorded_unknown": "Sign-ins with no version recorded: not known",
+        "sign_ins_one": "{{count, number}} sign-in",
+        "sign_ins_other": "{{count, number}} sign-ins",
         "title": "App versions in use",
+        "unreadable": "These figures could not be read just now.",
         "version": "Version {{version}}"
       }
     },
     "push_notifications": {
-      "by_community_heading": "Each community ({{count}})",
+      "by_community_heading": "Each community ({{count, number}})",
       "by_community_note": "Totals for the whole period. “Nobody to send to” is shown per day only.",
       "by_day_heading": "Each day",
-      "days_option": "Last {{count}} days",
+      "days_option": "Last {{count, number}} days",
       "days_picker": "How many days to show",
       "figure": {
         "accepted": "Accepted by the push service",
@@ -58116,10 +58119,10 @@ export default interface Resources {
       },
       "intro": "Send one community's listings, members, upcoming events, groups and marketplace items to the search service again. Use it when search is missing things it should find.",
       "last": {
-        "done_one": "Finished {{time}}: {{count}} entry updated",
-        "done_other": "Finished {{time}}: {{count}} entries updated",
-        "done_with_errors_one": "Finished {{time}} with {{count}} entry that could not be updated",
-        "done_with_errors_other": "Finished {{time}} with {{count}} entries that could not be updated",
+        "done_one": "Finished {{time}}: {{count, number}} entry updated",
+        "done_other": "Finished {{time}}: {{count, number}} entries updated",
+        "done_with_errors_one": "Finished {{time}} with {{count, number}} entry that could not be updated",
+        "done_with_errors_other": "Finished {{time}} with {{count, number}} entries that could not be updated",
         "failed": "Failed",
         "never": "Never run from this page",
         "queued": "Waiting to start",
@@ -58148,6 +58151,7 @@ export default interface Resources {
       "by": "By:",
       "failed": {
         "addresses_15m": "Different internet addresses in the last 15 minutes",
+        "by_community_title": "By community, last 24 hours",
         "checks_title": "Failed password checks",
         "col_failed": "Failed password checks in the last 24 hours:",
         "col_refused": "Refused by the lock-out in the last 24 hours:",
@@ -58156,6 +58160,7 @@ export default interface Resources {
         "last_24h": "In the last 24 hours",
         "last_hour": "In the last hour",
         "most_from_one_15m": "Most from one address in the last 15 minutes",
+        "no_community": "Not tied to a community",
         "note": "Two separate counts, by community and by the hour. “Failed password checks”: someone tried to sign in and the password was wrong. “Refused by the lock-out”: after too many tries, the attempt was turned away before any password was checked. The two are never added together. Each count keeps only a number, nothing about the person or where they signed in from. Figures are counted in whole hours, so each one can include up to an hour more.",
         "nothing_counted": "Nothing has been counted yet. Failed sign-ins are counted from the day this count was switched on.",
         "recent_note": "Which internet addresses are being tried right now. The platform keeps these details for only about 20 minutes, and forgets an address's failures when it next signs in successfully. Sign-ins through the accessible site all arrive from one address.",
@@ -58180,11 +58185,11 @@ export default interface Resources {
         "title": "Accounts signed out by the platform team"
       },
       "title": "Security",
-      "truncated": "Only the newest {{count}} are shown.",
+      "truncated": "Only the newest {{count, number}} are shown.",
       "two_step": {
         "all_on": "Two-step sign-in is on for all {{total}} senior accounts.",
         "link": "See the senior accounts",
-        "off": "Two-step sign-in is off for {{count}} of {{total}} senior accounts.",
+        "off": "Two-step sign-in is off for {{count, number}} of {{total}} senior accounts.",
         "title": "Two-step sign-in on senior accounts"
       },
       "unavailable": "This could not be checked just now.",
@@ -58224,12 +58229,15 @@ export default interface Resources {
         "suspended": "Suspended"
       },
       "title": "Senior accounts",
-      "truncated": "Only the first {{count}} accounts are shown.",
+      "truncated": "Only the first {{count, number}} accounts are shown.",
       "two_step_off": "Two-step off",
       "two_step_on": "Two-step on",
       "unnamed": "No name recorded",
       "unnamed_community": "Community #{{id}}",
-      "without_two_step": "Two-step sign-in is off for {{count}} of these {{total}} accounts."
+      "without_two_step": "Two-step sign-in is off for {{count, number}} of these {{total}} accounts."
+    },
+    "shared": {
+      "figures_from": "Figures from {{time}}"
     },
     "sidebar": {
       "collapse": "Hide the menu",
@@ -58240,13 +58248,16 @@ export default interface Resources {
       "group_data": "Data and legal",
       "group_email": "Email",
       "group_health": "Health",
+      "group_jobs": "Scheduled jobs",
       "group_joining": "Joining and roles",
       "group_keys": "Keys",
       "group_matching": "Matching",
       "group_money": "Money",
+      "group_phone": "Phone app",
       "group_products": "Products",
       "group_reports": "Reports",
       "group_site": "Site and search",
+      "group_tools": "Tools",
       "nav_label": "Platform team menu",
       "zone_community": "This community: {{name}}",
       "zone_platform": "The whole platform"
@@ -58286,7 +58297,7 @@ export default interface Resources {
         "not_for_use": "Not for use. It must not be switched on for any community."
       },
       "off_unless_switched_on": "Off unless switched on",
-      "on_in": "Communities with it on: {{count}}",
+      "on_in": "Communities with it on: {{count, number}}",
       "on_names": "On in: {{names}}",
       "on_nowhere": "Not on in any community",
       "read_only": "This page only shows. A feature is switched on or off in that community's own admin panel.",
@@ -58294,8 +58305,8 @@ export default interface Resources {
         "alpha": "Early test (alpha)",
         "beta": "Late test (beta)"
       },
-      "summary": "Features listed: {{count}}",
-      "summary_on_somewhere": "On in at least one community: {{count}}",
+      "summary": "Features listed: {{count, number}}",
+      "summary_on_somewhere": "On in at least one community: {{count, number}}",
       "title": "Unfinished features"
     },
     "usage": {
@@ -58305,7 +58316,7 @@ export default interface Resources {
       "ai_requests": "Requests",
       "ai_tokens": "Pieces of text processed",
       "bounced": "Bounced",
-      "communities_heading": "Each community ({{count}})",
+      "communities_heading": "Each community ({{count, number}})",
       "emails_heading": "Emails",
       "empty": "There are no communities yet.",
       "failed": "Failed",

@@ -37,7 +37,7 @@ import CalendarCheck from 'lucide-react/icons/calendar-check';
 import CalendarClock from 'lucide-react/icons/calendar-clock';
 import Info from 'lucide-react/icons/info';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
-import { SENIOR_LEVELS, type SeniorLevel } from './SeniorAccountsPage';
+import { SENIOR_LEVELS, accountStatusKey, type SeniorLevel } from './SeniorAccountsPage';
 
 const URL = '/v2/platform-team/access-review';
 
@@ -294,6 +294,11 @@ export function AccessReviewPage() {
                                         ? t('senior_accounts.two_step_on')
                                         : t('senior_accounts.two_step_off')}
                                     </Chip>
+                                    {account.status !== 'active' ? (
+                                      <Chip size="sm" variant="soft" color="warning">
+                                        {t(accountStatusKey(account.status))}
+                                      </Chip>
+                                    ) : null}
                                   </div>
                                 </div>
                                 <RadioGroup

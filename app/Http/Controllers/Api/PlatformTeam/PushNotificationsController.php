@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\PlatformTeam;
 
 use App\Http\Controllers\Api\BaseApiController;
+use App\Http\Controllers\Api\PlatformTeam\Concerns\KeepsFigures;
 use App\Services\PlatformTeam\PushNotificationsService;
 use Illuminate\Http\JsonResponse;
 
@@ -21,6 +22,8 @@ use Illuminate\Http\JsonResponse;
  */
 final class PushNotificationsController extends BaseApiController
 {
+    use KeepsFigures;
+
     protected bool $isV2Api = true;
 
     /** GET /api/v2/platform-team/push-notifications?days=14 (1 to 30) */
@@ -33,6 +36,6 @@ final class PushNotificationsController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', __('api.platform_push_days_invalid'), 'days', 422);
         }
 
-        return $this->respondWithData((new PushNotificationsService())->report($days));
+        return $this->keptFigures('push_notifications:' . $days, static fn (): array => (new PushNotificationsService())->report($days));
     }
 }

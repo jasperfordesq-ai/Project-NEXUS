@@ -240,25 +240,12 @@ class UnfinishedFeaturesTest extends TestCase
         if (!is_file($path)) {
             $this->markTestSkipped('a checkout without the frontend (the API image)');
         }
-        $lines = preg_split('/\R/', (string) file_get_contents($path)) ?: [];
-
-        $stages = [];
-        $moduleId = null;
-        $optionStages = 0;
-        foreach ($lines as $line) {
-            if (preg_match("/^ {4}id: '([a-z0-9_]+)',/", $line, $m) === 1) {
-                $moduleId = $m[1];
-            } elseif (preg_match("/^ {4}stage: '(alpha|beta)',/", $line, $m) === 1) {
-                $this->assertNotNull($moduleId, 'a stage before any module id');
-                $stages[$moduleId] = $m[1];
-            } elseif (preg_match("/\{ key: '[^']+'.*stage: '(alpha|beta)'/", $line) === 1) {
-                $optionStages++;
-            }
-        }
+        $source = (string) file_get_contents($path);
+        [$stages, $optionStages] = self::registryStages($source);
 
         // Every stage in the file must be one this test understood; a
         // reformatted registry fails here instead of passing with nothing read.
-        $allStages = preg_match_all("/\bstage: '(alpha|beta)'/", implode("\n", $lines));
+        $allStages = preg_match_all("/\bstage: '(alpha|beta)'/", $source);
         $this->assertSame($allStages, count($stages) + $optionStages, 'moduleRegistry.ts has a stage this test cannot place');
         $this->assertNotEmpty($stages);
 
@@ -266,6 +253,109 @@ class UnfinishedFeaturesTest extends TestCase
         $copy = UnfinishedFeaturesService::STAGES;
         ksort($copy);
         $this->assertSame($stages, $copy, 'UnfinishedFeaturesService::STAGES differs from moduleRegistry.ts');
+    }
+
+    /**
+     * Review 16 Nov: the reader went line by line, so a `stage:` written
+     * before its module's `id:` was credited to the module above. It now
+     * reads each module's `{ ... }` block as a whole.
+     */
+    public function test_the_registry_reader_gives_each_stage_to_its_own_module_whatever_the_order(): void
+    {
+        $snippet = <<<'TS'
+            export const MODULES = [
+              {
+                id: 'first_module',
+                icon: Calendar,
+                type: 'feature',
+                configOptions: [],
+              },
+              {
+                // A comment with a brace { that is not code.
+                stage: 'alpha',
+                id: 'second_module',
+                configOptions: [
+                  { key: 'second_module.option', type: 'boolean', stage: 'beta' },
+                ],
+                note: 'a string with a } brace',
+              },
+              {
+                id: 'third_module',
+                stage: 'beta',
+              },
+            ];
+            TS;
+
+        [$stages, $optionStages] = self::registryStages($snippet);
+
+        $this->assertSame(['second_module' => 'alpha', 'third_module' => 'beta'], $stages);
+        $this->assertSame(1, $optionStages);
+    }
+
+    /**
+     * Each module of the registry array is a `{ ... }` block opened at two
+     * spaces' indent; read it whole (braces balanced from its opening brace,
+     * ignoring braces inside quotes and `//` comments). Its own `id:` and
+     * `stage:` are the ones at four spaces' indent; a stage on an option line
+     * (`{ key: ... stage: ... }`) is counted apart.
+     *
+     * @return array{0: array<string, string>, 1: int} stages by module id, option stages
+     */
+    private static function registryStages(string $source): array
+    {
+        $stages = [];
+        $optionStages = 0;
+        $offset = 0;
+
+        while (preg_match('/^ {2}\{\s*$/m', $source, $m, PREG_OFFSET_CAPTURE, $offset) === 1) {
+            $start = (int) $m[0][1] + 2;
+            $end = self::closingBrace($source, $start);
+            self::assertNotNull($end, 'a module block that never closes');
+            $block = substr($source, $start, $end - $start + 1);
+            $offset = $end + 1;
+
+            $id = preg_match("/^ {4}id: '([a-z0-9_]+)',/m", $block, $idMatch) === 1 ? $idMatch[1] : null;
+            if (preg_match("/^ {4}stage: '(alpha|beta)',/m", $block, $stageMatch) === 1) {
+                self::assertNotNull($id, 'a module with a stage and no id');
+                $stages[$id] = $stageMatch[1];
+            }
+            $optionStages += preg_match_all("/\{ key: '[^']+'.*stage: '(alpha|beta)'/", $block);
+        }
+
+        return [$stages, $optionStages];
+    }
+
+    /** Position of the brace that closes the one at $open, or null. */
+    private static function closingBrace(string $source, int $open): ?int
+    {
+        $depth = 0;
+        $length = strlen($source);
+        for ($i = $open; $i < $length; $i++) {
+            $char = $source[$i];
+            if ($char === '/' && ($source[$i + 1] ?? '') === '/') {
+                $newline = strpos($source, "\n", $i);
+                $i = $newline === false ? $length : $newline;
+                continue;
+            }
+            if ($char === "'" || $char === '"' || $char === '`') {
+                for ($i++; $i < $length && $source[$i] !== $char; $i++) {
+                    if ($source[$i] === '\\') {
+                        $i++;
+                    }
+                }
+                continue;
+            }
+            if ($char === '{') {
+                $depth++;
+            } elseif ($char === '}') {
+                $depth--;
+                if ($depth === 0) {
+                    return $i;
+                }
+            }
+        }
+
+        return null;
     }
 
     public function test_nothing_can_be_changed_through_it(): void

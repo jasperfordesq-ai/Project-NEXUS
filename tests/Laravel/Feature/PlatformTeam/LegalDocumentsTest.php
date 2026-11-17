@@ -38,7 +38,7 @@ class LegalDocumentsTest extends TestCase
     private const URI = '/v2/platform-team/legal-documents';
 
     /** Exactly what the page shows. Anything else must not leave the server. */
-    private const TOP_KEYS = ['unavailable', 'totals', 'communities'];
+    private const TOP_KEYS = ['unavailable', 'totals', 'communities', 'generated_at'];
 
     private const TOTAL_KEYS = ['communities', 'no_privacy_notice'];
 

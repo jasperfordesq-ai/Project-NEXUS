@@ -296,10 +296,12 @@ export function AgreementsPage() {
     return agreement.community.name ?? t('agreements.community_gone', { id: agreement.community.id });
   };
 
-  const fact = (label: string, value: string, wide = false) => (
-    <div className={wide ? 'sm:col-span-2' : undefined}>
-      <dt className="text-muted">{label}</dt>
-      <dd className="whitespace-pre-line break-words font-medium text-foreground">{value}</dd>
+  // One label / value pair per line, in reading order: the label above its
+  // value on a phone, label on the left and value on the right when wide.
+  const fact = (label: string, value: string) => (
+    <div className="contents">
+      <dt className="mt-2 text-muted sm:mt-0">{label}</dt>
+      <dd className="min-w-0 whitespace-pre-line break-words font-medium text-foreground">{value}</dd>
     </div>
   );
 
@@ -340,7 +342,7 @@ export function AgreementsPage() {
                 ) : null}
               </div>
             </div>
-            <dl className="grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+            <dl className="grid grid-cols-1 text-sm sm:grid-cols-[minmax(8rem,14rem)_minmax(0,1fr)] sm:gap-x-6 sm:gap-y-2 [&>div:first-child>dt]:mt-0">
               {fact(t('agreements.field.community'), communityName(agreement))}
               {fact(t('agreements.field.renews_on'), day(agreement.renews_on))}
               {!agreement.is_ended && days !== null && days > 0
@@ -353,7 +355,7 @@ export function AgreementsPage() {
               {fact(t('agreements.field.ends_on'), day(agreement.ends_on))}
               {fact(t('agreements.field.contact_name'), text(agreement.contact_name))}
               {fact(t('agreements.field.contact_email'), text(agreement.contact_email))}
-              {fact(t('agreements.field.notes'), text(agreement.notes), true)}
+              {fact(t('agreements.field.notes'), text(agreement.notes))}
             </dl>
           </CardBody>
         </Card>
@@ -372,10 +374,13 @@ export function AgreementsPage() {
           </p>
           <p className="mt-2 max-w-2xl text-sm text-muted">{t('agreements.private_note')}</p>
         </div>
-        <Button onPress={openCreate}>
-          <Plus size={16} aria-hidden="true" />
-          {t('agreements.new')}
-        </Button>
+        {/* Nothing to add to while the list itself could not be read. */}
+        {!failed && overview ? (
+          <Button onPress={openCreate}>
+            <Plus size={16} aria-hidden="true" />
+            {t('agreements.new')}
+          </Button>
+        ) : null}
       </div>
 
       {loading && !overview ? (
@@ -408,7 +413,7 @@ export function AgreementsPage() {
         </>
       )}
 
-      <Modal isOpen={isFormOpen} onClose={() => !saving && setIsFormOpen(false)} size="lg">
+      <Modal isOpen={isFormOpen && !failed} onClose={() => !saving && setIsFormOpen(false)} size="lg">
         <ModalContent>
           <ModalHeader>{editing ? t('agreements.form.title_edit') : t('agreements.form.title_new')}</ModalHeader>
           <ModalBody className="space-y-4">

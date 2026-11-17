@@ -32,7 +32,7 @@ class CommunitySetupTest extends TestCase
     private const URI = '/v2/platform-team/community-setup';
 
     /** Exactly what the page shows. Anything else must not leave the server. */
-    private const TOP_KEYS = ['communities', 'max_communities', 'total_communities', 'truncated', 'unavailable'];
+    private const TOP_KEYS = ['communities', 'generated_at', 'max_communities', 'total_communities', 'truncated', 'unavailable'];
 
     private const ROW_KEYS = [
         'id', 'name', 'slug', 'is_active', 'created_at', 'make_it_yours', 'own_address', 'accessible_address',

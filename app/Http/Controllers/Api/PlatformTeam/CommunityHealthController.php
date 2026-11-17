@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\PlatformTeam;
 
 use App\Http\Controllers\Api\BaseApiController;
+use App\Http\Controllers\Api\PlatformTeam\Concerns\KeepsFigures;
 use App\Services\PlatformTeam\CommunityHealthService;
 use Illuminate\Http\JsonResponse;
 
@@ -20,6 +21,8 @@ use Illuminate\Http\JsonResponse;
  */
 final class CommunityHealthController extends BaseApiController
 {
+    use KeepsFigures;
+
     protected bool $isV2Api = true;
 
     /** GET /api/v2/platform-team/community-health */
@@ -27,6 +30,6 @@ final class CommunityHealthController extends BaseApiController
     {
         $this->requireGodPlatformAdmin();
 
-        return $this->respondWithData((new CommunityHealthService())->overview());
+        return $this->keptFigures('community_health', static fn (): array => (new CommunityHealthService())->overview());
     }
 }

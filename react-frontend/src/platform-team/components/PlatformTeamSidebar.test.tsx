@@ -111,6 +111,57 @@ describe('PlatformTeamSidebar', () => {
     expect(new Set(panelLinks).size).toBe(panelLinks.length);
   });
 
+  // Short groups, so each can be scanned at a glance (16 Nov 2026). Order inside a group is as listed.
+  it.each([
+    [
+      'sidebar.group_health',
+      ['enterprise/monitoring', 'deployments', 'errors', 'failed-jobs', 'domains', '404-errors', 'tests'],
+    ],
+    ['sidebar.group_jobs', ['cron-jobs', 'cron-jobs/logs', 'cron-jobs/setup', 'cron-jobs/settings']],
+    ['sidebar.group_tools', ['search-rebuild', 'seo/prerender']],
+    [
+      'sidebar.group_communities',
+      [
+        'communities', 'community-health', 'community-setup', 'usage', 'unfinished-features',
+        'platform-capabilities', 'notices', 'provisioning-requests', 'platform/pilot-inquiries',
+      ],
+    ],
+    ['sidebar.group_phone', ['phone-app', 'push-notifications']],
+  ])('puts these pages, in this order, under %s', (title, tails) => {
+    render(<PlatformTeamSidebar collapsed={false} onToggle={() => {}} />);
+    const group = screen.getByText(title).parentElement as HTMLElement;
+
+    expect(hrefsIn(group)).toEqual(tails.map((tail) => `/test/platform-team/${tail}`));
+  });
+
+  it('keeps the groups of "The whole platform" in their order', () => {
+    render(<PlatformTeamSidebar collapsed={false} onToggle={() => {}} />);
+    const zone = screen.getByRole('region', { name: 'sidebar.zone_platform' });
+    const titles = within(zone)
+      .getAllByText(/^(sidebar\.group_|sidebar\.section_)/)
+      .map((el) => el.textContent);
+
+    expect(titles.slice(0, 6)).toEqual([
+      'sidebar.group_health',
+      'sidebar.group_jobs',
+      'sidebar.group_tools',
+      'sidebar.group_money',
+      'sidebar.group_communities',
+      'sidebar.group_phone',
+    ]);
+  });
+
+  // In Arabic the page reads right to left, so the menu must sit on the right.
+  // Logical sides (start / end) follow the page's direction; left / right do not.
+  it('sits on the start side of the page, whichever way the language reads', () => {
+    const { container } = render(<PlatformTeamSidebar collapsed={false} onToggle={() => {}} />);
+    const aside = container.querySelector('aside') as HTMLElement;
+
+    expect(aside.className).toMatch(/(^|\s)start-0(\s|$)/);
+    expect(aside.className).toMatch(/(^|\s)border-e(\s|$)/);
+    expect(aside.className).not.toMatch(/(^|\s)(left-0|border-r)(\s|$)/);
+  });
+
   it('links back to the admin panel and the super admin panel', () => {
     render(<PlatformTeamSidebar collapsed={false} onToggle={() => {}} />);
     const hrefs = screen.getAllByRole('link').map((a) => a.getAttribute('href'));

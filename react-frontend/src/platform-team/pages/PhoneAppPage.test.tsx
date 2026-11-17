@@ -111,15 +111,30 @@ describe('PhoneAppPage', () => {
     expect(screen.queryByTestId('load-error')).not.toBeInTheDocument();
   });
 
-  // The server sends null when the versions could not be read: hide them, never "none yet".
-  it('shows no versions section, and no error, when the server could not read them', async () => {
+  // The server sends null when the versions could not be read: say so under
+  // the heading, never "none yet" and never a count of zero.
+  it('says the versions could not be read when the server sends null for them', async () => {
     apiGet.mockResolvedValue({ success: true, data: { ...STATS, versions: null, version_not_recorded: null } });
     render(<PhoneAppPage />);
 
-    expect(await screen.findByTestId('all-communities')).toBeInTheDocument();
-    expect(screen.queryByText('phone_app.versions.title')).not.toBeInTheDocument();
-    expect(screen.queryByText('phone_app.versions.none_yet')).not.toBeInTheDocument();
+    const section = await screen.findByRole('region', { name: 'phone_app.versions.title' });
+    expect(within(section).getByText('phone_app.versions.unreadable')).toBeInTheDocument();
+    expect(within(section).queryByText('phone_app.versions.none_yet')).not.toBeInTheDocument();
+    expect(within(section).queryByText(/phone_app\.versions\.not_recorded:/)).not.toBeInTheDocument();
     expect(screen.queryByTestId('load-error')).not.toBeInTheDocument();
+  });
+
+  it('says "not known", never 0, when the count without a version could not be read', async () => {
+    apiGet.mockResolvedValue({
+      success: true,
+      data: { ...STATS, versions: [{ version: '1.13.0', sign_ins: 4 }], version_not_recorded: null },
+    });
+    render(<PhoneAppPage />);
+
+    const section = await screen.findByRole('region', { name: 'phone_app.versions.title' });
+    expect(within(section).getAllByRole('listitem')).toHaveLength(1);
+    expect(within(section).getByText('phone_app.versions.not_recorded_unknown')).toBeInTheDocument();
+    expect(within(section).queryByText('phone_app.versions.not_recorded:0')).not.toBeInTheDocument();
   });
 
   it('shows the error card when the request throws, and can try again', async () => {

@@ -39,7 +39,10 @@
     "group_joining": "Adesione e ruoli",
     "group_site": "Sito e ricerca",
     "group_reports": "Rapporti",
-    "group_matching": "Abbinamento"
+    "group_matching": "Abbinamento",
+    "group_jobs": "Attività pianificate",
+    "group_tools": "Strumenti",
+    "group_phone": "App per il telefono"
   },
   "breadcrumbs": {
     "aria_label": "Dove ti trovi",
@@ -146,7 +149,7 @@
     "load_error_title": "Non siamo riusciti a caricare le attività non riuscite in questo momento",
     "empty_title": "Niente in attesa",
     "empty_text": "Nessuna attività in background è fallita, oppure sono state tutte gestite.",
-    "count": "In attesa di essere viste: {{count}}",
+    "count": "In attesa di essere viste: {{count, number}}",
     "unknown_job": "Nome non registrato",
     "no_reason": "Non è stato registrato alcun motivo.",
     "queue": "Coda:",
@@ -173,11 +176,13 @@
       "title": "Versioni dell’app in uso",
       "coverage": "Questi dati riguardano solo i telefoni che hanno effettuato l’accesso dopo che si è iniziato a registrare la versione dell’app, quindi all’inizio la maggior parte degli accessi risulterà «non registrata».",
       "version": "Versione {{version}}",
-      "sign_ins_one": "{{count}} accesso",
-      "sign_ins_other": "{{count}} accessi",
-      "not_recorded_one": "{{count}} accesso senza versione registrata",
-      "not_recorded_other": "{{count}} accessi senza versione registrata",
-      "none_yet": "Nessun telefono ha ancora registrato la versione dell’app."
+      "sign_ins_one": "{{count, number}} accesso",
+      "sign_ins_other": "{{count, number}} accessi",
+      "not_recorded_one": "{{count, number}} accesso senza versione registrata",
+      "not_recorded_other": "{{count, number}} accessi senza versione registrata",
+      "none_yet": "Nessun telefono ha ancora registrato la versione dell’app.",
+      "unreadable": "Questi dati non si possono leggere in questo momento.",
+      "not_recorded_unknown": "Accessi senza versione registrata: non noto"
     }
   },
   "senior_accounts": {
@@ -186,9 +191,9 @@
     "read_only_note": "Questa pagina mostra soltanto questi account. Qui non si concede né si toglie alcun accesso.",
     "loading": "Caricamento degli account di alto livello",
     "load_error_title": "Non siamo riusciti a caricare gli account di alto livello in questo momento",
-    "without_two_step": "L’accesso in due passaggi è disattivato per {{count}} di questi {{total}} account.",
+    "without_two_step": "L’accesso in due passaggi è disattivato per {{count, number}} di questi {{total}} account.",
     "all_have_two_step": "L’accesso in due passaggi è attivo per tutti questi {{total}} account.",
-    "truncated": "Sono mostrati solo i primi {{count}} account.",
+    "truncated": "Sono mostrati solo i primi {{count, number}} account.",
     "none_at_level": "Nessun account a questo livello.",
     "level": {
       "platform_team": "Team della piattaforma",
@@ -234,8 +239,8 @@
     "too_many": "Sono molte ricerche. Aspetta un minuto, poi riprova.",
     "none": "Nessun account usa questo indirizzo",
     "none_note": "Sono state controllate tutte le comunità. Gli account cancellati definitivamente non vengono mai trovati.",
-    "found": "Account trovati: {{count}}",
-    "truncated": "Sono mostrati solo i primi {{count}} account.",
+    "found": "Account trovati: {{count, number}}",
+    "truncated": "Sono mostrati solo i primi {{count, number}} account.",
     "role_label": "Ruolo:",
     "role": {
       "member": "Membro",
@@ -287,10 +292,10 @@
     "not_recorded": "Non registrato",
     "by": "Da:",
     "when": "Quando:",
-    "truncated": "Sono mostrati solo i {{count}} più recenti.",
+    "truncated": "Sono mostrati solo i {{count, number}} più recenti.",
     "two_step": {
       "title": "Accesso in due passaggi per gli account di alto livello",
-      "off": "L’accesso in due passaggi è disattivato per {{count}} di {{total}} account di alto livello.",
+      "off": "L’accesso in due passaggi è disattivato per {{count, number}} di {{total}} account di alto livello.",
       "all_on": "L’accesso in due passaggi è attivo per tutti i {{total}} account di alto livello.",
       "link": "Vedi gli account di alto livello"
     },
@@ -309,7 +314,9 @@
       "most_from_one_15m": "Il numero più alto da un solo indirizzo negli ultimi 15 minuti",
       "checks_title": "Controlli della password non riusciti",
       "refused_title": "Respinti dal blocco",
-      "col_refused": "Respinti dal blocco nelle ultime 24 ore:"
+      "col_refused": "Respinti dal blocco nelle ultime 24 ore:",
+      "no_community": "Non legato a una comunità",
+      "by_community_title": "Per comunità, ultime 24 ore"
     },
     "access": {
       "title": "Accessi di alto livello concessi e tolti",
@@ -337,7 +344,7 @@
     "loading": "Caricamento delle comunità",
     "load_error_title": "Non siamo riusciti a caricare le comunità in questo momento",
     "empty": "Non ci sono ancora comunità.",
-    "community_count": "Comunità: {{count}}",
+    "community_count": "Comunità: {{count, number}}",
     "on": "Attivo",
     "off": "Disattivato",
     "held": "Attivo qui, ma disattivato per tutta la piattaforma",
@@ -348,7 +355,7 @@
     "modules_note": "Le parti con cui ogni comunità inizia. Una comunità può comunque disattivarne una.",
     "switch_column": "Interruttore",
     "count_column": "Quante",
-    "on_in": "Attivo in {{count}} su {{total}}",
+    "on_in": "Attivo in {{count, number}} su {{total}}",
     "on_everywhere": "Attivo in tutte le comunità.",
     "off_everywhere": "Disattivato in tutte le comunità.",
     "off_in": "Disattivato in: {{names}}",
@@ -433,7 +440,7 @@
       "emails_kept_90_days": "I registri delle email sono conservati per 90 giorni, quindi questo mese non può essere mostrato."
     },
     "totals_heading": "Tutte le comunità insieme",
-    "communities_heading": "Ogni comunità ({{count}})",
+    "communities_heading": "Ogni comunità ({{count, number}})",
     "empty": "Non ci sono ancora comunità.",
     "emails_heading": "Email",
     "ai_heading": "Chat con IA",
@@ -470,8 +477,8 @@
     "loading": "Caricamento della salute delle comunità",
     "load_error_title": "Non siamo riusciti a caricare la salute delle comunità in questo momento",
     "empty": "Non ci sono ancora comunità.",
-    "community_count": "Comunità: {{count}}",
-    "quiet_count": "Comunità tranquille: {{count}}",
+    "community_count": "Comunità: {{count, number}}",
+    "quiet_count": "Comunità tranquille: {{count, number}}",
     "quiet_names": "Tranquille: {{names}}",
     "none_quiet": "Nessuna comunità è tranquilla.",
     "quiet_rule": "Una comunità è detta tranquilla quando è attivata e, o nessun membro è stato attivo negli ultimi {{days}} giorni, o non c'è stato alcuno scambio né questo mese né il mese scorso.",
@@ -503,7 +510,7 @@
     "loading": "Caricamento della configurazione delle comunità",
     "load_error_title": "Non siamo riusciti a caricare la configurazione delle comunità in questo momento",
     "empty": "Non ci sono ancora comunità.",
-    "community_count": "Comunità: {{count}}",
+    "community_count": "Comunità: {{count, number}}",
     "truncated": "Sono mostrate le {{shown}} più recenti su {{total}} comunità.",
     "terms_note": "I termini vengono aggiunti automaticamente quando si crea una comunità, quindi una spunta sui termini conta meno delle altre.",
     "not_recorded": "Non viene registrato da nessuna parte se l'invio di email di una comunità è stato provato, quindi questa pagina non lo mostra.",
@@ -534,8 +541,8 @@
     "read_only": "Questa pagina serve solo a consultare. Una funzione si attiva o si disattiva nel pannello di amministrazione della singola comunità.",
     "loading": "Caricamento delle funzioni non completate",
     "load_error_title": "Non siamo riusciti a caricare le funzioni non completate in questo momento",
-    "summary": "Funzioni elencate: {{count}}",
-    "summary_on_somewhere": "Attive in almeno una comunità: {{count}}",
+    "summary": "Funzioni elencate: {{count, number}}",
+    "summary_on_somewhere": "Attive in almeno una comunità: {{count, number}}",
     "stage": {
       "alpha": "Prova iniziale (alfa)",
       "beta": "Prova avanzata (beta)"
@@ -545,7 +552,7 @@
     "note": {
       "not_for_use": "Da non usare. Non deve essere attivata per nessuna comunità."
     },
-    "on_in": "Comunità in cui è attiva: {{count}}",
+    "on_in": "Comunità in cui è attiva: {{count, number}}",
     "on_names": "Attiva in: {{names}}",
     "on_nowhere": "Non è attiva in nessuna comunità"
   },
@@ -558,8 +565,8 @@
     "loading": "Caricamento delle richieste sui dati",
     "load_error_title": "Non siamo riusciti a caricare le richieste sui dati in questo momento",
     "empty": "Non ci sono ancora comunità.",
-    "community_count": "Comunità: {{count}}",
-    "overdue_count": "Comunità con una richiesta scaduta: {{count}}",
+    "community_count": "Comunità: {{count, number}}",
+    "overdue_count": "Comunità con una richiesta scaduta: {{count, number}}",
     "overdue_names": "Scadute: {{names}}",
     "none_overdue": "Nessuna comunità ha una richiesta scaduta.",
     "overdue_unknown": "In questo momento non possiamo dire se qualche richiesta è scaduta.",
@@ -588,7 +595,7 @@
       "portability": "Un trasferimento",
       "objection": "Un’opposizione"
     },
-    "completed_without_date": "Richieste completate senza data di completamento, quindi escluse dal dato dei 90 giorni: {{count}}"
+    "completed_without_date": "Richieste completate senza data di completamento, quindi escluse dal dato dei 90 giorni: {{count, number}}"
   },
   "legal_documents": {
     "title": "Documenti legali",
@@ -598,8 +605,8 @@
     "counts_only": "Solo numeri. In questa pagina non viene nominato nessun membro.",
     "loading": "Caricamento dei documenti legali",
     "load_error_title": "Non siamo riusciti a caricare i documenti legali in questo momento",
-    "community_count": "Comunità: {{count}}",
-    "no_privacy_count": "Comunità senza un'informativa sulla privacy pubblicata: {{count}}",
+    "community_count": "Comunità: {{count, number}}",
+    "no_privacy_count": "Comunità senza un'informativa sulla privacy pubblicata: {{count, number}}",
     "no_privacy_names": "Senza: {{names}}",
     "all_have_privacy": "Ogni comunità ha un'informativa sulla privacy pubblicata.",
     "privacy_unknown": "Al momento non possiamo dire quali comunità abbiano un'informativa sulla privacy.",
@@ -610,8 +617,8 @@
     "date_unknown": "data non registrata",
     "no_acceptance_needed": "Ai membri non viene chiesto di accettare questo documento.",
     "members_not_available": "Chi ha accettato: non disponibile",
-    "members_not_accepted": "Non ancora accettato: {{count}} su {{asked}} membri interpellati",
-    "all_accepted": "Accettato da tutti i membri interpellati ({{count}})",
+    "members_not_accepted": "Non ancora accettato: {{count, number}} su {{asked}} membri interpellati",
+    "all_accepted": "Accettato da tutti i membri interpellati ({{count, number}})",
     "status": {
       "published": "Pubblicato",
       "not_published": "Non pubblicato",
@@ -662,10 +669,10 @@
     "history_title": "Revisioni recenti",
     "history_none": "Ancora nessuna revisione.",
     "history_by": "Registrata da {{name}}",
-    "history_accounts_one": "Account esaminati: {{count}}",
-    "history_accounts_other": "Account esaminati: {{count}}",
-    "history_removals_one": "{{count}} segnato da rimuovere",
-    "history_removals_other": "{{count}} segnati da rimuovere",
+    "history_accounts_one": "Account esaminati: {{count, number}}",
+    "history_accounts_other": "Account esaminati: {{count, number}}",
+    "history_removals_one": "{{count, number}} segnato da rimuovere",
+    "history_removals_other": "{{count, number}} segnati da rimuovere",
     "erased": "Account cancellato",
     "refresh_failed": "Non è stato possibile ricaricare la revisione. Quello che vedi è di prima.",
     "note_no_names": "Non nominare persone nella nota. Viene conservata con la registrazione."
@@ -676,12 +683,12 @@
     "intro": "Quante notifiche sono state inviate ai telefoni e ai browser dei membri, per giorno e per comunità. «Accettate dal servizio push» significa che il servizio ha preso in carico la notifica, non che un telefono l’abbia mostrata. Alcuni tipi di notifica vengono inviati senza essere registrati qui (promemoria degli eventi, avvisi di emergenza e alcuni altri), quindi i numeri reali sono almeno questi.",
     "timezone_note": "I giorni seguono l’ora del server (UTC).",
     "days_picker": "Quanti giorni mostrare",
-    "days_option": "Ultimi {{count}} giorni",
+    "days_option": "Ultimi {{count, number}} giorni",
     "loading": "Caricamento dei dati sulle notifiche push",
     "load_error_title": "Non è stato possibile caricare i dati sulle notifiche push",
     "not_available": "Non disponibile: non è stato possibile leggere il registro delle notifiche push. Questo non significa che non ne sia stata inviata nessuna.",
     "by_day_heading": "Ogni giorno",
-    "by_community_heading": "Ogni comunità ({{count}})",
+    "by_community_heading": "Ogni comunità ({{count, number}})",
     "by_community_note": "Totali per l’intero periodo. «Nessuno a cui inviare» è mostrato solo per giorno.",
     "no_community_heading": "Senza comunità",
     "no_community_note": "Notifiche registrate senza una comunità. Sono incluse nei dati giornalieri.",
@@ -702,8 +709,8 @@
     "no_record_title": "Questo server non tiene alcun registro dei rilasci",
     "no_record_text": "Solo il server in produzione ne tiene uno, quindi sul computer di uno sviluppatore è normale.",
     "empty": "Non è stato ancora registrato nulla.",
-    "skipped": "Righe del registro illeggibili e saltate: {{count}}",
-    "count": "Rilasci e ripristini mostrati: {{count}}",
+    "skipped": "Righe del registro illeggibili e saltate: {{count, number}}",
+    "count": "Rilasci e ripristini mostrati: {{count, number}}",
     "not_recorded": "Non registrato",
     "kind": {
       "deploy": "Rilascio",
@@ -903,7 +910,8 @@
         "deletes": "Cancella i controlli di identità conclusi o scaduti più vecchi di 180 giorni. La registrazione di quanto è avvenuto in ogni controllo viene conservata."
       }
     },
-    "finished_only": "Questa attività registra di essere terminata, non che ogni passaggio abbia funzionato."
+    "finished_only": "Questa attività registra di essere terminata, non che ogni passaggio abbia funzionato.",
+    "steps_failed": "Passaggi non riusciti nell'ultima esecuzione: {{count, number}}"
   },
   "search_rebuild": {
     "title": "Ricostruisci la ricerca",
@@ -930,10 +938,10 @@
       "never": "Mai avviata da questa pagina",
       "queued": "In attesa di partire",
       "running": "In corso dalle {{time}}",
-      "done_one": "Terminata {{time}}: {{count}} voce aggiornata",
-      "done_other": "Terminata {{time}}: {{count}} voci aggiornate",
-      "done_with_errors_one": "Terminata {{time}} con {{count}} voce che non è stato possibile aggiornare",
-      "done_with_errors_other": "Terminata {{time}} con {{count}} voci che non è stato possibile aggiornare",
+      "done_one": "Terminata {{time}}: {{count, number}} voce aggiornata",
+      "done_other": "Terminata {{time}}: {{count, number}} voci aggiornate",
+      "done_with_errors_one": "Terminata {{time}} con {{count, number}} voce che non è stato possibile aggiornare",
+      "done_with_errors_other": "Terminata {{time}} con {{count, number}} voci che non è stato possibile aggiornare",
       "failed": "Non riuscita"
     },
     "check_failed": "Impossibile controllare di nuovo alle {{time}}"
@@ -1048,8 +1056,8 @@
     },
     "data_requests": {
       "title": "Richieste sui dati personali",
-      "open": "Aperte, in tutte le comunità: {{count}}",
-      "overdue": "Aperte da più di 30 giorni: {{count}}"
+      "open": "Aperte, in tutte le comunità: {{count, number}}",
+      "overdue": "Aperte da più di 30 giorni: {{count, number}}"
     },
     "failed_sign_ins": {
       "title": "Registro degli accessi non riusciti",
@@ -1082,8 +1090,8 @@
     },
     "status": {
       "ok": "Tutto a posto",
-      "warning_one": "Il certificato scade tra {{count}} giorno",
-      "warning_other": "Il certificato scade tra {{count}} giorni",
+      "warning_one": "Il certificato scade tra {{count, number}} giorno",
+      "warning_other": "Il certificato scade tra {{count, number}} giorni",
       "failing": "Non funziona",
       "unknown": "Non ancora controllato",
       "not_checkable": "Non è un indirizzo web che possiamo controllare",
@@ -1105,5 +1113,8 @@
     "too_many": "Troppi controlli in un minuto. Attendi un momento e riprova.",
     "check_now_for": "Controlla {{name}} ora",
     "check_platform_now": "Controlla ora gli indirizzi della piattaforma"
+  },
+  "shared": {
+    "figures_from": "Dati delle {{time}}"
   }
 }

@@ -34,7 +34,7 @@ class CleanUpJobsTest extends TestCase
     /** Exactly what the page shows. Anything else must not leave the server. */
     private const TOP_KEYS = ['jobs'];
 
-    private const ROW_KEYS = ['checked_by', 'how_often', 'key', 'last_failed_at', 'last_ok_at', 'readable', 'status'];
+    private const ROW_KEYS = ['checked_by', 'how_often', 'key', 'last_failed_at', 'last_ok_at', 'readable', 'status', 'steps_failed'];
 
     /** The fixed list, in page order, with how often each runs. */
     private const JOBS = [
@@ -264,6 +264,45 @@ class CleanUpJobsTest extends TestCase
             $this->assertArrayHasKey($key, self::JOBS);
         }
         $this->assertCount(count(self::JOBS), CleanUpJobsService::JOBS);
+    }
+
+    /**
+     * 16 Nov 2026: four of the minute runner's clean-up jobs now note each
+     * step that failed inside them (CleanUpStepFailures). A run with a failed
+     * step is `failing` although its log says success, and says how many
+     * steps failed; a clean run clears it.
+     */
+    public function test_a_runner_job_whose_last_run_had_a_failed_step_is_failing_with_the_count(): void
+    {
+        $this->cronLog('cleanup', 'success', now()->subMinutes(10));
+        $this->cronLog('abuse-cleanup', 'success', now()->subMinutes(10));
+        \App\Support\Scheduling\CleanUpStepFailures::startRun('cleanup');
+        \App\Support\Scheduling\CleanUpStepFailures::note('cleanup', 'match_cache');
+        \App\Support\Scheduling\CleanUpStepFailures::note('cleanup', 'cron_logs');
+        \App\Support\Scheduling\CleanUpStepFailures::startRun('abuse-cleanup');
+
+        $rows = $this->rows();
+
+        $this->assertSame('failing', $rows['cleanup']['status']);
+        $this->assertSame(2, $rows['cleanup']['steps_failed']);
+        $this->assertSame('record', $rows['cleanup']['checked_by']);
+        $this->assertNotNull($rows['cleanup']['last_failed_at']);
+
+        $this->assertSame('ok', $rows['abuse_cleanup']['status'], 'a clean last run');
+        $this->assertSame(0, $rows['abuse_cleanup']['steps_failed']);
+        $this->assertSame('record', $rows['abuse_cleanup']['checked_by']);
+
+        // No note yet: as before.
+        $this->assertNull($rows['gamification_cleanup']['steps_failed']);
+        $this->assertSame('finished_only', $rows['gamification_cleanup']['checked_by']);
+        $this->assertNull($rows['story_cleanup']['steps_failed'], 'a job that does not note its steps');
+        $this->assertNull($rows['performance_prune']['steps_failed']);
+
+        // The next clean run clears the count.
+        \App\Support\Scheduling\CleanUpStepFailures::startRun('cleanup');
+        $rows = $this->rows();
+        $this->assertSame(0, $rows['cleanup']['steps_failed']);
+        $this->assertSame('ok', $rows['cleanup']['status']);
     }
 
     public function test_nothing_can_be_changed_through_it(): void

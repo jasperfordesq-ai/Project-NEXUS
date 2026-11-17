@@ -30,7 +30,7 @@ class PushNotificationsTest extends TestCase
     private const URI = '/v2/platform-team/push-notifications';
 
     /** Exactly what the page shows. Anything else must not leave the server. */
-    private const TOP_KEYS = ['available', 'by_community', 'by_day', 'days', 'no_community'];
+    private const TOP_KEYS = ['available', 'by_community', 'by_day', 'days', 'generated_at', 'no_community'];
 
     private const DAY_KEYS = ['accepted', 'date', 'failed', 'nobody_to_send_to', 'partial'];
 
@@ -67,6 +67,10 @@ class PushNotificationsTest extends TestCase
     /** @return array<string, mixed> */
     private function data(string $query = ''): array
     {
+        // These tests are about the counting: drop the five-minute kept answer
+        // (PlatformFiguresCacheTest covers keeping it).
+        \Illuminate\Support\Facades\Cache::flush();
+
         return $this->apiGet(self::URI . $query)->assertStatus(200)->json('data');
     }
 

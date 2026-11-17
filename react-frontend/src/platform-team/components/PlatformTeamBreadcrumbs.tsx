@@ -114,8 +114,8 @@ export function PlatformTeamBreadcrumbs() {
       <ol className="flex w-max max-w-full items-center gap-1.5 text-sm text-muted">
         {crumbs.map((crumb, index) => (
           <li key={`${crumb.label}-${index}`} className="flex min-w-0 items-center gap-1.5">
-            {index > 0 && <ChevronRight size={14} className="shrink-0 text-muted/70" />}
-            {index === 0 && <ShieldCheck size={14} className="mr-1 shrink-0" />}
+            {index > 0 && <ChevronRight size={14} className="shrink-0 text-muted/70 rtl:rotate-180" />}
+            {index === 0 && <ShieldCheck size={14} className="me-1 shrink-0" />}
             {crumb.href ? (
               <Link to={crumb.href} className="max-w-[9rem] truncate transition-colors hover:text-foreground sm:max-w-[14rem]">
                 {crumb.label}

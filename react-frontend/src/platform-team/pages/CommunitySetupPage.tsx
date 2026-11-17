@@ -19,10 +19,11 @@
  * available", never as "Not done".
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Card, CardBody, Chip, Spinner } from '@/components/ui';
+import { Card, CardBody, Chip, Spinner } from '@/components/ui';
 import { LoadError } from '@/components/feedback/LoadError';
+import { FiguresRefresh, withRefresh } from '../components/FiguresRefresh';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
@@ -31,7 +32,6 @@ import CircleDashed from 'lucide-react/icons/circle-dashed';
 import CircleHelp from 'lucide-react/icons/circle-help';
 import Info from 'lucide-react/icons/info';
 import Mail from 'lucide-react/icons/mail';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
 
 export interface CommunitySetupRow {
   id: number;
@@ -54,6 +54,8 @@ export interface CommunitySetup {
   truncated: boolean;
   unavailable: string[];
   communities: CommunitySetupRow[];
+  /** When the server worked these figures out (absent from an older server). */
+  generated_at?: string | null;
 }
 
 /** The yes/no steps, in the order the table shows them (after "Make it yours"). */
@@ -71,23 +73,33 @@ export function CommunitySetupPage() {
   usePageTitle(t('community_setup.title'));
 
   const [setup, setSetup] = useState<CommunitySetup | null>(null);
+  const [refused, setRefused] = useState(false);
+  /** Figures are on screen: a refused "Check again" keeps them. */
+  const shown = useRef(false);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (refresh = false) => {
+    setRefused(false);
     setLoading(true);
     setFailed(false);
     try {
-      const res = await api.get<CommunitySetup>('/v2/platform-team/community-setup');
+      const res = await api.get<CommunitySetup>(withRefresh('/v2/platform-team/community-setup', refresh));
       if (res.success && res.data && Array.isArray(res.data.communities)) {
         setSetup(res.data);
+        shown.current = true;
+      } else if (refresh && shown.current && res.code === 'RATE_LIMIT_EXCEEDED') {
+        // Asked again too soon: keep what is on screen and say so.
+        setRefused(true);
       } else {
         setSetup(null);
+        shown.current = false;
         setFailed(true);
       }
     } catch (err) {
       logError('Failed to load community setup', err);
       setSetup(null);
+      shown.current = false;
       setFailed(true);
     } finally {
       setLoading(false);
@@ -179,10 +191,12 @@ export function CommunitySetupPage() {
           <p className="mt-2 max-w-2xl text-base text-muted">{t('community_setup.intro')}</p>
           <p className="mt-2 max-w-2xl text-sm text-muted">{t('community_setup.yes_no_only')}</p>
         </div>
-        <Button variant="tertiary" onPress={() => void load()} isDisabled={loading}>
-          <RefreshCw size={16} aria-hidden="true" />
-          {t('home.refresh')}
-        </Button>
+        <FiguresRefresh
+          onRefresh={() => void load(true)}
+          loading={loading}
+          generatedAt={setup?.generated_at}
+          refused={refused}
+        />
       </div>
 
       {loading && !setup ? (
@@ -213,7 +227,10 @@ export function CommunitySetupPage() {
 
           <p className="text-sm text-muted">
             {setup.truncated
-              ? t('community_setup.truncated', { shown: setup.communities.length, total: setup.total_communities })
+              ? t('community_setup.truncated', {
+                  shown: new Intl.NumberFormat(i18n.language).format(setup.communities.length),
+                  total: new Intl.NumberFormat(i18n.language).format(setup.total_communities),
+                })
               : t('community_setup.community_count', { count: setup.communities.length })}
           </p>
 

@@ -50,6 +50,8 @@ export interface CleanUpJob {
    * steps' errors and still records success. Optional: an older server does not send it.
    */
   checked_by?: 'record' | 'finished_only';
+  /** Steps that failed on the job's last run; null when the job does not note them. */
+  steps_failed?: number | null;
 }
 
 export interface CleanUpJobsReport {
@@ -144,7 +146,9 @@ export function CleanUpJobsPage() {
                 <Card>
                   <CardBody className="gap-3 p-4">
                     <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
-                      <div className="min-w-0">
+                      {/* Grows into the free space instead of taking a whole line, so a long
+                          description never pushes the status under it on a wide screen. */}
+                      <div className="min-w-0 flex-1 basis-60">
                         <h2 className="text-base font-semibold text-foreground">
                           {t(`clean_up_jobs.job.${job.key}.name`)}
                         </h2>
@@ -174,6 +178,9 @@ export function CleanUpJobsPage() {
                     </dl>
                     {job.checked_by === 'finished_only' ? (
                       <p className="text-sm text-muted">{t('clean_up_jobs.finished_only')}</p>
+                    ) : null}
+                    {(job.steps_failed ?? 0) > 0 ? (
+                      <p className="text-sm font-medium text-danger">{t('clean_up_jobs.steps_failed', { count: job.steps_failed ?? 0 })}</p>
                     ) : null}
                   </CardBody>
                 </Card>

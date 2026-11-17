@@ -39,7 +39,10 @@
     "group_joining": "Dołączanie i role",
     "group_site": "Strona i wyszukiwanie",
     "group_reports": "Raporty",
-    "group_matching": "Dopasowywanie"
+    "group_matching": "Dopasowywanie",
+    "group_jobs": "Zadania zaplanowane",
+    "group_tools": "Narzędzia",
+    "group_phone": "Aplikacja na telefon"
   },
   "breadcrumbs": {
     "aria_label": "Gdzie jesteś",
@@ -146,7 +149,7 @@
     "load_error_title": "Nie udało się teraz wczytać nieudanych zadań",
     "empty_title": "Nic nie czeka",
     "empty_text": "Żadne zadanie w tle nie zakończyło się niepowodzeniem albo wszystkie zostały obsłużone.",
-    "count": "Czekają na przejrzenie: {{count}}",
+    "count": "Czekają na przejrzenie: {{count, number}}",
     "unknown_job": "Nie zapisano nazwy",
     "no_reason": "Nie zapisano przyczyny.",
     "queue": "Kolejka:",
@@ -173,15 +176,17 @@
       "title": "Używane wersje aplikacji",
       "coverage": "Te dane obejmują tylko telefony, które zalogowały się po tym, jak zaczęto zapisywać wersję aplikacji, więc na początku większość logowań będzie liczona jako „niezapisane”.",
       "version": "Wersja {{version}}",
-      "sign_ins_one": "{{count}} logowanie",
-      "sign_ins_few": "{{count}} logowania",
-      "sign_ins_many": "{{count}} logowań",
-      "sign_ins_other": "{{count}} logowania",
-      "not_recorded_one": "{{count}} logowanie bez zapisanej wersji",
-      "not_recorded_few": "{{count}} logowania bez zapisanej wersji",
-      "not_recorded_many": "{{count}} logowań bez zapisanej wersji",
-      "not_recorded_other": "{{count}} logowania bez zapisanej wersji",
-      "none_yet": "Żaden telefon nie zapisał jeszcze wersji aplikacji."
+      "sign_ins_one": "{{count, number}} logowanie",
+      "sign_ins_few": "{{count, number}} logowania",
+      "sign_ins_many": "{{count, number}} logowań",
+      "sign_ins_other": "{{count, number}} logowania",
+      "not_recorded_one": "{{count, number}} logowanie bez zapisanej wersji",
+      "not_recorded_few": "{{count, number}} logowania bez zapisanej wersji",
+      "not_recorded_many": "{{count, number}} logowań bez zapisanej wersji",
+      "not_recorded_other": "{{count, number}} logowania bez zapisanej wersji",
+      "none_yet": "Żaden telefon nie zapisał jeszcze wersji aplikacji.",
+      "unreadable": "Nie udało się teraz odczytać tych liczb.",
+      "not_recorded_unknown": "Logowania bez zapisanej wersji: nie wiadomo"
     }
   },
   "senior_accounts": {
@@ -190,9 +195,9 @@
     "read_only_note": "Ta strona tylko pokazuje te konta. Nic tutaj nie nadaje ani nie odbiera dostępu.",
     "loading": "Wczytywanie kont wysokiego szczebla",
     "load_error_title": "Nie udało się teraz wczytać kont wysokiego szczebla",
-    "without_two_step": "Logowanie dwuetapowe jest wyłączone na {{count}} z tych {{total}} kont.",
+    "without_two_step": "Logowanie dwuetapowe jest wyłączone na {{count, number}} z tych {{total}} kont.",
     "all_have_two_step": "Logowanie dwuetapowe jest włączone na wszystkich tych kontach ({{total}}).",
-    "truncated": "Pokazano tylko pierwsze konta: {{count}}.",
+    "truncated": "Pokazano tylko pierwsze konta: {{count, number}}.",
     "none_at_level": "Brak kont na tym poziomie.",
     "level": {
       "platform_team": "Zespół platformy",
@@ -238,8 +243,8 @@
     "too_many": "To dużo wyszukiwań. Odczekaj minutę i spróbuj ponownie.",
     "none": "Żadne konto nie używa tego adresu",
     "none_note": "Sprawdzono wszystkie społeczności. Kont trwale wymazanych nigdy się nie znajduje.",
-    "found": "Znalezione konta: {{count}}",
-    "truncated": "Pokazano tylko pierwsze konta: {{count}}.",
+    "found": "Znalezione konta: {{count, number}}",
+    "truncated": "Pokazano tylko pierwsze konta: {{count, number}}.",
     "role_label": "Rola:",
     "role": {
       "member": "Członek",
@@ -291,10 +296,10 @@
     "not_recorded": "Nie zapisano",
     "by": "Przez:",
     "when": "Kiedy:",
-    "truncated": "Pokazano tylko najnowsze wpisy: {{count}}.",
+    "truncated": "Pokazano tylko najnowsze wpisy: {{count, number}}.",
     "two_step": {
       "title": "Logowanie dwuetapowe na kontach wysokiego szczebla",
-      "off": "Logowanie dwuetapowe jest wyłączone na {{count}} z {{total}} kont wysokiego szczebla.",
+      "off": "Logowanie dwuetapowe jest wyłączone na {{count, number}} z {{total}} kont wysokiego szczebla.",
       "all_on": "Logowanie dwuetapowe jest włączone na wszystkich kontach wysokiego szczebla ({{total}}).",
       "link": "Zobacz konta wysokiego szczebla"
     },
@@ -313,7 +318,9 @@
       "most_from_one_15m": "Najwięcej z jednego adresu w ciągu ostatnich 15 minut",
       "checks_title": "Nieudane sprawdzenia hasła",
       "refused_title": "Odrzucone przez blokadę",
-      "col_refused": "Odrzucone przez blokadę w ciągu ostatnich 24 godzin:"
+      "col_refused": "Odrzucone przez blokadę w ciągu ostatnich 24 godzin:",
+      "no_community": "Niezwiązane z żadną społecznością",
+      "by_community_title": "Według społeczności, ostatnie 24 godziny"
     },
     "access": {
       "title": "Nadany i odebrany dostęp wysokiego szczebla",
@@ -341,7 +348,7 @@
     "loading": "Wczytywanie społeczności",
     "load_error_title": "Nie udało się teraz wczytać społeczności",
     "empty": "Nie ma jeszcze żadnych społeczności.",
-    "community_count": "Społeczności: {{count}}",
+    "community_count": "Społeczności: {{count, number}}",
     "on": "Włączone",
     "off": "Wyłączone",
     "held": "Włączone tutaj, ale wyłączone dla całej platformy",
@@ -352,7 +359,7 @@
     "modules_note": "Części, z którymi zaczyna każda społeczność. Społeczność może mimo to którąś wyłączyć.",
     "switch_column": "Przełącznik",
     "count_column": "Ile",
-    "on_in": "Włączone w {{count}} z {{total}}",
+    "on_in": "Włączone w {{count, number}} z {{total}}",
     "on_everywhere": "Włączone w każdej społeczności.",
     "off_everywhere": "Wyłączone w każdej społeczności.",
     "off_in": "Wyłączone w: {{names}}",
@@ -437,7 +444,7 @@
       "emails_kept_90_days": "Zapisy e-maili są przechowywane przez 90 dni, więc tego miesiąca nie można pokazać."
     },
     "totals_heading": "Wszystkie społeczności razem",
-    "communities_heading": "Każda społeczność ({{count}})",
+    "communities_heading": "Każda społeczność ({{count, number}})",
     "empty": "Nie ma jeszcze żadnych społeczności.",
     "emails_heading": "E-maile",
     "ai_heading": "Czat z AI",
@@ -474,8 +481,8 @@
     "loading": "Wczytywanie kondycji społeczności",
     "load_error_title": "Nie udało się teraz wczytać kondycji społeczności",
     "empty": "Nie ma jeszcze żadnych społeczności.",
-    "community_count": "Społeczności: {{count}}",
-    "quiet_count": "Ciche społeczności: {{count}}",
+    "community_count": "Społeczności: {{count, number}}",
+    "quiet_count": "Ciche społeczności: {{count, number}}",
     "quiet_names": "Ciche: {{names}}",
     "none_quiet": "Żadna społeczność nie jest cicha.",
     "quiet_rule": "Społeczność nazywamy cichą, gdy jest włączona i albo żaden członek nie był aktywny w ciągu ostatnich {{days}} dni, albo nie było żadnej wymiany ani w tym, ani w zeszłym miesiącu.",
@@ -507,7 +514,7 @@
     "loading": "Wczytywanie konfiguracji społeczności",
     "load_error_title": "Nie udało nam się teraz wczytać konfiguracji społeczności",
     "empty": "Nie ma jeszcze żadnych społeczności.",
-    "community_count": "Społeczności: {{count}}",
+    "community_count": "Społeczności: {{count, number}}",
     "truncated": "Pokazano {{shown}} najnowszych z {{total}} społeczności.",
     "terms_note": "Regulamin jest dodawany automatycznie przy tworzeniu społeczności, więc zaznaczenie przy regulaminie znaczy mniej niż pozostałe.",
     "not_recorded": "Nigdzie nie jest zapisywane, czy wysyłka e-maili społeczności została sprawdzona, więc ta strona tego nie pokazuje.",
@@ -538,8 +545,8 @@
     "read_only": "Ta strona służy tylko do podglądu. Funkcję włącza się i wyłącza w panelu administracyjnym danej społeczności.",
     "loading": "Wczytywanie niedokończonych funkcji",
     "load_error_title": "Nie udało się teraz wczytać niedokończonych funkcji",
-    "summary": "Funkcje na liście: {{count}}",
-    "summary_on_somewhere": "Włączone w co najmniej jednej społeczności: {{count}}",
+    "summary": "Funkcje na liście: {{count, number}}",
+    "summary_on_somewhere": "Włączone w co najmniej jednej społeczności: {{count, number}}",
     "stage": {
       "alpha": "Wczesny test (alfa)",
       "beta": "Późny test (beta)"
@@ -549,7 +556,7 @@
     "note": {
       "not_for_use": "Nie do użytku. Nie wolno jej włączać w żadnej społeczności."
     },
-    "on_in": "Społeczności, w których jest włączona: {{count}}",
+    "on_in": "Społeczności, w których jest włączona: {{count, number}}",
     "on_names": "Włączona w: {{names}}",
     "on_nowhere": "Nie jest włączona w żadnej społeczności"
   },
@@ -562,8 +569,8 @@
     "loading": "Wczytywanie wniosków dotyczących danych",
     "load_error_title": "Nie udało się teraz wczytać wniosków dotyczących danych",
     "empty": "Nie ma jeszcze żadnych społeczności.",
-    "community_count": "Społeczności: {{count}}",
-    "overdue_count": "Społeczności z przeterminowanym wnioskiem: {{count}}",
+    "community_count": "Społeczności: {{count, number}}",
+    "overdue_count": "Społeczności z przeterminowanym wnioskiem: {{count, number}}",
     "overdue_names": "Przeterminowane: {{names}}",
     "none_overdue": "Żadna społeczność nie ma przeterminowanego wniosku.",
     "overdue_unknown": "Nie możemy teraz stwierdzić, czy któryś wniosek jest przeterminowany.",
@@ -592,7 +599,7 @@
       "portability": "Przeniesienie",
       "objection": "Sprzeciw"
     },
-    "completed_without_date": "Zakończone wnioski bez daty zakończenia, więc nie ma ich w liczbie z 90 dni: {{count}}"
+    "completed_without_date": "Zakończone wnioski bez daty zakończenia, więc nie ma ich w liczbie z 90 dni: {{count, number}}"
   },
   "legal_documents": {
     "title": "Dokumenty prawne",
@@ -602,8 +609,8 @@
     "counts_only": "Tylko liczby. Na tej stronie nie pada imię żadnego członka.",
     "loading": "Wczytywanie dokumentów prawnych",
     "load_error_title": "Nie udało się teraz wczytać dokumentów prawnych",
-    "community_count": "Społeczności: {{count}}",
-    "no_privacy_count": "Społeczności bez opublikowanej informacji o prywatności: {{count}}",
+    "community_count": "Społeczności: {{count, number}}",
+    "no_privacy_count": "Społeczności bez opublikowanej informacji o prywatności: {{count, number}}",
     "no_privacy_names": "Bez niej: {{names}}",
     "all_have_privacy": "Każda społeczność ma opublikowaną informację o prywatności.",
     "privacy_unknown": "Nie możemy teraz ustalić, które społeczności mają informację o prywatności.",
@@ -614,8 +621,8 @@
     "date_unknown": "data nie została zapisana",
     "no_acceptance_needed": "Członkowie nie są proszeni o akceptację tego dokumentu.",
     "members_not_available": "Kto zaakceptował: niedostępne",
-    "members_not_accepted": "Jeszcze nie zaakceptowano: {{count}} z {{asked}} proszonych członków",
-    "all_accepted": "Zaakceptowane przez wszystkich proszonych członków ({{count}})",
+    "members_not_accepted": "Jeszcze nie zaakceptowano: {{count, number}} z {{asked}} proszonych członków",
+    "all_accepted": "Zaakceptowane przez wszystkich proszonych członków ({{count, number}})",
     "status": {
       "published": "Opublikowany",
       "not_published": "Nieopublikowany",
@@ -666,15 +673,15 @@
     "history_title": "Ostatnie przeglądy",
     "history_none": "Nie ma jeszcze przeglądów.",
     "history_by": "Zapisał(a): {{name}}",
-    "history_accounts_one": "{{count}} konto",
-    "history_accounts_other": "Kont: {{count}}",
-    "history_removals_one": "{{count}} oznaczone do usunięcia",
-    "history_removals_other": "Oznaczone do usunięcia: {{count}}",
+    "history_accounts_one": "{{count, number}} konto",
+    "history_accounts_other": "Kont: {{count, number}}",
+    "history_removals_one": "{{count, number}} oznaczone do usunięcia",
+    "history_removals_other": "Oznaczone do usunięcia: {{count, number}}",
     "erased": "Usunięte konto",
-    "history_accounts_few": "{{count}} konta",
-    "history_accounts_many": "Kont: {{count}}",
-    "history_removals_few": "{{count}} oznaczone do usunięcia",
-    "history_removals_many": "Oznaczonych do usunięcia: {{count}}",
+    "history_accounts_few": "{{count, number}} konta",
+    "history_accounts_many": "Kont: {{count, number}}",
+    "history_removals_few": "{{count, number}} oznaczone do usunięcia",
+    "history_removals_many": "Oznaczonych do usunięcia: {{count, number}}",
     "refresh_failed": "Nie udało się ponownie wczytać przeglądu. Widzisz wcześniejszy stan.",
     "note_no_names": "Nie podawaj w notatce nazwisk ani imion osób. Notatka jest przechowywana razem z zapisem."
   },
@@ -684,12 +691,12 @@
     "intro": "Ile powiadomień wysłano na telefony i do przeglądarek członków, według dni i społeczności. „Przyjęte przez usługę push” oznacza, że usługa przyjęła powiadomienie, a nie że telefon je wyświetlił. Niektóre rodzaje powiadomień są wysyłane bez zapisu tutaj (przypomnienia o wydarzeniach, alerty alarmowe i kilka innych), więc rzeczywiste liczby są co najmniej takie.",
     "timezone_note": "Dni liczone są według czasu serwera (UTC).",
     "days_picker": "Ile dni pokazać",
-    "days_option": "Ostatnie dni: {{count}}",
+    "days_option": "Ostatnie dni: {{count, number}}",
     "loading": "Wczytywanie liczb powiadomień push",
     "load_error_title": "Nie udało się wczytać liczb powiadomień push",
     "not_available": "Niedostępne: nie udało się odczytać zapisu powiadomień push. Nie oznacza to, że żadnego nie wysłano.",
     "by_day_heading": "Każdy dzień",
-    "by_community_heading": "Każda społeczność ({{count}})",
+    "by_community_heading": "Każda społeczność ({{count, number}})",
     "by_community_note": "Sumy za cały okres. „Brak odbiorcy” pokazujemy tylko dla każdego dnia.",
     "no_community_heading": "Bez społeczności",
     "no_community_note": "Powiadomienia zapisane bez społeczności. Są wliczone w liczby dzienne.",
@@ -710,8 +717,8 @@
     "no_record_title": "Ten serwer nie prowadzi zapisu wdrożeń",
     "no_record_text": "Prowadzi go tylko serwer produkcyjny, więc na komputerze programisty jest to normalne.",
     "empty": "Nic jeszcze nie zapisano.",
-    "skipped": "Wiersze zapisu, których nie udało się odczytać i które pominięto: {{count}}",
-    "count": "Pokazane wdrożenia i wycofania: {{count}}",
+    "skipped": "Wiersze zapisu, których nie udało się odczytać i które pominięto: {{count, number}}",
+    "count": "Pokazane wdrożenia i wycofania: {{count, number}}",
     "not_recorded": "Nie zapisano",
     "kind": {
       "deploy": "Wdrożenie",
@@ -911,7 +918,8 @@
         "deletes": "Usuwa zakończone lub wygasłe weryfikacje tożsamości starsze niż 180 dni. Zapis przebiegu każdej weryfikacji zostaje zachowany."
       }
     },
-    "finished_only": "To zadanie zapisuje, że się zakończyło, a nie że każdy krok się udał."
+    "finished_only": "To zadanie zapisuje, że się zakończyło, a nie że każdy krok się udał.",
+    "steps_failed": "Kroki, które nie powiodły się przy ostatnim uruchomieniu: {{count, number}}"
   },
   "search_rebuild": {
     "title": "Odbuduj wyszukiwanie",
@@ -938,14 +946,14 @@
       "never": "Nigdy nie uruchomiono z tej strony",
       "queued": "Czeka na rozpoczęcie",
       "running": "Trwa od {{time}}",
-      "done_one": "Zakończono {{time}}: zaktualizowano {{count}} wpis",
-      "done_few": "Zakończono {{time}}: zaktualizowano {{count}} wpisy",
-      "done_many": "Zakończono {{time}}: zaktualizowano {{count}} wpisów",
-      "done_other": "Zakończono {{time}}: zaktualizowano {{count}} wpisu",
-      "done_with_errors_one": "Zakończono {{time}}: {{count}} wpisu nie udało się zaktualizować",
-      "done_with_errors_few": "Zakończono {{time}}: {{count}} wpisów nie udało się zaktualizować",
-      "done_with_errors_many": "Zakończono {{time}}: {{count}} wpisów nie udało się zaktualizować",
-      "done_with_errors_other": "Zakończono {{time}}: {{count}} wpisu nie udało się zaktualizować",
+      "done_one": "Zakończono {{time}}: zaktualizowano {{count, number}} wpis",
+      "done_few": "Zakończono {{time}}: zaktualizowano {{count, number}} wpisy",
+      "done_many": "Zakończono {{time}}: zaktualizowano {{count, number}} wpisów",
+      "done_other": "Zakończono {{time}}: zaktualizowano {{count, number}} wpisu",
+      "done_with_errors_one": "Zakończono {{time}}: {{count, number}} wpisu nie udało się zaktualizować",
+      "done_with_errors_few": "Zakończono {{time}}: {{count, number}} wpisów nie udało się zaktualizować",
+      "done_with_errors_many": "Zakończono {{time}}: {{count, number}} wpisów nie udało się zaktualizować",
+      "done_with_errors_other": "Zakończono {{time}}: {{count, number}} wpisu nie udało się zaktualizować",
       "failed": "Niepowodzenie"
     },
     "check_failed": "Nie udało się sprawdzić ponownie o {{time}}"
@@ -1060,8 +1068,8 @@
     },
     "data_requests": {
       "title": "Wnioski dotyczące danych osobowych",
-      "open": "Otwarte, we wszystkich społecznościach: {{count}}",
-      "overdue": "Otwarte dłużej niż 30 dni: {{count}}"
+      "open": "Otwarte, we wszystkich społecznościach: {{count, number}}",
+      "overdue": "Otwarte dłużej niż 30 dni: {{count, number}}"
     },
     "failed_sign_ins": {
       "title": "Zapis nieudanych logowań",
@@ -1094,10 +1102,10 @@
     },
     "status": {
       "ok": "W porządku",
-      "warning_one": "Certyfikat wygasa za {{count}} dzień",
-      "warning_few": "Certyfikat wygasa za {{count}} dni",
-      "warning_many": "Certyfikat wygasa za {{count}} dni",
-      "warning_other": "Certyfikat wygasa za {{count}} dnia",
+      "warning_one": "Certyfikat wygasa za {{count, number}} dzień",
+      "warning_few": "Certyfikat wygasa za {{count, number}} dni",
+      "warning_many": "Certyfikat wygasa za {{count, number}} dni",
+      "warning_other": "Certyfikat wygasa za {{count, number}} dnia",
       "failing": "Nie działa",
       "unknown": "Jeszcze nie sprawdzono",
       "not_checkable": "To nie jest adres internetowy, który możemy sprawdzić",
@@ -1119,5 +1127,8 @@
     "too_many": "Za dużo sprawdzeń w ciągu minuty. Poczekaj chwilę i spróbuj ponownie.",
     "check_now_for": "Sprawdź teraz: {{name}}",
     "check_platform_now": "Sprawdź teraz adresy platformy"
+  },
+  "shared": {
+    "figures_from": "Liczby z godziny {{time}}"
   }
 }

@@ -122,6 +122,29 @@ describe('CleanUpJobsPage', () => {
     ).not.toBeInTheDocument();
   });
 
+  // 16 Nov 2026: four of those jobs now note each step that failed inside them.
+  it('says how many steps failed on the last run, and nothing when none did', async () => {
+    apiGet.mockResolvedValue(
+      reply({
+        jobs: [
+          job({ key: 'cleanup', status: 'failing', checked_by: 'record', steps_failed: 2 }),
+          job({ key: 'cleanup_sessions', how_often: 'hourly', status: 'ok', checked_by: 'record', steps_failed: 0 }),
+          job({ key: 'performance_prune', status: 'ok', steps_failed: null }),
+        ],
+      }),
+    );
+    render(<CleanUpJobsPage />);
+
+    const failing = await screen.findByTestId('clean-up-job-cleanup');
+    expect(within(failing).getByText('clean_up_jobs.steps_failed|2')).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('clean-up-job-cleanup_sessions')).queryByText(/clean_up_jobs\.steps_failed/),
+    ).not.toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('clean-up-job-performance_prune')).queryByText(/clean_up_jobs\.steps_failed/),
+    ).not.toBeInTheDocument();
+  });
+
   it('shows an error with a retry when the request fails', async () => {
     apiGet.mockRejectedValue(new Error('boom'));
     render(<CleanUpJobsPage />);

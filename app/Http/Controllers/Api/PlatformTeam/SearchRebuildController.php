@@ -73,10 +73,10 @@ final class SearchRebuildController extends BaseApiController
             // Marked before the job is handed over, so a job that starts at
             // once is not overwritten by "queued" afterwards.
             $previous = $this->rebuild->read($tenantId);
-            $this->rebuild->markQueued($tenantId);
+            $runId = $this->rebuild->markQueued($tenantId);
 
             try {
-                app(Dispatcher::class)->dispatch(new ReindexTenantSearchJob($tenantId, $actorId));
+                app(Dispatcher::class)->dispatch(new ReindexTenantSearchJob($tenantId, $actorId, $runId));
             } catch (\Throwable $e) {
                 // Nothing was queued: put the record back as it was, so the
                 // community is free to start again at once.

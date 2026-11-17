@@ -223,4 +223,38 @@ describe('CommunityHealthPage', () => {
     expect(screen.queryByTestId('community-health-table')).not.toBeInTheDocument();
     expect(screen.getByText('community_health.load_error_title')).toBeInTheDocument();
   });
+
+  // The server keeps these figures for a short while. The first look uses the
+  // kept ones; "Check again" asks for them to be worked out again.
+  it('works the figures out again only when "Check again" is pressed, and says when they are from', async () => {
+    apiGet.mockResolvedValue({ success: true, data: { ...health(), generated_at: '2026-11-16T10:05:00+00:00' } });
+    render(<CommunityHealthPage />);
+
+    expect(await screen.findByText(/^shared\.figures_from/)).toBeInTheDocument();
+    expect(apiGet).toHaveBeenCalledTimes(1);
+    expect(apiGet).toHaveBeenLastCalledWith('/v2/platform-team/community-health');
+    fireEvent.click(screen.getByRole('button', { name: 'home.refresh' }));
+    await waitFor(() => expect(apiGet).toHaveBeenLastCalledWith('/v2/platform-team/community-health?refresh=1'));
+  });
+
+  it('says nothing about when the figures are from when the server does not say', async () => {
+    render(<CommunityHealthPage />);
+
+    await waitFor(() => expect(apiGet).toHaveBeenCalled());
+    await screen.findByRole('button', { name: 'home.refresh' });
+    expect(screen.queryByText(/^shared\.figures_from/)).not.toBeInTheDocument();
+  });
+
+  it('keeps the figures on screen and says so when checking again is refused', async () => {
+    apiGet.mockResolvedValue({ success: true, data: { ...health(), generated_at: '2026-11-16T10:05:00+00:00' } });
+    render(<CommunityHealthPage />);
+    expect(await screen.findByText(/^shared\.figures_from/)).toBeInTheDocument();
+
+    apiGet.mockResolvedValue({ success: false, code: 'RATE_LIMIT_EXCEEDED', error: 'Too many requests' });
+    fireEvent.click(screen.getByRole('button', { name: 'home.refresh' }));
+
+    expect(await screen.findByText('translations.recount_refused')).toBeInTheDocument();
+    expect(screen.queryByTestId('load-error')).not.toBeInTheDocument();
+    expect(screen.getByText(/^shared\.figures_from/)).toBeInTheDocument();
+  });
 });

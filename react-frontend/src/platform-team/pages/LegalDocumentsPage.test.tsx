@@ -155,6 +155,19 @@ describe('LegalDocumentsPage', () => {
     expect(docLine('Gamma Circle', 'terms')).not.toHaveTextContent('legal_documents.members_not_accepted');
   });
 
+  // The count itself is written by the wording ({{count, number}}); the other
+  // number in the sentence comes already written in the reader's style.
+  it('writes the number of members asked with a thousands separator', async () => {
+    apiGet.mockResolvedValue({
+      success: true,
+      data: reply({ communities: [row({ documents: [doc({ members_asked: 12345, members_not_accepted: 321 })] })] }),
+    });
+    render(<LegalDocumentsPage />);
+    await screen.findByTestId('legal-documents-list');
+
+    expect(docLine('Alpha Timebank', 'terms')).toHaveTextContent('legal_documents.members_not_accepted|321/12,345');
+  });
+
   it('names the communities without a published privacy notice', async () => {
     render(<LegalDocumentsPage />);
 
@@ -229,5 +242,39 @@ describe('LegalDocumentsPage', () => {
     await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
     expect(screen.queryByTestId('legal-documents-list')).not.toBeInTheDocument();
     expect(screen.getByText('legal_documents.load_error_title')).toBeInTheDocument();
+  });
+
+  // The server keeps these figures for a short while. The first look uses the
+  // kept ones; "Check again" asks for them to be worked out again.
+  it('works the figures out again only when "Check again" is pressed, and says when they are from', async () => {
+    apiGet.mockResolvedValue({ success: true, data: { ...reply(), generated_at: '2026-11-16T10:05:00+00:00' } });
+    render(<LegalDocumentsPage />);
+
+    expect(await screen.findByText(/^shared\.figures_from/)).toBeInTheDocument();
+    expect(apiGet).toHaveBeenCalledTimes(1);
+    expect(apiGet).toHaveBeenLastCalledWith('/v2/platform-team/legal-documents');
+    fireEvent.click(screen.getByRole('button', { name: 'home.refresh' }));
+    await waitFor(() => expect(apiGet).toHaveBeenLastCalledWith('/v2/platform-team/legal-documents?refresh=1'));
+  });
+
+  it('says nothing about when the figures are from when the server does not say', async () => {
+    render(<LegalDocumentsPage />);
+
+    await waitFor(() => expect(apiGet).toHaveBeenCalled());
+    await screen.findByRole('button', { name: 'home.refresh' });
+    expect(screen.queryByText(/^shared\.figures_from/)).not.toBeInTheDocument();
+  });
+
+  it('keeps the figures on screen and says so when checking again is refused', async () => {
+    apiGet.mockResolvedValue({ success: true, data: { ...reply(), generated_at: '2026-11-16T10:05:00+00:00' } });
+    render(<LegalDocumentsPage />);
+    expect(await screen.findByText(/^shared\.figures_from/)).toBeInTheDocument();
+
+    apiGet.mockResolvedValue({ success: false, code: 'RATE_LIMIT_EXCEEDED', error: 'Too many requests' });
+    fireEvent.click(screen.getByRole('button', { name: 'home.refresh' }));
+
+    expect(await screen.findByText('translations.recount_refused')).toBeInTheDocument();
+    expect(screen.queryByTestId('load-error')).not.toBeInTheDocument();
+    expect(screen.getByText(/^shared\.figures_from/)).toBeInTheDocument();
   });
 });

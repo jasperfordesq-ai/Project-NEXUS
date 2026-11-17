@@ -148,6 +148,8 @@ describe('AgreementsPage', () => {
 
     expect(await screen.findByTestId('load-error')).toBeInTheDocument();
     expect(screen.queryByText('No agreements entered yet')).not.toBeInTheDocument();
+    // Nothing to add to while the list itself could not be read.
+    expect(screen.queryByRole('button', { name: 'Add an agreement' })).not.toBeInTheDocument();
   });
 
   it('saves only what was typed: empty fields go as empty, nothing is filled in', async () => {

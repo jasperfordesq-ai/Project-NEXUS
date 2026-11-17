@@ -2235,10 +2235,16 @@ class CronJobRunner
 
     private function cleanupInternal()
     {
+        // Each step below catches its own error and carries on, so the run is
+        // logged as success; CleanUpStepFailures notes each failed step for
+        // the Platform team's Clean-up jobs page. It never throws.
+        \App\Support\Scheduling\CleanUpStepFailures::startRun('cleanup');
+
         try {
             DB::update("UPDATE users SET reset_token = NULL WHERE reset_token IS NOT NULL AND (reset_token_expiry IS NOT NULL AND reset_token_expiry < NOW())");
             echo "   Cleaned expired reset tokens.\n";
         } catch (\Exception $e) {
+            \App\Support\Scheduling\CleanUpStepFailures::note('cleanup', 'reset_tokens');
             Log::warning('[CronCleanup] Failed to clean expired reset tokens: ' . $e->getMessage());
         }
 
@@ -2250,6 +2256,7 @@ class CronJobRunner
             DB::delete("DELETE FROM notification_queue WHERE status = 'sent' AND sent_at < DATE_SUB(NOW(), INTERVAL 30 DAY)");
             echo "   Cleaned old notification queue.\n";
         } catch (\Exception $e) {
+            \App\Support\Scheduling\CleanUpStepFailures::note('cleanup', 'notification_queue');
             Log::warning('[CronCleanup] Failed to clean notification queue: ' . $e->getMessage());
         }
 
@@ -2257,6 +2264,7 @@ class CronJobRunner
             DB::delete("DELETE FROM newsletter_suppression_list WHERE expires_at IS NOT NULL AND expires_at < NOW()");
             echo "   Cleaned expired suppressions.\n";
         } catch (\Exception $e) {
+            \App\Support\Scheduling\CleanUpStepFailures::note('cleanup', 'suppressions');
             Log::warning('[CronCleanup] Failed to clean expired suppressions: ' . $e->getMessage());
         }
 
@@ -2265,6 +2273,7 @@ class CronJobRunner
             app(\App\Services\Auth\PasswordResetTokens::class)->deleteExpired();
             echo "   Cleaned expired password_resets.\n";
         } catch (\Exception $e) {
+            \App\Support\Scheduling\CleanUpStepFailures::note('cleanup', 'password_resets');
             Log::warning('[CronCleanup] Failed to clean expired password_resets: ' . $e->getMessage());
         }
 
@@ -2275,6 +2284,7 @@ class CronJobRunner
                 DB::delete("DELETE FROM api_tokens WHERE expires_at IS NOT NULL AND expires_at < NOW()");
                 echo "   Cleaned expired API tokens.\n";
             } catch (\Exception $e) {
+                \App\Support\Scheduling\CleanUpStepFailures::note('cleanup', 'api_tokens');
                 Log::warning('[CronCleanup] Failed to clean expired API tokens: ' . $e->getMessage());
             }
         }
@@ -2285,6 +2295,7 @@ class CronJobRunner
             DB::delete("DELETE FROM match_cache WHERE expires_at < NOW()");
             echo "   Cleaned expired match cache.\n";
         } catch (\Exception $e) {
+            \App\Support\Scheduling\CleanUpStepFailures::note('cleanup', 'match_cache');
             Log::warning('[CronCleanup] Failed to clean expired match cache: ' . $e->getMessage());
         }
 
@@ -2293,6 +2304,7 @@ class CronJobRunner
             DB::delete("DELETE FROM cron_logs WHERE executed_at < DATE_SUB(NOW(), INTERVAL 30 DAY)");
             echo "   Cleaned old cron logs.\n";
         } catch (\Exception $e) {
+            \App\Support\Scheduling\CleanUpStepFailures::note('cleanup', 'cron_logs');
             Log::warning('[CronCleanup] Failed to clean old cron logs: ' . $e->getMessage());
         }
 
@@ -2307,6 +2319,7 @@ class CronJobRunner
                 echo "   Expired $expired stale exchange requests (pending_provider > 14 days).\n";
             }
         } catch (\Exception $e) {
+            \App\Support\Scheduling\CleanUpStepFailures::note('cleanup', 'exchange_requests');
             Log::warning('[CronCleanup] Failed to expire stale exchange requests: ' . $e->getMessage());
         }
     }
@@ -2843,10 +2856,14 @@ class CronJobRunner
      */
     private function cleanSessionsAndTokensInternal(): void
     {
+        // Failed steps are noted for the Clean-up jobs page (never throws).
+        \App\Support\Scheduling\CleanUpStepFailures::startRun('cleanup-sessions');
+
         try {
             DB::delete("DELETE FROM sessions WHERE last_activity < DATE_SUB(NOW(), INTERVAL 24 HOUR)");
             echo "   Cleaned old sessions.\n";
         } catch (\Exception $e) {
+            \App\Support\Scheduling\CleanUpStepFailures::note('cleanup-sessions', 'sessions');
             echo "   Sessions: skipped (" . $e->getMessage() . ")\n";
         }
 
@@ -2854,6 +2871,7 @@ class CronJobRunner
             DB::update("UPDATE users SET reset_token = NULL WHERE reset_token IS NOT NULL AND (reset_token_expiry IS NOT NULL AND reset_token_expiry < NOW())");
             echo "   Cleaned expired reset tokens.\n";
         } catch (\Exception $e) {
+            \App\Support\Scheduling\CleanUpStepFailures::note('cleanup-sessions', 'reset_tokens');
             echo "   Reset tokens: skipped.\n";
         }
 
@@ -3376,18 +3394,28 @@ class CronJobRunner
      */
     private function abuseDetectionCleanupInternal(): void
     {
+        // Failed steps are noted for the Clean-up jobs page (never throws).
+        \App\Support\Scheduling\CleanUpStepFailures::startRun('abuse-cleanup');
+
         try {
             $this->forEachTenant(function ($tenantId, $slug) {
-                $archivedCount = DB::delete(
-                    "DELETE FROM abuse_alerts WHERE tenant_id = ? AND status IN ('resolved', 'dismissed') AND resolved_at < DATE_SUB(NOW(), INTERVAL 90 DAY)",
-                    [$tenantId]
-                );
+                try {
+                    $archivedCount = DB::delete(
+                        "DELETE FROM abuse_alerts WHERE tenant_id = ? AND status IN ('resolved', 'dismissed') AND resolved_at < DATE_SUB(NOW(), INTERVAL 90 DAY)",
+                        [$tenantId]
+                    );
 
-                $autoDismissedCount = DB::update(
-                    "UPDATE abuse_alerts SET status = 'dismissed', resolved_at = NOW(), resolution_notes = 'Auto-dismissed (aged out)'
-                     WHERE tenant_id = ? AND status = 'new' AND severity = 'low' AND created_at < DATE_SUB(NOW(), INTERVAL 30 DAY)",
-                    [$tenantId]
-                );
+                    $autoDismissedCount = DB::update(
+                        "UPDATE abuse_alerts SET status = 'dismissed', resolved_at = NOW(), resolution_notes = 'Auto-dismissed (aged out)'
+                         WHERE tenant_id = ? AND status = 'new' AND severity = 'low' AND created_at < DATE_SUB(NOW(), INTERVAL 30 DAY)",
+                        [$tenantId]
+                    );
+                } catch (\Throwable $e) {
+                    // Noted, then handed on unchanged to forEachTenant(), which
+                    // reports it and moves to the next community as before.
+                    \App\Support\Scheduling\CleanUpStepFailures::note('abuse-cleanup', 'community');
+                    throw $e;
+                }
 
                 if ($archivedCount > 0 || $autoDismissedCount > 0) {
                     echo "   [$slug] Archived {$archivedCount}, auto-dismissed {$autoDismissedCount}.\n";
@@ -3395,6 +3423,7 @@ class CronJobRunner
             });
             echo "   Abuse cleanup complete.\n";
         } catch (\Throwable $e) {
+            \App\Support\Scheduling\CleanUpStepFailures::note('abuse-cleanup', 'all');
             echo "   Error: " . $e->getMessage() . "\n";
         }
     }
@@ -3404,16 +3433,27 @@ class CronJobRunner
      */
     private function gamificationCleanupInternal(): void
     {
+        // Failed steps are noted for the Clean-up jobs page (never throws).
+        \App\Support\Scheduling\CleanUpStepFailures::startRun('gamification-cleanup');
+
         try {
             $this->forEachTenant(function ($tenantId, $slug) {
                 if (!TenantContext::hasFeature('gamification')) return;
 
-                DB::delete("DELETE FROM xp_notifications WHERE tenant_id = ? AND created_at < DATE_SUB(NOW(), INTERVAL 7 DAY)", [$tenantId]);
-                DB::delete("DELETE FROM campaign_awards WHERE tenant_id = ? AND awarded_at < DATE_SUB(NOW(), INTERVAL 1 YEAR)", [$tenantId]);
-                DB::delete("DELETE FROM achievement_analytics WHERE tenant_id = ? AND date < DATE_SUB(CURDATE(), INTERVAL 2 YEAR)", [$tenantId]);
+                try {
+                    DB::delete("DELETE FROM xp_notifications WHERE tenant_id = ? AND created_at < DATE_SUB(NOW(), INTERVAL 7 DAY)", [$tenantId]);
+                    DB::delete("DELETE FROM campaign_awards WHERE tenant_id = ? AND awarded_at < DATE_SUB(NOW(), INTERVAL 1 YEAR)", [$tenantId]);
+                    DB::delete("DELETE FROM achievement_analytics WHERE tenant_id = ? AND date < DATE_SUB(CURDATE(), INTERVAL 2 YEAR)", [$tenantId]);
+                } catch (\Throwable $e) {
+                    // Noted, then handed on unchanged to forEachTenant(), which
+                    // reports it and moves to the next community as before.
+                    \App\Support\Scheduling\CleanUpStepFailures::note('gamification-cleanup', 'community');
+                    throw $e;
+                }
             });
             echo "   Gamification cleanup complete.\n";
         } catch (\Throwable $e) {
+            \App\Support\Scheduling\CleanUpStepFailures::note('gamification-cleanup', 'all');
             echo "   Error: " . $e->getMessage() . "\n";
         }
     }

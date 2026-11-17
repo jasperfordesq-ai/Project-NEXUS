@@ -39,7 +39,10 @@
     "group_joining": "Beitritt und Rollen",
     "group_site": "Website und Suche",
     "group_reports": "Berichte",
-    "group_matching": "Zuordnung"
+    "group_matching": "Zuordnung",
+    "group_jobs": "Geplante Aufgaben",
+    "group_tools": "Werkzeuge",
+    "group_phone": "Handy-App"
   },
   "breadcrumbs": {
     "aria_label": "Wo Sie sind",
@@ -146,7 +149,7 @@
     "load_error_title": "Wir konnten die fehlgeschlagenen Aufgaben gerade nicht laden",
     "empty_title": "Nichts wartet",
     "empty_text": "Keine Hintergrundaufgabe ist fehlgeschlagen, oder alle wurden erledigt.",
-    "count": "Warten auf Durchsicht: {{count}}",
+    "count": "Warten auf Durchsicht: {{count, number}}",
     "unknown_job": "Name nicht erfasst",
     "no_reason": "Es wurde kein Grund erfasst.",
     "queue": "Warteschlange:",
@@ -173,11 +176,13 @@
       "title": "Verwendete App-Versionen",
       "coverage": "Diese Zahlen umfassen nur Telefone, die sich angemeldet haben, seit die App-Version erfasst wird. Anfangs werden daher die meisten Anmeldungen als „nicht erfasst“ gezählt.",
       "version": "App-Version {{version}}",
-      "sign_ins_one": "{{count}} Anmeldung",
-      "sign_ins_other": "{{count}} Anmeldungen",
-      "not_recorded_one": "{{count}} Anmeldung ohne erfasste Version",
-      "not_recorded_other": "{{count}} Anmeldungen ohne erfasste Version",
-      "none_yet": "Bisher wurde für kein Telefon eine App-Version erfasst."
+      "sign_ins_one": "{{count, number}} Anmeldung",
+      "sign_ins_other": "{{count, number}} Anmeldungen",
+      "not_recorded_one": "{{count, number}} Anmeldung ohne erfasste Version",
+      "not_recorded_other": "{{count, number}} Anmeldungen ohne erfasste Version",
+      "none_yet": "Bisher wurde für kein Telefon eine App-Version erfasst.",
+      "unreadable": "Diese Zahlen konnten gerade nicht gelesen werden.",
+      "not_recorded_unknown": "Anmeldungen ohne erfasste Version: nicht bekannt"
     }
   },
   "senior_accounts": {
@@ -186,9 +191,9 @@
     "read_only_note": "Diese Seite zeigt diese Konten nur an. Hier wird kein Zugriff vergeben oder entzogen.",
     "loading": "Leitende Konten werden geladen",
     "load_error_title": "Wir konnten die leitenden Konten gerade nicht laden",
-    "without_two_step": "Bei {{count}} dieser {{total}} Konten ist die Anmeldung in zwei Schritten ausgeschaltet.",
+    "without_two_step": "Bei {{count, number}} dieser {{total}} Konten ist die Anmeldung in zwei Schritten ausgeschaltet.",
     "all_have_two_step": "Bei allen {{total}} dieser Konten ist die Anmeldung in zwei Schritten eingeschaltet.",
-    "truncated": "Es werden nur die ersten {{count}} Konten angezeigt.",
+    "truncated": "Es werden nur die ersten {{count, number}} Konten angezeigt.",
     "none_at_level": "Keine Konten auf dieser Stufe.",
     "level": {
       "platform_team": "Plattform-Team",
@@ -234,8 +239,8 @@
     "too_many": "Das sind sehr viele Suchen. Warten Sie eine Minute und versuchen Sie es dann noch einmal.",
     "none": "Kein Konto verwendet diese Adresse",
     "none_note": "Alle Gemeinschaften wurden geprüft. Endgültig gelöschte Konten werden nie gefunden.",
-    "found": "Gefundene Konten: {{count}}",
-    "truncated": "Es werden nur die ersten {{count}} Konten angezeigt.",
+    "found": "Gefundene Konten: {{count, number}}",
+    "truncated": "Es werden nur die ersten {{count, number}} Konten angezeigt.",
     "role_label": "Rolle:",
     "role": {
       "member": "Mitglied",
@@ -287,10 +292,10 @@
     "not_recorded": "Nicht erfasst",
     "by": "Von:",
     "when": "Wann:",
-    "truncated": "Es werden nur die neuesten {{count}} angezeigt.",
+    "truncated": "Es werden nur die neuesten {{count, number}} angezeigt.",
     "two_step": {
       "title": "Anmeldung in zwei Schritten bei leitenden Konten",
-      "off": "Bei {{count}} von {{total}} leitenden Konten ist die Anmeldung in zwei Schritten ausgeschaltet.",
+      "off": "Bei {{count, number}} von {{total}} leitenden Konten ist die Anmeldung in zwei Schritten ausgeschaltet.",
       "all_on": "Bei allen {{total}} leitenden Konten ist die Anmeldung in zwei Schritten eingeschaltet.",
       "link": "Leitende Konten ansehen"
     },
@@ -309,7 +314,9 @@
       "most_from_one_15m": "Die meisten von einer Adresse in den letzten 15 Minuten",
       "checks_title": "Fehlgeschlagene Passwortprüfungen",
       "refused_title": "Von der Sperre abgewiesen",
-      "col_refused": "Von der Sperre abgewiesen in den letzten 24 Stunden:"
+      "col_refused": "Von der Sperre abgewiesen in den letzten 24 Stunden:",
+      "no_community": "Keiner Gemeinschaft zugeordnet",
+      "by_community_title": "Nach Gemeinschaft, letzte 24 Stunden"
     },
     "access": {
       "title": "Leitender Zugriff: vergeben und entzogen",
@@ -337,7 +344,7 @@
     "loading": "Gemeinschaften werden geladen",
     "load_error_title": "Wir konnten die Gemeinschaften gerade nicht laden",
     "empty": "Es gibt noch keine Gemeinschaften.",
-    "community_count": "Gemeinschaften: {{count}}",
+    "community_count": "Gemeinschaften: {{count, number}}",
     "on": "An",
     "off": "Aus",
     "held": "Hier an, aber für die ganze Plattform ausgeschaltet",
@@ -348,7 +355,7 @@
     "modules_note": "Die Bereiche, mit denen jede Gemeinschaft startet. Eine Gemeinschaft kann trotzdem einen ausschalten.",
     "switch_column": "Schalter",
     "count_column": "Wie viele",
-    "on_in": "An in {{count}} von {{total}}",
+    "on_in": "An in {{count, number}} von {{total}}",
     "on_everywhere": "In jeder Gemeinschaft an.",
     "off_everywhere": "In jeder Gemeinschaft aus.",
     "off_in": "Aus in: {{names}}",
@@ -433,7 +440,7 @@
       "emails_kept_90_days": "E-Mail-Aufzeichnungen werden 90 Tage lang aufbewahrt, deshalb kann dieser Monat nicht angezeigt werden."
     },
     "totals_heading": "Alle Gemeinschaften zusammen",
-    "communities_heading": "Jede Gemeinschaft ({{count}})",
+    "communities_heading": "Jede Gemeinschaft ({{count, number}})",
     "empty": "Es gibt noch keine Gemeinschaften.",
     "emails_heading": "E-Mails",
     "ai_heading": "KI-Chat",
@@ -470,8 +477,8 @@
     "loading": "Zustand der Gemeinschaften wird geladen",
     "load_error_title": "Wir konnten den Zustand der Gemeinschaften gerade nicht laden",
     "empty": "Es gibt noch keine Gemeinschaften.",
-    "community_count": "Gemeinschaften: {{count}}",
-    "quiet_count": "Ruhige Gemeinschaften: {{count}}",
+    "community_count": "Gemeinschaften: {{count, number}}",
+    "quiet_count": "Ruhige Gemeinschaften: {{count, number}}",
     "quiet_names": "Ruhig: {{names}}",
     "none_quiet": "Keine Gemeinschaft ist ruhig.",
     "quiet_rule": "Eine Gemeinschaft gilt als ruhig, wenn sie eingeschaltet ist und entweder in den letzten {{days}} Tagen kein Mitglied aktiv war oder es weder in diesem noch im letzten Monat einen Tausch gab.",
@@ -503,7 +510,7 @@
     "loading": "Einrichtung der Gemeinschaften wird geladen",
     "load_error_title": "Wir konnten die Einrichtung der Gemeinschaften gerade nicht laden",
     "empty": "Es gibt noch keine Gemeinschaften.",
-    "community_count": "Gemeinschaften: {{count}}",
+    "community_count": "Gemeinschaften: {{count, number}}",
     "truncated": "Es werden die {{shown}} neuesten von {{total}} Gemeinschaften gezeigt.",
     "terms_note": "Nutzungsbedingungen werden beim Anlegen einer Gemeinschaft automatisch hinzugefügt. Ein Haken dort sagt daher weniger als die anderen.",
     "not_recorded": "Ob der E-Mail-Versand einer Gemeinschaft getestet wurde, wird nirgends festgehalten. Diese Seite zeigt es deshalb nicht.",
@@ -534,8 +541,8 @@
     "read_only": "Diese Seite zeigt nur an. Eine Funktion wird im Adminbereich der jeweiligen Gemeinschaft ein- oder ausgeschaltet.",
     "loading": "Die unfertigen Funktionen werden geladen",
     "load_error_title": "Wir konnten die unfertigen Funktionen gerade nicht laden",
-    "summary": "Aufgeführte Funktionen: {{count}}",
-    "summary_on_somewhere": "In mindestens einer Gemeinschaft eingeschaltet: {{count}}",
+    "summary": "Aufgeführte Funktionen: {{count, number}}",
+    "summary_on_somewhere": "In mindestens einer Gemeinschaft eingeschaltet: {{count, number}}",
     "stage": {
       "alpha": "Früher Test (Alpha)",
       "beta": "Später Test (Beta)"
@@ -545,7 +552,7 @@
     "note": {
       "not_for_use": "Nicht zur Verwendung. Darf für keine Gemeinschaft eingeschaltet werden."
     },
-    "on_in": "Gemeinschaften, in denen sie eingeschaltet ist: {{count}}",
+    "on_in": "Gemeinschaften, in denen sie eingeschaltet ist: {{count, number}}",
     "on_names": "Eingeschaltet in: {{names}}",
     "on_nowhere": "In keiner Gemeinschaft eingeschaltet"
   },
@@ -558,8 +565,8 @@
     "loading": "Datenanfragen werden geladen",
     "load_error_title": "Wir konnten die Datenanfragen gerade nicht laden",
     "empty": "Es gibt noch keine Gemeinschaften.",
-    "community_count": "Gemeinschaften: {{count}}",
-    "overdue_count": "Gemeinschaften mit einer überfälligen Anfrage: {{count}}",
+    "community_count": "Gemeinschaften: {{count, number}}",
+    "overdue_count": "Gemeinschaften mit einer überfälligen Anfrage: {{count, number}}",
     "overdue_names": "Überfällig: {{names}}",
     "none_overdue": "Keine Gemeinschaft hat eine überfällige Anfrage.",
     "overdue_unknown": "Wir können gerade nicht sagen, ob eine Anfrage überfällig ist.",
@@ -588,7 +595,7 @@
       "portability": "Eine Übertragung",
       "objection": "Ein Widerspruch"
     },
-    "completed_without_date": "Erledigte Anfragen ohne Erledigungsdatum, daher nicht in der 90-Tage-Zahl: {{count}}"
+    "completed_without_date": "Erledigte Anfragen ohne Erledigungsdatum, daher nicht in der 90-Tage-Zahl: {{count, number}}"
   },
   "legal_documents": {
     "title": "Rechtliche Dokumente",
@@ -598,8 +605,8 @@
     "counts_only": "Nur Zahlen. Auf dieser Seite wird kein Mitglied genannt.",
     "loading": "Rechtliche Dokumente werden geladen",
     "load_error_title": "Wir konnten die rechtlichen Dokumente gerade nicht laden",
-    "community_count": "Gemeinschaften: {{count}}",
-    "no_privacy_count": "Gemeinschaften ohne veröffentlichte Datenschutzhinweise: {{count}}",
+    "community_count": "Gemeinschaften: {{count, number}}",
+    "no_privacy_count": "Gemeinschaften ohne veröffentlichte Datenschutzhinweise: {{count, number}}",
     "no_privacy_names": "Ohne: {{names}}",
     "all_have_privacy": "Jede Gemeinschaft hat veröffentlichte Datenschutzhinweise.",
     "privacy_unknown": "Wir können gerade nicht feststellen, welche Gemeinschaften Datenschutzhinweise haben.",
@@ -610,8 +617,8 @@
     "date_unknown": "Datum nicht erfasst",
     "no_acceptance_needed": "Mitglieder werden nicht gebeten, diesem Dokument zuzustimmen.",
     "members_not_available": "Wer zugestimmt hat: nicht verfügbar",
-    "members_not_accepted": "Noch nicht zugestimmt: {{count}} von {{asked}} gefragten Mitgliedern",
-    "all_accepted": "Alle gefragten Mitglieder haben zugestimmt ({{count}})",
+    "members_not_accepted": "Noch nicht zugestimmt: {{count, number}} von {{asked}} gefragten Mitgliedern",
+    "all_accepted": "Alle gefragten Mitglieder haben zugestimmt ({{count, number}})",
     "status": {
       "published": "Veröffentlicht",
       "not_published": "Nicht veröffentlicht",
@@ -662,10 +669,10 @@
     "history_title": "Letzte Prüfungen",
     "history_none": "Noch keine Prüfungen.",
     "history_by": "Festgehalten von {{name}}",
-    "history_accounts_one": "{{count}} Konto",
-    "history_accounts_other": "{{count}} Konten",
-    "history_removals_one": "{{count}} zur Entfernung markiert",
-    "history_removals_other": "{{count}} zur Entfernung markiert",
+    "history_accounts_one": "{{count, number}} Konto",
+    "history_accounts_other": "{{count, number}} Konten",
+    "history_removals_one": "{{count, number}} zur Entfernung markiert",
+    "history_removals_other": "{{count, number}} zur Entfernung markiert",
     "erased": "Gelöschtes Konto",
     "refresh_failed": "Die Prüfung konnte nicht neu geladen werden. Was Sie sehen, ist der vorherige Stand.",
     "note_no_names": "Nennen Sie in der Notiz keine Personen. Sie wird mit dem Eintrag aufbewahrt."
@@ -676,12 +683,12 @@
     "intro": "Wie viele Benachrichtigungen an die Handys und Browser der Mitglieder gesendet wurden, nach Tag und nach Gemeinschaft. „Vom Push-Dienst angenommen“ heißt, dass der Dienst die Benachrichtigung entgegengenommen hat, nicht dass ein Handy sie angezeigt hat. Manche Arten von Benachrichtigungen werden gesendet, ohne hier erfasst zu werden (Erinnerungen an Veranstaltungen, Notfallwarnungen und einige andere). Die tatsächlichen Zahlen sind also mindestens so hoch.",
     "timezone_note": "Die Tage richten sich nach der Serverzeit (UTC).",
     "days_picker": "Wie viele Tage angezeigt werden",
-    "days_option": "Letzte {{count}} Tage",
+    "days_option": "Letzte {{count, number}} Tage",
     "loading": "Zahlen zu Push-Benachrichtigungen werden geladen",
     "load_error_title": "Die Zahlen zu Push-Benachrichtigungen konnten nicht geladen werden",
     "not_available": "Nicht verfügbar: Die Aufzeichnung der Push-Benachrichtigungen konnte nicht gelesen werden. Das heißt nicht, dass keine gesendet wurden.",
     "by_day_heading": "Jeder Tag",
-    "by_community_heading": "Jede Gemeinschaft ({{count}})",
+    "by_community_heading": "Jede Gemeinschaft ({{count, number}})",
     "by_community_note": "Summen für den ganzen Zeitraum. „Niemand zum Senden“ wird nur pro Tag gezeigt.",
     "no_community_heading": "Keiner Gemeinschaft zugeordnet",
     "no_community_note": "Benachrichtigungen, die ohne Gemeinschaft erfasst wurden. Sie sind in den Tageszahlen enthalten.",
@@ -702,8 +709,8 @@
     "no_record_title": "Dieser Server führt keine Aufzeichnung über Bereitstellungen",
     "no_record_text": "Nur der Live-Server führt eine, daher ist das auf dem Computer eines Entwicklers zu erwarten.",
     "empty": "Bisher wurde nichts aufgezeichnet.",
-    "skipped": "Zeilen der Aufzeichnung, die nicht gelesen werden konnten und übersprungen wurden: {{count}}",
-    "count": "Angezeigte Bereitstellungen und Rücknahmen: {{count}}",
+    "skipped": "Zeilen der Aufzeichnung, die nicht gelesen werden konnten und übersprungen wurden: {{count, number}}",
+    "count": "Angezeigte Bereitstellungen und Rücknahmen: {{count, number}}",
     "not_recorded": "Nicht aufgezeichnet",
     "kind": {
       "deploy": "Bereitstellung",
@@ -903,7 +910,8 @@
         "deletes": "Löscht abgeschlossene oder abgelaufene Identitätsprüfungen, die älter als 180 Tage sind. Die Aufzeichnung dessen, was bei jeder Prüfung geschah, bleibt erhalten."
       }
     },
-    "finished_only": "Diese Aufgabe hält fest, dass sie beendet wurde, nicht dass jeder Schritt funktioniert hat."
+    "finished_only": "Diese Aufgabe hält fest, dass sie beendet wurde, nicht dass jeder Schritt funktioniert hat.",
+    "steps_failed": "Schritte, die beim letzten Lauf fehlgeschlagen sind: {{count, number}}"
   },
   "search_rebuild": {
     "title": "Suche neu aufbauen",
@@ -930,10 +938,10 @@
       "never": "Noch nie von dieser Seite aus gestartet",
       "queued": "Wartet auf den Start",
       "running": "Läuft seit {{time}}",
-      "done_one": "Abgeschlossen {{time}}: {{count}} Eintrag aktualisiert",
-      "done_other": "Abgeschlossen {{time}}: {{count}} Einträge aktualisiert",
-      "done_with_errors_one": "Abgeschlossen {{time}}, {{count}} Eintrag konnte nicht aktualisiert werden",
-      "done_with_errors_other": "Abgeschlossen {{time}}, {{count}} Einträge konnten nicht aktualisiert werden",
+      "done_one": "Abgeschlossen {{time}}: {{count, number}} Eintrag aktualisiert",
+      "done_other": "Abgeschlossen {{time}}: {{count, number}} Einträge aktualisiert",
+      "done_with_errors_one": "Abgeschlossen {{time}}, {{count, number}} Eintrag konnte nicht aktualisiert werden",
+      "done_with_errors_other": "Abgeschlossen {{time}}, {{count, number}} Einträge konnten nicht aktualisiert werden",
       "failed": "Fehlgeschlagen"
     },
     "check_failed": "Um {{time}} konnte nicht erneut geprüft werden"
@@ -1048,8 +1056,8 @@
     },
     "data_requests": {
       "title": "Anfragen zu personenbezogenen Daten",
-      "open": "Offen, über alle Gemeinschaften: {{count}}",
-      "overdue": "Seit mehr als 30 Tagen offen: {{count}}"
+      "open": "Offen, über alle Gemeinschaften: {{count, number}}",
+      "overdue": "Seit mehr als 30 Tagen offen: {{count, number}}"
     },
     "failed_sign_ins": {
       "title": "Aufzeichnung fehlgeschlagener Anmeldungen",
@@ -1082,8 +1090,8 @@
     },
     "status": {
       "ok": "In Ordnung",
-      "warning_one": "Zertifikat läuft in {{count}} Tag ab",
-      "warning_other": "Zertifikat läuft in {{count}} Tagen ab",
+      "warning_one": "Zertifikat läuft in {{count, number}} Tag ab",
+      "warning_other": "Zertifikat läuft in {{count, number}} Tagen ab",
       "failing": "Funktioniert nicht",
       "unknown": "Noch nicht geprüft",
       "not_checkable": "Keine Webadresse, die wir prüfen können",
@@ -1105,5 +1113,8 @@
     "too_many": "Zu viele Prüfungen in einer Minute. Bitte kurz warten und erneut versuchen.",
     "check_now_for": "{{name}} jetzt prüfen",
     "check_platform_now": "Die Adressen der Plattform jetzt prüfen"
+  },
+  "shared": {
+    "figures_from": "Zahlen von {{time}} Uhr"
   }
 }
