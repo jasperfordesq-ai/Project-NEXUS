@@ -1097,6 +1097,13 @@ jobs:
       - name: "BLOCKING: Podcast virus scanner is defined and started on deploy"
         run: bash scripts/test/test-clamav-scanner-wiring.sh
 
+      # Added 2026-11-17. The production scheduler slept a fixed 60 s after
+      # each pass, so passes drifted ~68 s apart and some minutes had none:
+      # backup:verify (09:30) did not run that day. Runs the real loop from
+      # compose.bluegreen.yml on a pretend clock; no container, no waiting.
+      - name: "BLOCKING: The scheduler starts a pass in every minute"
+        run: bash scripts/test/test-scheduler-every-minute.sh
+
       # Added 2026-10-07. The pre-commit hook ran the staged PHPUnit files as
       # root in the bind-mounted container, leaving root-owned test scratch
       # that broke every later www-data run. Stubbed docker; no container.

@@ -202,7 +202,13 @@ services:
     # www-data; the trap moves into the unprivileged shell, which is PID 1 after
     # exec, so the healthcheck and graceful stop are unchanged. The read-only
     # backups mount is pruned from the chown.
-    command: sh -c "umask 0002; find /var/www/html/storage /var/www/html/bootstrap/cache \\( -path /var/www/html/storage/prerendered -o -path /var/www/html/storage/backups \\) -prune -o -exec chown www-data:www-data {} + || echo '[WARN] startup chown failed'; touch /var/log/php_errors.log && chown www-data:www-data /var/log/php_errors.log || true; exec setpriv --reuid=www-data --regid=www-data --init-groups sh -c 'umask 0002; trap \"php artisan schedule:interrupt >/dev/null 2>&1 || true; exit 0\" TERM INT; php artisan optimize && while true; do php artisan schedule:run --no-interaction; sleep 60 & wait $!; done'"
+    # 🔴 One pass in EVERY minute (17 Nov 2026): the loop sleeps to the start of
+    # the next minute, and runs at once if a long pass already crossed into it.
+    # It was `sleep 60` after each pass, so passes drifted ~68 s apart and 20 of
+    # 151 minutes had none; a task due at one exact minute (backup:verify,
+    # 09:30) was skipped that day. `$$` is compose's escape for `$`.
+    # Pinned by scripts/test/test-scheduler-every-minute.sh.
+    command: sh -c "umask 0002; find /var/www/html/storage /var/www/html/bootstrap/cache \\( -path /var/www/html/storage/prerendered -o -path /var/www/html/storage/backups \\) -prune -o -exec chown www-data:www-data {} + || echo '[WARN] startup chown failed'; touch /var/log/php_errors.log && chown www-data:www-data /var/log/php_errors.log || true; exec setpriv --reuid=www-data --regid=www-data --init-groups sh -c 'umask 0002; trap \"php artisan schedule:interrupt >/dev/null 2>&1 || true; exit 0\" TERM INT; php artisan optimize && while true; do started=$$(date +%s); php artisan schedule:run --no-interaction; wait_s=$$(( (started / 60 + 1) * 60 - $$(date +%s) )); if [ $$wait_s -gt 0 ]; then sleep $$wait_s & wait $$!; fi; done'"
     restart: unless-stopped
     stop_grace_period: 90s
     deploy:
