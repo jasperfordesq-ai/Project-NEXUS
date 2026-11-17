@@ -9,7 +9,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Repos produced by every blue-green build. Their old builds are tagged by commit
 # SHA, so they are NOT dangling and `docker image prune` never reclaims them — they
 # accumulate ~1.4GB each per deploy and must be removed by explicit retention.
-RELEASE_IMAGE_REPOS="${RELEASE_IMAGE_REPOS:-nexus-php-app nexus-react-prod nexus-sales-site}"
+#
+# Every repo a deploy tags by commit SHA MUST be listed here. `nexus-webuk` was
+# added to the deploy on 2026-08-12 but not to this list, so 191 builds (53 GB)
+# piled up on production before anyone noticed (found and cleared 2026-11-17).
+RELEASE_IMAGE_REPOS="${RELEASE_IMAGE_REPOS:-nexus-php-app nexus-react-prod nexus-sales-site nexus-webuk}"
 # Number of builds to keep per repo: active color + inactive color + rollback margin.
 IMAGE_RETENTION_KEEP="${IMAGE_RETENTION_KEEP:-5}"
 

@@ -392,6 +392,30 @@ fi
 unset -f curl
 rm -rf "$CTMP" "$MARKDIR"
 
+echo "=== 11. every commit-tagged deploy image is in the image clean-up list ==="
+# 🔴 An image tagged by commit SHA is never "dangling", so `docker image prune`
+# leaves it alone: only the retention list in prune-images.sh removes old builds.
+# nexus-webuk joined the deploy on 2026-08-12 but not that list, and 191 builds
+# (53 GB) piled up on production before it was found on 2026-11-17.
+ROOT_DIR="$(cd "$(dirname "$SRC")/../.." && pwd)"
+prune_list="$(sed -n 's/^RELEASE_IMAGE_REPOS="\${RELEASE_IMAGE_REPOS:-\(.*\)}"$/\1/p' \
+    "$ROOT_DIR/scripts/deploy/phases/prune-images.sh")"
+tagged_repos="$(grep -h -o -E 'image:[[:space:]]+[a-z0-9-]+:\$\{BUILD_COMMIT' \
+    "$ROOT_DIR"/compose*bluegreen*.yml \
+    | sed -E 's/image:[[:space:]]+//; s/:\$\{BUILD_COMMIT//' | sort -u)"
+if [ -z "$prune_list" ] || [ -z "$tagged_repos" ]; then
+  echo "  FAIL  could not read the clean-up list or the deploy images (check is blind)"
+  fail=$((fail + 1))
+else
+  for repo in $tagged_repos; do
+    case " $prune_list " in
+      *" $repo "*) echo "  PASS  $repo is in the clean-up list" ;;
+      *) echo "  FAIL  $repo is tagged per deploy but missing from RELEASE_IMAGE_REPOS"
+         fail=$((fail + 1)) ;;
+    esac
+  done
+fi
+
 rm -rf "$REL" "$REL2" "$TMP"
 echo
 if [ "$fail" -eq 0 ]; then echo "ALL CHECKS PASSED"; else echo "$fail CHECK(S) FAILED"; exit 1; fi
