@@ -57406,14 +57406,14 @@ export default interface Resources {
         "state": {
           "empty": "The newest backup is empty",
           "healthy": "The newest backup was found and is recent",
-          "missing": "No backup was found",
+          "missing": "There is no backup on the server",
           "other": "The check gave a result this page does not recognise",
           "stale": "The newest backup is too old",
           "unreadable": "The backups could not be read"
         },
         "title": "Daily check of the database backup"
       },
-      "could_not_read": "Could not be read",
+      "could_not_read": "We couldn't read this",
       "data_requests": {
         "open": "Open, across all communities: {{count, number}}",
         "overdue": "Open for more than 30 days: {{count, number}}",
@@ -57545,7 +57545,7 @@ export default interface Resources {
         "late": "Late",
         "ok": "Running as expected",
         "unknown": "No record yet",
-        "unreadable": "Could not be read"
+        "unreadable": "We couldn't read this"
       },
       "steps_failed": "Steps that failed on the last run: {{count, number}}",
       "title": "Clean-up jobs"
@@ -57577,7 +57577,7 @@ export default interface Resources {
       "quiet_count": "Quiet communities: {{count, number}}",
       "quiet_names": "Quiet: {{names}}",
       "quiet_rule": "A community is called quiet when it is switched on and either no member has been active in the last {{days}} days, or there has been no exchange this month and none last month.",
-      "quiet_unknown": "Can't tell if quiet",
+      "quiet_unknown": "We can't tell if it is quiet",
       "quiet_unknown_summary": "We could not work out which communities are quiet just now.",
       "same_as_dashboard": "Everything is counted the same way as on each community's own admin dashboard.",
       "title": "Community health",
@@ -57635,7 +57635,7 @@ export default interface Resources {
         "ai": "AI",
         "alerts": "Alerts",
         "email": "Email",
-        "error_reports": "Error reports",
+        "error_reports": "Reports of errors",
         "live_updates": "Live updates",
         "maps_translation": "Maps and translation",
         "notifications": "Phone and browser notifications",
@@ -57650,7 +57650,7 @@ export default interface Resources {
       "loading": "Loading keys and connections",
       "name": {
         "file_storage": "File storage",
-        "sentry_api": "Error service: reading the figures",
+        "sentry_api": "Reading figures from the error service",
         "web_push": "Web push notifications"
       },
       "never_shown": "This page never shows a key or any part of one.",
@@ -57932,7 +57932,7 @@ export default interface Resources {
       "status": {
         "failing": "Not working",
         "ok": "Fine",
-        "unknown": "Could not be checked",
+        "unknown": "We couldn't check this",
         "warning": "Needs a look"
       },
       "title": "Platform health",
@@ -57999,13 +57999,12 @@ export default interface Resources {
     },
     "nav": {
       "back_to_admin": "Back to the admin panel",
-      "back_to_super_admin": "Back to the super admin panel",
       "brand": "Platform team",
       "regional_analytics_subscriptions": "Analytics subscriptions",
       "tests": "Tests"
     },
     "notices": {
-      "cannot_close": "Cannot be closed",
+      "cannot_close": "Stays until it ends",
       "change": "Change",
       "closed_count": "People who closed it:",
       "empty_text": "Nothing has been written, so admins see nothing extra.",
@@ -58109,7 +58108,7 @@ export default interface Resources {
       "available": "The search service can be reached.",
       "busy": "A rebuild for this community is already waiting or running.",
       "cancel": "Cancel",
-      "check_failed": "Could not check again at {{time}}",
+      "check_failed": "We couldn't check again at {{time}}",
       "confirm_message": "This adds and updates the community's search entries. Entries for things that were deleted are not removed by this. Members can keep searching while it runs.",
       "confirm_title": "Rebuild search for {{name}}?",
       "does": {
@@ -58242,30 +58241,31 @@ export default interface Resources {
     "sidebar": {
       "collapse": "Hide the menu",
       "expand": "Show the menu",
-      "group_access": "Access",
+      "group_access_security": "Access and security",
       "group_communities": "Communities",
       "group_connections": "Connections",
       "group_data": "Data and legal",
       "group_email": "Email",
+      "group_features": "Features and notices",
       "group_health": "Health",
-      "group_jobs": "Scheduled jobs",
+      "group_jobs_tools": "Jobs and tools",
       "group_joining": "Joining and roles",
-      "group_keys": "Keys",
       "group_matching": "Matching",
       "group_money": "Money",
       "group_phone": "Phone app",
-      "group_products": "Products",
       "group_reports": "Reports",
       "group_site": "Site and search",
-      "group_tools": "Tools",
       "nav_label": "Platform team menu",
+      "search": "Find a page",
+      "search_clear": "Clear the search",
+      "search_none": "No page has that name.",
       "zone_community": "This community: {{name}}",
       "zone_platform": "The whole platform"
     },
     "translations": {
       "column": {
         "language": "Language",
-        "missing": "Missing",
+        "missing": "Not there yet",
         "phrases": "Phrases",
         "same": "Still the same as English",
         "translated": "Translated"

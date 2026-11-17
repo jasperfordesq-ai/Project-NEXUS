@@ -17,7 +17,6 @@
   "nav": {
     "brand": "Plattform-Team",
     "back_to_admin": "Zurück zum Verwaltungsbereich",
-    "back_to_super_admin": "Zurück zum Super-Admin-Bereich",
     "regional_analytics_subscriptions": "Analyse-Abonnements",
     "tests": "Tests"
   },
@@ -32,17 +31,18 @@
     "group_communities": "Gemeinschaften",
     "group_data": "Daten und Rechtliches",
     "group_connections": "Verbindungen",
-    "group_access": "Zugriff",
-    "group_products": "Produkte",
-    "group_keys": "Schlüssel",
     "group_email": "E-Mail",
     "group_joining": "Beitritt und Rollen",
     "group_site": "Website und Suche",
     "group_reports": "Berichte",
     "group_matching": "Zuordnung",
-    "group_jobs": "Geplante Aufgaben",
-    "group_tools": "Werkzeuge",
-    "group_phone": "Handy-App"
+    "group_phone": "Handy-App",
+    "search": "Seite suchen",
+    "search_clear": "Suche leeren",
+    "search_none": "Keine Seite mit diesem Namen.",
+    "group_jobs_tools": "Aufgaben und Werkzeuge",
+    "group_features": "Funktionen und Hinweise",
+    "group_access_security": "Zugriff und Sicherheit"
   },
   "breadcrumbs": {
     "aria_label": "Wo Sie sind",

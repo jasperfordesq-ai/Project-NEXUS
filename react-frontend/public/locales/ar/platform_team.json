@@ -17,7 +17,6 @@
   "nav": {
     "brand": "فريق المنصة",
     "back_to_admin": "العودة إلى لوحة الإدارة",
-    "back_to_super_admin": "العودة إلى لوحة المشرف العام",
     "regional_analytics_subscriptions": "اشتراكات التحليلات",
     "tests": "الاختبارات"
   },
@@ -32,17 +31,18 @@
     "group_communities": "المجتمعات",
     "group_data": "البيانات والشؤون القانونية",
     "group_connections": "الروابط",
-    "group_access": "الصلاحيات",
-    "group_products": "المنتجات",
-    "group_keys": "المفاتيح",
     "group_email": "البريد الإلكتروني",
     "group_joining": "الانضمام والأدوار",
     "group_site": "الموقع والبحث",
     "group_reports": "التقارير",
     "group_matching": "المطابقة",
-    "group_jobs": "المهام المجدولة",
-    "group_tools": "الأدوات",
-    "group_phone": "تطبيق الهاتف"
+    "group_phone": "تطبيق الهاتف",
+    "search": "ابحث عن صفحة",
+    "search_clear": "مسح البحث",
+    "search_none": "لا توجد صفحة بهذا الاسم.",
+    "group_jobs_tools": "المهام والأدوات",
+    "group_features": "الميزات والإشعارات",
+    "group_access_security": "الصلاحيات والأمان"
   },
   "breadcrumbs": {
     "aria_label": "أين أنت",

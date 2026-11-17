@@ -17,7 +17,6 @@
   "nav": {
     "brand": "Équipe de la plateforme",
     "back_to_admin": "Retour à l'espace d'administration",
-    "back_to_super_admin": "Retour à l'espace super administrateur",
     "regional_analytics_subscriptions": "Abonnements analytiques",
     "tests": "Tests"
   },
@@ -32,17 +31,18 @@
     "group_communities": "Communautés",
     "group_data": "Données et mentions légales",
     "group_connections": "Connexions",
-    "group_access": "Accès",
-    "group_products": "Produits",
-    "group_keys": "Clés",
     "group_email": "E-mail",
     "group_joining": "Adhésion et rôles",
     "group_site": "Site et recherche",
     "group_reports": "Rapports",
     "group_matching": "Mise en relation",
-    "group_jobs": "Tâches planifiées",
-    "group_tools": "Outils",
-    "group_phone": "Application mobile"
+    "group_phone": "Application mobile",
+    "search": "Trouver une page",
+    "search_clear": "Effacer la recherche",
+    "search_none": "Aucune page ne porte ce nom.",
+    "group_jobs_tools": "Tâches et outils",
+    "group_features": "Fonctionnalités et avis",
+    "group_access_security": "Accès et sécurité"
   },
   "breadcrumbs": {
     "aria_label": "Où vous êtes",

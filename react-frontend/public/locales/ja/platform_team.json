@@ -17,7 +17,6 @@
   "nav": {
     "brand": "プラットフォームチーム",
     "back_to_admin": "管理パネルに戻る",
-    "back_to_super_admin": "スーパー管理者パネルに戻る",
     "regional_analytics_subscriptions": "分析サブスクリプション",
     "tests": "テスト"
   },
@@ -32,17 +31,18 @@
     "group_communities": "コミュニティ",
     "group_data": "データと法務",
     "group_connections": "連携",
-    "group_access": "アクセス",
-    "group_products": "製品",
-    "group_keys": "キー",
     "group_email": "メール",
     "group_joining": "参加と役割",
     "group_site": "サイトと検索",
     "group_reports": "レポート",
     "group_matching": "マッチング",
-    "group_jobs": "定期実行ジョブ",
-    "group_tools": "ツール",
-    "group_phone": "スマホアプリ"
+    "group_phone": "スマホアプリ",
+    "search": "ページを探す",
+    "search_clear": "検索をクリア",
+    "search_none": "その名前のページはありません。",
+    "group_jobs_tools": "ジョブとツール",
+    "group_features": "機能とお知らせ",
+    "group_access_security": "アクセスとセキュリティ"
   },
   "breadcrumbs": {
     "aria_label": "現在の場所",

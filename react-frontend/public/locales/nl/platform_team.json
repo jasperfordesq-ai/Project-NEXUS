@@ -17,7 +17,6 @@
   "nav": {
     "brand": "Platformteam",
     "back_to_admin": "Terug naar het beheerpaneel",
-    "back_to_super_admin": "Terug naar het superbeheerpaneel",
     "regional_analytics_subscriptions": "Analyse-abonnementen",
     "tests": "Tests"
   },
@@ -32,17 +31,18 @@
     "group_communities": "Gemeenschappen",
     "group_data": "Gegevens en juridisch",
     "group_connections": "Koppelingen",
-    "group_access": "Toegang",
-    "group_products": "Producten",
-    "group_keys": "Sleutels",
     "group_email": "E-mail",
     "group_joining": "Aanmelden en rollen",
     "group_site": "Site en zoeken",
     "group_reports": "Rapporten",
     "group_matching": "Matching",
-    "group_jobs": "Geplande taken",
-    "group_tools": "Hulpmiddelen",
-    "group_phone": "Telefoon-app"
+    "group_phone": "Telefoon-app",
+    "search": "Pagina zoeken",
+    "search_clear": "Zoekopdracht wissen",
+    "search_none": "Geen pagina met die naam.",
+    "group_jobs_tools": "Taken en hulpmiddelen",
+    "group_features": "Functies en mededelingen",
+    "group_access_security": "Toegang en beveiliging"
   },
   "breadcrumbs": {
     "aria_label": "Waar je bent",

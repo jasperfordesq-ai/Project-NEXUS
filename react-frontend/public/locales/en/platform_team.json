@@ -17,7 +17,6 @@
   "nav": {
     "brand": "Platform team",
     "back_to_admin": "Back to the admin panel",
-    "back_to_super_admin": "Back to the super admin panel",
     "regional_analytics_subscriptions": "Analytics subscriptions",
     "tests": "Tests"
   },
@@ -32,17 +31,18 @@
     "group_communities": "Communities",
     "group_data": "Data and legal",
     "group_connections": "Connections",
-    "group_access": "Access",
-    "group_products": "Products",
-    "group_keys": "Keys",
     "group_email": "Email",
     "group_joining": "Joining and roles",
     "group_site": "Site and search",
     "group_reports": "Reports",
     "group_matching": "Matching",
-    "group_jobs": "Scheduled jobs",
-    "group_tools": "Tools",
-    "group_phone": "Phone app"
+    "group_phone": "Phone app",
+    "search": "Find a page",
+    "search_clear": "Clear the search",
+    "search_none": "No page has that name.",
+    "group_jobs_tools": "Jobs and tools",
+    "group_features": "Features and notices",
+    "group_access_security": "Access and security"
   },
   "breadcrumbs": {
     "aria_label": "Where you are",

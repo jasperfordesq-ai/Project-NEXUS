@@ -17,7 +17,6 @@
   "nav": {
     "brand": "Equipe da plataforma",
     "back_to_admin": "Voltar para o painel de administração",
-    "back_to_super_admin": "Voltar para o painel do superadministrador",
     "regional_analytics_subscriptions": "Assinaturas de análise",
     "tests": "Testes"
   },
@@ -32,17 +31,18 @@
     "group_communities": "Comunidades",
     "group_data": "Dados e aspectos legais",
     "group_connections": "Conexões",
-    "group_access": "Acesso",
-    "group_products": "Produtos",
-    "group_keys": "Chaves",
     "group_email": "E-mail",
     "group_joining": "Entrada e funções",
     "group_site": "Site e busca",
     "group_reports": "Relatórios",
     "group_matching": "Correspondência",
-    "group_jobs": "Tarefas agendadas",
-    "group_tools": "Ferramentas",
-    "group_phone": "Aplicativo para celular"
+    "group_phone": "Aplicativo para celular",
+    "search": "Encontrar uma página",
+    "search_clear": "Limpar a busca",
+    "search_none": "Nenhuma página com esse nome.",
+    "group_jobs_tools": "Tarefas e ferramentas",
+    "group_features": "Recursos e avisos",
+    "group_access_security": "Acesso e segurança"
   },
   "breadcrumbs": {
     "aria_label": "Onde você está",
