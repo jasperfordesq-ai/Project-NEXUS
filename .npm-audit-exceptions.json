@@ -24,6 +24,22 @@
       "reason": "zod memory exhaustion while validating oversized constrained collections (CVE-2023-54404). Affected range is everything below 4.6.6, so the 3.x line has no fix: 3.25.76 is the last 3.x release. The app's own zod is ^4.6.7 (fixed, E-113). The flagged copy is mobile/node_modules/@expo/cli/node_modules/zod@3.25.76, which @expo/cli pins at ^3.25.76 (still so in the latest @expo/cli, 58.1.15) and uses only in its dev server (DevToolsPlugin.schema.js, createMCPDevToolsExtensionSchema.js) on a developer machine: not in the app bundle, not on any server, never sees member input. npm's only offered fix is expo 54.0.38, a major DOWNGRADE. Forcing zod 4 into @expo/cli would change the API it was written against. Same decision and reasoning as the CVE-2023-54404 entry in .trivyignore (E-113, 24 Oct 2026), which covered only the Trivy gate; this is the matching npm-audit entry it missed. Remove when Expo moves @expo/cli to zod 4.",
       "added": "2026-10-25",
       "expires": "2027-01-25"
+    },
+    {
+      "id": "GHSA-fc5q-39xc-vjpf",
+      "scope": "mobile",
+      "package": "picomatch",
+      "reason": "picomatch ReDoS through single-branch repeated extglob patterns (CVE-2026-112366). GitHub Advisory Database records the affected range as <= 4.0.7 with no patched version, and npm latest is 4.0.7, so there is no version to upgrade to; npm reports the range as '*'. The flagged copies are 4.0.4 under @expo/cli and @expo/metro-config, and 2.3.2 under micromatch (metro-file-map), anymatch (jest-haste-map) and jest-util: the Expo / React-Native bundler and test runner, which npm records as non-dev. They run on a developer machine, CI or EAS over the project's own files with patterns a developer wrote; no file under mobile/app imports picomatch, micromatch or anymatch, so it is not in the APK/IPA and never sees member input. Same reachability class as the image-size entries above and the braces entry in .trivyignore. Matching .trivyignore entry: CVE-2026-112366 (E-129, 17 Nov 2026). Short expiry on purpose: the package is maintained and a fix is likely. Remove as soon as a fixed picomatch is published and the lockfile picks it up.",
+      "added": "2026-11-17",
+      "expires": "2026-12-17"
+    },
+    {
+      "id": "GHSA-fc5q-39xc-vjpf",
+      "scope": "web-uk",
+      "package": "picomatch",
+      "reason": "Same advisory as the mobile entry above (CVE-2026-112366, no patched version exists). In web-uk the only production path is nunjucks -> its OPTIONAL chokidar peer -> anymatch / readdirp -> picomatch 2.3.2, so it IS installed in the production image but never loads there: nunjucks require()s chokidar only inside `if (opts.watch)` (src/node-loaders.js), web-uk/src/server.js sets `watch: NODE_ENV === 'development'`, and web-uk/Dockerfile and compose.webuk.bluegreen.yml set NODE_ENV=production. In development it only watches the repo's own template directories; nothing passes a visitor's input to a glob matcher. Matching .trivyignore entry: CVE-2026-112366 (E-129, 17 Nov 2026). Remove as soon as a fixed picomatch is published and the lockfile picks it up; re-check the reachability if web-uk ever turns template watching on outside development.",
+      "added": "2026-11-17",
+      "expires": "2026-12-17"
     }
   ]
 }

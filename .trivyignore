@@ -258,6 +258,39 @@ CVE-2026-93753
 CVE-2026-118773
 CVE-2026-118764
 
+# ── picomatch CVE-2026-112366 / GHSA-fc5q-39xc-vjpf (HIGH) — no fixed release
+#    exists ────────────────────────────────────────────────────────────────────
+# ReDoS through single-branch repeated extglob patterns. GitHub Advisory
+# Database: affected <= 4.0.7, first_patched_version NONE; npm latest is 4.0.7,
+# so every published version is affected and bumping resolves nothing. Started
+# blocking 2026-11-17 (run 44177533100 on 0c2acfaed2) with no lockfile change:
+# the advisory was updated that afternoon; the same scan passed that morning.
+# (A DIFFERENT picomatch pair, CVE-2026-33671/33672, was fixed by upgrade and
+# is in the DELETED list below. Do not confuse the two.)
+#
+# Reachability: development tooling only, and only ever given the repo's own
+# glob patterns, never a member's or visitor's input. Same class as the braces
+# entry above.
+#   - web-uk/package-lock.json: picomatch 2.3.2 under anymatch and readdirp,
+#     reached from nunjucks' OPTIONAL chokidar peer, so it IS installed in the
+#     production image. It never loads there: nunjucks require()s chokidar only
+#     inside `if (opts.watch)` (src/node-loaders.js), web-uk/src/server.js sets
+#     `watch: NODE_ENV === 'development'`, and web-uk/Dockerfile and
+#     compose.webuk.bluegreen.yml set NODE_ENV=production. In development it
+#     only watches the repo's own template directories.
+#   - mobile/package-lock.json: 4.0.4 under @expo/cli and @expo/metro-config;
+#     2.3.2 under micromatch (metro-file-map), anymatch (jest-haste-map) and
+#     jest-util. The Expo / React-Native bundler and test runner, on a developer
+#     machine, CI or EAS. No file under mobile/app imports picomatch, micromatch
+#     or anymatch, so it is not in the APK/IPA.
+#   - root and react-frontend lockfiles hold it as a devDependency only (Trivy
+#     does not report those); this ID would suppress them too.
+# Mirrored in .npm-audit-exceptions.json (GHSA-fc5q-39xc-vjpf, mobile and
+# web-uk), where the entry EXPIRES 2026-12-17: look again by then. Remove this
+# entry as soon as a fixed picomatch is published and the lockfiles pick it up.
+# (added 2026-11-17, E-129)
+CVE-2026-112366
+
 # =============================================================================
 # DELETED at the 2026-08-28 review — kept here as a short record so a future
 # reader does not "rediscover" these and re-add them. Each was removed because
