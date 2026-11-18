@@ -1086,6 +1086,39 @@
 }
 
 /* ─────────────────────────────────────────────
+   AI ASSISTANT (/chat) — fills the screen
+   AiChatPage measures where it starts on the page
+   and sets --chat-fill-height (useChatFillHeight)
+   so the typing box always ends on screen. Below
+   1024px the bottom tab bar covers the last 4rem,
+   except while typing, when the rules above slide
+   it away — so the reserve follows the same focus
+   test. The small-screen Help & support button
+   would sit on the send button; it is hidden here
+   (still in the menu). The footer stays reachable
+   below the chat by scrolling the page.
+   ───────────────────────────────────────────── */
+[data-ai-chat] {
+  height: calc(var(--chat-fill-height, calc(100dvh - 9rem)) - var(--chat-tabbar-reserve, 0px));
+  min-height: 320px;
+}
+
+@media (max-width: 1023px) {
+  [data-ai-chat] {
+    --chat-tabbar-reserve: calc(4rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  body:has(input:focus, textarea:focus, select:focus, [contenteditable="true"]:focus) [data-ai-chat],
+  body:has([data-mobile-tabbar-cover]) [data-ai-chat] {
+    --chat-tabbar-reserve: 0px;
+  }
+
+  body:has([data-ai-chat]) [data-support-launcher] {
+    visibility: hidden;
+  }
+}
+
+/* ─────────────────────────────────────────────
    PAGE TRANSITIONS (mobile route navigation)
    Material "shared axis X": forward navigations
    slide in from the right, back (POP) from the

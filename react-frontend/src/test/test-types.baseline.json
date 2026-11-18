@@ -1298,9 +1298,6 @@
       "TS2322": 1,
       "TS2345": 1
     },
-    "src/pages/chat/AiChatPage.test.tsx": {
-      "TS2322": 2
-    },
     "src/pages/clubs/ClubsPage.test.tsx": {
       "TS2532": 1
     },
@@ -1847,7 +1844,7 @@
     }
   },
   "totals": {
-    "fileCount": 545,
-    "errorCount": 1648
+    "fileCount": 544,
+    "errorCount": 1646
   }
 }

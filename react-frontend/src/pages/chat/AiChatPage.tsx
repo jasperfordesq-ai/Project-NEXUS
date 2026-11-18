@@ -1,68 +1,54 @@
-import { getFormattingLocale, resolveUserDisplayName } from '@/lib/helpers';
-import { Button, Textarea, Card, CardBody, Chip, Avatar } from '@/components/ui';
-import { safeHref } from '@/lib/safeHref';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
 /**
- * AI Chat Page
+ * AI Assistant page (/chat).
  *
- * Full-height chat interface for the AI assistant feature.
- * Uses POST /api/ai/chat for non-streaming responses.
- * Sends the conversation id with each request; past conversations can be
- * listed, reopened and deleted from the history dialog (AiChatHistory).
+ * Uses POST /api/ai/chat (no streaming: the server's stream endpoint answers
+ * 501). Sends the conversation id with each request; past conversations can
+ * be listed, reopened and deleted from the history dialog (AiChatHistory).
  * Feature-gated by 'ai_chat'.
+ *
+ * Rebuilt 18 Nov 2026 after the owner reported that sending a message
+ * scrolled to the chat box and not to the answer:
+ *   - only the conversation list scrolls, never the page (chatScroll.ts);
+ *     a new answer is shown from its first line;
+ *   - the chat fills the screen exactly, so the typing box is always on it
+ *     (useChatFillHeight.ts and `[data-ai-chat]` in index.css);
+ *   - answers keep their formatting (AiChatMarkdown.tsx);
+ *   - the typing box stays usable while waiting and keeps the cursor;
+ *   - a failed question can be tried again; an answer can be copied;
+ *   - the open conversation survives leaving the page and coming back.
  */
 
-import { useState, useEffect, useRef, useCallback, type CSSProperties } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
-import { motion, AnimatePresence } from '@/lib/motion';
-import { ScrollShadow } from '@/components/ui';
 import Bot from 'lucide-react/icons/bot';
-import BookOpen from 'lucide-react/icons/book-open';
 import Send from 'lucide-react/icons/send';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
 import Sparkles from 'lucide-react/icons/sparkles';
-import AlertCircle from 'lucide-react/icons/circle-alert';
 import Zap from 'lucide-react/icons/zap';
-import ThumbsUp from 'lucide-react/icons/thumbs-up';
-import ThumbsDown from 'lucide-react/icons/thumbs-down';
 import History from 'lucide-react/icons/history';
+import SquarePen from 'lucide-react/icons/square-pen';
+import ArrowDown from 'lucide-react/icons/arrow-down';
+import { Button, Chip, Spinner, Textarea } from '@/components/ui';
 import { useAuth, useTenant, useToast } from '@/contexts';
 import api from '@/lib/api';
 import { usePageTitle } from '@/hooks';
 import { useVisualViewport } from '@/hooks/useVisualViewport';
 import { PageMeta } from '@/components/seo';
-import { Link } from 'react-router-dom';
-import { ToolResultCards, isInternalUrl, type ToolInvocation } from './ToolResultCards';
+import type { ToolInvocation } from './ToolResultCards';
 import { AiChatHistory, parseServerDate, type AiConversationDetail } from './AiChatHistory';
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────────────────────────────────────
-
-interface ChatMessage {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-  isError?: boolean;
-  sources?: ChatSource[];
-  toolInvocations?: ToolInvocation[];
-  traceId?: number | null;
-  messageId?: number | null;
-  feedback?: 'up' | 'down' | null;
-}
-
-interface ChatSource {
-  type: string;
-  id: number | string;
-  title: string;
-  url?: string;
-  audience?: string;
-}
+import {
+  AssistantMessage,
+  ThinkingIndicator,
+  UserMessage,
+  type ChatMessage,
+  type ChatSource,
+} from './AiChatMessage';
+import { distanceFromBottom, NEAR_BOTTOM_PX, scrollListToBottom, scrollToAnswer } from './chatScroll';
+import { useChatFillHeight } from './useChatFillHeight';
 
 // The /ai/chat endpoint returns a non-standard envelope where `message` and
 // `conversation_id` live at the top level of the response body. `api.post<T>`
@@ -86,12 +72,8 @@ interface AiChatResponse {
     daily_remaining: number;
     monthly_remaining: number;
   };
-  error?: string;
+  error?: unknown;
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Suggested starter questions
-// ─────────────────────────────────────────────────────────────────────────────
 
 const STARTER_QUESTION_KEYS = [
   'starter_q1',
@@ -101,211 +83,78 @@ const STARTER_QUESTION_KEYS = [
   'starter_q5',
 ] as const;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Typing indicator
-// ─────────────────────────────────────────────────────────────────────────────
+/**
+ * The open conversation is remembered for this browser tab only, per member,
+ * so following a link in an answer and coming back does not lose it. Only the
+ * id is kept here; the conversation itself is read back from the member's own
+ * history (Laravel scopes it to the member and community).
+ */
+export function conversationStorageKey(userId: number | string): string {
+  return `nexus_ai_chat_conversation:${userId}`;
+}
 
-function TypingIndicator() {
-  const { t } = useTranslation('chat');
+function readStoredConversationId(key: string | null): number | null {
+  if (!key) return null;
+  try {
+    const raw = window.sessionStorage.getItem(key);
+    const id = raw ? Number.parseInt(raw, 10) : NaN;
+    return Number.isFinite(id) && id > 0 ? id : null;
+  } catch {
+    return null;
+  }
+}
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 8 }}
-      className="flex items-end gap-2 mb-4"
-    >
-      <Avatar
-        icon={<Bot className="w-4 h-4" aria-hidden="true" />}
-        size="sm"
-        classNames={{
-          base: 'bg-gradient-to-br from-accent-strong to-accent-strong-end flex-shrink-0',
-          icon: 'text-white',
-        }}
-      />
-      <div className="bg-[var(--color-surface)] border border-[var(--border-default)] rounded-2xl rounded-bl-sm px-4 py-3">
-        <div className="flex items-center gap-1" role="status" aria-label={t('typing_aria')}>
-          {[0, 1, 2].map((i) => (
-            <motion.span
-              key={i}
-              className="w-2 h-2 rounded-full bg-accent"
-              animate={{ opacity: [0.3, 1, 0.3], y: [0, -4, 0] }}
-              transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.15 }}
-            />
-          ))}
-        </div>
-      </div>
-    </motion.div>
-  );
+function writeStoredConversationId(key: string | null, id: number | null): void {
+  if (!key) return;
+  try {
+    if (id) window.sessionStorage.setItem(key, String(id));
+    else window.sessionStorage.removeItem(key);
+  } catch {
+    // Storage blocked (private mode): the conversation simply is not remembered.
+  }
+}
+
+/** A mouse or trackpad, where putting the cursor in the box does not pop up a keyboard. */
+function hasFinePointer(): boolean {
+  try {
+    return typeof window !== 'undefined'
+      && typeof window.matchMedia === 'function'
+      && window.matchMedia('(pointer: fine)').matches;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * A server error message fit to show, or null. Some replies carry an object
+ * here rather than text; putting that on screen crashed the whole page.
+ */
+export function readableError(value: unknown): string | null {
+  return typeof value === 'string' && value.trim() !== '' ? value : null;
+}
+
+type PendingScroll ={ kind: 'bottom' } | { kind: 'answer'; questionId: string; smooth: boolean };
+
+let messageSequence = 0;
+function nextMessageId(prefix: string): string {
+  messageSequence += 1;
+  return `${prefix}-${Date.now()}-${messageSequence}`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Message bubble
-// ─────────────────────────────────────────────────────────────────────────────
-
-interface MessageBubbleProps {
-  message: ChatMessage;
-  userName?: string;
-  userAvatar?: string;
-  onFeedback?: (messageClientId: string, vote: 'up' | 'down') => void;
-}
-
-function MessageBubble({ message, userName, userAvatar, onFeedback }: MessageBubbleProps) {
-  const { t } = useTranslation('chat');
-  const isUser = message.role === 'user';
-  const time = message.timestamp.toLocaleTimeString(getFormattingLocale(), { hour: '2-digit', minute: '2-digit' });
-  const sources = !isUser && message.sources?.length ? message.sources.slice(0, 4) : [];
-  const toolInvocations = !isUser && message.toolInvocations?.length ? message.toolInvocations : [];
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
-      className={`flex items-end gap-2 mb-4 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
-    >
-      {/* Avatar */}
-      {isUser ? (
-        <Avatar
-          name={userName}
-          src={userAvatar}
-          size="sm"
-          showFallback
-          classNames={{ base: 'flex-shrink-0' }}
-        />
-      ) : (
-        <Avatar
-          icon={<Bot className="w-4 h-4" aria-hidden="true" />}
-          size="sm"
-          classNames={{
-            base: 'bg-gradient-to-br from-accent-strong to-accent-strong-end flex-shrink-0',
-            icon: 'text-white',
-          }}
-        />
-      )}
-
-      {/* Bubble */}
-      <div className={`max-w-[80%] sm:max-w-[70%] ${isUser ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
-        <div
-          className={`px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words ${
-            isUser
-              ? 'bg-gradient-to-br from-accent-strong to-accent-strong-end text-white rounded-br-sm'
-              : message.isError
-              ? 'bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-bl-sm'
-              : 'bg-[var(--color-surface)] border border-[var(--border-default)] text-[var(--color-text)] rounded-bl-sm'
-          }`}
-        >
-          {message.isError && (
-            <div className="flex items-center gap-1.5 mb-1 font-medium">
-              <AlertCircle className="w-3.5 h-3.5" aria-hidden="true" />
-              <span className="text-xs">{t('error_label')}</span>
-            </div>
-          )}
-          {message.content}
-        </div>
-        <div className="flex items-center gap-2 px-1">
-          <span className="text-xs text-[var(--color-text-muted)]">{time}</span>
-          {!isUser && !message.isError && onFeedback && (message.traceId || message.messageId) && (
-            <div className="flex items-center gap-1">
-              <Button
-                isIconOnly
-                size="sm"
-                variant="light"
-                aria-label={t('thumbs_up_aria')}
-                onPress={() => onFeedback(message.id, 'up')}
-                className={`h-6 min-w-6 ${
-                  message.feedback === 'up'
-                    ? 'text-green-600 dark:text-green-400'
-                    : 'text-[var(--color-text-muted)] hover:text-green-600 dark:hover:text-green-400'
-                }`}
-              >
-                <ThumbsUp className="w-3.5 h-3.5" aria-hidden="true" />
-              </Button>
-              <Button
-                isIconOnly
-                size="sm"
-                variant="light"
-                aria-label={t('thumbs_down_aria')}
-                onPress={() => onFeedback(message.id, 'down')}
-                className={`h-6 min-w-6 ${
-                  message.feedback === 'down'
-                    ? 'text-red-600 dark:text-red-400'
-                    : 'text-[var(--color-text-muted)] hover:text-red-600 dark:hover:text-red-400'
-                }`}
-              >
-                <ThumbsDown className="w-3.5 h-3.5" aria-hidden="true" />
-              </Button>
-            </div>
-          )}
-        </div>
-        {toolInvocations.length > 0 && <ToolResultCards invocations={toolInvocations} />}
-        {sources.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1.5 px-1" role="group" aria-label={t('sources_label')}>
-            {sources.map((source) => {
-              const chip = (
-                <Chip
-                  key={`${source.type}-${source.id}`}
-                  size="sm"
-                  variant="flat"
-                  color="default"
-                  startContent={<BookOpen className="h-3 w-3 shrink-0" aria-hidden="true" />}
-                  // The cap must clip inside the chip: with it on the outer box only,
-                  // long titles spilled over the next chip (18 Nov 2026).
-                  className="max-w-[13rem] overflow-hidden text-xs"
-                  classNames={{ content: 'block min-w-0 truncate' }}
-                  title={source.title}
-                >
-                  {source.title}
-                </Chip>
-              );
-
-              if (!source.url) return chip;
-
-              return isInternalUrl(source.url) ? (
-                <Link
-                  key={`${source.type}-${source.id}`}
-                  to={source.url}
-                  className="inline-flex max-w-full"
-                  title={source.title}
-                >
-                  {chip}
-                </Link>
-              ) : (
-                <a
-                  key={`${source.type}-${source.id}`}
-                  href={safeHref(source.url)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex max-w-full"
-                  title={source.title}
-                >
-                  {chip}
-                </a>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </motion.div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Feature not available state
+// Feature not available
 // ─────────────────────────────────────────────────────────────────────────────
 
 function FeatureNotAvailable() {
   const { t } = useTranslation('chat');
 
   return (
-    <div className="flex flex-col items-center justify-center h-full px-6 py-16 text-center">
-      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-accent-gradient-end dark:from-accent/30 dark:to-accent-gradient-end/30 flex items-center justify-center mb-4">
-        <Bot className="w-8 h-8 text-accent" aria-hidden="true" />
+    <div className="flex min-h-[60vh] flex-col items-center justify-center px-6 py-16 text-center">
+      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-soft">
+        <Bot className="h-8 w-8 text-accent" aria-hidden="true" />
       </div>
-      <h2 className="text-xl font-semibold text-[var(--color-text)] mb-2">{t('feature_unavailable_title')}</h2>
-      <p className="text-[var(--color-text-muted)] max-w-sm">
-        {t('feature_unavailable_description')}
-      </p>
+      <h1 className="mb-2 text-xl font-semibold text-[var(--color-text)]">{t('feature_unavailable_title')}</h1>
+      <p className="max-w-sm text-[var(--color-text-muted)]">{t('feature_unavailable_description')}</p>
     </div>
   );
 }
@@ -315,82 +164,54 @@ function FeatureNotAvailable() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface EmptyStateProps {
-  onQuestionClick: (q: string) => void;
+  firstName?: string;
   starters: string[];
+  onQuestionClick: (question: string) => void;
 }
 
-function EmptyState({ onQuestionClick, starters }: EmptyStateProps) {
+function EmptyState({ firstName, starters, onQuestionClick }: EmptyStateProps) {
   const { t } = useTranslation('chat');
-  // Fall back to the static i18n questions if the server hasn't returned
-  // dynamic starters yet (initial render before the /starters call resolves).
+  // Fall back to the static questions until the community's own arrive.
   const questions = starters.length > 0 ? starters : STARTER_QUESTION_KEYS.map((k) => t(k));
 
   return (
-    <div className="flex flex-col items-center justify-center h-full px-4 py-8">
-      <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.4 }}
-        className="w-20 h-20 rounded-2xl bg-gradient-to-br from-accent-strong to-accent-strong-end flex items-center justify-center mb-5 shadow-lg"
-      >
-        <Sparkles className="w-10 h-10 text-white" aria-hidden="true" />
-      </motion.div>
+    <div className="flex min-h-full flex-col items-center justify-center px-2 py-6 text-center sm:py-10">
+      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-accent-strong to-accent-strong-end shadow-lg sm:h-16 sm:w-16">
+        <Sparkles className="h-7 w-7 text-white sm:h-8 sm:w-8" aria-hidden="true" />
+      </div>
+      <h2 className="mb-2 text-xl font-bold text-[var(--color-text)] sm:text-2xl">
+        {firstName ? t('empty_greeting', { name: firstName }) : t('empty_greeting_anonymous')}
+      </h2>
+      <p className="mb-6 max-w-md text-sm text-[var(--color-text-muted)] sm:mb-8 sm:text-base">{t('empty_description')}</p>
 
-      <motion.div
-        initial={{ y: 10, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.1, duration: 0.3 }}
-        className="text-center mb-8"
-      >
-        <h2 className="text-2xl font-bold text-[var(--color-text)] mb-2">{t('empty_title')}</h2>
-        <p className="text-[var(--color-text-muted)] max-w-sm">
-          {t('empty_description')}
-        </p>
-      </motion.div>
-
-      <motion.div
-        initial={{ y: 10, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2, duration: 0.3 }}
-        className="w-full max-w-md"
-      >
-        <p className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-3 text-center">
-          {t('try_asking')}
-        </p>
-        <div className="flex flex-col gap-2">
-          {questions.map((question, i) => (
-            <motion.div
-              key={`${i}-${question}`}
-              initial={{ x: -10, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.25 + i * 0.06, duration: 0.25 }}
+      <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">{t('try_asking')}</p>
+      <ul className="grid w-full max-w-2xl grid-cols-1 gap-2 sm:grid-cols-2">
+        {questions.map((question, i) => (
+          <li key={`${i}-${question}`}>
+            <Button
+              variant="tertiary"
+              onPress={() => onQuestionClick(question)}
+              className="h-auto min-h-12 w-full justify-start whitespace-normal rounded-xl border border-[var(--border-default)] bg-[var(--color-surface)] px-4 py-3 text-left text-sm font-normal text-[var(--color-text)] hover:border-accent hover:bg-accent-soft"
             >
-              <Button
-                variant="flat"
-                onPress={() => onQuestionClick(question)}
-                className="w-full text-left px-4 py-3 rounded-xl bg-[var(--color-surface)] border border-[var(--border-default)] text-sm text-[var(--color-text)] hover:border-accent hover:bg-accent-soft dark:hover:bg-accent/20 transition-all justify-start min-h-9"
-              >
-                {question}
-              </Button>
-            </motion.div>
-          ))}
-        </div>
-      </motion.div>
+              {question}
+            </Button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Main Component
+// Page
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function AiChatPage() {
   const { t } = useTranslation('chat');
-
   usePageTitle(t('page_title'));
 
   const { user } = useAuth();
-  const { hasFeature } = useTenant();
+  const { hasFeature, tenant } = useTenant();
   const { warning, error: toastError } = useToast();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -400,20 +221,55 @@ export default function AiChatPage() {
   const [limits, setLimits] = useState<{ daily_remaining: number; monthly_remaining: number } | null>(null);
   const [starters, setStarters] = useState<string[]>([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
+  const [showJumpToLatest, setShowJumpToLatest] = useState(false);
 
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const pendingScrollRef = useRef<PendingScroll | null>(null);
+  const isSendingRef = useRef(false);
 
-  // Feature check
   const isEnabled = hasFeature('ai_chat');
+  const storageKey = user?.id ? conversationStorageKey(user.id) : null;
 
-  // Scroll to bottom on new messages
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  // iOS Safari does not shrink the page for the on-screen keyboard; the
+  // keyboard's height is taken off the chat's height instead.
+  const keyboardOffset = useVisualViewport();
+  const fillHeight = useChatFillHeight(rootRef, keyboardOffset);
+
+  // ── Scrolling: only the list, never the page ──────────────────────────────
+  useLayoutEffect(() => {
+    const pending = pendingScrollRef.current;
+    const list = listRef.current;
+    if (!pending || !list) return;
+    pendingScrollRef.current = null;
+
+    if (pending.kind === 'bottom') {
+      scrollListToBottom(list);
+      return;
+    }
+    const question = list.querySelector<HTMLElement>(`[data-chat-question="${pending.questionId}"]`);
+    if (question) scrollToAnswer(list, question, pending.smooth);
+    else scrollListToBottom(list, pending.smooth);
   }, [messages, isLoading]);
 
-  // Fetch tenant-tailored starter prompts once on mount
+  const handleListScroll = useCallback(() => {
+    const list = listRef.current;
+    if (!list) return;
+    setShowJumpToLatest(distanceFromBottom(list) > Math.max(NEAR_BOTTOM_PX, list.clientHeight / 2));
+  }, []);
+
+  // The keyboard opening on a phone shrinks the list; keep the latest in view
+  // if the member was already there.
+  useEffect(() => {
+    const list = listRef.current;
+    if (keyboardOffset > 0 && list && distanceFromBottom(list) < NEAR_BOTTOM_PX * 2) {
+      scrollListToBottom(list, false);
+    }
+  }, [keyboardOffset]);
+
+  // ── Starter questions for this community ──────────────────────────────────
   useEffect(() => {
     if (!isEnabled) return;
     void (async () => {
@@ -423,143 +279,28 @@ export default function AiChatPage() {
           setStarters(res.data.starters);
         }
       } catch {
-        // Non-critical — fall back to i18n defaults
+        // Non-critical: the built-in questions are shown instead.
       }
     })();
   }, [isEnabled]);
 
-  const sendMessage = useCallback(async (text: string) => {
-    const trimmed = text.trim();
-    if (!trimmed || isLoading) return;
-
-    const userMsg: ChatMessage = {
-      id: `user-${Date.now()}`,
-      role: 'user',
-      content: trimmed,
-      timestamp: new Date(),
-    };
-
-    setMessages(prev => [...prev, userMsg]);
-    setInput('');
-    setIsLoading(true);
-
-    try {
-      const body: Record<string, unknown> = { message: trimmed };
-      if (conversationId) body['conversation_id'] = conversationId;
-
-      const res = await api.post<AiChatResponse>('/ai/chat', body);
-
-      // api.post unwraps `response.data.data` if present, otherwise returns the full body.
-      // See AiChatResponse type comment above for shape details.
-      const data = res.data;
-
-      if (res.success && data?.message) {
-        const assistantMsg: ChatMessage = {
-          id: `assistant-${Date.now()}`,
-          role: 'assistant',
-          content: data.message.content,
-          timestamp: new Date(),
-          sources: data.sources ?? [],
-          toolInvocations: data.tool_invocations ?? [],
-          traceId: data.trace_id ?? null,
-          messageId: data.message.id,
-          feedback: null,
-        };
-        setMessages(prev => [...prev, assistantMsg]);
-
-        if (data.conversation_id) {
-          setConversationId(data.conversation_id);
-        }
-        if (data.limits) {
-          setLimits(data.limits);
-        }
-      } else {
-        const errorText = data?.error ?? res.error ?? t('error_generic');
-        const isLimit = res.code === 'HTTP_429';
-
-        const errorMsg: ChatMessage = {
-          id: `error-${Date.now()}`,
-          role: 'assistant',
-          content: isLimit
-            ? t('error_rate_limit')
-            : errorText,
-          timestamp: new Date(),
-          isError: true,
-        };
-        setMessages(prev => [...prev, errorMsg]);
-
-        if (isLimit) {
-          warning(t('toast_rate_limit'));
-        }
-      }
-    } catch {
-      const errorMsg: ChatMessage = {
-        id: `error-${Date.now()}`,
-        role: 'assistant',
-        content: t('error_connection'),
-        timestamp: new Date(),
-        isError: true,
-      };
-      setMessages(prev => [...prev, errorMsg]);
-      toastError(t('toast_connection_error'));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [isLoading, conversationId, warning, toastError, t]);
-
-  const handleFeedback = useCallback(async (messageClientId: string, vote: 'up' | 'down') => {
-    const msg = messages.find((m) => m.id === messageClientId);
-    if (!msg || (!msg.traceId && !msg.messageId)) return;
-    // Optimistically toggle: clicking the same vote a second time clears it.
-    const next = msg.feedback === vote ? null : vote;
-    setMessages((prev) => prev.map((m) => (m.id === messageClientId ? { ...m, feedback: next } : m)));
-    if (next === null) return; // we don't support clearing on the server yet — just keep the UI in sync
-    const revert = () =>
-      setMessages((prev) => prev.map((m) => (m.id === messageClientId ? { ...m, feedback: msg.feedback ?? null } : m)));
-    try {
-      const res = await api.post('/ai/chat/feedback', {
-        feedback: vote,
-        trace_id: msg.traceId ?? undefined,
-        message_id: msg.messageId ?? undefined,
-      });
-      // api.post resolves { success:false } on a 4xx/5xx WITHOUT throwing, so the
-      // catch alone never fired for a failed vote — the optimistic highlight stayed
-      // as if it persisted. Revert it when the server didn't accept the feedback.
-      if (!res.success) revert();
-    } catch {
-      revert();
-    }
-  }, [messages]);
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      void sendMessage(input);
-    }
-  };
-
-  // iOS Safari does not shrink 100dvh for the soft keyboard (Android does,
-  // via interactive-widget=resizes-content), so subtract the visual-viewport
-  // inset and keep the latest message in view while the keyboard is up.
-  const keyboardOffset = useVisualViewport();
+  // Cursor in the box on arrival, where that does not open a phone keyboard.
   useEffect(() => {
-    if (keyboardOffset > 0) {
-      messagesEndRef.current?.scrollIntoView({ block: 'end' });
+    if (isEnabled && hasFinePointer()) {
+      textareaRef.current?.focus({ preventScroll: true });
     }
-  }, [keyboardOffset]);
+  }, [isEnabled]);
 
-  const handleNewConversation = () => {
-    setMessages([]);
-    setConversationId(null);
-    setLimits(null);
-    setInput('');
-    textareaRef.current?.focus();
-  };
+  // ── Reopen / remember the conversation ────────────────────────────────────
+  // Written only when the conversation actually changes. (An effect that
+  // mirrored the state ran first on arrival, with no conversation yet, and
+  // wiped the remembered id before it could be read back.)
+  const rememberConversation = useCallback((id: number | null) => {
+    setConversationId(id);
+    writeStoredConversationId(storageKey, id);
+  }, [storageKey]);
 
-  // Reopen a stored conversation: show its user/assistant turns and keep its id,
-  // so the next send continues it (AiChatController::chat accepts the member's
-  // own conversation_id and appends to it).
-  const handleOpenConversation = useCallback((conversation: AiConversationDetail) => {
+  const openConversation = useCallback((conversation: AiConversationDetail, smooth: boolean) => {
     const restored: ChatMessage[] = (conversation.messages ?? [])
       .filter((m) => m.role === 'user' || m.role === 'assistant')
       .map((m) => ({
@@ -570,169 +311,351 @@ export default function AiChatPage() {
         messageId: m.role === 'assistant' ? m.id : null,
         feedback: null,
       }));
+    const lastQuestion = [...restored].reverse().find((m) => m.role === 'user');
+    pendingScrollRef.current = lastQuestion
+      ? { kind: 'answer', questionId: lastQuestion.id, smooth }
+      : { kind: 'bottom' };
     setMessages(restored);
-    setConversationId(conversation.id);
+    rememberConversation(conversation.id);
     setLimits(null);
     setInput('');
+  }, [rememberConversation]);
+
+  useEffect(() => {
+    if (!isEnabled) return;
+    const storedId = readStoredConversationId(storageKey);
+    if (!storedId) return;
+    let cancelled = false;
+    setIsRestoring(true);
+    void (async () => {
+      try {
+        const res = await api.get<AiConversationDetail>(`/ai/conversations/${storedId}`);
+        if (cancelled) return;
+        if (res.success && res.data?.messages?.length) {
+          openConversation(res.data, false);
+        } else {
+          writeStoredConversationId(storageKey, null);
+        }
+      } catch {
+        if (!cancelled) writeStoredConversationId(storageKey, null);
+      } finally {
+        if (!cancelled) setIsRestoring(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // Runs on arrival (and if the signed-in member changes); openConversation
+    // only changes with storageKey.
+  }, [isEnabled, storageKey, openConversation]);
+
+  // ── Sending ───────────────────────────────────────────────────────────────
+  const sendMessage = useCallback(async (text: string, retryOf?: ChatMessage) => {
+    const trimmed = text.trim();
+    if (!trimmed || isSendingRef.current) return;
+    isSendingRef.current = true;
+
+    let questionId: string;
+    if (retryOf?.questionId) {
+      questionId = retryOf.questionId;
+      setMessages((prev) => prev.filter((m) => m.id !== retryOf.id));
+    } else {
+      questionId = nextMessageId('user');
+      const userMsg: ChatMessage = {
+        id: questionId,
+        role: 'user',
+        content: trimmed,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, userMsg]);
+      setInput('');
+    }
+    pendingScrollRef.current = { kind: 'bottom' };
+    setIsLoading(true);
+
+    const fail = (content: string) => {
+      const errorMsg: ChatMessage = {
+        id: nextMessageId('error'),
+        role: 'assistant',
+        content,
+        timestamp: new Date(),
+        isError: true,
+        retryText: trimmed,
+        questionId,
+      };
+      pendingScrollRef.current = { kind: 'answer', questionId, smooth: true };
+      setMessages((prev) => [...prev, errorMsg]);
+    };
+
+    try {
+      const body: Record<string, unknown> = { message: trimmed };
+      if (conversationId) body['conversation_id'] = conversationId;
+
+      const res = await api.post<AiChatResponse>('/ai/chat', body);
+      const data = res.data;
+
+      if (res.success && data?.message) {
+        const assistantMsg: ChatMessage = {
+          id: nextMessageId('assistant'),
+          role: 'assistant',
+          content: data.message.content,
+          timestamp: new Date(),
+          sources: data.sources ?? [],
+          toolInvocations: data.tool_invocations ?? [],
+          traceId: data.trace_id ?? null,
+          messageId: data.message.id,
+          feedback: null,
+          questionId,
+        };
+        pendingScrollRef.current = { kind: 'answer', questionId, smooth: true };
+        setMessages((prev) => [...prev, assistantMsg]);
+        if (data.conversation_id) rememberConversation(data.conversation_id);
+        if (data.limits) setLimits(data.limits);
+      } else {
+        const isLimit = res.code === 'HTTP_429';
+        fail(isLimit ? t('error_rate_limit') : (readableError(data?.error) ?? readableError(res.error) ?? t('error_generic')));
+        if (isLimit) warning(t('toast_rate_limit'));
+      }
+    } catch {
+      fail(t('error_connection'));
+      toastError(t('toast_connection_error'));
+    } finally {
+      isSendingRef.current = false;
+      setIsLoading(false);
+    }
+  }, [conversationId, rememberConversation, warning, toastError, t]);
+
+  const handleRetry = useCallback((message: ChatMessage) => {
+    if (message.retryText) void sendMessage(message.retryText, message);
+  }, [sendMessage]);
+
+  const handleStarter = useCallback((question: string) => {
+    void sendMessage(question);
+    // The pressed button disappears with the empty state; put the cursor back
+    // in the box where that does not open a phone keyboard.
+    if (hasFinePointer()) textareaRef.current?.focus({ preventScroll: true });
+  }, [sendMessage]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+      e.preventDefault();
+      if (!isLoading && !isRestoring) void sendMessage(input);
+    }
+  };
+
+  const handleFeedback = useCallback(async (messageClientId: string, vote: 'up' | 'down') => {
+    const msg = messages.find((m) => m.id === messageClientId);
+    if (!msg || (!msg.traceId && !msg.messageId)) return;
+    // Optimistically toggle: pressing the same vote a second time clears it.
+    const next = msg.feedback === vote ? null : vote;
+    setMessages((prev) => prev.map((m) => (m.id === messageClientId ? { ...m, feedback: next } : m)));
+    if (next === null) return; // the server cannot clear a vote yet; keep the screen in step
+    const revert = () =>
+      setMessages((prev) => prev.map((m) => (m.id === messageClientId ? { ...m, feedback: msg.feedback ?? null } : m)));
+    try {
+      const res = await api.post('/ai/chat/feedback', {
+        feedback: vote,
+        trace_id: msg.traceId ?? undefined,
+        message_id: msg.messageId ?? undefined,
+      });
+      // api.post resolves { success:false } on a 4xx/5xx without throwing.
+      if (!res.success) revert();
+    } catch {
+      revert();
+    }
+  }, [messages]);
+
+  const handleCopyFailed = useCallback(() => {
+    toastError(t('copy_failed'));
+  }, [toastError, t]);
+
+  const handleNewConversation = () => {
+    setMessages([]);
+    rememberConversation(null);
+    setLimits(null);
+    setInput('');
+    setShowJumpToLatest(false);
+    textareaRef.current?.focus({ preventScroll: true });
+  };
+
+  const handleOpenConversation = useCallback((conversation: AiConversationDetail) => {
+    openConversation(conversation, false);
     setIsHistoryOpen(false);
-  }, []);
+  }, [openConversation]);
 
   const handleConversationDeleted = useCallback((deletedId: number) => {
     if (deletedId === conversationId) {
       setMessages([]);
-      setConversationId(null);
+      rememberConversation(null);
       setLimits(null);
     }
-  }, [conversationId]);
+  }, [conversationId, rememberConversation]);
 
-  // Resolve avatar
-  const userAvatarUrl = user?.avatar_url ?? user?.avatar ?? undefined;
+  const jumpToLatest = () => {
+    if (listRef.current) scrollListToBottom(listRef.current);
+  };
 
   if (!isEnabled) {
-    return (
-      <div className="min-h-[calc(100vh-4rem)] flex flex-col">
-        <FeatureNotAvailable />
-      </div>
-    );
+    return <FeatureNotAvailable />;
   }
 
   const hasMessages = messages.length > 0;
+  const canSend = input.trim().length > 0 && !isLoading && !isRestoring;
+  const communityName = tenant?.name?.trim();
 
   return (
     <div
-      // --keyboard-offset is genuinely dynamic (visualViewport-driven); see
-      // the identical exception for ConversationPage in check-design-tokens.
-      style={{ '--keyboard-offset': `${keyboardOffset}px` } as CSSProperties}
-      className="flex flex-col h-[calc(100dvh-4rem-var(--keyboard-offset,0px))]"
+      ref={rootRef}
+      data-ai-chat=""
+      // --chat-fill-height is measured at runtime (where the chat starts on
+      // the page, the screen height, the iOS keyboard); see useChatFillHeight.
+      // CSS in index.css turns it into the height, less the phone tab bar.
+      style={fillHeight ? ({ '--chat-fill-height': `${fillHeight}px` } as CSSProperties) : undefined}
+      className="mx-auto flex w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-[var(--border-default)] bg-[var(--color-surface)] shadow-sm"
       role="region"
       aria-label={t('aria_chat')}
     >
       <PageMeta title={t('page_meta.title')} noIndex />
+
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-default)] bg-[var(--color-surface)] flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-strong to-accent-strong-end flex items-center justify-center">
-            <Bot className="w-5 h-5 text-white" aria-hidden="true" />
+      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-[var(--border-default)] px-3 py-2.5 sm:px-5 sm:py-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-accent-strong to-accent-strong-end">
+            <Bot className="h-5 w-5 text-white" aria-hidden="true" />
           </div>
-          <div>
-            <h1 className="font-semibold text-[var(--color-text)]">{t('header_title')}</h1>
-            <p className="text-xs text-[var(--color-text-muted)]">{t('header_subtitle')}</p>
+          <div className="min-w-0">
+            <h1 className="truncate font-semibold leading-tight text-[var(--color-text)]">{t('header_title')}</h1>
+            {communityName && (
+              <p className="truncate text-xs text-[var(--color-text-muted)]">
+                {t('header_subtitle_community', { community: communityName })}
+              </p>
+            )}
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
           {limits && (
             <Chip
               size="sm"
               variant="flat"
               color="default"
-              startContent={<Zap className="w-3 h-3" aria-hidden="true" />}
-              className="text-xs hidden sm:flex"
+              startContent={<Zap className="h-3 w-3" aria-hidden="true" />}
+              className="hidden text-xs sm:flex"
             >
               {t('limits_left_today', { count: limits.daily_remaining })}
             </Chip>
           )}
           <Button
             size="sm"
-            variant="light"
-            isIconOnly
+            variant="ghost"
             onPress={() => setIsHistoryOpen(true)}
             aria-label={t('history_button_aria')}
-            className="text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+            className="min-w-0 gap-1.5 px-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] sm:px-3"
           >
-            <History className="w-4 h-4" aria-hidden="true" />
+            <History className="h-4 w-4" aria-hidden="true" />
+            <span className="hidden sm:inline" aria-hidden="true">{t('history_button_aria')}</span>
           </Button>
           {hasMessages && (
             <Button
               size="sm"
-              variant="light"
-              isIconOnly
+              variant="secondary"
               onPress={handleNewConversation}
               aria-label={t('new_conversation_aria')}
-              className="text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+              className="min-w-0 gap-1.5 px-2 sm:px-3"
             >
-              <RefreshCw className="w-4 h-4" aria-hidden="true" />
+              <SquarePen className="h-4 w-4" aria-hidden="true" />
+              <span className="hidden sm:inline" aria-hidden="true">{t('new_conversation')}</span>
             </Button>
           )}
         </div>
       </div>
 
-      {/* Messages area */}
-      <div className="flex-1 overflow-hidden relative">
-        <ScrollShadow
-          ref={scrollRef}
-          className="h-full overflow-y-auto px-4 py-4"
-          hideScrollBar={false}
+      {/* Conversation */}
+      <div className="relative min-h-0 flex-1">
+        <div
+          ref={listRef}
+          onScroll={handleListScroll}
+          className="h-full overflow-y-auto overscroll-contain"
+          data-chat-scroll=""
         >
-          {!hasMessages ? (
-            <EmptyState onQuestionClick={(q) => void sendMessage(q)} starters={starters} />
-          ) : (
-            <div className="max-w-2xl mx-auto" role="log" aria-live="polite" aria-label={t('messages_region')}>
-              <AnimatePresence initial={false}>
-                {messages.map((msg) => (
-                  <MessageBubble
-                    key={msg.id}
-                    message={msg}
-                    userName={user ? resolveUserDisplayName(user) : undefined}
-                    userAvatar={userAvatarUrl}
-                    onFeedback={handleFeedback}
-                  />
-                ))}
-              </AnimatePresence>
+          <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col px-3 py-5 sm:px-6">
+            {isRestoring && !hasMessages ? (
+              <div className="flex flex-1 items-center justify-center gap-2 text-sm text-[var(--color-text-muted)]">
+                <Spinner size="sm" aria-hidden="true" />
+                <span role="status">{t('restoring')}</span>
+              </div>
+            ) : !hasMessages ? (
+              <EmptyState firstName={user?.first_name} starters={starters} onQuestionClick={handleStarter} />
+            ) : (
+              <div className="flex flex-col gap-5" role="log" aria-live="polite" aria-relevant="additions" aria-label={t('messages_region')}>
+                {messages.map((msg) =>
+                  msg.role === 'user' ? (
+                    <UserMessage key={msg.id} message={msg} />
+                  ) : (
+                    <AssistantMessage
+                      key={msg.id}
+                      message={msg}
+                      onFeedback={handleFeedback}
+                      onRetry={handleRetry}
+                      onCopyFailed={handleCopyFailed}
+                      isBusy={isLoading}
+                    />
+                  ),
+                )}
+                {isLoading && <ThinkingIndicator />}
+              </div>
+            )}
+          </div>
+        </div>
 
-              {isLoading && (
-                <AnimatePresence>
-                  <TypingIndicator />
-                </AnimatePresence>
-              )}
-
-              <div ref={messagesEndRef} aria-hidden="true" />
-            </div>
-          )}
-        </ScrollShadow>
+        {showJumpToLatest && (
+          <Button
+            isIconOnly
+            size="sm"
+            variant="secondary"
+            onPress={jumpToLatest}
+            aria-label={t('jump_to_latest')}
+            className="absolute bottom-3 start-1/2 h-10 w-10 min-w-10 -translate-x-1/2 rounded-full border border-[var(--border-default)] bg-[var(--color-surface-elevated)] text-[var(--color-text)] shadow-lg hover:bg-[var(--color-surface)] rtl:translate-x-1/2"
+          >
+            <ArrowDown className="h-4 w-4" aria-hidden="true" />
+          </Button>
+        )}
       </div>
 
-      {/* Input area */}
-      <div className="flex-shrink-0 border-t border-[var(--border-default)] bg-[var(--color-surface)] px-4 py-3">
-        <div className="max-w-2xl mx-auto">
-          <Card
-            className="bg-[var(--color-surface-elevated)] border border-[var(--border-default)] shadow-sm"
-            radius="lg"
-          >
-            <CardBody className="p-0">
-              <div className="flex items-end gap-2 p-2">
-                <Textarea
-                  ref={textareaRef}
-                  aria-label={t('input_aria')}
-                  placeholder={t('input_placeholder')}
-                  value={input}
-                  enterKeyHint="send"
-                  onValueChange={setInput}
-                  onKeyDown={handleKeyDown}
-                  minRows={1}
-                  maxRows={5}
-                  classNames={{
-                    base: 'flex-1',
-                    inputWrapper: 'bg-transparent border-0 shadow-none p-0 hover:bg-transparent focus-within:bg-transparent data-[hover=true]:bg-transparent',
-                    input: 'text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] resize-none px-2 py-1.5',
-                  }}
-                  disabled={isLoading}
-                />
-                <Button
-                  isIconOnly
-                  color="primary"
-                  className="bg-gradient-to-br from-accent-strong to-accent-strong-end text-white flex-shrink-0 mb-0.5"
-                  size="sm"
-                  onPress={() => void sendMessage(input)}
-                  isDisabled={!input.trim() || isLoading}
-                  aria-label={t('send_aria')}
-                >
-                  <Send className="w-4 h-4" aria-hidden="true" />
-                </Button>
-              </div>
-            </CardBody>
-          </Card>
-          <p className="text-center text-xs text-[var(--color-text-muted)] mt-2">
+      {/* Typing box */}
+      <div className="shrink-0 border-t border-[var(--border-default)] px-3 pb-[calc(0.5rem+var(--safe-area-bottom,0px))] pt-3 sm:px-5 sm:pb-3">
+        <div className="mx-auto max-w-3xl">
+          {/* The frame shows where the cursor is; the box inside draws no ring of its own. */}
+          <div className="flex items-end gap-2 rounded-2xl border border-[var(--border-default)] bg-[var(--color-surface-elevated)] p-1.5 shadow-sm transition-[border-color,box-shadow] focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/25">
+            <Textarea
+              ref={textareaRef}
+              aria-label={t('input_aria')}
+              placeholder={t('composer_placeholder')}
+              value={input}
+              enterKeyHint="send"
+              onValueChange={setInput}
+              onKeyDown={handleKeyDown}
+              minRows={1}
+              maxRows={6}
+              classNames={{
+                base: 'flex-1',
+                inputWrapper: 'bg-transparent border-0 shadow-none p-0 hover:bg-transparent focus:bg-transparent focus:border-transparent focus:shadow-none focus:ring-0 focus-visible:ring-0 data-[hover=true]:bg-transparent data-[focused=true]:shadow-none',
+                input: 'text-[0.9375rem] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] resize-none px-2.5 py-2',
+              }}
+            />
+            <Button
+              isIconOnly
+              color="primary"
+              className="mb-0.5 h-10 w-10 min-w-10 shrink-0 rounded-xl bg-gradient-to-br from-accent-strong to-accent-strong-end text-white"
+              onPress={() => void sendMessage(input)}
+              isDisabled={!canSend}
+              aria-label={t('send_aria')}
+            >
+              <Send className="h-4 w-4" aria-hidden="true" />
+            </Button>
+          </div>
+          <p className="mt-2 text-center text-xs text-[var(--color-text-muted)]">
+            <span className="hidden lg:inline">{t('composer_hint')} · </span>
             {t('disclaimer')}
           </p>
         </div>
