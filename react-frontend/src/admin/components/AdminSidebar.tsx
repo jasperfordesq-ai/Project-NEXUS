@@ -699,8 +699,11 @@ function useAdminNav(): NavSection[] {
           ...(hasFeature('exchange_workflow') ? [
             { label: t('smart_matching'), href: '/admin/smart-matching', icon: Zap },
           ] : []),
+          // AI settings is not chat-only: its switches and keys also govern
+          // content generation, translation, search indexing and CV reading,
+          // so it stays reachable when the member chat feature is off.
+          { label: t('ai_settings'), href: '/admin/ai-settings', icon: Brain },
           ...(hasFeature('ai_chat') ? [
-            { label: t('ai_settings'), href: '/admin/ai-settings', icon: Brain },
             { label: t('ai_module_docs'), href: '/admin/ai/module-docs', icon: Brain },
             { label: t('ai_trace_metrics'), href: '/admin/ai/metrics', icon: Brain },
           ] : []),

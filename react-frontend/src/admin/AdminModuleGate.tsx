@@ -45,7 +45,9 @@ export const ADMIN_MODULE_REQUIREMENTS: ReadonlyArray<{
   { path: 'newsletters', feature: 'newsletter' },
   { path: 'advertising', feature: 'local_advertising' },
   { path: 'ai', feature: 'ai_chat' },
-  { path: 'ai-settings', feature: 'ai_chat' },
+  // No gate for 'ai-settings': the page governs much more than member chat
+  // (content generation, translation, indexing, CV reading), and the server
+  // endpoint has no such gate (security register E-131).
 ];
 
 export function AdminModuleGate() {

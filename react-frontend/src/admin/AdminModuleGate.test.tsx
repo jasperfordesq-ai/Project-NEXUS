@@ -43,6 +43,13 @@ describe('admin module boundaries', () => {
     renderPage(path);
     expect(screen.getByText('Module content')).toBeInTheDocument();
   });
+  // E-131: AI settings governs content generation, translation, indexing and
+  // CV reading as well as chat, so switching member chat off must not hide it.
+  it('keeps ai-settings reachable when member AI chat is off', () => {
+    state.off.add('ai_chat');
+    renderPage('ai-settings');
+    expect(screen.getByText('Module content')).toBeInTheDocument();
+  });
   it.each(['module-configuration', 'categories', 'users', 'settings'])('preserves %s for setup and recovery', path => {
     state.enabled = false;
     renderPage(path);
