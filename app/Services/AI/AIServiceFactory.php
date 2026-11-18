@@ -330,10 +330,22 @@ class AIServiceFactory
     {
         $tenantId = TenantContext::getId();
         if ($tenantId) {
-            $enabled = AiSettings::get($tenantId, 'ai_enabled');
-            if ($enabled !== null) {
-                return AiSettings::parseBoolean($enabled);
-            }
+            return self::isEnabledForTenant((int) $tenantId);
+        }
+
+        $config = self::getConfig();
+        return $config['enabled'] ?? true;
+    }
+
+    /**
+     * The community's main AI switch, for code that holds a community id
+     * rather than a current community (queued jobs, console commands).
+     */
+    public static function isEnabledForTenant(int $tenantId): bool
+    {
+        $enabled = AiSettings::get($tenantId, 'ai_enabled');
+        if ($enabled !== null) {
+            return AiSettings::parseBoolean($enabled);
         }
 
         $config = self::getConfig();

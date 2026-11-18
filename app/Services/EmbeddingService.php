@@ -417,6 +417,12 @@ class EmbeddingService
             return;
         }
 
+        // F-629: nothing leaves the platform for indexing while the
+        // community's AI is switched off — a saved OpenAI key is not consent.
+        if (!\App\Services\AI\AIServiceFactory::isEnabledForTenant($tenantId)) {
+            return;
+        }
+
         try {
             $apiKey = DB::table('ai_settings')
                 ->where('tenant_id', $tenantId)
@@ -449,7 +455,7 @@ class EmbeddingService
      *
      * @return float[]|null
      */
-    private function callOpenAiEmbedding(string $apiKey, string $text): ?array
+    protected function callOpenAiEmbedding(string $apiKey, string $text): ?array
     {
         try {
             $ch = curl_init('https://api.openai.com/v1/embeddings');
