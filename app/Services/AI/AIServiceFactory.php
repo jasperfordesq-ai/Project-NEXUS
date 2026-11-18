@@ -23,7 +23,14 @@ use App\Services\AI\Providers\OllamaProvider;
  */
 class AIServiceFactory
 {
+    /**
+     * Stand-in providers installed by tests, keyed by provider id and checked
+     * first. Production code never writes here: see $providerCache.
+     */
     private static array $instances = [];
+
+    /** Providers built from a community's settings, keyed by community + provider + settings (F-628). */
+    private static array $providerCache = [];
     private static ?array $config = null;
 
     /**
@@ -31,14 +38,26 @@ class AIServiceFactory
      */
     public static function getProvider(?string $providerId = null): AIProviderInterface
     {
-        $config = self::getConfig();
         $providerId = $providerId ?? self::getDefaultProvider();
 
-        if (!isset(self::$instances[$providerId])) {
-            self::$instances[$providerId] = self::createProvider($providerId);
+        if (isset(self::$instances[$providerId])) {
+            return self::$instances[$providerId];
         }
 
-        return self::$instances[$providerId];
+        // F-628: a provider object carries one community's API key, model and
+        // address, so it may be reused only for that community with those same
+        // settings. Long-lived processes (`agents:run`, queue workers) serve
+        // community after community, and an admin can change a key meanwhile;
+        // keyed by provider id alone, community B was handed community A's key.
+        $providerConfig = self::getProviderConfig($providerId);
+        $cacheKey = (string) (TenantContext::getId() ?? '') . ':' . $providerId . ':'
+            . hash('sha256', serialize($providerConfig));
+
+        if (!isset(self::$providerCache[$cacheKey])) {
+            self::$providerCache[$cacheKey] = self::createProvider($providerId, $providerConfig);
+        }
+
+        return self::$providerCache[$cacheKey];
     }
 
     /**
@@ -183,10 +202,8 @@ class AIServiceFactory
     /**
      * Create a provider instance
      */
-    private static function createProvider(string $providerId): AIProviderInterface
+    private static function createProvider(string $providerId, array $config): AIProviderInterface
     {
-        $config = self::getProviderConfig($providerId);
-
         return match ($providerId) {
             'gemini' => new GeminiProvider($config),
             'openai' => new OpenAIProvider($config),
@@ -447,6 +464,7 @@ class AIServiceFactory
     public static function clearCache(): void
     {
         self::$instances = [];
+        self::$providerCache = [];
         self::$config = null;
     }
 }
