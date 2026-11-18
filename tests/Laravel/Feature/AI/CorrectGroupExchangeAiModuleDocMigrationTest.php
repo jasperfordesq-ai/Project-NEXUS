@@ -64,10 +64,11 @@ final class CorrectGroupExchangeAiModuleDocMigrationTest extends TestCase
     {
         $body = AiModuleDocsService::defaultSeed()['group_exchanges']['body'];
 
-        foreach (['Equal Split', 'Custom Hours', 'Weighted Split', 'Provider', 'Receiver'] as $term) {
+        // The five kinds as the screen names them (group_exchanges.json "kinds"), re-checked 18 Nov 2026.
+        foreach (['Workshop or class', 'A team helping someone', 'Share equally', 'Share by amount of effort', "Type each person's hours"] as $term) {
             $this->assertStringContainsString($term, $body);
         }
         $this->assertStringNotContainsString('beneficiary', $body);
-        $this->assertLessThanOrEqual(1200, mb_strlen($body), 'must fit the prompt injection cap');
+        $this->assertLessThanOrEqual(AiModuleDocsService::MAX_BODY_INJECT_CHARS, mb_strlen($body), 'must fit the prompt injection cap');
     }
 }

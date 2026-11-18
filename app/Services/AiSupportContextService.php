@@ -88,15 +88,15 @@ class AiSupportContextService
             'keywords' => ['profile', 'settings', 'account', 'password', 'email', 'avatar', 'photo', 'language', 'notification'],
             'module' => 'settings',
             'route' => '/settings',
-            'summary' => 'Members can update profile, account, language, security, and notification preferences from settings.',
+            'summary' => 'Settings has tabs for profile (including language and appearance), notifications, privacy and security.',
         ],
         [
             'id' => 'security_passkeys',
             'title' => 'Security and passkeys',
             'keywords' => ['passkey', 'passkeys', 'webauthn', 'biometric', 'windows hello', '2fa', 'totp', 'security'],
             'module' => 'settings',
-            'route' => '/settings',
-            'summary' => 'Security settings may include passkeys and two-factor authentication. If a device authenticator is unavailable, the member may need to check browser or operating-system setup.',
+            'route' => '/settings?tab=security',
+            'summary' => 'Settings → Security has the password, two-step sign-in (an authenticator app with backup codes), passkeys if switched on, and the list of signed-in devices.',
         ],
         [
             'id' => 'volunteering',
@@ -112,7 +112,7 @@ class AiSupportContextService
             'keywords' => ['knowledge', 'article', 'articles', 'guide', 'guides', 'resource', 'resources', 'faq'],
             'feature' => 'resources',
             'route' => '/kb',
-            'summary' => 'The Knowledge Base contains published guides and resources. The current corpus may include technical reference material, so answers should be simplified for members.',
+            'summary' => 'The Knowledge Base holds help articles published by the community admins.',
         ],
     ];
 
@@ -125,20 +125,21 @@ class AiSupportContextService
             $tenantId = (int) TenantContext::getId();
             $tenant = $this->tenantProfile($tenantId);
             $user = $this->userProfile($tenantId, $userId);
-            $articles = $this->searchKnowledgeBase($tenantId, $message);
+            // Only member help reaches the assistant. Timebank Ireland's
+            // Knowledge Base held engineering reports written in March 2026;
+            // every answer ended with links to them, and the model was reading
+            // months-old internals as if they described the platform today
+            // (18 Nov 2026). A technical article is now neither shown to the
+            // member nor given to the model.
+            $articles = array_values(array_filter(
+                $this->searchKnowledgeBase($tenantId, $message),
+                fn (array $article) => ($article['audience'] ?? '') !== 'technical_reference'
+            ));
             $areas = $this->matchSupportAreas($message, $tenant['features'], $tenant['modules']);
 
             $content = $this->composeContext($tenant, $user, $articles, $areas);
 
-            // Technical articles stay in the model's background (composeContext
-            // tells it to simplify them), but only member help is shown to the
-            // member as a source. Timebank Ireland's Knowledge Base held only
-            // engineering reports, and every answer ended with links to them
-            // (18 Nov 2026).
-            $memberSources = array_values(array_map(
-                fn (array $article) => $article['source'],
-                array_filter($articles, fn (array $article) => ($article['audience'] ?? '') !== 'technical_reference')
-            ));
+            $memberSources = array_values(array_map(fn (array $article) => $article['source'], $articles));
 
             return [
                 'content' => $content,
@@ -348,23 +349,24 @@ class AiSupportContextService
      */
     private function composeContext(array $tenant, array $user, array $articles, array $areas): string
     {
+        // Wording re-checked 18 Nov 2026 after the owner reported false answers:
+        // the model must not fill gaps with invented paths, numbers or rules.
         $lines = [
-            '# Project NEXUS Support Context',
+            '# Community Support Context',
             '',
-            'You are supporting a member or administrator inside Project NEXUS, a multi-tenant timebanking platform.',
-            'The help corpus is still early and may contain technical reference material. Prefer plain-language, member-friendly guidance. Do not expose implementation details, database names, deployment steps, or code unless the user is clearly asking as a developer/admin.',
-            'Use tenant context and retrieved articles as grounding. If the retrieved content is missing, incomplete, or too technical, say what can be verified and give the safest next step.',
-            'If a feature or module is disabled for this tenant, do not tell the user they can use it; explain that a community administrator may need to enable it.',
-            'For safeguarding, security compromise, billing, legal, or data-deletion concerns, give calm high-level guidance and recommend contacting the community administrator or Project NEXUS support. For immediate danger, tell the user to contact local emergency services.',
-            'Keep answers concise, practical, and step-by-step. Ask at most one clarifying question if needed.',
+            'You are helping a member or administrator of this timebanking community. The site hosts many separate communities; you only know about this one.',
+            'Answer from the guides, help articles and tool results provided. Only state a menu path, number, time limit, permission, privacy rule or automatic behaviour if it appears there; otherwise say you are not sure and suggest the Help Centre or the community\'s team.',
+            'Use plain, member-friendly language. Never mention internal names (the feature keys below, database or code names, "tenant", "API", "module").',
+            'If a feature is switched off in this community, do not tell the user they can use it; say an admin of this community would need to switch it on.',
+            'For safeguarding, account security, billing, legal or data-deletion concerns, give calm, short guidance and suggest contacting this community\'s team through the Contact us link in the footer. For immediate danger, tell the user to contact local emergency services.',
+            'When naming members, use first names only.',
+            'Keep answers short and step by step. Ask at most one clarifying question.',
             '',
-            '## Tenant',
+            '## Community',
             '- Name: ' . $tenant['name'],
             '- Category: ' . $tenant['category'],
-            '- Enabled modules: ' . $this->enabledKeys($tenant['modules']),
-            '- Disabled modules: ' . $this->disabledKeys($tenant['modules']),
-            '- Enabled features: ' . $this->enabledKeys($tenant['features']),
-            '- Disabled features: ' . $this->disabledKeys($tenant['features']),
+            '- Switched on: ' . $this->enabledKeys($tenant['modules']) . ', ' . $this->enabledKeys($tenant['features']),
+            '- Switched off: ' . $this->disabledKeys($tenant['modules']) . ', ' . $this->disabledKeys($tenant['features']),
             '',
             '## User Context',
             '- Role: ' . ($user['role'] ?? 'member'),
@@ -378,7 +380,7 @@ class AiSupportContextService
             $lines[] = '';
             $lines[] = '## Relevant Platform Areas';
             foreach ($areas as $area) {
-                $status = $area['enabled'] ? 'enabled' : 'disabled by ' . $area['disabled_by'];
+                $status = $area['enabled'] ? 'switched on' : 'switched off in this community';
                 $lines[] = '- ' . $area['title'] . ' (' . $status . ', route: ' . $area['url'] . '): ' . $area['summary'];
             }
         }
@@ -404,8 +406,8 @@ class AiSupportContextService
     private function fallbackContext(): string
     {
         return implode("\n", [
-            '# Project NEXUS Support Context',
-            'Support context retrieval failed. Answer cautiously from general platform knowledge, avoid inventing tenant-specific facts, and recommend contacting support when account-specific details are needed.',
+            '# Community Support Context',
+            'Support context retrieval failed. Do not guess how this community\'s site works: say you are not sure, and suggest the Help Centre or the community\'s team (Contact us link in the footer).',
         ]);
     }
 

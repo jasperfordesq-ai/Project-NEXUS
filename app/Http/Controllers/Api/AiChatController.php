@@ -119,13 +119,13 @@ class AiChatController extends BaseApiController
         // Build a bounded conversation history for context.
         $history = $this->supportContextService->recentConversationHistory((int) $conversationId);
         $toolGuidance = <<<TXT
-You have retrieval tools available (search_listings, search_members, search_kb, search_events, search_jobs, search_marketplace, get_my_wallet_balance, semantic_search). Call them whenever the user's question would benefit from live, tenant-scoped data — for example, "find me a gardener", "what events are on this weekend", "who can teach me Spanish", "what is my balance". Prefer the specific keyword search_* tools first; fall back to semantic_search only when the question is vague, uses synonyms, or a keyword search returned nothing. Only call get_my_wallet_balance when the user is clearly asking about their own balance. After a tool returns, summarise the results conversationally and reference items by title; the UI will render structured cards beside your message, so do not paste raw URLs or repeat every field — keep your reply readable and concise.
+You may have search tools for this community's offers and requests, members, events, help articles, jobs and marketplace items, the user's own time credit balance, and a general meaning-based search. Use only the tools you are given; which ones you have depends on what this community has switched on. Call one when the question needs live information from this community, for example "find me a gardener", "what events are on this weekend" or "what is my balance". Prefer the specific search tools; use the general search only when the question is vague or a specific search found nothing. Only check the balance when the user asks about their own balance. After a tool returns, summarise the results in plain words and refer to items by title. The page shows result cards beside your reply, so don't paste links or repeat every detail.
 TXT;
         $moduleDocsPrompt = $this->moduleDocs->renderForPrompt((int) $tenantId, $message);
         $userMemoryPrompt = $this->userMemory->buildPrompt((int) $tenantId, (int) $userId);
 
         $chatMessages = [
-            ['role' => 'system', 'content' => AIServiceFactory::getSystemPrompt() ?: 'You are a helpful community assistant for a timebanking platform.'],
+            ['role' => 'system', 'content' => AIServiceFactory::getSystemPrompt() ?: 'You are a helpful assistant for a timebanking community. Answer only from the information you are given; if you are not sure, say so.'],
             ['role' => 'system', 'content' => $toolGuidance],
             ['role' => 'system', 'content' => $supportContext['content']],
         ];

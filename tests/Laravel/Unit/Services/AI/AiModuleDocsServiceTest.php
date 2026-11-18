@@ -247,11 +247,11 @@ class AiModuleDocsServiceTest extends TestCase
         $this->assertArrayHasKey('matched_keyword', $doc);
     }
 
-    public function test_findRelevant_truncates_body_at_1200_chars(): void
+    public function test_findRelevant_truncates_body_at_the_injection_limit(): void
     {
         $kw   = 'longbody_' . substr(md5(uniqid('', true)), 0, 6);
         $slug = $this->uniqueSlug('longbody');
-        $longBody = str_repeat('x', 2000);
+        $longBody = str_repeat("x", AiModuleDocsService::MAX_BODY_INJECT_CHARS + 800);
         $this->insertDoc($slug, 'Long Body Doc', $longBody, [$kw]);
 
         $results = $this->svc->findRelevant(self::TENANT_ID, $kw);
@@ -264,7 +264,7 @@ class AiModuleDocsServiceTest extends TestCase
             }
         }
         $this->assertNotNull($match, 'Long body doc should be returned');
-        $this->assertLessThanOrEqual(1200, mb_strlen($match['body']));
+        $this->assertSame(AiModuleDocsService::MAX_BODY_INJECT_CHARS, mb_strlen($match["body"]));
     }
 
     // ── renderForPrompt() ─────────────────────────────────────────────────────

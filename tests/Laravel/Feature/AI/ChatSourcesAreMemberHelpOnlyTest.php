@@ -23,8 +23,9 @@ use Tests\Laravel\TestCase;
  * as a member-facing source although AiSupportContextService already labels
  * such articles `technical_reference`.
  *
- * Technical articles stay in the model's background (its instructions say to
- * simplify them for members), but only member help is shown as a source.
+ * Later the same day the owner reported the assistant giving false answers, so
+ * technical articles are no longer given to the model either: only member help
+ * reaches the assistant, and only member help is shown as a source.
  * TenantContext is set here, never inherited: the older tests of this service
  * are quarantined as order-dependent because build() reads it.
  */
@@ -49,7 +50,8 @@ final class ChatSourcesAreMemberHelpOnlyTest extends TestCase
         $shown = array_column($result['sources'], 'title');
         $this->assertContains('How to book a quokkaferry swap', $shown);
         $this->assertNotContains('Quokkaferry engine: complete technical report', $shown, 'a technical report was shown to a member as a source');
-        $this->assertStringContainsString('Quokkaferry engine: complete technical report', $result['content'], 'the technical article should stay in the background');
+        $this->assertStringNotContainsString('Quokkaferry engine', $result['content'], 'a technical report was given to the model');
+        $this->assertStringContainsString('How to book a quokkaferry swap', $result['content']);
     }
 
     public function test_no_source_is_shown_when_only_technical_articles_match(): void
@@ -63,6 +65,7 @@ final class ChatSourcesAreMemberHelpOnlyTest extends TestCase
         $result = (new AiSupportContextService())->build((int) $user->id, 'Tell me about ' . self::WORD);
 
         $this->assertSame([], $result['sources']);
+        $this->assertStringNotContainsString('Quokkaferry migration runbook', $result['content']);
     }
 
     private function article(string $title, string $content): void

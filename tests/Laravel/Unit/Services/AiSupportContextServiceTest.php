@@ -83,10 +83,9 @@ class AiSupportContextServiceTest extends TestCase
             'What should I do about a docker api migration problem?'
         );
 
-        // Since 18 Nov 2026 a technical article stays in the background but is
-        // never shown to the member as a source (ChatSourcesAreMemberHelpOnlyTest).
+        // Since 18 Nov 2026 a technical article is neither shown to the member
+        // nor given to the model (ChatSourcesAreMemberHelpOnlyTest).
         $this->assertNotContains('Docker API migration troubleshooting', array_column($result['sources'], 'title'));
-        $this->assertStringContainsString('Docker API migration troubleshooting', $result['content']);
-        $this->assertStringContainsString('technical reference material', $result['content']);
+        $this->assertStringNotContainsString('Docker API migration troubleshooting', $result['content']);
     }
 }
