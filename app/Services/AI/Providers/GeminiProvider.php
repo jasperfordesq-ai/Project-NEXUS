@@ -34,7 +34,8 @@ class GeminiProvider extends BaseProvider
         }
 
         $model = $this->getModel($options);
-        $endpoint = "models/{$model}:generateContent?key={$this->apiKey}";
+        // The key goes in a header, never the address, where logs can record it.
+        $endpoint = "models/{$model}:generateContent";
 
         // Convert messages to Gemini format
         $contents = $this->convertMessagesToGeminiFormat($messages);
@@ -56,7 +57,7 @@ class GeminiProvider extends BaseProvider
             ['category' => 'HARM_CATEGORY_DANGEROUS_CONTENT', 'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'],
         ];
 
-        $response = $this->request($endpoint, $data);
+        $response = $this->request($endpoint, $data, ['x-goog-api-key: ' . $this->apiKey]);
 
         // Parse response
         $content = '';
@@ -97,7 +98,7 @@ class GeminiProvider extends BaseProvider
         }
 
         $model = $this->getModel($options);
-        $endpoint = "models/{$model}:streamGenerateContent?key={$this->apiKey}&alt=sse";
+        $endpoint = "models/{$model}:streamGenerateContent?alt=sse";
 
         $contents = $this->convertMessagesToGeminiFormat($messages);
 
@@ -116,7 +117,7 @@ class GeminiProvider extends BaseProvider
             CURLOPT_RETURNTRANSFER => false,
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => json_encode($data),
-            CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+            CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'x-goog-api-key: ' . $this->apiKey],
             CURLOPT_TIMEOUT => 300,
             CURLOPT_WRITEFUNCTION => function ($ch, $data) use ($onChunk) {
                 $lines = explode("\n", $data);
@@ -151,7 +152,7 @@ class GeminiProvider extends BaseProvider
             throw new \Exception('Gemini API key not configured');
         }
 
-        $endpoint = "models/text-embedding-004:embedContent?key={$this->apiKey}";
+        $endpoint = "models/text-embedding-004:embedContent";
 
         $data = [
             'model' => 'models/text-embedding-004',
@@ -160,7 +161,7 @@ class GeminiProvider extends BaseProvider
             ],
         ];
 
-        $response = $this->request($endpoint, $data);
+        $response = $this->request($endpoint, $data, ['x-goog-api-key: ' . $this->apiKey]);
 
         return $response['embedding']['values'] ?? [];
     }
