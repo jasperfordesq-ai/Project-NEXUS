@@ -100,6 +100,135 @@ class MatchingJourneyTest extends TestCase
         $this->assertTrue($data['meta']['has_active_listings']);
     }
 
+    public function test_a_request_is_matched_with_an_offer_filed_under_a_different_category(): void
+    {
+        // Members rarely pick the same category for the same thing. Until
+        // 18 Nov 2026 the engine only ever looked in the request's own
+        // category, so this pair was never even scored.
+        $me = $this->member();
+        $this->listingFor($me, 'request', $this->category('Home and garden')->id, [
+            'title' => 'Need someone to mow my lawn',
+            'description' => 'The grass at the back of the house is getting very long.',
+        ]);
+        $mower = $this->listingFor($this->member(), 'offer', $this->category('Odd jobs')->id, [
+            'title' => 'Lawn mowing and hedge trimming',
+            'description' => 'I have my own mower and can cut grass and trim hedges.',
+        ]);
+        $cakes = $this->listingFor($this->member(), 'offer', $this->category('Food')->id, [
+            'title' => 'Cake baking for parties',
+            'description' => 'Birthday cakes and fresh bread made to order.',
+        ]);
+
+        $ids = $this->listingIds($this->matchesFor($me, 'modules=listings'));
+
+        $this->assertContains($mower->id, $ids, 'The same help filed under another category must be found');
+        $this->assertNotContains($cakes->id, $ids, 'An unrelated offer in another category must not be');
+    }
+
+    public function test_a_member_with_no_listing_is_matched_by_the_skills_on_their_profile(): void
+    {
+        $me = $this->member();
+        DB::table('user_skills')->insert([
+            ['user_id' => $me->id, 'tenant_id' => $this->testTenantId, 'skill_name' => 'Babysitting', 'proficiency' => 'advanced', 'is_offering' => 1, 'is_requesting' => 0],
+            ['user_id' => $me->id, 'tenant_id' => $this->testTenantId, 'skill_name' => 'Computer help', 'proficiency' => 'intermediate', 'is_offering' => 0, 'is_requesting' => 1],
+        ]);
+        $needsChildcare = $this->listingFor($this->member(), 'request', $this->category('Family')->id, [
+            'title' => 'Someone to mind my kids after school', 'description' => 'Two children, aged six and nine.',
+        ]);
+        $offersComputers = $this->listingFor($this->member(), 'offer', $this->category('Technology')->id, [
+            'title' => 'Laptop and computer repair', 'description' => 'I fix slow laptops and set up printers.',
+        ]);
+        $unrelated = $this->listingFor($this->member(), 'request', $this->category('Pets')->id, [
+            'title' => 'Dog walking', 'description' => 'A walk for my dog at lunchtime.',
+        ]);
+
+        $data = $this->matchesFor($me, 'modules=listings');
+        $ids = $this->listingIds($data);
+
+        $this->assertContains($needsChildcare->id, $ids, 'What the member can do meets what others need');
+        $this->assertContains($offersComputers->id, $ids, 'What the member wants meets what others offer');
+        $this->assertNotContains($unrelated->id, $ids);
+        $this->assertFalse($data['meta']['has_active_listings'], 'The page still invites them to post a listing');
+    }
+
+    private function setCommunityArea(?string $serviceArea, ?float $lat = 51.5000, ?float $lon = -0.1200): void
+    {
+        DB::table('tenants')->where('id', $this->testTenantId)->update([
+            'service_area' => $serviceArea, 'latitude' => $lat, 'longitude' => $lon,
+        ]);
+    }
+
+    public function test_a_member_without_a_location_in_a_local_community_is_matched_as_somewhere_in_it(): void
+    {
+        $this->setCommunityArea('local');
+        $category = $this->category();
+        $me = $this->member(['latitude' => null, 'longitude' => null]);
+        $this->listingFor($me, 'request', $category->id, ['latitude' => null, 'longitude' => null]);
+        $theirs = $this->listingFor($this->member(['latitude' => 51.5100, 'longitude' => -0.1300]), 'offer', $category->id, [
+            'latitude' => 51.5100, 'longitude' => -0.1300,
+        ]);
+
+        $data = $this->matchesFor($me, 'modules=listings');
+        $match = array_values(array_filter($data['matches'], static fn (array $m): bool => (int) ($m['listing_id'] ?? 0) === $theirs->id));
+
+        $this->assertCount(1, $match, 'Before, a member with no location saw only remote listings');
+        $this->assertNull($match[0]['distance_km'] ?? null, 'A distance from the community centre is not the member\'s distance');
+        $this->assertTrue($data['meta']['needs_location'], 'The page must still ask for a location');
+    }
+
+    public function test_a_listing_whose_owner_gave_no_location_is_found_in_a_local_community(): void
+    {
+        $this->setCommunityArea('local');
+        $category = $this->category();
+        $me = $this->member();
+        $this->listingFor($me, 'request', $category->id);
+        $theirs = $this->listingFor($this->member(['latitude' => null, 'longitude' => null]), 'offer', $category->id, [
+            'latitude' => null, 'longitude' => null,
+        ]);
+
+        $match = array_values(array_filter(
+            $this->matchesFor($me, 'modules=listings')['matches'],
+            static fn (array $m): bool => (int) ($m['listing_id'] ?? 0) === $theirs->id,
+        ));
+
+        $this->assertCount(1, $match, 'Before, nobody with a location was ever shown this listing');
+        $this->assertNull($match[0]['distance_km'] ?? null);
+    }
+
+    public function test_a_national_community_has_no_centre_to_stand_in(): void
+    {
+        $this->setCommunityArea('national');
+        $category = $this->category();
+        $me = $this->member(['latitude' => null, 'longitude' => null]);
+        $this->listingFor($me, 'request', $category->id, ['latitude' => null, 'longitude' => null]);
+        $inPerson = $this->listingFor($this->member(), 'offer', $category->id);
+
+        $this->assertNotContains($inPerson->id, $this->listingIds($this->matchesFor($me, 'modules=listings')),
+            'Across a whole country, an in-person listing cannot be assumed to be within reach');
+    }
+
+    public function test_a_spanish_request_is_matched_with_a_spanish_offer_worded_differently(): void
+    {
+        $category = $this->category('Jardín');
+        $me = $this->member();
+        $this->listingFor($me, 'request', $category->id, [
+            'title' => 'Necesito ayuda con el jardín',
+            'description' => 'Tengo un jardín pequeño detrás de la casa.',
+        ]);
+        $theirs = $this->listingFor($this->member(), 'offer', $category->id, [
+            'title' => 'Cuido jardines y corto el césped',
+            'description' => 'Tengo mi propia cortadora.',
+        ]);
+
+        $matches = array_values(array_filter(
+            $this->matchesFor($me, 'modules=listings')['matches'],
+            static fn (array $m): bool => (int) ($m['listing_id'] ?? 0) === $theirs->id,
+        ));
+
+        $this->assertCount(1, $matches);
+        $this->assertGreaterThanOrEqual(55, (float) $matches[0]['match_score'], 'Same kind of help in the same category is a strong match');
+    }
+
     private function savePreferences(User $member, array $values): void
     {
         DB::table('match_preferences')->updateOrInsert(
@@ -379,7 +508,12 @@ class MatchingJourneyTest extends TestCase
 
         $category = $this->category();
         $lonely = $this->member(['last_login_at' => now()]);
-        $this->listingFor($lonely, 'offer', $this->category('Astronomy')->id);
+        // Unrelated wording as well as category: categories alone no longer
+        // keep a pair apart.
+        $this->listingFor($lonely, 'offer', $this->category('Astronomy')->id, [
+            'title' => 'Telescope evenings',
+            'description' => 'Star gazing through my telescope on clear nights.',
+        ]);
         $matched = $this->member(['last_login_at' => now()->subDay()]);
         $this->listingFor($matched, 'offer', $category->id);
         $theirs = $this->listingFor($this->member(['last_login_at' => now()->subDays(2)]), 'request', $category->id);

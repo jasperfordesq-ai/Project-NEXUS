@@ -112,6 +112,18 @@ class CandidateRetriever
             ? 'tenant_wide' : 'remote_only';
         $dormancyDays = max(0, (int) ($gates['dormancy_days'] ?? 90));
 
+        // Where a listing is: its own location, else its owner's, else (in a
+        // local or regional community) the community's centre. The centre
+        // comes from the tenants row, never from a request, and is cast to
+        // float before being written into the SQL.
+        $centre = $this->centre($gates);
+        $latExpr = $centre !== null
+            ? sprintf('COALESCE(l.latitude, u.latitude, %.7F)', $centre['lat'])
+            : 'COALESCE(l.latitude, u.latitude)';
+        $lonExpr = $centre !== null
+            ? sprintf('COALESCE(l.longitude, u.longitude, %.7F)', $centre['lon'])
+            : 'COALESCE(l.longitude, u.longitude)';
+
         $params = [];
 
         $sql = "SELECT l.*,
@@ -120,18 +132,19 @@ class CandidateRetriever
                        u.is_verified as author_verified,
                        " . \App\Support\UserDisplayName::sql('u', 'user_name') . ",
                        (SELECT AVG(rating) FROM reviews WHERE receiver_id = u.id AND tenant_id = u.tenant_id) as author_rating,
-                       c.name as category_name, c.color as category_color";
+                       c.name as category_name, c.color as category_color,
+                       " . ($centre !== null ? "(COALESCE(l.latitude, u.latitude) IS NULL OR COALESCE(l.longitude, u.longitude) IS NULL)" : "0") . " as location_approximate";
 
         if ($hasCoords) {
             // LEAST/GREATEST clamp keeps acos() in domain when floating rounding
             // pushes the cosine fractionally past ±1 (identical coordinates).
             $sql .= ",
-                CASE WHEN COALESCE(l.latitude, u.latitude) IS NULL
-                          OR COALESCE(l.longitude, u.longitude) IS NULL THEN NULL
+                CASE WHEN {$latExpr} IS NULL
+                          OR {$lonExpr} IS NULL THEN NULL
                      ELSE (6371 * ACOS(LEAST(1, GREATEST(-1,
-                        COS(RADIANS(?)) * COS(RADIANS(COALESCE(l.latitude, u.latitude))) *
-                        COS(RADIANS(COALESCE(l.longitude, u.longitude)) - RADIANS(?)) +
-                        SIN(RADIANS(?)) * SIN(RADIANS(COALESCE(l.latitude, u.latitude)))
+                        COS(RADIANS(?)) * COS(RADIANS({$latExpr})) *
+                        COS(RADIANS({$lonExpr}) - RADIANS(?)) +
+                        SIN(RADIANS(?)) * SIN(RADIANS({$latExpr}))
                      ))))
                 END as distance_km";
             array_push($params, $userLat, $userLon, $userLat);
@@ -201,12 +214,12 @@ class CandidateRetriever
             // index-assisted range scan instead of a full-tenant trig pass.
             $box = $this->boundingBox($userLat, $userLon, $maxDistanceKm);
             $sql .= " AND (l.service_type IN (" . self::REMOTE_TYPES . ")
-                       OR (COALESCE(l.latitude, u.latitude) IS NOT NULL
-                           AND COALESCE(l.longitude, u.longitude) IS NOT NULL
-                           AND COALESCE(l.latitude, u.latitude) BETWEEN ? AND ?";
+                       OR ({$latExpr} IS NOT NULL
+                           AND {$lonExpr} IS NOT NULL
+                           AND {$latExpr} BETWEEN ? AND ?";
             array_push($params, $box['lat_min'], $box['lat_max']);
             if ($box['lon_min'] !== null) {
-                $sql .= " AND COALESCE(l.longitude, u.longitude) BETWEEN ? AND ?";
+                $sql .= " AND {$lonExpr} BETWEEN ? AND ?";
                 array_push($params, $box['lon_min'], $box['lon_max']);
             }
             $sql .= "))";
@@ -241,6 +254,23 @@ class CandidateRetriever
         $sql .= " LIMIT " . max(1, $limit);
 
         return array_map(fn ($row) => (array) $row, DB::select($sql, $params));
+    }
+
+    /**
+     * The community centre the engine put in the gates, if any.
+     *
+     * @return array{lat: float, lon: float}|null
+     */
+    private function centre(array $gates): ?array
+    {
+        $centre = $gates['community_centre'] ?? null;
+        if (!is_array($centre) || !is_numeric($centre['lat'] ?? null) || !is_numeric($centre['lon'] ?? null)) {
+            return null;
+        }
+        $lat = (float) $centre['lat'];
+        $lon = (float) $centre['lon'];
+
+        return $this->hasCoords($lat, $lon) ? ['lat' => $lat, 'lon' => $lon] : null;
     }
 
     /**

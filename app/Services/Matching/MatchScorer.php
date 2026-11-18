@@ -52,6 +52,9 @@ final class MatchScorer
     private const PILLAR_FLOOR = 0.05;
     private const ADJUSTMENT_CAP = 20.0;
 
+    /** Highest nearness credited when a location had to be approximated. */
+    private const APPROXIMATE_PROXIMITY_CAP = 0.6;
+
     /** Embedding cosine range mapped onto 0–1 for the semantic signal. */
     private const SEMANTIC_COSINE_MIN = 0.15;
     private const SEMANTIC_COSINE_MAX = 0.90;
@@ -94,7 +97,7 @@ final class MatchScorer
         );
         if ($category >= 0.99) {
             $reasons[] = 'Same category: ' . ($candidate['category_name'] ?? 'General');
-        } elseif ($category >= 0.65) {
+        } elseif ($category >= 0.6) {
             $reasons[] = 'Related category: ' . ($candidate['category_name'] ?? 'General');
         }
 
@@ -111,6 +114,8 @@ final class MatchScorer
         $semantic = $this->semanticScore($searcherListing, $candidate, $semanticSimilarity);
         if ($semanticSimilarity !== null && $semantic >= 0.6) {
             $reasons[] = 'Very similar to what you are looking for';
+        } elseif ($semanticSimilarity === null && $semantic >= 0.6 && $this->sameKindOfHelp($searcherListing, $candidate)) {
+            $reasons[] = 'Very similar to what you are looking for';
         }
 
         // ── Feasibility signals ────────────────────────────────────────────
@@ -118,7 +123,15 @@ final class MatchScorer
         $distance = isset($candidate['distance_km']) && is_numeric($candidate['distance_km'])
             ? (float) $candidate['distance_km'] : null;
 
-        $proximity = $this->proximityScore($serviceType, $distance);
+        // A distance measured from the community's centre (one side gave no
+        // location) only says "somewhere in this community": nearness is
+        // capped, never described as close, and no distance is reported.
+        if (!empty($candidate['location_approximate']) && $serviceType !== 'remote_only') {
+            $proximity = min($this->proximityScore($serviceType, $distance), self::APPROXIMATE_PROXIMITY_CAP);
+            $distance = null;
+        } else {
+            $proximity = $this->proximityScore($serviceType, $distance);
+        }
         $prox = $this->proximityBands();
         if ($serviceType === 'remote_only') {
             $reasons[] = 'Can be done remotely';
@@ -266,12 +279,26 @@ final class MatchScorer
             return 0.7;
         }
 
-        if ($catA !== null && $catB !== null) {
-            similar_text((string) $catA['name'], (string) $catB['name'], $pct);
-            return max(self::DEFAULT_CATEGORY, (float) ($pct / 100 * 0.8));
+        // Different categories are related when their NAMES are about the same
+        // thing ("Home & Garden" / "Gardening"). This used to be letter overlap
+        // (similar_text), which gave "Music & Arts" and "Odd Jobs & Repairs"
+        // credit for sharing "&", spaces and a few letters.
+        if ($catA !== null && $catB !== null
+            && array_intersect($this->categoryTerms($a), $this->categoryTerms($b)) !== []) {
+            return 0.6;
         }
 
         return self::DEFAULT_CATEGORY;
+    }
+
+    /** @var array<int, string[]> */
+    private array $categoryTermCache = [];
+
+    /** @return string[] words and concepts of a category's name */
+    private function categoryTerms(int $categoryId): array
+    {
+        return $this->categoryTermCache[$categoryId]
+            ??= KeywordExtractor::extract((string) ($this->categories[$categoryId]['name'] ?? ''));
     }
 
     /**
@@ -328,7 +355,7 @@ final class MatchScorer
             return max(0.0, min(1.0, $mapped));
         }
 
-        // AI off / embedding missing: keyword overlap between the two listing texts.
+        // AI off / embedding missing: what the two listing texts share.
         $a = array_values((array) ($searcherListing['keywords'] ?? []));
         $b = array_values((array) ($candidate['keywords'] ?? []));
         if (empty($a) || empty($b)) {
@@ -339,7 +366,30 @@ final class MatchScorer
         $union = count(array_unique(array_merge($a, $b)));
         $jaccard = $union > 0 ? $intersect / $union : 0.0;
 
-        return min(1.0, $jaccard * 1.5);
+        // Same kind of help ("~childcare" on both sides) is strong evidence
+        // even when the wording differs completely: "babysitter needed" and
+        // "I can mind your kids" share no word, so word overlap alone scores
+        // them as unrelated. Measured against the listing with fewer
+        // concepts, so a listing covering two kinds of help still fully
+        // answers a request for one of them.
+        $conceptsA = array_values(array_filter($a, fn ($k) => is_string($k) && KeywordExtractor::isConcept($k)));
+        $conceptsB = array_values(array_filter($b, fn ($k) => is_string($k) && KeywordExtractor::isConcept($k)));
+        $conceptOverlap = 0.0;
+        if ($conceptsA !== [] && $conceptsB !== []) {
+            $conceptOverlap = count(array_intersect($conceptsA, $conceptsB))
+                / min(count($conceptsA), count($conceptsB));
+        }
+
+        return min(1.0, max($jaccard * 1.5, $conceptOverlap));
+    }
+
+    /** Whether the two listings describe the same kind of help (AI-off evidence). */
+    private function sameKindOfHelp(array $searcherListing, array $candidate): bool
+    {
+        $a = array_filter((array) ($searcherListing['keywords'] ?? []), fn ($k) => is_string($k) && KeywordExtractor::isConcept($k));
+        $b = array_filter((array) ($candidate['keywords'] ?? []), fn ($k) => is_string($k) && KeywordExtractor::isConcept($k));
+
+        return $a !== [] && array_intersect($a, $b) !== [];
     }
 
     // ═════════════════════════════════════════════════════════════════════

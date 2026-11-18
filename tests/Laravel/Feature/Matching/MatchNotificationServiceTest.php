@@ -140,6 +140,26 @@ class MatchNotificationServiceTest extends TestCase
         $this->assertCount(1, $this->notices($me, 'hot_match'));
     }
 
+    public function test_a_member_with_no_listing_is_alerted_through_the_skills_on_their_profile(): void
+    {
+        $this->setMatchingConfig(['hot_match_threshold' => 45]);
+        $category = $this->category();
+        $gardener = $this->member();
+        DB::table('user_skills')->insert([
+            'user_id' => $gardener->id, 'tenant_id' => $this->testTenantId, 'skill_name' => 'Lawn mowing',
+            'proficiency' => 'expert', 'is_offering' => 1, 'is_requesting' => 0,
+        ]);
+        $posted = $this->listingFor($this->member(), 'request', $category, [
+            'title' => 'Grass needs cutting', 'description' => 'My lawn is overgrown and needs mowing.',
+        ]);
+
+        $this->service()->notifyForNewListings();
+
+        $this->assertCount(1, $this->notices($gardener, 'hot_match'), 'Members without a listing were never even considered');
+        $this->assertTrue(DB::table('match_notification_sent')->where('listing_id', $posted->id)
+            ->where('matched_user_id', $gardener->id)->exists());
+    }
+
     public function test_no_alert_when_the_member_turned_them_off_paused_matching_or_asked_for_no_notifications(): void
     {
         $category = $this->category();

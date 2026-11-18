@@ -551,7 +551,7 @@ class CrossModuleMatchingService
      *
      * @return string[]
      */
-    private static function skillNames(string $raw): array
+    public static function skillNames(string $raw): array
     {
         $raw = trim($raw);
         if ($raw === '') {

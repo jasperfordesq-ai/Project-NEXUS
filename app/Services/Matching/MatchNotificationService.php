@@ -159,9 +159,13 @@ class MatchNotificationService
              LEFT JOIN match_preferences mp ON mp.user_id = u.id AND mp.tenant_id = u.tenant_id
              WHERE u.tenant_id = ? AND u.status = 'active'
                AND COALESCE(mp.matching_paused, 0) = 0
-               AND EXISTS (
-                   SELECT 1 FROM listings l
-                   WHERE l.user_id = u.id AND l.tenant_id = u.tenant_id AND l.status = 'active')
+               AND (
+                   EXISTS (SELECT 1 FROM listings l
+                           WHERE l.user_id = u.id AND l.tenant_id = u.tenant_id AND l.status = 'active')
+                   -- No listing, but skills to match by (see SmartMatchingEngine::skillListings)
+                   OR EXISTS (SELECT 1 FROM user_skills us WHERE us.tenant_id = u.tenant_id AND us.user_id = u.id)
+                   OR TRIM(COALESCE(u.skills, '')) <> ''
+               )
                AND (
                    mp.notification_frequency = ?
                    OR (? = 'monthly' AND (mp.notification_frequency IS NULL OR mp.notification_frequency = 'weekly'))
@@ -255,37 +259,65 @@ class MatchNotificationService
     }
 
     /**
-     * Members whose own listings could pair with this one and who have not
-     * been told about it yet. Only a shortlist: the engine decides.
+     * Members who could pair with this listing and have not been told about
+     * it yet. Only a shortlist: the engine decides.
+     *
+     * Two kinds of member qualify, nearest first:
+     *  - one with a live listing of the opposite kind, in the same category
+     *    first and then in any category (the engine now matches across
+     *    categories, so a category filter here would hide real matches);
+     *  - one with no listing at all whose profile skills point the right way
+     *    (a new request needs someone who can do it; a new offer someone who
+     *    wants it). The engine matches such members by their skills.
      *
      * @return int[]
      */
     private function possibleRecipients(int $tenantId, object $listing): array
     {
         $oppositeType = ((string) $listing->type) === 'offer' ? 'request' : 'offer';
-        $params = [$tenantId, $oppositeType, (int) $listing->user_id];
+        $categoryId = (int) ($listing->category_id ?? 0);
 
-        $categoryClause = '';
-        if (!empty($listing->category_id)) {
-            $categoryClause = ' AND (l2.category_id = ? OR l2.category_id IS NULL)';
-            $params[] = (int) $listing->category_id;
-        }
-        array_push($params, $tenantId, (int) $listing->id);
+        // Skills without a direction are something the member can do.
+        $skillDirection = $oppositeType === 'offer'
+            ? '(us.is_offering = 1 OR (COALESCE(us.is_offering, 0) = 0 AND COALESCE(us.is_requesting, 0) = 0))'
+            : 'us.is_requesting = 1';
+        // The free-text skills field also only describes what a member can do.
+        $profileText = $oppositeType === 'offer' ? " OR TRIM(COALESCE(u.skills, '')) <> ''" : '';
 
         $rows = DB::select(
-            "SELECT u.id
+            "SELECT u.id,
+                    CASE
+                        WHEN EXISTS (SELECT 1 FROM listings l3
+                                     WHERE l3.user_id = u.id AND l3.tenant_id = u.tenant_id AND l3.status = 'active'
+                                       AND l3.type = ? AND l3.category_id = ?) THEN 2
+                        WHEN EXISTS (SELECT 1 FROM listings l4
+                                     WHERE l4.user_id = u.id AND l4.tenant_id = u.tenant_id AND l4.status = 'active'
+                                       AND l4.type = ?) THEN 1
+                        ELSE 0
+                    END AS closeness
              FROM users u
-             WHERE u.tenant_id = ? AND u.status = 'active'
-               AND EXISTS (
-                   SELECT 1 FROM listings l2
-                   WHERE l2.user_id = u.id AND l2.tenant_id = u.tenant_id
-                     AND l2.status = 'active' AND l2.type = ? AND l2.user_id != ?{$categoryClause})
+             WHERE u.tenant_id = ? AND u.status = 'active' AND u.id != ?
+               AND (
+                   EXISTS (SELECT 1 FROM listings l2
+                           WHERE l2.user_id = u.id AND l2.tenant_id = u.tenant_id
+                             AND l2.status = 'active' AND l2.type = ?)
+                   OR (
+                       NOT EXISTS (SELECT 1 FROM listings l5
+                                   WHERE l5.user_id = u.id AND l5.tenant_id = u.tenant_id AND l5.status = 'active')
+                       AND (EXISTS (SELECT 1 FROM user_skills us
+                                    WHERE us.tenant_id = u.tenant_id AND us.user_id = u.id AND {$skillDirection}){$profileText})
+                   )
+               )
                AND NOT EXISTS (
                    SELECT 1 FROM match_notification_sent s
                    WHERE s.tenant_id = ? AND s.listing_id = ? AND s.matched_user_id = u.id)
-             ORDER BY u.last_active_at DESC
+             ORDER BY closeness DESC, u.last_active_at DESC
              LIMIT " . self::RECIPIENTS_PER_LISTING,
-            $params
+            [
+                $oppositeType, $categoryId, $oppositeType,
+                $tenantId, (int) $listing->user_id, $oppositeType,
+                $tenantId, (int) $listing->id,
+            ]
         );
 
         return array_map(fn ($row) => (int) $row->id, $rows);

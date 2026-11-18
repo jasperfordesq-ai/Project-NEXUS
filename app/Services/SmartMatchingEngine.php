@@ -69,6 +69,9 @@ class SmartMatchingEngine
     // Cache warming: how long a member whose run cached nothing is left alone
     private const WARM_EMPTY_RETRY_HOURS = 24;
 
+    // AI similarity lookups per match run: one per listing, up to this many
+    private const SEMANTIC_LISTINGS_PER_RUN = 5;
+
     // In-process caches
     private array $userDataCache = [];
     private ?array $configCache = null;
@@ -124,6 +127,11 @@ class SmartMatchingEngine
                 // them to distance-independent listings + a set-location prompt;
                 // 'tenant_wide' restores legacy nationwide reach.
                 'missing_coords_mode' => 'remote_only',
+                // In a community whose service area is local or regional, a
+                // member or listing with no location stands at the community's
+                // own centre, scored as "somewhere in this community": capped
+                // nearness, never called nearby, no distance shown.
+                'community_centre_fallback' => true,
                 // Exclude listings whose owner hasn't been active in N days.
                 'dormancy_days' => 90,
                 // Reserved for the owner-level dismissal suppression gate.
@@ -507,7 +515,23 @@ class SmartMatchingEngine
         $userLon = $this->coordOrNull($userData['longitude'] ?? null);
         $hasCoords = $userLat !== null && $userLon !== null;
         $gates = $config['gates'];
-        $degraded = !$hasCoords
+
+        // A local or regional community's centre stands in for missing
+        // locations (see gates.community_centre_fallback). Without it a member
+        // who never gave a location saw only remote listings, and nobody saw
+        // theirs.
+        $centre = !empty($gates['community_centre_fallback']) ? $this->communityCentre((int) $tenantId) : null;
+        if ($centre !== null) {
+            $gates['community_centre'] = $centre;
+        }
+        $locationApproximate = false;
+        if (!$hasCoords && $centre !== null) {
+            $userLat = $centre['lat'];
+            $userLon = $centre['lon'];
+            $locationApproximate = true;
+        }
+
+        $degraded = !$hasCoords && !$locationApproximate
             && (bool) ($gates['geo_hard_gate'] ?? true)
             && (($gates['missing_coords_mode'] ?? 'remote_only') !== 'tenant_wide');
 
@@ -515,6 +539,7 @@ class SmartMatchingEngine
             'needs_location' => !$hasCoords,
             'degraded' => $degraded,
             'degraded_reason' => !$hasCoords ? 'no_coordinates' : null,
+            'location_approximate' => $locationApproximate,
             'has_active_listings' => true,
             'paused' => false,
             'disabled' => false,
@@ -523,7 +548,16 @@ class SmartMatchingEngine
         $userListings = $this->getUserListings($userId);
         if (empty($userListings)) {
             $meta['has_active_listings'] = false;
-            $coldStart = $this->getColdStartMatches($userId, $userData, $maxDistance, $limit);
+
+            // No listing, but skills on their profile: match those. Most
+            // members never post a listing (tenant 2: 274 active members,
+            // 56 live listings on 18 Nov 2026), and until then they were only
+            // shown "recently posted" browsing suggestions, never a match.
+            $userListings = $this->skillListings($userId, $userData);
+            $meta['matched_from_skills'] = $userListings !== [];
+        }
+        if (empty($userListings)) {
+            $coldStart = $this->getColdStartMatches($userId, $userLat, $userLon, $locationApproximate, $gates, $maxDistance, $limit);
             // Cold-start items are browsing suggestions, not real matches, so
             // they are withheld for a pair needing review but never queued.
             $coldStart = app(MatchApprovalGate::class)->filterListingMatches($coldStart, $userId, $tenantId, false);
@@ -534,53 +568,44 @@ class SmartMatchingEngine
         $matches = [];
         $seenIds = [];
 
-        // PERF: Batch candidate lookup. Previous code fired one query per user listing
-        // (N+1 over $userListings). Now we group by targetType and issue at most 2 queries
-        // (one for 'offer' candidates, one for 'request' candidates), filtered by the
-        // union of all relevant category_ids. We then dispatch candidates back to each
-        // source listing by matching category_id in PHP.
-        $byTargetType = ['offer' => [], 'request' => []]; // targetType => list of category_ids
-        $myListingsByTarget = ['offer' => [], 'request' => []]; // targetType => list of myListings
-        // A listing of mine with no category is compared with every category,
-        // so it must not be confined to the categories of my OTHER listings.
-        $hasUncategorised = ['offer' => false, 'request' => false];
+        // At most two candidate queries: one for offers, one for requests.
+        //
+        // Candidates are NOT confined to the categories of the member's own
+        // listings any more. They were until 18 Nov 2026, so "mow my lawn"
+        // filed under Home & Garden never met "lawn mowing" filed under Odd
+        // Jobs: members rarely pick the same category for the same thing, and
+        // that wall hid genuine matches before scoring could see them. The
+        // scorer still rewards a shared category; a pair from unrelated
+        // categories needs real evidence in its wording to reach the minimum
+        // score (MatchQualityBenchmarkTest).
+        $myListingsByTarget = ['offer' => [], 'request' => []]; // targetType => my listings it answers
         foreach ($userListings as $myListing) {
             $targetType = ($myListing['type'] === 'offer') ? 'request' : 'offer';
-            if (!empty($myListing['category_id'])) {
-                $byTargetType[$targetType][] = (int) $myListing['category_id'];
-            } else {
-                $hasUncategorised[$targetType] = true;
-            }
             $myListingsByTarget[$targetType][] = $myListing;
         }
 
-        // The member's own "only these categories" choice. It used to be
-        // dropped whenever their listings had categories, i.e. almost always.
+        // The member's own "only these categories" choice still confines them.
         $preferredCategoryIds = is_array($categoryFilter)
             ? array_values(array_unique(array_filter(array_map('intval', $categoryFilter))))
             : [];
 
         $candidatesByTargetType = ['offer' => [], 'request' => []];
-        foreach ($byTargetType as $targetType => $categoryIds) {
-            if (empty($myListingsByTarget[$targetType])) {
+        foreach ($myListingsByTarget as $targetType => $mine) {
+            if ($mine === []) {
                 continue;
             }
-            $uniqueCatIds = $hasUncategorised[$targetType] ? [] : array_values(array_unique($categoryIds));
-            if ($preferredCategoryIds !== []) {
-                if ($uniqueCatIds !== []) {
-                    $uniqueCatIds = array_values(array_intersect($uniqueCatIds, $preferredCategoryIds));
-                    if ($uniqueCatIds === []) {
-                        // None of my listings of this kind is in a category I asked for.
-                        continue;
-                    }
-                } else {
-                    $uniqueCatIds = $preferredCategoryIds;
-                }
-            }
             $candidatesByTargetType[$targetType] = $this->candidateRetriever->retrieveBatch(
-                $tenantId, $userId, $targetType, $uniqueCatIds,
+                $tenantId, $userId, $targetType, $preferredCategoryIds,
                 null, $userLat, $userLon, $maxDistance, $gates
             );
+            if ($locationApproximate) {
+                // Every distance is measured from the community's centre, not
+                // from the member, so none of them is the member's distance.
+                foreach ($candidatesByTargetType[$targetType] as &$candidate) {
+                    $candidate['location_approximate'] = 1;
+                }
+                unset($candidate);
+            }
         }
 
         // Safeguarding: strip candidates whose owners require vetting types the
@@ -627,18 +652,24 @@ class SmartMatchingEngine
         // listing↔listing similarity, blended with 0.8 × profile↔profile
         // similarity (helps members with rich bios and few listings).
         // Every step degrades to the keyword fallback inside MatchScorer.
-        $semanticByListing = [];
+        // Similarity is looked up PER LISTING of the member: one embedding
+        // per listing, so a member with a gardening offer and a computer
+        // request gets each scored against its own text. (It used to take the
+        // first listing's similarities and apply them to every listing.)
+        $semanticByListing = []; // myListingId => [candidateListingId => cosine]
         $profileSimByOwner = [];
         if ($scorer !== null && (bool) ($config['ai']['semantic_signal'] ?? true)) {
             try {
                 // The enable check itself queries ai_settings — a hiccup there
                 // must degrade to the keyword fallback, never break matching.
                 if (\App\Services\AI\AIServiceFactory::isEnabled()) {
-                    $firstListingId = (int) ($userListings[0]['id'] ?? 0);
-                    if ($firstListingId > 0) {
-                        $semanticByListing = $this->embeddingService->findSimilarWithScores(
-                            $firstListingId, 'listing', $tenantId, 200
-                        );
+                    foreach (array_slice($userListings, 0, self::SEMANTIC_LISTINGS_PER_RUN) as $myListing) {
+                        $myListingId = (int) ($myListing['id'] ?? 0);
+                        if ($myListingId > 0) {
+                            $semanticByListing[$myListingId] = $this->embeddingService->findSimilarWithScores(
+                                $myListingId, 'listing', $tenantId, 200
+                            );
+                        }
                     }
                     $profileSimByOwner = $this->embeddingService->findSimilarWithScores(
                         $userId, 'user', $tenantId, 200
@@ -648,6 +679,7 @@ class SmartMatchingEngine
                 Log::debug('[SmartMatchingEngine] semantic signal unavailable: ' . $e->getMessage());
             }
         }
+        $haveSemantic = array_filter($semanticByListing) !== [] || $profileSimByOwner !== [];
 
         $listingKeywordCache = [];
         $extractListingKeywords = function (array $listing) use (&$listingKeywordCache): array {
@@ -664,60 +696,73 @@ class SmartMatchingEngine
             return $keywords;
         };
 
-        foreach ($userListings as $myListing) {
-            $targetType = ($myListing['type'] === 'offer') ? 'request' : 'offer';
-            $myCatId = $myListing['category_id'] ?? null;
-
-            // Dispatch: candidates whose category_id matches this listing, OR all if myCatId null.
-            $candidates = [];
-            foreach ($candidatesByTargetType[$targetType] as $cand) {
-                if ($myCatId === null || (int) ($cand['category_id'] ?? 0) === (int) $myCatId) {
-                    $candidates[] = $cand;
-                }
+        // Each candidate is scored against every listing of the member it
+        // could answer, and keeps its best pairing. Before, a candidate was
+        // only ever compared with the first listing in the same category.
+        foreach ($candidatesByTargetType as $targetType => $candidates) {
+            $mine = $myListingsByTarget[$targetType];
+            if ($mine === []) {
+                continue;
             }
 
             foreach ($candidates as $candidate) {
-                if (in_array($candidate['id'], $seenIds)) {
+                $candidateId = (int) ($candidate['id'] ?? 0);
+                if (isset($seenIds[$candidateId])) {
                     continue;
                 }
 
-                if ($scorer !== null && $context !== null) {
-                    $myPrepared = $myListing;
-                    $myPrepared['keywords'] = $extractListingKeywords($myListing);
-                    $candPrepared = $candidate;
-                    $candPrepared['keywords'] = $extractListingKeywords($candidate);
+                $best = null;
+                $bestListing = null;
+                $bestBreakdown = null;
+                foreach ($mine as $myListing) {
+                    if ($scorer !== null && $context !== null) {
+                        $myPrepared = $myListing;
+                        $myPrepared['keywords'] = $extractListingKeywords($myListing);
+                        $candPrepared = $candidate;
+                        $candPrepared['keywords'] = $extractListingKeywords($candidate);
 
-                    $cosine = null;
-                    $listingSim = $semanticByListing[(int) $candidate['id']] ?? null;
-                    $ownerSim = $profileSimByOwner[(int) ($candidate['user_id'] ?? 0)] ?? null;
-                    if ($listingSim !== null || $ownerSim !== null) {
-                        $cosine = max((float) ($listingSim ?? 0.0), 0.8 * (float) ($ownerSim ?? 0.0));
+                        $cosine = null;
+                        $listingSim = $semanticByListing[(int) ($myListing['id'] ?? 0)][$candidateId] ?? null;
+                        $ownerSim = $profileSimByOwner[(int) ($candidate['user_id'] ?? 0)] ?? null;
+                        if ($listingSim !== null || $ownerSim !== null) {
+                            $cosine = max((float) ($listingSim ?? 0.0), 0.8 * (float) ($ownerSim ?? 0.0));
+                        }
+
+                        $scoreResult = $scorer->score(
+                            $context->searcher,
+                            $myPrepared,
+                            $candPrepared,
+                            $context->owner((int) ($candidate['user_id'] ?? 0)),
+                            $cosine
+                        );
+                        $matchResult = $scoreResult->toLegacyArray();
+                        $breakdown = $scoreResult->toBreakdownArray();
+                    } else {
+                        $matchResult = $this->calculateMatchScore($userData, $userListings, $myListing, $candidate);
+                        $breakdown = null;
                     }
 
-                    $scoreResult = $scorer->score(
-                        $context->searcher,
-                        $myPrepared,
-                        $candPrepared,
-                        $context->owner((int) ($candidate['user_id'] ?? 0)),
-                        $cosine
-                    );
-                    $matchResult = $scoreResult->toLegacyArray();
-                    $candidate['score_breakdown'] = $scoreResult->toBreakdownArray();
-                } else {
-                    $matchResult = $this->calculateMatchScore($userData, $userListings, $myListing, $candidate);
+                    if ($best === null || $matchResult['score'] > $best['score']) {
+                        $best = $matchResult;
+                        $bestListing = $myListing;
+                        $bestBreakdown = $breakdown;
+                    }
                 }
 
-                if ($matchResult['score'] >= $minScore) {
-                    $candidate['match_score'] = $matchResult['score'];
-                    $candidate['match_reasons'] = $matchResult['reasons'];
-                    $candidate['match_breakdown'] = $matchResult['breakdown'];
-                    $candidate['distance_km'] = $matchResult['distance'];
-                    $candidate['matched_listing'] = $myListing['title'];
-                    $candidate['match_type'] = $matchResult['type'];
+                if ($best !== null && $best['score'] >= $minScore) {
+                    if ($bestBreakdown !== null) {
+                        $candidate['score_breakdown'] = $bestBreakdown;
+                    }
+                    $candidate['match_score'] = $best['score'];
+                    $candidate['match_reasons'] = $best['reasons'];
+                    $candidate['match_breakdown'] = $best['breakdown'];
+                    $candidate['distance_km'] = $best['distance'];
+                    $candidate['matched_listing'] = $bestListing['title'];
+                    $candidate['match_type'] = $best['type'];
                     $candidate['algorithm_version'] = $scorer !== null ? 'v2' : 'v1';
 
                     $matches[] = $candidate;
-                    $seenIds[] = $candidate['id'];
+                    $seenIds[$candidateId] = true;
                 }
             }
         }
@@ -735,7 +780,7 @@ class SmartMatchingEngine
         // collapsed every boosted match to 1/100, sinking the BEST matches.)
         // Skipped when the semantic PILLAR signal already consumed the
         // embeddings — that would double-count the same evidence.
-        if (!empty($matches) && empty($semanticByListing)) {
+        if (!empty($matches) && !$haveSemantic) {
             $userListingIds = array_column($userListings, 'id');
             $firstListingId = $userListingIds[0] ?? null;
 
@@ -1350,6 +1395,74 @@ class SmartMatchingEngine
         );
     }
 
+    /**
+     * Stand-in listings for a member who has posted none, built from the
+     * skills on their profile: what they can do becomes an offer, what they
+     * would like help with a request. They carry id 0 and are never stored.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function skillListings(int $userId, array $userData): array
+    {
+        $tenantId = (int) TenantContext::getId();
+        $give = [];
+        $want = [];
+
+        try {
+            $rows = DB::select(
+                "SELECT skill_name, is_offering, is_requesting FROM user_skills WHERE tenant_id = ? AND user_id = ?",
+                [$tenantId, $userId]
+            );
+        } catch (\Throwable $e) {
+            Log::warning('[SmartMatchingEngine] profile skills unavailable', ['user_id' => $userId, 'error' => $e->getMessage()]);
+            $rows = [];
+        }
+        foreach ($rows as $row) {
+            $name = trim((string) ($row->skill_name ?? ''));
+            if ($name === '') {
+                continue;
+            }
+            $offering = !empty($row->is_offering);
+            $requesting = !empty($row->is_requesting);
+            if (!$offering && !$requesting) {
+                $offering = true; // older rows carry no direction: a skill is something you can do
+            }
+            if ($offering) {
+                $give[] = $name;
+            }
+            if ($requesting) {
+                $want[] = $name;
+            }
+        }
+
+        if ($give === [] && $want === []) {
+            $give = CrossModuleMatchingService::skillNames((string) ($userData['skills'] ?? ''));
+        }
+
+        $listings = [];
+        foreach (['offer' => $give, 'request' => $want] as $type => $names) {
+            $names = array_values(array_unique($names));
+            if ($names === []) {
+                continue;
+            }
+            $listings[] = [
+                'id' => 0,
+                'user_id' => $userId,
+                'tenant_id' => $tenantId,
+                'type' => $type,
+                'title' => mb_substr(implode(', ', $names), 0, 200),
+                'description' => '',
+                'category_id' => null,
+                'category_name' => null,
+                'service_type' => 'physical_only',
+                'created_at' => null,
+                'from_profile_skills' => true,
+            ];
+        }
+
+        return $listings;
+    }
+
     private function getUserPreferences(int $userId): array
     {
         $tenantId = TenantContext::getId();
@@ -1378,8 +1491,15 @@ class SmartMatchingEngine
         ];
     }
 
-    private function getColdStartMatches(int $userId, array $userData, float $maxDistance, int $limit): array
-    {
+    private function getColdStartMatches(
+        int $userId,
+        ?float $userLat,
+        ?float $userLon,
+        bool $locationApproximate,
+        array $gates,
+        float $maxDistance,
+        int $limit
+    ): array {
         $tenantId = TenantContext::getId();
         $config = $this->getConfig();
 
@@ -1389,10 +1509,10 @@ class SmartMatchingEngine
         $results = $this->candidateRetriever->retrieveColdStart(
             $tenantId,
             $userId,
-            $this->coordOrNull($userData['latitude'] ?? null),
-            $this->coordOrNull($userData['longitude'] ?? null),
+            $userLat,
+            $userLon,
             $maxDistance,
-            $config['gates'],
+            $gates,
             $limit
         );
 
@@ -1412,6 +1532,7 @@ class SmartMatchingEngine
             if (!empty($listing['author_verified']) || !empty($listing['is_verified'])) $coldScore += 5;
 
             $distance = isset($listing['distance_km']) && is_numeric($listing['distance_km'])
+                && !$locationApproximate && empty($listing['location_approximate'])
                 ? (float) $listing['distance_km'] : null;
 
             // Honest reasons: only claim "nearby" when the distance is known.
@@ -1458,6 +1579,31 @@ class SmartMatchingEngine
      * Normalise a stored coordinate: NULL/0 (the COALESCE sentinel for missing
      * coords) becomes null so the retriever can apply the degraded mode.
      */
+    /**
+     * The community's own centre, when its service area is local or regional
+     * and it has one. A national or international community has no centre
+     * that could stand in for a member's location.
+     *
+     * @return array{lat: float, lon: float}|null
+     */
+    private function communityCentre(int $tenantId): ?array
+    {
+        try {
+            $row = DB::table('tenants')->where('id', $tenantId)->first(['latitude', 'longitude', 'service_area']);
+        } catch (\Throwable $e) {
+            Log::warning('[SmartMatchingEngine] community centre unavailable', ['tenant_id' => $tenantId, 'error' => $e->getMessage()]);
+            return null;
+        }
+
+        if ($row === null || !in_array((string) ($row->service_area ?? ''), ['local', 'regional'], true)) {
+            return null;
+        }
+        $lat = $this->coordOrNull($row->latitude ?? null);
+        $lon = $this->coordOrNull($row->longitude ?? null);
+
+        return $lat !== null && $lon !== null ? ['lat' => $lat, 'lon' => $lon] : null;
+    }
+
     private function coordOrNull(mixed $value): ?float
     {
         $f = (float) ($value ?? 0);
