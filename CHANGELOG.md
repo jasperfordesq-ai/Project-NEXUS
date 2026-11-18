@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- **Dependency alerts after the 3.3.0 release (security register E-130, 18 Nov 2026)**: `node-forge` 1.4.2 → 1.4.3 in the phone app (GHSA-6889-vf6x-f3g5, GHSA-w4xr-hqv8-ch44, GHSA-6cv4-p8m7-4r25, GHSA-j8rw-jp99-435v; used by Expo's build tools and update code-signing, not shipped in the app; lockfile only). `basic-ftp` 6.0.1 → 6.2.6 on the website (GHSA-5pm8-86m8-9m6r; reached only through Lighthouse CI's proxy agent, a development tool; the override floor rises from `>=5.2.3` to `>=6.2.4`). The repository's own `minimatch` 10.2.6 → 11.0.8 (GHSA-g3hv-75wg-m249; used by `scripts/predeploy-ci-verify.mjs` and `scripts/preflight.mjs` against the patterns in `.github/ci-paths.yml`): before the change, all 61 patterns were matched against all 17,324 tracked paths under both versions and every result was identical; `test:predeploy-verify` 9/9. The other `minimatch` and `glob` copies flagged by GitHub (website lint and translation tooling, the accessible site's `nodemon`, the phone app's Expo build tools) have no fixed release their parent packages accept; they are build-time tools given only patterns the project writes, and they stay open with that reason recorded.
+
 ## [3.3.0] - 2026-11-18
 
 ### Added

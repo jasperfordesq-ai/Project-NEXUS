@@ -7,8 +7,8 @@
       "slug": "unreleased",
       "date": "",
       "isUnreleased": true,
-      "sectionCount": 0,
-      "lineCount": 1
+      "sectionCount": 1,
+      "lineCount": 5
     },
     {
       "version": "3.3.0",
