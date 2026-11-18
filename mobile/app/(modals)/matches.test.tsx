@@ -79,7 +79,7 @@ jest.mock('react-i18next', () => ({
         'matches.source.event': 'Event',
         'matches.score': opts ? `${String(opts.score)}% match` : '0% match',
         'matches.suggested': 'Suggested for you',
-        'matches.going': opts ? `Going: ${String(opts.count)}` : 'Going',
+        'matches.going': opts ? `Going: ${String(opts.total)}` : 'Going',
         'matches.open': 'Open match',
         'matches.openNamed': opts ? `Open ${String(opts.title)}` : 'Open',
         'matches.dismiss': 'Dismiss',

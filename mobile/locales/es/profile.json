@@ -63,7 +63,7 @@
     "suggested": "Sugerido para ti",
     "openNamed": "Abrir {{title}}",
     "dismissNamed": "Descartar {{title}}",
-    "going": "Asistirán: {{count}}",
+    "going": "Asistirán: {{total}}",
     "notice": {
       "pausedTitle": "Las coincidencias están en pausa",
       "pausedBody": "Has puesto las coincidencias en pausa, así que faltan algunas sugerencias. Puedes volver a activarlas en tus preferencias de coincidencia.",

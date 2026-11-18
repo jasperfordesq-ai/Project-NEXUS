@@ -63,7 +63,7 @@
     "suggested": "Suggested for you",
     "openNamed": "Open {{title}}",
     "dismissNamed": "Dismiss {{title}}",
-    "going": "Going: {{count}}",
+    "going": "Going: {{total}}",
     "notice": {
       "pausedTitle": "Matching is paused",
       "pausedBody": "You've paused matching, so some suggestions are missing. You can turn it back on in your match preferences.",

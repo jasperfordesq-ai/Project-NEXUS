@@ -63,7 +63,7 @@
     "suggested": "Suggerito per te",
     "openNamed": "Apri {{title}}",
     "dismissNamed": "Ignora {{title}}",
-    "going": "Partecipanti: {{count}}",
+    "going": "Partecipanti: {{total}}",
     "notice": {
       "pausedTitle": "Le corrispondenze sono in pausa",
       "pausedBody": "Hai messo in pausa le corrispondenze, quindi mancano alcuni suggerimenti. Puoi riattivarle nelle tue preferenze di corrispondenza.",

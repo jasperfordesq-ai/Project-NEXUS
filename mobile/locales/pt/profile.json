@@ -63,7 +63,7 @@
     "suggested": "Sugerido para você",
     "openNamed": "Abrir {{title}}",
     "dismissNamed": "Dispensar {{title}}",
-    "going": "Vão participar: {{count}}",
+    "going": "Vão participar: {{total}}",
     "notice": {
       "pausedTitle": "As correspondências estão em pausa",
       "pausedBody": "Você pausou as correspondências, então algumas sugestões estão faltando. Você pode reativá-las nas suas preferências de correspondência.",

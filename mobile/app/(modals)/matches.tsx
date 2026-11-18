@@ -484,7 +484,7 @@ function MatchCard({
             {eventStart ? <DetailLine icon="time-outline" text={eventStart} /> : null}
             {organisation ? <DetailLine icon="business-outline" text={organisation} /> : null}
             {place ? <DetailLine icon="location-outline" text={place} /> : null}
-            {going ? <DetailLine icon="people-outline" text={t('matches.going', { count: going })} /> : null}
+            {going ? <DetailLine icon="people-outline" text={t('matches.going', { total: going })} /> : null}
           </View>
         </View>
 

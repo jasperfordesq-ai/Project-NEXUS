@@ -81,7 +81,9 @@ class SchemaWriteRegressionTest extends TestCase
         DB::table('match_preferences')->insert([
             'user_id'                => $userId,
             'tenant_id'              => $this->testTenantId,
-            'max_distance_km'        => 99,
+            // Within the community's ceiling (50 km by default): a figure
+            // above it is shown as the ceiling, which is what the engine applies.
+            'max_distance_km'        => 37,
             'min_match_score'        => 70,
             'notification_frequency' => 'never',
             'notify_hot_matches'     => 0,
@@ -96,7 +98,7 @@ class SchemaWriteRegressionTest extends TestCase
         // inside the same try block and the catch returned DEFAULT_PREFERENCES,
         // discarding the row above ('monthly', 25km, opt-ins back on).
         $this->assertSame('never', $prefs['notification_frequency']);
-        $this->assertSame(99, $prefs['max_distance_km']);
+        $this->assertSame(37, $prefs['max_distance_km']);
         $this->assertSame(70, $prefs['min_match_score']);
         $this->assertFalse($prefs['notify_hot_matches']);
         $this->assertFalse($prefs['notify_mutual_matches']);

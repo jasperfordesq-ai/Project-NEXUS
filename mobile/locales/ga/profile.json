@@ -63,7 +63,7 @@
     "suggested": "Molta duit",
     "openNamed": "Oscail {{title}}",
     "dismissNamed": "Folaigh {{title}}",
-    "going": "Ag freastal: {{count}}",
+    "going": "Ag freastal: {{total}}",
     "notice": {
       "pausedTitle": "Tá an mheaitseáil ar sos",
       "pausedBody": "Chuir tú an mheaitseáil ar sos, mar sin tá roinnt moltaí in easnamh. Is féidir leat í a chur ar siúl arís i do shainroghanna meaitseála.",

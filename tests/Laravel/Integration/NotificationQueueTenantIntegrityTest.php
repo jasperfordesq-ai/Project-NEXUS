@@ -508,15 +508,63 @@ class NotificationQueueTenantIntegrityTest extends TestCase
         );
     }
 
-    public function test_hot_match_cron_scopes_candidates_and_dedupe_by_tenant(): void
+    public function test_match_alerts_never_cross_communities_and_dedupe_by_tenant(): void
     {
-        $source = file_get_contents(app_path('Services/CronJobRunner.php'));
+        // This used to assert on the SOURCE TEXT of a hot-match scan inside
+        // CronJobRunner. That scan never ran from the schedule and has been
+        // removed; alerts now come from MatchNotificationService, so the same
+        // promise is checked here by what it actually does.
+        $otherTenantId = 999;
+        Cache::flush();
+        TenantContext::setById($this->testTenantId);
 
-        $this->assertStringContainsString('u.tenant_id = l.tenant_id', $source);
-        $this->assertStringContainsString('mh.tenant_id = l.tenant_id', $source);
-        $this->assertStringContainsString('AND l.tenant_id = ?', $source);
-        $this->assertStringContainsString('TenantContext::runForTenant($tenantId', $source);
-        $this->assertStringContainsString('if (!$dispatched)', $source);
+        $raw = DB::table('tenants')->where('id', $this->testTenantId)->value('configuration');
+        $config = is_string($raw) ? (json_decode($raw, true) ?: []) : [];
+        $config['algorithms']['smart_matching'] = array_merge(
+            $config['algorithms']['smart_matching'] ?? [],
+            ['enabled' => true, 'hot_match_threshold' => 60]
+        );
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['configuration' => json_encode($config)]);
+        app(\App\Services\SmartMatchingEngine::class)->clearCache();
+
+        $category = \App\Models\Category::factory()->create([
+            'tenant_id' => $this->testTenantId, 'type' => 'listing', 'name' => 'Integrity ' . uniqid(),
+        ]);
+        $member = fn (int $tenantId) => User::factory()->forTenant($tenantId)->create([
+            'status' => 'active', 'is_approved' => 1, 'latitude' => 51.5, 'longitude' => -0.12, 'last_active_at' => now(),
+        ]);
+        $listing = fn (User $owner, int $tenantId, string $type) => \App\Models\Listing::factory()->forTenant($tenantId)->create([
+            'user_id' => $owner->id, 'type' => $type, 'status' => 'active', 'moderation_status' => 'approved',
+            'category_id' => $category->id, 'title' => 'Gardening help ' . uniqid(),
+            'description' => 'Weeding, mowing and hedge trimming in the garden every week.',
+            'latitude' => 51.5, 'longitude' => -0.12, 'service_type' => 'physical_only', 'created_at' => now(),
+        ]);
+
+        $me = $member($this->testTenantId);
+        $listing($me, $this->testTenantId, 'offer');
+
+        // A perfect pairing, but in another community.
+        $foreign = $listing($member($otherTenantId), $otherTenantId, 'request');
+
+        $service = app(\App\Services\Matching\MatchNotificationService::class);
+        $service->notifyForNewListings();
+
+        $this->assertSame(0, DB::table('notifications')->where('user_id', $me->id)->where('type', 'hot_match')->count(),
+            'A listing in another community must never alert a member here');
+        $this->assertFalse(DB::table('match_notification_sent')->where('listing_id', $foreign->id)->exists());
+
+        // Control: the same pairing inside the community does alert, and the
+        // record of it carries this community's id.
+        $local = $listing($member($this->testTenantId), $this->testTenantId, 'request');
+        Cache::flush();
+        $service->notifyForNewListings();
+
+        $this->assertSame(1, DB::table('notifications')->where('user_id', $me->id)->where('type', 'hot_match')->count());
+        $sent = DB::table('match_notification_sent')->where('listing_id', $local->id)->where('matched_user_id', $me->id)->get();
+        $this->assertCount(1, $sent);
+        $this->assertSame($this->testTenantId, (int) $sent[0]->tenant_id);
+        $this->assertSame($this->testTenantId, (int) DB::table('notification_queue')
+            ->where('user_id', $me->id)->where('activity_type', 'hot_match')->value('tenant_id'));
     }
 
     public function test_event_notification_queue_resolves_tenant_from_recipient_when_context_is_missing(): void

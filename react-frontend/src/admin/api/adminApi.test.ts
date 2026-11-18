@@ -1576,16 +1576,16 @@ describe('adminDeliverability', () => {
 // ─── Diagnostics ──────────────────────────────────────────────────────────────
 
 describe('adminDiagnostics', () => {
-  it('diagnoseUser builds user_id query', async () => {
+  it('diagnoseUser asks about that member', async () => {
     mockGet.mockResolvedValueOnce({ success: true, data: {} });
     await adminDiagnostics.diagnoseUser(5);
-    expect(mockGet).toHaveBeenCalledWith('/v2/admin/matching/stats?user_id=5');
+    expect(mockGet).toHaveBeenCalledWith('/v2/admin/matching/diagnose/user/5');
   });
 
-  it('diagnoseListing builds listing_id query', async () => {
+  it('diagnoseListing asks about that listing', async () => {
     mockGet.mockResolvedValueOnce({ success: true, data: {} });
     await adminDiagnostics.diagnoseListing(10);
-    expect(mockGet).toHaveBeenCalledWith('/v2/admin/matching/stats?listing_id=10');
+    expect(mockGet).toHaveBeenCalledWith('/v2/admin/matching/diagnose/listing/10');
   });
 
   it('getMatchingStats calls stats endpoint', async () => {

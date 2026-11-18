@@ -63,7 +63,7 @@
     "suggested": "Für Sie vorgeschlagen",
     "openNamed": "{{title}} öffnen",
     "dismissNamed": "{{title}} ausblenden",
-    "going": "Zusagen: {{count}}",
+    "going": "Zusagen: {{total}}",
     "notice": {
       "pausedTitle": "Vorschläge sind pausiert",
       "pausedBody": "Sie haben die Vorschläge pausiert, deshalb fehlen einige. In Ihren Matching-Einstellungen können Sie sie wieder einschalten.",

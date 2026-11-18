@@ -43,6 +43,8 @@ const STATIC_ROUTE_EXPECTATIONS: Record<string, StaticRouteExpectation> = {
   '/marketplace/seller/dashboard': { notification_link: '/marketplace/seller/dashboard', native_href: '/(modals)/marketplace-tools' },
   '/matches': { notification_link: '/matches', native_href: '/(modals)/matches' },
   '/matches?highlight=listing-1': { notification_link: '/matches?highlight=listing-1', native_href: '/(modals)/matches?highlight=listing-1' },
+  // The mutual-match alert, sent for the first time since 17 Nov 2026.
+  '/matches?type=mutual&highlight=listing-1': { notification_link: '/matches?type=mutual&highlight=listing-1', native_href: '/(modals)/matches?type=mutual&highlight=listing-1' },
   '/messages': { notification_link: '/messages', native_href: '/(tabs)/messages' },
   '/notifications': { notification_link: '/notifications', native_href: '/(modals)/notifications' },
   '/partner-timebanks/credit-agreements': { notification_link: '/notifications', native_href: '/(modals)/notifications' },
