@@ -1983,6 +1983,8 @@ Route::post('/v2/admin/translation/glossary', [\App\Http\Controllers\Api\AdminCo
 Route::delete('/v2/admin/translation/glossary/{id}', [\App\Http\Controllers\Api\AdminConfigController::class, 'deleteGlossaryEntry']);
 Route::get('/v2/admin/config/ai', [\App\Http\Controllers\Api\AdminConfigController::class, 'getAiConfig']);
 Route::put('/v2/admin/config/ai', [\App\Http\Controllers\Api\AdminConfigController::class, 'updateAiConfig']);
+// Each test spends a few tokens of the community's own AI credit.
+Route::post('/v2/admin/config/ai/test', [\App\Http\Controllers\Api\AdminConfigController::class, 'testAiProvider'])->middleware('throttle:nexus-route-10-per-1m');
 Route::get('/v2/admin/config/feed-algorithm', [\App\Http\Controllers\Api\AdminConfigController::class, 'getFeedAlgorithmConfig']);
 Route::put('/v2/admin/config/feed-algorithm', [\App\Http\Controllers\Api\AdminConfigController::class, 'updateFeedAlgorithmConfig']);
 Route::get('/v2/admin/config/algorithms', [\App\Http\Controllers\Api\AdminConfigController::class, 'getAlgorithmConfig']);

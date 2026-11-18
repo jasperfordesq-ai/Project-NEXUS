@@ -8,9 +8,11 @@ import Key from 'lucide-react/icons/key';
 import Cpu from 'lucide-react/icons/cpu';
 import Sliders from 'lucide-react/icons/sliders-vertical';
 import Shield from 'lucide-react/icons/shield';
+import Trash2 from 'lucide-react/icons/trash-2';
+import PlugZap from 'lucide-react/icons/plug-zap';
 import { useTranslation } from 'react-i18next';
-import { usePageTitle } from '@/hooks';
 import { useToast } from '@/contexts';
+import { useAdminPageMeta } from '../../AdminMetaContext';
 import { PageHeader } from '../../components/PageHeader';
 import { adminSettings } from '../../api/adminApi';
 import { SecretInput } from '../../components/SecretInput';
@@ -54,6 +56,13 @@ interface AiConfigResponse {
   ollama: {
     host: string;
   };
+}
+
+interface TestResult {
+  ok: boolean;
+  reason: string | null;
+  latency_ms: number;
+  model: string | null;
 }
 
 interface FormState {
@@ -121,7 +130,8 @@ const DEFAULT_FORM: FormState = {
   openai_model: 'gpt-4-turbo',
   claude_model: 'claude-opus-5-5',
   ollama_model: 'llama2',
-  ollama_host: 'http://localhost:11434',
+  // No default: the server refuses local and private addresses.
+  ollama_host: '',
   ai_chat_enabled: false,
   ai_content_gen_enabled: false,
   ai_recommendations_enabled: false,
@@ -137,8 +147,9 @@ const DEFAULT_FORM: FormState = {
 
 export function AiSettings() {
   const { t } = useTranslation('admin_advanced', { keyPrefix: 'advanced' });
-  const { t: tNav } = useTranslation('admin_nav');
-  usePageTitle(tNav('advanced'));
+  // The admin panel owns the browser tab title (AdminMetaContext); usePageTitle
+  // yields to it, so the tab read "Admin" and once "Advanced".
+  useAdminPageMeta({ title: t('ai_settings_title') });
   const toast = useToast();
 
   const [loading, setLoading] = useState(true);
@@ -151,6 +162,11 @@ export function AiSettings() {
   const [maskedKeys, setMaskedKeys] = useState<Record<string, string>>({});
   // Track which key fields the user has actively edited (so we only send changed keys)
   const [dirtyKeys, setDirtyKeys] = useState<Set<string>>(new Set());
+  // Saved keys the admin chose to remove; sent as '' on the next save.
+  const [removeKeys, setRemoveKeys] = useState<Set<string>>(new Set());
+  // Result of the last "Test" per provider.
+  const [testing, setTesting] = useState<ProviderId | null>(null);
+  const [testResults, setTestResults] = useState<Partial<Record<ProviderId, TestResult>>>({});
 
   // Map backend GET response → form state
   const mapResponseToForm = useCallback((data: AiConfigResponse): FormState => {
@@ -161,13 +177,14 @@ export function AiSettings() {
       gemini_api_key: '',
       openai_api_key: '',
       anthropic_api_key: '',
-      // Models
-      gemini_model: data.models?.gemini || DEFAULT_FORM.gemini_model,
-      openai_model: data.models?.openai || DEFAULT_FORM.openai_model,
-      claude_model: data.models?.anthropic || DEFAULT_FORM.claude_model,
-      ollama_model: data.models?.ollama || DEFAULT_FORM.ollama_model,
+      // Models: a saved empty model is shown empty. With `||` the box showed a
+      // default the server was not using, and every request then failed.
+      gemini_model: data.models?.gemini ?? DEFAULT_FORM.gemini_model,
+      openai_model: data.models?.openai ?? DEFAULT_FORM.openai_model,
+      claude_model: data.models?.anthropic ?? DEFAULT_FORM.claude_model,
+      ollama_model: data.models?.ollama ?? DEFAULT_FORM.ollama_model,
       // Ollama
-      ollama_host: data.ollama?.host || DEFAULT_FORM.ollama_host,
+      ollama_host: data.ollama?.host ?? DEFAULT_FORM.ollama_host,
       // Features
       ai_chat_enabled: !!data.features?.chat,
       ai_content_gen_enabled: !!data.features?.content_generation,
@@ -237,15 +254,57 @@ export function AiSettings() {
       payload.ollama_host = form.ollama_host;
     }
 
-    // Only send API keys that the user actually typed (non-empty, dirty)
+    // Only send API keys that the user actually typed (non-empty, dirty), or
+    // '' for a saved key the admin chose to remove.
     const keyFields = ['gemini_api_key', 'openai_api_key', 'anthropic_api_key'] as const;
     for (const field of keyFields) {
       if (dirtyKeys.has(field) && form[field].trim()) {
         payload[field] = form[field].trim();
+      } else if (removeKeys.has(field)) {
+        payload[field] = '';
       }
     }
 
     return payload;
+  };
+
+  const toggleRemoveKey = (field: string) => {
+    setRemoveKeys(prev => {
+      const next = new Set(prev);
+      if (next.has(field)) next.delete(field); else next.add(field);
+      return next;
+    });
+  };
+
+  // Tests what is SAVED (key and model), so unsaved edits are not tested.
+  const handleTest = async (provider: ProviderId) => {
+    setTesting(provider);
+    try {
+      const res = await adminSettings.testAiProvider(provider);
+      const data = res.success ? res.data : undefined;
+      setTestResults(prev => ({
+        ...prev,
+        [provider]: data ?? { ok: false, reason: 'provider_error', latency_ms: 0, model: null },
+      }));
+    } catch {
+      setTestResults(prev => ({ ...prev, [provider]: { ok: false, reason: 'provider_error', latency_ms: 0, model: null } }));
+    } finally {
+      setTesting(null);
+    }
+  };
+
+  const testMessage = (result: TestResult): string => {
+    if (result.ok) {
+      return t('test_ok', { ms: result.latency_ms, model: result.model || '—' });
+    }
+    switch (result.reason) {
+      case 'key_refused': return t('test_key_refused');
+      case 'model_not_found': return t('test_model_not_found');
+      case 'no_credit': return t('test_no_credit');
+      case 'not_configured': return t('test_not_configured');
+      case 'unreachable': return t('test_unreachable');
+      default: return t('test_failed');
+    }
   };
 
   const handleSave = async () => {
@@ -268,6 +327,8 @@ export function AiSettings() {
             )
           );
           setDirtyKeys(new Set());
+          setRemoveKeys(new Set());
+          setTestResults({});
         }
       } else {
         // Say why: the server names the field it refused.
@@ -360,23 +421,41 @@ export function AiSettings() {
                   </div>
 
                   {!isOllama ? (
-                    <SecretInput
-                      label={t('label_a_p_i_key')}
-                      type="password"
-                      placeholder={hasKeySet ? t('placeholder_current_key', { masked }) : t('placeholder_enter_api_key')}
-                      variant="secondary"
-                      description={
-                        hasKeySet
-                          ? t('desc_api_key_replace')
-                          : t('desc_api_key_new')
-                      }
-                      value={form[apiKeyField] as string}
-                      onValueChange={(v) => updateTrackedField(apiKeyField, v)}
-                    />
+                    <>
+                      <SecretInput
+                        label={t('label_a_p_i_key')}
+                        type="password"
+                        placeholder={hasKeySet ? t('placeholder_current_key', { masked }) : t('placeholder_enter_api_key')}
+                        variant="secondary"
+                        description={
+                          hasKeySet
+                            ? t('desc_api_key_replace')
+                            : t('desc_api_key_new')
+                        }
+                        value={form[apiKeyField] as string}
+                        onValueChange={(v) => updateTrackedField(apiKeyField, v)}
+                        isDisabled={removeKeys.has(apiKeyField)}
+                      />
+                      {hasKeySet && !userTyped && (
+                        <div className="flex flex-wrap items-center gap-3">
+                          <Button
+                            size="sm"
+                            variant={removeKeys.has(apiKeyField) ? 'secondary' : 'tertiary'}
+                            startContent={<Trash2 size={14} aria-hidden="true" />}
+                            onPress={() => toggleRemoveKey(apiKeyField)}
+                          >
+                            {removeKeys.has(apiKeyField) ? t('button_keep_key') : t('button_remove_key')}
+                          </Button>
+                          {removeKeys.has(apiKeyField) && (
+                            <p className="text-sm text-warning">{t('key_will_be_removed')}</p>
+                          )}
+                        </div>
+                      )}
+                    </>
                   ) : (
                     <Input
                       label={t('label_ollama_host_url')}
-                      placeholder="http://localhost:11434"
+                      placeholder="https://ollama.example.org"
                       variant="secondary"
                       description={t('desc_ollama_host')}
                       value={form.ollama_host}
@@ -398,6 +477,28 @@ export function AiSettings() {
                       <ComboBoxItem key={m} id={m} textValue={m}>{m}</ComboBoxItem>
                     ))}
                   </ComboBox>
+
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="shrink-0 self-start"
+                      startContent={<PlugZap size={14} aria-hidden="true" />}
+                      onPress={() => handleTest(provider.key)}
+                      isLoading={testing === provider.key}
+                      isDisabled={testing !== null}
+                      aria-label={t('button_test_provider', { provider: t(provider.labelKey) })}
+                    >
+                      {t('button_test')}
+                    </Button>
+                    <p
+                      className={`text-sm ${testResults[provider.key]?.ok ? 'text-success' : testResults[provider.key] ? 'text-danger' : 'text-muted'}`}
+                      role="status"
+                      aria-live="polite"
+                    >
+                      {testResults[provider.key] ? testMessage(testResults[provider.key]!) : t('desc_test')}
+                    </p>
+                  </div>
 
                   {provider.key !== PROVIDERS[PROVIDERS.length - 1]!.key && <Separator />}
                 </div>

@@ -2558,6 +2558,9 @@ export const adminSettings = {
 
   getAiConfig: () => api.get<Record<string, unknown>>('/v2/admin/config/ai'),
   updateAiConfig: (data: Record<string, unknown>) => api.put<{ success: boolean }>('/v2/admin/config/ai', data),
+  /** Ask one provider a one-word question with the saved key and model. */
+  testAiProvider: (provider: string) =>
+    api.post<{ ok: boolean; reason: string | null; latency_ms: number; model: string | null }>('/v2/admin/config/ai/test', { provider }),
 
   getFeedAlgorithm: () => api.get<Record<string, unknown>>('/v2/admin/config/feed-algorithm'),
   updateFeedAlgorithm: (data: Record<string, unknown>) => api.put<{ success: boolean }>('/v2/admin/config/feed-algorithm', data),

@@ -12,6 +12,7 @@ import React from 'react';
 const mockAdminSettings = {
   getAiConfig: vi.fn(),
   updateAiConfig: vi.fn(),
+  testAiProvider: vi.fn(),
 };
 
 vi.mock('@/admin/api/adminApi', () => ({
@@ -32,6 +33,7 @@ vi.mock('@/contexts/ToastContext', () => ({
 }));
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
+vi.mock('../../AdminMetaContext', () => ({ useAdminPageMeta: vi.fn() }));
 
 // ─── Stub admin sub-components ────────────────────────────────────────────────
 // Bound to the barrel AND to each component's own path: the page under test
@@ -98,7 +100,7 @@ describe('AiSettings', () => {
 
     // Save button should be visible
     const saveBtn = screen.getAllByRole('button').find(
-      (b) => b.textContent?.toLowerCase().includes('save')
+      (b) => b.textContent?.toLowerCase().includes('save settings')
     );
     expect(saveBtn).toBeInTheDocument();
   });
@@ -120,7 +122,7 @@ describe('AiSettings', () => {
     await waitFor(() => screen.getByTestId('page-header'));
 
     const saveBtn = screen.getAllByRole('button').find(
-      (b) => b.textContent?.toLowerCase().includes('save')
+      (b) => b.textContent?.toLowerCase().includes('save settings')
     );
     expect(saveBtn).toBeInTheDocument();
     if (saveBtn) fireEvent.click(saveBtn);
@@ -137,7 +139,7 @@ describe('AiSettings', () => {
     await waitFor(() => screen.getByTestId('page-header'));
 
     const saveBtn = screen.getAllByRole('button').find(
-      (b) => b.textContent?.toLowerCase().includes('save')
+      (b) => b.textContent?.toLowerCase().includes('save settings')
     );
     if (saveBtn) fireEvent.click(saveBtn);
 
@@ -154,7 +156,7 @@ describe('AiSettings', () => {
     await waitFor(() => screen.getByTestId('page-header'));
 
     const saveBtn = screen.getAllByRole('button').find(
-      (b) => b.textContent?.toLowerCase().includes('save')
+      (b) => b.textContent?.toLowerCase().includes('save settings')
     );
     if (saveBtn) fireEvent.click(saveBtn);
 
@@ -200,7 +202,7 @@ describe('AiSettings', () => {
     await waitFor(() => screen.getByTestId('page-header'));
 
     const saveBtn = screen.getAllByRole('button').find(
-      (b) => b.textContent?.toLowerCase().includes('save')
+      (b) => b.textContent?.toLowerCase().includes('save settings')
     );
     if (saveBtn) fireEvent.click(saveBtn);
 
@@ -221,7 +223,7 @@ describe('AiSettings', () => {
     await waitFor(() => screen.getByTestId('page-header'));
 
     const saveBtn = screen.getAllByRole('button').find(
-      (b) => b.textContent?.toLowerCase().includes('save')
+      (b) => b.textContent?.toLowerCase().includes('save settings')
     );
     if (saveBtn) fireEvent.click(saveBtn);
 
@@ -241,7 +243,7 @@ describe('AiSettings', () => {
     await waitFor(() => screen.getByTestId('page-header'));
 
     const saveBtn = screen.getAllByRole('button').find(
-      (b) => b.textContent?.toLowerCase().includes('save')
+      (b) => b.textContent?.toLowerCase().includes('save settings')
     );
     if (saveBtn) fireEvent.click(saveBtn);
 
@@ -266,7 +268,7 @@ describe('AiSettings', () => {
     fireEvent.change(modelBoxes[1]!, { target: { value: '  claude-sonnet-5-5 ' } });
 
     const saveBtn = screen.getAllByRole('button').find(
-      (b) => b.textContent?.toLowerCase().includes('save')
+      (b) => b.textContent?.toLowerCase().includes('save settings')
     );
     if (saveBtn) fireEvent.click(saveBtn);
 
@@ -284,6 +286,64 @@ describe('AiSettings', () => {
     }
   });
 
+  // E-131 deeper audit: the page had no way to check a key, the server's only
+  // test sat behind the member chat feature and said only "failed".
+  it('tests the saved key and model and says the provider answered', async () => {
+    mockAdminSettings.testAiProvider.mockResolvedValue({
+      success: true,
+      data: { ok: true, reason: null, latency_ms: 420, model: 'claude-sonnet-5-5' },
+    });
+    const { AiSettings } = await import('./AiSettings');
+    render(<AiSettings />);
+    await waitFor(() => screen.getByTestId('page-header'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Test Anthropic (Claude)' }));
+
+    await waitFor(() => expect(mockAdminSettings.testAiProvider).toHaveBeenCalledWith('anthropic'));
+    expect(await screen.findByText('Working: answered in 420 ms (claude-sonnet-5-5).')).toBeInTheDocument();
+  });
+
+  it('explains a refused key in plain words', async () => {
+    mockAdminSettings.testAiProvider.mockResolvedValue({
+      success: true,
+      data: { ok: false, reason: 'key_refused', latency_ms: 90, model: null },
+    });
+    const { AiSettings } = await import('./AiSettings');
+    render(<AiSettings />);
+    await waitFor(() => screen.getByTestId('page-header'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Test OpenAI' }));
+
+    expect(await screen.findByText('The provider refused this key. Check it is correct and still active.')).toBeInTheDocument();
+  });
+
+  it('removes a saved key when asked, on save', async () => {
+    const { AiSettings } = await import('./AiSettings');
+    render(<AiSettings />);
+    await waitFor(() => screen.getByTestId('page-header'));
+
+    // Only OpenAI has a saved key in the fixture.
+    fireEvent.click(screen.getByRole('button', { name: 'Remove saved key' }));
+    expect(screen.getByText('This key will be removed when you save.')).toBeInTheDocument();
+
+    const saveBtn = screen.getAllByRole('button').find((b) => b.textContent?.toLowerCase().includes('save settings'));
+    if (saveBtn) fireEvent.click(saveBtn);
+
+    await waitFor(() => expect(mockAdminSettings.updateAiConfig).toHaveBeenCalled());
+    const payload = mockAdminSettings.updateAiConfig.mock.calls[0]![0] as Record<string, unknown>;
+    expect(payload.openai_api_key).toBe('');
+    expect(payload).not.toHaveProperty('anthropic_api_key');
+  });
+
+  it('names the browser tab after the page, not "Admin" or "Advanced"', async () => {
+    const meta = await import('../../AdminMetaContext');
+    const { AiSettings } = await import('./AiSettings');
+    render(<AiSettings />);
+    await waitFor(() => screen.getByTestId('page-header'));
+
+    expect(meta.useAdminPageMeta).toHaveBeenCalledWith({ title: 'AI Settings' });
+  });
+
   it('refreshes config after successful save', async () => {
     const { AiSettings } = await import('./AiSettings');
     render(<AiSettings />);
@@ -291,7 +351,7 @@ describe('AiSettings', () => {
     await waitFor(() => screen.getByTestId('page-header'));
 
     const saveBtn = screen.getAllByRole('button').find(
-      (b) => b.textContent?.toLowerCase().includes('save')
+      (b) => b.textContent?.toLowerCase().includes('save settings')
     );
     if (saveBtn) fireEvent.click(saveBtn);
 

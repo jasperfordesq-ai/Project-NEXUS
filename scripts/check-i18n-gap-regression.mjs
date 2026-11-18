@@ -79,6 +79,11 @@ const NO_TRANSLATE_VALUES = new Set([
   'Twitter / X',
   'Google Play',
   'App Store',
+  // AI provider names on the admin AI settings page. Machine translation had
+  // turned them into "Anthropique", "人間性" ("humanity") and "Google Gemelli"
+  // ("Google Twins"); corrected to the product names 18 Nov 2026 (E-131).
+  'Anthropic (Claude)',
+  'Google Gemini',
   // Concrete backend identifier shown as a format example. Translating it
   // changes the value administrators must enter rather than localizing copy.
   'bern-cooperative',

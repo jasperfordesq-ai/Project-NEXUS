@@ -2117,7 +2117,9 @@ class AdminConfigController extends BaseApiController
                 'default_monthly' => \App\Models\AiUserLimit::communityLimits($tenantId)['monthly'],
             ],
             'ollama' => [
-                'host' => $settings['ollama_host'] ?? 'http://localhost:11434',
+                // No default: a local address is refused (OutboundUrlGuard), so
+                // http://localhost:11434 was a default that could never work.
+                'host' => $settings['ollama_host'] ?? '',
             ],
         ]);
     }
@@ -2177,7 +2179,8 @@ class AdminConfigController extends BaseApiController
             }
         }
 
-        if (isset($toSave['ollama_host']) && !OutboundUrlGuard::isSafeHttpUrl($toSave['ollama_host'])) {
+        // An empty address clears it (Ollama is then simply not set up).
+        if (isset($toSave['ollama_host']) && $toSave['ollama_host'] !== '' && !OutboundUrlGuard::isSafeHttpUrl($toSave['ollama_host'])) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.url_no_private_ip'), 'ollama_host', 422);
         }
 
@@ -2204,6 +2207,83 @@ class AdminConfigController extends BaseApiController
         \App\Models\ActivityLog::log((int) $adminId, 'admin_ai_settings_updated', 'Changed AI settings: ' . implode(', ', $described));
 
         return $this->respondWithData(['updated' => true, 'keys_updated' => array_keys($toSave)]);
+    }
+
+    /**
+     * POST /api/v2/admin/config/ai/test — ask one provider a one-word question
+     * with the community's saved key and model, and say in plain terms whether
+     * it worked. The member-chat endpoint POST /ai/test-provider sits behind the
+     * ai_chat feature and only says "failed"; nothing called it. The provider's
+     * own error text is logged, never returned (it can quote the request).
+     */
+    public function testAiProvider(): JsonResponse
+    {
+        $this->requireAdmin();
+        $providerId = (string) $this->input('provider', '');
+        $validProviders = ['gemini', 'openai', 'anthropic', 'ollama'];
+        if (!in_array($providerId, $validProviders, true)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_ai_provider', ['providers' => implode(', ', $validProviders)]), 'provider', 422);
+        }
+
+        $start = microtime(true);
+        try {
+            $provider = \App\Services\AI\AIServiceFactory::getProvider($providerId);
+            if ($providerId === 'ollama') {
+                $result = $provider->testConnection();
+                if (!($result['success'] ?? false)) {
+                    throw new \Exception('AI API request failed: Ollama did not answer');
+                }
+                $model = (string) ($result['model'] ?? '');
+            } else {
+                $response = $provider->chat([['role' => 'user', 'content' => 'Reply with the single word OK.']], ['max_tokens' => 16]);
+                $model = (string) ($response['model'] ?? '');
+            }
+
+            return $this->respondWithData([
+                'ok' => true,
+                'reason' => null,
+                'latency_ms' => (int) round((microtime(true) - $start) * 1000),
+                'model' => $model,
+            ]);
+        } catch (\Throwable $e) {
+            $reason = self::aiTestFailureReason($e->getMessage());
+            \Illuminate\Support\Facades\Log::info('Admin AI provider test failed', [
+                'tenant_id' => TenantContext::getId(),
+                'provider' => $providerId,
+                'reason' => $reason,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->respondWithData([
+                'ok' => false,
+                'reason' => $reason,
+                'latency_ms' => (int) round((microtime(true) - $start) * 1000),
+                'model' => null,
+            ]);
+        }
+    }
+
+    /** Map a provider failure to a reason the page can explain in the admin's language. */
+    private static function aiTestFailureReason(string $message): string
+    {
+        if (stripos($message, 'not configured') !== false) {
+            return 'not_configured';
+        }
+        if (str_starts_with($message, 'AI API request failed')) {
+            return 'unreachable';
+        }
+        if (preg_match('/AI API error \((\d{3})\)/', $message, $m) === 1) {
+            $status = (int) $m[1];
+
+            return match (true) {
+                in_array($status, [401, 403], true) => 'key_refused',
+                $status === 404 || ($status === 400 && stripos($message, 'model') !== false) => 'model_not_found',
+                in_array($status, [402, 429], true) => 'no_credit',
+                default => 'provider_error',
+            };
+        }
+
+        return 'provider_error';
     }
 
     // =========================================================================
