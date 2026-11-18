@@ -2087,7 +2087,8 @@ class AdminConfigController extends BaseApiController
             'models' => [
                 'gemini' => $settings['gemini_model'] ?? 'gemini-pro',
                 'openai' => $settings['openai_model'] ?? 'gpt-4-turbo',
-                'anthropic' => $settings['claude_model'] ?? 'claude-sonnet-4-20250514',
+                // claude-sonnet-4-20250514, the old default, was retired by Anthropic on 15 Jun 2026.
+                'anthropic' => $settings['claude_model'] ?? 'claude-opus-5-5',
                 'ollama' => $settings['ollama_model'] ?? 'llama2',
             ],
             'api_keys' => [

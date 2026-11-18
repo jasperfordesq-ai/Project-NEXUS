@@ -1,4 +1,4 @@
-import { Card, CardBody, CardHeader, Input, Button, Spinner, Chip, Select, SelectItem, Switch } from '@/components/ui';
+import { Card, CardBody, CardHeader, Input, Button, Spinner, Chip, Select, SelectItem, Switch, ComboBox, ComboBoxItem } from '@/components/ui';
 import { useState, useEffect, useCallback } from 'react';
 
 import { Separator } from '@/components/ui';
@@ -92,10 +92,14 @@ const PROVIDERS: { key: ProviderId; labelKey: string; keyField: keyof FormState;
   { key: 'ollama', labelKey: 'provider_ollama', keyField: 'ollama_host' as keyof FormState, modelField: 'ollama_model' },
 ];
 
+// Suggestions only: the model box takes any name the provider lists, because
+// providers retire models faster than this list is edited. Every Claude model
+// offered here until 18 Nov 2026 had been retired (claude-sonnet-4-20250514 on
+// 15 Jun 2026). OpenAI and Gemini get no hard-coded list for the same reason.
 const MODEL_SUGGESTIONS: Record<ProviderId, string[]> = {
-  openai: ['gpt-4o', 'gpt-4-turbo', 'gpt-4', 'gpt-3.5-turbo'],
-  anthropic: ['claude-sonnet-4-20250514', 'claude-3-5-sonnet-20241022', 'claude-3-haiku-20240307'],
-  gemini: ['gemini-pro', 'gemini-1.5-pro', 'gemini-1.5-flash'],
+  openai: [],
+  anthropic: ['claude-opus-5-5', 'claude-sonnet-5-5', 'claude-haiku-5-5'],
+  gemini: [],
   ollama: ['llama2', 'llama3', 'mistral', 'codellama'],
 };
 
@@ -115,7 +119,7 @@ const DEFAULT_FORM: FormState = {
   anthropic_api_key: '',
   gemini_model: 'gemini-pro',
   openai_model: 'gpt-4-turbo',
-  claude_model: 'claude-sonnet-4-20250514',
+  claude_model: 'claude-opus-5-5',
   ollama_model: 'llama2',
   ollama_host: 'http://localhost:11434',
   ai_chat_enabled: false,
@@ -209,11 +213,11 @@ export function AiSettings() {
     const payload: Record<string, string | boolean> = {
       ai_enabled: form.ai_enabled,
       ai_provider: form.ai_provider,
-      // Models for all providers
-      gemini_model: form.gemini_model,
-      openai_model: form.openai_model,
-      claude_model: form.claude_model,
-      ollama_model: form.ollama_model,
+      // Models for all providers (typed by hand, so trimmed)
+      gemini_model: form.gemini_model.trim(),
+      openai_model: form.openai_model.trim(),
+      claude_model: form.claude_model.trim(),
+      ollama_model: form.ollama_model.trim(),
       // Features
       ai_chat_enabled: form.ai_chat_enabled,
       ai_content_gen_enabled: form.ai_content_gen_enabled,
@@ -267,6 +271,7 @@ export function AiSettings() {
         }
       } else {
         // Say why: the server names the field it refused.
+        // admin-i18n-ignore: localized server message — AdminConfigController::updateAiConfig refusals (lang/*/api.php)
         toast.error(res.error || t('save_failed'));
       }
     } catch {
@@ -379,20 +384,20 @@ export function AiSettings() {
                     />
                   )}
 
-                  <Select
+                  <ComboBox
                     label={t('label_model')}
-                    selectedKeys={[form[provider.modelField] as string]}
-                    onSelectionChange={(keys) => {
-                      const v = Array.from(keys)[0];
-                      if (v) updateField(provider.modelField, String(v));
-                    }}
+                    allowsCustomValue
+                    useDefaultFilter
+                    inputValue={form[provider.modelField] as string}
+                    onInputChange={(v) => updateField(provider.modelField, v)}
+                    onSelectionChange={(key) => { if (key != null) updateField(provider.modelField, String(key)); }}
                     variant="secondary"
-                    description={t('desc_select_model')}
+                    description={t('desc_type_model')}
                   >
                     {MODEL_SUGGESTIONS[provider.key].map(m => (
-                      <SelectItem key={m} id={m}>{m}</SelectItem>
+                      <ComboBoxItem key={m} id={m} textValue={m}>{m}</ComboBoxItem>
                     ))}
-                  </Select>
+                  </ComboBox>
 
                   {provider.key !== PROVIDERS[PROVIDERS.length - 1]!.key && <Separator />}
                 </div>

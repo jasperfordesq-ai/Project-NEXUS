@@ -679,6 +679,7 @@ export default interface Resources {
       "desc_the_destination_u_r_l_path": "The destination URL path to redirect to",
       "desc_the_u_r_l_path_to_redirect_from": "The URL path to redirect from",
       "desc_title_suffix": "Replaces the community name at the end of page titles, for example “About | My Timebank”. Leave empty to use the community name. A home page meta title is used exactly as written.",
+      "desc_type_model": "Choose a suggestion or type the model name exactly as the provider lists it.",
       "desc_when_visitors_hit_missing_pages_they_wi": "When visitors hit missing pages, they will see a 404 error tracked here",
       "desc_your_a_i_provider_a_p_i_key_stored_encrypt": "Your AI provider API key, stored encrypted",
       "direct_referrer": "Direct",

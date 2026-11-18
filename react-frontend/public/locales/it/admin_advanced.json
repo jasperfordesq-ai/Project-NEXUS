@@ -363,6 +363,7 @@
     "desc_select_ai_provider": "Seleziona Fornitore di intelligenza artificiale.",
     "desc_select_model": "Seleziona modello.",
     "desc_title_suffix": "Sostituisce il nome della comunità alla fine dei titoli delle pagine, ad esempio «Chi siamo | La mia banca del tempo». Lascia vuoto per usare il nome della comunità. Un meta titolo della home page viene usato esattamente come scritto.",
+    "desc_type_model": "Scegli un suggerimento o digita il nome del modello esattamente come lo indica il fornitore.",
     "encryption_none": "Crittografia Nessuna",
     "encryption_ssl": "Crittografia SSL",
     "encryption_tls": "Crittografia TLS",

@@ -363,6 +363,7 @@
     "desc_select_ai_provider": "Seleccione Proveedor de IA.",
     "desc_select_model": "Seleccione Modelo.",
     "desc_title_suffix": "Sustituye el nombre de la comunidad al final de los títulos de página, por ejemplo «Acerca de | Mi banco de tiempo». Déjalo vacío para usar el nombre de la comunidad. Un metatítulo de la página de inicio se usa tal como está escrito.",
+    "desc_type_model": "Elija una sugerencia o escriba el nombre del modelo exactamente como lo indica el proveedor.",
     "encryption_none": "Cifrado Ninguno",
     "encryption_ssl": "SSL cifrado",
     "encryption_tls": "Cifrado TLS",

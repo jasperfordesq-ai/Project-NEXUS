@@ -361,6 +361,7 @@
     "desc_select_ai_provider": "Wählen Sie AI-Anbieter aus.",
     "desc_select_model": "Wählen Sie Modell aus.",
     "desc_title_suffix": "Ersetzt den Community-Namen am Ende der Seitentitel, zum Beispiel „Über uns | Meine Zeitbank“. Leer lassen, um den Community-Namen zu verwenden. Ein Meta-Titel für die Startseite wird genau so verwendet, wie er geschrieben ist.",
+    "desc_type_model": "Wählen Sie einen Vorschlag oder geben Sie den Modellnamen genau so ein, wie der Anbieter ihn angibt.",
     "encryption_none": "Verschlüsselung Keine",
     "encryption_ssl": "Verschlüsselung SSL",
     "encryption_tls": "Verschlüsselung TLS",

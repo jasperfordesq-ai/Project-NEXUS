@@ -30,6 +30,10 @@ class AiTurnTraceService
         'claude-3-5-sonnet-20241022' => ['in' => 0.003, 'out' => 0.015],
         'claude-sonnet-4-6' => ['in' => 0.003, 'out' => 0.015],
         'claude-haiku-4-5-20251001' => ['in' => 0.0008, 'out' => 0.004],
+        // The models the admin page suggests since 18 Nov 2026 (Anthropic list prices).
+        'claude-opus-5-5' => ['in' => 0.004, 'out' => 0.020],
+        'claude-sonnet-5-5' => ['in' => 0.002, 'out' => 0.010],
+        'claude-haiku-5-5' => ['in' => 0.0001, 'out' => 0.0005],
         // Gemini (rough)
         'gemini-1.5-flash' => ['in' => 0.000075, 'out' => 0.0003],
         'gemini-1.5-pro' => ['in' => 0.00125, 'out' => 0.005],

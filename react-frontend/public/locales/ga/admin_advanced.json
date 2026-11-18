@@ -361,6 +361,7 @@
     "desc_select_ai_provider": "Roghnaigh Soláthraí AI.",
     "desc_select_model": "Roghnaigh Múnla.",
     "desc_title_suffix": "Cuireann sé seo in ionad ainm an phobail ag deireadh theidil na leathanach, mar shampla “Fúinn | Mo Bhanc Ama”. Fág folamh chun ainm an phobail a úsáid. Úsáidtear meiteatheideal an leathanaigh bhaile díreach mar atá sé scríofa.",
+    "desc_type_model": "Roghnaigh moladh nó clóscríobh ainm an mhúnla díreach mar a liostaíonn an soláthraí é.",
     "encryption_none": "Criptiú Ceann ar bith",
     "encryption_ssl": "Criptiú SSL",
     "encryption_tls": "Criptiú TLS",

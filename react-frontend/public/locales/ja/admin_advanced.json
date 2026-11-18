@@ -362,6 +362,7 @@
     "desc_select_ai_provider": "AI プロバイダーを選択します。",
     "desc_select_model": "モデルを選択します。",
     "desc_title_suffix": "ページタイトルの末尾のコミュニティ名を置き換えます（例：「概要 | マイタイムバンク」）。空欄にするとコミュニティ名が使われます。ホームページのメタタイトルは入力どおりにそのまま使われます。",
+    "desc_type_model": "候補から選ぶか、プロバイダーが示すとおりにモデル名を入力してください。",
     "encryption_none": "暗号化なし",
     "encryption_ssl": "暗号化SSL",
     "encryption_tls": "暗号化TLS",

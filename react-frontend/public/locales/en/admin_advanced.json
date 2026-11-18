@@ -447,6 +447,7 @@
     "desc_select_ai_provider": "Select AI Provider.",
     "desc_select_model": "Select Model.",
     "desc_title_suffix": "Replaces the community name at the end of page titles, for example “About | My Timebank”. Leave empty to use the community name. A home page meta title is used exactly as written.",
+    "desc_type_model": "Choose a suggestion or type the model name exactly as the provider lists it.",
     "encryption_none": "Encryption None",
     "encryption_ssl": "Encryption SSL",
     "encryption_tls": "Encryption TLS",

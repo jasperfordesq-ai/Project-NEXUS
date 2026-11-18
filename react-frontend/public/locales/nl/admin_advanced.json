@@ -360,6 +360,7 @@
     "desc_select_ai_provider": "Selecteer AI-provider.",
     "desc_select_model": "Selecteer Model.",
     "desc_title_suffix": "Vervangt de communitynaam aan het einde van paginatitels, bijvoorbeeld ‘Over ons | Mijn Timebank’. Laat leeg om de communitynaam te gebruiken. Een metatitel voor de startpagina wordt precies zo gebruikt als hij is geschreven.",
+    "desc_type_model": "Kies een suggestie of typ de modelnaam precies zoals de aanbieder die vermeldt.",
     "encryption_none": "Encryptie Geen",
     "encryption_ssl": "Encryptie SSL",
     "encryption_tls": "Encryptie-TLS",

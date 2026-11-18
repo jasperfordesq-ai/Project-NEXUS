@@ -250,6 +250,40 @@ describe('AiSettings', () => {
     });
   });
 
+  // Every Claude model the page offered had been retired by Anthropic
+  // (claude-sonnet-4-20250514 on 15 Jun 2026), and the box only accepted a
+  // listed model, so switching to Anthropic could not work.
+  it('accepts a model name typed by hand and sends it as typed', async () => {
+    const { AiSettings } = await import('./AiSettings');
+    render(<AiSettings />);
+
+    await waitFor(() => screen.getByTestId('page-header'));
+
+    // One model box per provider, in page order: OpenAI, Anthropic, Gemini, Ollama.
+    const modelBoxes = screen.getAllByRole('combobox');
+    expect(modelBoxes).toHaveLength(4);
+    fireEvent.change(modelBoxes[0]!, { target: { value: 'a-model-this-page-has-never-heard-of' } });
+    fireEvent.change(modelBoxes[1]!, { target: { value: '  claude-sonnet-5-5 ' } });
+
+    const saveBtn = screen.getAllByRole('button').find(
+      (b) => b.textContent?.toLowerCase().includes('save')
+    );
+    if (saveBtn) fireEvent.click(saveBtn);
+
+    await waitFor(() => expect(mockAdminSettings.updateAiConfig).toHaveBeenCalled());
+    const payload = mockAdminSettings.updateAiConfig.mock.calls[0]![0] as Record<string, unknown>;
+    expect(payload.openai_model).toBe('a-model-this-page-has-never-heard-of');
+    expect(payload.claude_model).toBe('claude-sonnet-5-5');
+  });
+
+  it('suggests no retired Claude model', async () => {
+    const source = await import('./AiSettings?raw').then((m) => (m as { default: string }).default);
+
+    for (const retired of ['claude-sonnet-4-20250514', 'claude-3-5-sonnet-20241022', 'claude-3-haiku-20240307']) {
+      expect(source).not.toContain(`'${retired}'`);
+    }
+  });
+
   it('refreshes config after successful save', async () => {
     const { AiSettings } = await import('./AiSettings');
     render(<AiSettings />);

@@ -365,6 +365,7 @@
     "desc_select_ai_provider": "Wybierz dostawcę AI.",
     "desc_select_model": "Wybierz Model.",
     "desc_title_suffix": "Zastępuje nazwę społeczności na końcu tytułów stron, na przykład „O nas | Mój bank czasu”. Pozostaw puste, aby użyć nazwy społeczności. Metatytuł strony głównej jest używany dokładnie tak, jak został wpisany.",
+    "desc_type_model": "Wybierz sugestię lub wpisz nazwę modelu dokładnie tak, jak podaje ją dostawca.",
     "encryption_none": "Szyfrowanie Brak",
     "encryption_ssl": "Szyfrowanie SSL",
     "encryption_tls": "Szyfrowanie TLS",
