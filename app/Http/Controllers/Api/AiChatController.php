@@ -218,10 +218,14 @@ TXT;
                 $hop++;
             }
             if ($content === null) {
-                // Hit hop limit — make one final call with no tools to force a text answer.
+                // Hit hop limit — one final call that may not use a tool, to force a
+                // text answer. The tools stay listed: the history holds tool calls,
+                // and Anthropic refuses a history with tool calls but no tools.
                 $response = AIServiceFactory::chatWithFallback($chatMessages, [
                     'temperature' => 0.2,
                     'max_tokens' => 1200,
+                    'tools' => $tools,
+                    'tool_choice' => 'none',
                 ], null, $admitProviderAttempt);
                 $content = $response['content'] ?? '';
                 $tokensUsed += (int) ($response['tokens_used'] ?? 0);

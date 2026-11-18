@@ -17,6 +17,9 @@ namespace App\Services\AI\Providers;
  */
 class AnthropicProvider extends BaseProvider
 {
+    /** Room for a current model's thinking plus the answer; see chat(). */
+    private const MIN_MAX_TOKENS = 8192;
+
     private string $apiVersion = '2023-06-01';
 
     public function __construct(array $config = [])
@@ -60,16 +63,27 @@ class AnthropicProvider extends BaseProvider
 
         [$systemPrompt, $chatMessages] = $this->translateMessagesForAnthropic($messages);
 
+        // Current Claude models think on every request and that thinking counts
+        // against max_tokens, so a caller's small answer budget (250 for a bio)
+        // could end before any answer text. It is a ceiling, not a target: only
+        // what is written is billed. Answer length is set by each prompt.
         $data = [
             'model' => $model,
             'messages' => $chatMessages,
-            'max_tokens' => $options['max_tokens'] ?? 2048,
+            'max_tokens' => max((int) ($options['max_tokens'] ?? 0), self::MIN_MAX_TOKENS),
         ];
         if ($systemPrompt !== '') {
             $data['system'] = $systemPrompt;
         }
-        if (isset($options['temperature'])) {
-            $data['temperature'] = $options['temperature'];
+        // No temperature / top_p / top_k: Claude Opus 5.5 refuses them and
+        // Sonnet 5.5 / Haiku 5.5 refuse any non-default value (400), and every
+        // caller here passes one. Security register E-131.
+
+        // The 5-family models think on every request; low effort is the
+        // vendor's recommendation for chat and short drafting, and keeps a
+        // tool round quick. Older models reject the field, so only these.
+        if (preg_match('/^claude-(opus|sonnet|haiku|fable|mythos)-5/', (string) $model) === 1) {
+            $data['output_config'] = ['effort' => (string) ($options['effort'] ?? 'low')];
         }
         if (!empty($options['tools']) && is_array($options['tools'])) {
             $data['tools'] = array_map(function ($t) {
@@ -77,14 +91,18 @@ class AnthropicProvider extends BaseProvider
                 return [
                     'name' => $fn['name'] ?? '',
                     'description' => $fn['description'] ?? '',
-                    'input_schema' => $fn['parameters'] ?? ['type' => 'object', 'properties' => (object) []],
+                    'input_schema' => self::objectProperties(
+                        $fn['parameters'] ?? ['type' => 'object', 'properties' => (object) []]
+                    ),
                 ];
             }, $options['tools']);
             if (!empty($options['tool_choice'])) {
                 $tc = $options['tool_choice'];
-                $data['tool_choice'] = is_string($tc)
-                    ? ($tc === 'required' ? ['type' => 'any'] : ['type' => 'auto'])
-                    : ['type' => 'auto'];
+                $data['tool_choice'] = match ($tc) {
+                    'required' => ['type' => 'any'],
+                    'none' => ['type' => 'none'],
+                    default => ['type' => 'auto'],
+                };
             }
         }
 
@@ -126,6 +144,35 @@ class AnthropicProvider extends BaseProvider
             'finish_reason' => $response['stop_reason'] ?? 'stop',
             'provider' => 'anthropic',
         ];
+    }
+
+    /**
+     * Anthropic requires every `properties` in a tool schema to be a JSON
+     * object. A tool with no inputs declared in PHP as `'properties' => []`
+     * encodes as a list `[]` and the whole request is refused (400 "input_schema
+     * .properties: Input should be an object" — tenant 2, 18 Nov 2026). OpenAI
+     * accepts either, so the tools are fixed here, for Anthropic only.
+     *
+     * @param array<string, mixed> $schema
+     * @return array<string, mixed>
+     */
+    private static function objectProperties(array $schema): array
+    {
+        if (array_key_exists('properties', $schema)) {
+            $properties = $schema['properties'];
+            if (is_array($properties)) {
+                $properties = array_map(
+                    static fn ($child) => is_array($child) ? self::objectProperties($child) : $child,
+                    $properties
+                );
+                $schema['properties'] = $properties === [] ? new \stdClass() : $properties;
+            }
+        }
+        if (isset($schema['items']) && is_array($schema['items'])) {
+            $schema['items'] = self::objectProperties($schema['items']);
+        }
+
+        return $schema;
     }
 
     /**
@@ -191,10 +238,18 @@ class AnthropicProvider extends BaseProvider
                 continue;
             }
 
-            $out[] = [
-                'role' => $role,
-                'content' => is_string($m['content'] ?? null) ? $m['content'] : json_encode($m['content']),
-            ];
+            $content = is_string($m['content'] ?? null) ? $m['content'] : json_encode($m['content']);
+            // Anthropic refuses an empty message anywhere in the history.
+            if (trim((string) $content) === '') {
+                continue;
+            }
+            $out[] = ['role' => $role, 'content' => $content];
+        }
+
+        // Anthropic requires the first message to be the user's. The chat
+        // keeps only the last 12 history rows, which can begin with a reply.
+        while ($out !== [] && ($out[0]['role'] ?? '') === 'assistant') {
+            array_shift($out);
         }
 
         return [trim($systemPrompt), $out];
