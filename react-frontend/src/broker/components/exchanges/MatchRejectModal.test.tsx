@@ -82,4 +82,17 @@ describe('MatchRejectModal', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(mockAdminMatching.rejectMatch).not.toHaveBeenCalled();
   });
+
+  it('does not tell the broker that the member will see the reason', () => {
+    // Nobody is told about a rejection and the reason is never shown to
+    // either member; the hint used to promise the opposite.
+    render(<MatchRejectModal match={MATCH} onClose={onClose} onRejected={onRejected} />);
+
+    const field = screen.getByLabelText(/rejection reason/i);
+    expect(field).toHaveAttribute(
+      'placeholder',
+      'Explain why this match is being rejected. Neither member is told; the reason is kept for coordinators.'
+    );
+    expect(field.getAttribute('placeholder')).not.toMatch(/will see/i);
+  });
 });

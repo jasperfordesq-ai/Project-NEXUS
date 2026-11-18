@@ -55,6 +55,16 @@ describe('MatchesEmptyState', () => {
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
   });
 
+  it('renders the matching-switched-off variant without asking for a location or a listing', () => {
+    render(<MatchesEmptyState variant="disabled" />);
+    expect(screen.getByText('Matching is switched off here')).toBeInTheDocument();
+    expect(screen.getByText(/isn't using matching at the moment/i)).toBeInTheDocument();
+    // The one thing still useful: looking through offers and requests yourself.
+    expect(screen.getByText('Browse offers and requests')).toBeInTheDocument();
+    expect(screen.queryByText('Create a listing')).not.toBeInTheDocument();
+    expect(screen.queryByText('Set your location')).not.toBeInTheDocument();
+  });
+
   it('renders the default "none" variant with browse and preferences CTAs', () => {
     render(<MatchesEmptyState variant="none" />);
     expect(screen.getByText('No matches yet')).toBeInTheDocument();

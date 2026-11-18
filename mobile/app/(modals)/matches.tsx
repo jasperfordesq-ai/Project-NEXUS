@@ -27,6 +27,7 @@ import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
+import { dateLocale } from '@/lib/utils/dateLocale';
 import AppTopBar from '@/components/ui/AppTopBar';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
@@ -37,7 +38,12 @@ import { withRouteGate } from '@/components/withRouteGate';
 type Filter = 'all' | MatchSourceType;
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
-const FILTERS: Filter[] = ['all', 'listing', 'job', 'volunteering', 'group'];
+/*
+  🔴 One filter per kind of match the server can return. There was a "Jobs" filter here that
+  could never fill (the server has no jobs match) and no "Events" filter although events are
+  matched, so an event could only ever be found under "All".
+*/
+const FILTERS: Filter[] = ['all', 'listing', 'volunteering', 'group', 'event'];
 
 const SOURCE_CONFIG: Record<MatchSourceType, { icon: IoniconName; tone: string; route: (id: number) => Parameters<typeof router.push>[0] }> = {
   listing: {
@@ -45,11 +51,11 @@ const SOURCE_CONFIG: Record<MatchSourceType, { icon: IoniconName; tone: string; 
     tone: '#2563eb',
     route: (id) => ({ pathname: '/(modals)/exchange-detail', params: { id: String(id) } }),
   },
-  job: {
-    icon: 'briefcase-outline',
-    tone: '#f59e0b',
-    route: (id) => ({ pathname: '/(modals)/job-detail', params: { id: String(id) } }),
-  },
+  /*
+    🔴 A volunteering match is an OPPORTUNITY, and `source_id` is its opportunity id
+    (`lib/api/matches.ts`). This screen used to be handed the ORGANISATION's id and passed
+    it to the opportunity screen, which opened an unrelated opportunity.
+  */
   volunteering: {
     icon: 'heart-outline',
     tone: '#e11d48',
@@ -75,6 +81,33 @@ const SOURCE_CONFIG: Record<MatchSourceType, { icon: IoniconName; tone: string; 
   },
 };
 
+/** A browsing suggestion for a member with nothing posted yet, not a scored match. */
+function isSuggestion(match: MatchItem): boolean {
+  return match.match_type === 'cold_start';
+}
+
+/** The score a member is shown: a whole number. */
+function displayScore(score: number): number {
+  return Number.isFinite(score) ? Math.min(100, Math.max(0, Math.round(score))) : 0;
+}
+
+/** When an event starts, in the app's language; null when the server sent nothing usable. */
+function eventStartText(value: string | null | undefined): string | null {
+  if (!value) return null;
+  // The server writes "2026-12-05 14:00:00"; Hermes only parses the ISO form.
+  const parsed = new Date(value.includes(' ') && !value.includes('T') ? value.replace(' ', 'T') : value);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed.toLocaleString(dateLocale(), {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+type NoticeKind = 'paused' | 'location' | 'safeguarding';
+
 function MatchesScreen() {
   const { t } = useTranslation(['profile', 'common']);
   const { show: showToast } = useAppToast();
@@ -86,12 +119,12 @@ function MatchesScreen() {
     type?: string | string[];
   }>();
   const [filter, setFilter] = useState<Filter>('all');
-  const [dismissedIds, setDismissedIds] = useState<Set<number>>(new Set());
-  const [dismissingId, setDismissingId] = useState<number | null>(null);
+  const [dismissedKeys, setDismissedKeys] = useState<Set<string>>(new Set());
+  const [dismissingKey, setDismissingKey] = useState<string | null>(null);
 
   const matches = useMemo(
-    () => (data?.data ?? []).filter((match) => !dismissedIds.has(match.id)),
-    [data?.data, dismissedIds],
+    () => (data?.data ?? []).filter((match) => !dismissedKeys.has(match.key)),
+    [data?.data, dismissedKeys],
   );
   const requestedType = Array.isArray(params.type) ? params.type[0] : params.type;
   const rawHighlight = Array.isArray(params.highlight) ? params.highlight[0] : params.highlight;
@@ -111,10 +144,13 @@ function MatchesScreen() {
     }
     return visible;
   }, [filter, highlightedListingId, matches, requestedType]);
-  const averageScore = matches.length
-    ? Math.round(matches.reduce((total, match) => total + match.match_score, 0) / matches.length)
+  // Suggestions shown to a member with nothing posted yet carry a placeholder score, so
+  // they stay out of the average and the hot-match count.
+  const scoredMatches = matches.filter((match) => !isSuggestion(match));
+  const averageScore = scoredMatches.length
+    ? Math.round(scoredMatches.reduce((total, match) => total + displayScore(match.match_score), 0) / scoredMatches.length)
     : 0;
-  const hotMatches = matches.filter((match) => match.match_score >= 80).length;
+  const hotMatches = scoredMatches.filter((match) => displayScore(match.match_score) >= 80).length;
   const sourceCount = new Set(matches.map((match) => match.source_type)).size;
 
   /**
@@ -125,9 +161,11 @@ function MatchesScreen() {
    * Measured on 2026-08-24 against the live API: zero listing matches with
    * `needs_location: true, degraded_reason: "no_coordinates"`.
    *
-   * Order matters. Paused is the member's own choice, so it is said first; then a missing
-   * area, which blocks everything; then having nothing posted yet. Anything else keeps the
-   * original wording.
+   * Order matters. A community that has switched matching off comes first, because nothing
+   * the member does would change it. Paused is the member's own choice, so it is said next;
+   * then a missing area, which blocks everything; then an unfinished safeguarding setup,
+   * which only the community team can finish; then having nothing posted yet. Anything else
+   * keeps the original wording.
    */
   /*
     🔴 Only when there is nothing AT ALL. A member who has matches but taps a filter with
@@ -136,32 +174,52 @@ function MatchesScreen() {
     would have sat behind a "you have no location" message.
   */
   const hasAnyMatch = matches.length > 0;
-  const emptyReason: 'paused' | 'location' | 'listings' | 'none' = hasAnyMatch
+  const safeguardingUnavailable = data?.meta?.degradedReason === 'safeguarding_policy_unavailable';
+  const emptyReason: 'disabled' | 'paused' | 'location' | 'safeguarding' | 'listings' | 'none' = hasAnyMatch
     ? 'none'
+    : data?.meta?.disabled
+    ? 'disabled'
     : data?.meta?.paused
     ? 'paused'
     : data?.meta?.needsLocation
       ? 'location'
-      : data?.meta?.hasActiveListings === false
-        ? 'listings'
-        : 'none';
+      : safeguardingUnavailable
+        ? 'safeguarding'
+        : data?.meta?.hasActiveListings === false
+          ? 'listings'
+          : 'none';
+
+  /*
+    🔴 The same reasons still matter when SOME cards exist. A paused member, or one with no
+    area, still gets group, volunteering and event cards — and used to be told nothing at
+    all, because the explanation lived only in the empty state. They are said above the list
+    as notices: softer than the empty state, and never in place of the cards.
+  */
+  const notices: NoticeKind[] = !hasAnyMatch
+    ? []
+    : [
+        ...(data?.meta?.paused ? ['paused' as const] : []),
+        ...(data?.meta?.needsLocation ? ['location' as const] : []),
+        ...(safeguardingUnavailable ? ['safeguarding' as const] : []),
+      ];
 
   async function handleDismiss(match: MatchItem) {
-    if (match.source_type !== 'listing' || dismissingId !== null) return;
+    if (match.source_type !== 'listing' || match.source_id === null || dismissingKey !== null) return;
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setDismissingId(match.id);
+    setDismissingKey(match.key);
     try {
       await dismissMatch(match.source_id);
-      setDismissedIds((current) => new Set(current).add(match.id));
+      setDismissedKeys((current) => new Set(current).add(match.key));
     } catch (err) {
       // Without this the rejection was unhandled: the spinner stopped and the card stayed.
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('matches.dismissFailed')), variant: 'danger' });
     } finally {
-      setDismissingId(null);
+      setDismissingKey(null);
     }
   }
 
   function openMatch(match: MatchItem) {
+    if (match.source_id === null) return;
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.push(SOURCE_CONFIG[match.source_type].route(match.source_id));
   }
@@ -172,12 +230,12 @@ function MatchesScreen() {
         <AppTopBar title={t('matches.title')} backLabel={t('common:back')} fallbackHref="/(tabs)/profile" />
         <FlatList<MatchItem>
           data={filteredMatches}
-          keyExtractor={(item) => String(item.id)}
+          keyExtractor={(item) => item.key}
           renderItem={({ item }) => (
             <MatchCard
               item={item}
               highlighted={item.source_type === 'listing' && item.source_id === highlightedListingId}
-              isDismissing={dismissingId === item.id}
+              isDismissing={dismissingKey === item.key}
               onDismiss={() => void handleDismiss(item)}
               onOpen={() => openMatch(item)}
             />
@@ -213,6 +271,20 @@ function MatchesScreen() {
                   </HeroButton>
                 </HeroCard.Body>
               </HeroCard>
+
+              {notices.map((kind) => (
+                <MatchNotice
+                  key={kind}
+                  kind={kind}
+                  onAction={
+                    kind === 'paused'
+                      ? () => router.push('/(modals)/match-preferences' as Href)
+                      : kind === 'location'
+                        ? () => router.push('/(modals)/edit-profile' as Href)
+                        : undefined
+                  }
+                />
+              ))}
 
               <View className="mx-4 flex-row flex-wrap gap-3">
                 <StatTile icon="radio-button-on-outline" label={t('matches.total')} value={matches.length} tone={primary} />
@@ -252,9 +324,13 @@ function MatchesScreen() {
                         ? 'location-outline'
                         : emptyReason === 'paused'
                           ? 'pause-circle-outline'
-                          : emptyReason === 'listings'
-                            ? 'add-circle-outline'
-                            : 'sparkles-outline'
+                          : emptyReason === 'disabled'
+                            ? 'power-outline'
+                            : emptyReason === 'safeguarding'
+                              ? 'shield-outline'
+                              : emptyReason === 'listings'
+                                ? 'add-circle-outline'
+                                : 'sparkles-outline'
                   }
                   title={
                     error
@@ -270,6 +346,8 @@ function MatchesScreen() {
                         ? t('matches.emptySubtitle')
                         : t(`matches.empty.${emptyReason}Body`)
                   }
+                  // No button for a community that has matching off, or an unfinished
+                  // safeguarding setup: the member cannot change either.
                   actionLabel={
                     error
                       ? t('common:buttons.retry')
@@ -303,6 +381,40 @@ function MatchesScreen() {
   );
 }
 
+const NOTICE_ICON: Record<NoticeKind, IoniconName> = {
+  paused: 'pause-circle-outline',
+  location: 'location-outline',
+  safeguarding: 'shield-outline',
+};
+
+function MatchNotice({ kind, onAction }: { kind: NoticeKind; onAction?: () => void }) {
+  const { t } = useTranslation(['profile']);
+  const theme = useTheme();
+  const primary = usePrimaryColor();
+
+  return (
+    <Surface variant="secondary" className="mx-4 gap-3 rounded-panel-inner p-4" testID={`matches-notice-${kind}`}>
+      <View className="flex-row items-start gap-3">
+        <Ionicons name={NOTICE_ICON[kind]} size={22} color={theme.warning} />
+        <View className="min-w-0 flex-1 gap-1">
+          <Text className="text-base font-bold" style={{ color: theme.text }}>
+            {t(`matches.notice.${kind}Title`)}
+          </Text>
+          <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>
+            {t(`matches.notice.${kind}Body`)}
+          </Text>
+        </View>
+      </View>
+      {onAction ? (
+        <HeroButton size="sm" variant="secondary" onPress={onAction}>
+          <HeroButton.Label>{t(`matches.notice.${kind}Action`)}</HeroButton.Label>
+          <Ionicons name="chevron-forward-outline" size={16} color={primary} />
+        </HeroButton>
+      ) : null}
+    </Surface>
+  );
+}
+
 function MatchCard({
   item,
   highlighted,
@@ -319,14 +431,22 @@ function MatchCard({
   const { t } = useTranslation(['profile']);
   const theme = useTheme();
   const config = SOURCE_CONFIG[item.source_type];
-  const scoreTone = item.match_score >= 80 ? theme.success : item.match_score >= 60 ? theme.warning : config.tone;
+  const suggestion = isSuggestion(item);
+  const score = displayScore(item.match_score);
+  const scoreTone = score >= 80 ? theme.success : score >= 60 ? theme.warning : config.tone;
+  const canOpen = item.source_id !== null;
+  const canDismiss = item.source_type === 'listing' && canOpen;
+  const eventStart = item.source_type === 'event' ? eventStartText(item.metadata?.event_date) : null;
+  const organisation = item.source_type === 'volunteering' ? item.metadata?.organization_name ?? null : null;
+  const place = item.source_type === 'event' || item.source_type === 'volunteering' ? item.metadata?.location ?? null : null;
+  const going = item.source_type === 'event' ? item.metadata?.attendee_count ?? null : null;
 
   return (
     <HeroCard
       variant="default"
       className="mx-4 my-2 overflow-hidden rounded-panel p-0"
       style={highlighted ? { borderWidth: 2, borderColor: config.tone } : undefined}
-      testID={`match-card-${item.source_type}-${item.source_id}`}
+      testID={`match-card-${item.key}`}
     >
       <View className="h-1 w-full" style={{ backgroundColor: config.tone }} />
       <HeroCard.Body className="gap-3 p-4">
@@ -339,10 +459,19 @@ function MatchCard({
               <Chip size="sm" variant="secondary">
                 <Chip.Label>{t(`matches.source.${item.source_type}`)}</Chip.Label>
               </Chip>
-              <Chip size="sm" variant="secondary">
-                <Ionicons name="analytics-outline" size={12} color={scoreTone} />
-                <Chip.Label>{t('matches.score', { score: item.match_score })}</Chip.Label>
-              </Chip>
+              {suggestion ? (
+                // A suggestion for someone with nothing posted yet: not a scored match, so
+                // it is not given a percentage.
+                <Chip size="sm" variant="secondary">
+                  <Ionicons name="sparkles-outline" size={12} color={config.tone} />
+                  <Chip.Label>{t('matches.suggested')}</Chip.Label>
+                </Chip>
+              ) : (
+                <Chip size="sm" variant="secondary">
+                  <Ionicons name="analytics-outline" size={12} color={scoreTone} />
+                  <Chip.Label>{t('matches.score', { score })}</Chip.Label>
+                </Chip>
+              )}
             </View>
             <Text className="text-base font-bold" style={{ color: theme.text }} numberOfLines={2}>
               {item.title}
@@ -352,6 +481,10 @@ function MatchCard({
                 {item.description}
               </Text>
             ) : null}
+            {eventStart ? <DetailLine icon="time-outline" text={eventStart} /> : null}
+            {organisation ? <DetailLine icon="business-outline" text={organisation} /> : null}
+            {place ? <DetailLine icon="location-outline" text={place} /> : null}
+            {going ? <DetailLine icon="people-outline" text={t('matches.going', { count: going })} /> : null}
           </View>
         </View>
 
@@ -365,27 +498,52 @@ function MatchCard({
           </View>
         ) : null}
 
-        <View className="flex-row gap-2">
-          <HeroButton className="flex-1" size="sm" variant="primary" onPress={onOpen} accessibilityLabel={t('matches.open')}>
-            <HeroButton.Label>{t('matches.open')}</HeroButton.Label>
-            <AccentIcon name="chevron-forward-outline" size={16} />
-          </HeroButton>
-          {item.source_type === 'listing' ? (
-            <HeroButton
-              className="flex-1"
-              size="sm"
-              variant="danger-soft"
-              onPress={onDismiss}
-              isDisabled={isDismissing}
-              accessibilityLabel={t('matches.dismiss')}
-            >
-              <Ionicons name="close-outline" size={16} color={theme.error} />
-              <HeroButton.Label>{t('matches.dismiss')}</HeroButton.Label>
-            </HeroButton>
-          ) : null}
-        </View>
+        {canOpen || canDismiss ? (
+          <View className="flex-row gap-2">
+            {canOpen ? (
+              <HeroButton
+                className="flex-1"
+                size="sm"
+                variant="primary"
+                onPress={onOpen}
+                // Named for the thing it opens: a screen reader used to hear "Open match"
+                // once per card, with nothing to tell them apart.
+                accessibilityLabel={t('matches.openNamed', { title: item.title })}
+              >
+                <HeroButton.Label>{t('matches.open')}</HeroButton.Label>
+                <AccentIcon name="chevron-forward-outline" size={16} />
+              </HeroButton>
+            ) : null}
+            {canDismiss ? (
+              <HeroButton
+                className="flex-1"
+                size="sm"
+                variant="danger-soft"
+                onPress={onDismiss}
+                isDisabled={isDismissing}
+                accessibilityLabel={t('matches.dismissNamed', { title: item.title })}
+              >
+                <Ionicons name="close-outline" size={16} color={theme.error} />
+                <HeroButton.Label>{t('matches.dismiss')}</HeroButton.Label>
+              </HeroButton>
+            ) : null}
+          </View>
+        ) : null}
       </HeroCard.Body>
     </HeroCard>
+  );
+}
+
+function DetailLine({ icon, text }: { icon: IoniconName; text: string }) {
+  const theme = useTheme();
+
+  return (
+    <View className="flex-row items-center gap-1.5">
+      <Ionicons name={icon} size={14} color={theme.textSecondary} />
+      <Text className="min-w-0 flex-1 text-xs" style={{ color: theme.textSecondary }} numberOfLines={1}>
+        {text}
+      </Text>
+    </View>
   );
 }
 

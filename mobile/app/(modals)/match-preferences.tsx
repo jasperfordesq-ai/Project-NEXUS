@@ -54,6 +54,8 @@ function MatchPreferencesScreen() {
   const theme = useTheme();
   const { show } = useAppToast();
   const [draft, setDraft] = useState<MatchPreferences | null>(null);
+  // What the server currently holds: the loaded values, then whatever each save returned.
+  const [savedPreferences, setSavedPreferences] = useState<MatchPreferences | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   const loadForm = useCallback(async (): Promise<MatchPreferenceFormData> => {
@@ -71,12 +73,21 @@ function MatchPreferencesScreen() {
   const { data, isLoading, error, refresh } = useApi(loadForm, []);
 
   useEffect(() => {
-    if (data?.preferences) setDraft(data.preferences);
+    if (data?.preferences) {
+      setDraft(data.preferences);
+      setSavedPreferences(data.preferences);
+    }
   }, [data?.preferences]);
 
   // A settings form with a Save button: Back used to discard changed toggles silently.
   const { confirm, confirmDialog } = useConfirm();
-  const isDirty = Boolean(draft && data?.preferences && JSON.stringify(draft) !== JSON.stringify(data.preferences));
+  /*
+    🔴 Compared with what was last SAVED, not with what was first loaded. It used to compare
+    the form with the values the screen opened with, which a save never updated — so after a
+    successful save the form still counted as changed, and Back asked "Discard your
+    changes?" about changes that had just been kept.
+  */
+  const isDirty = Boolean(draft && savedPreferences && JSON.stringify(draft) !== JSON.stringify(savedPreferences));
   useUnsavedChangesGuard({
     isDirty,
     isSaving,
@@ -92,7 +103,10 @@ function MatchPreferencesScreen() {
     setIsSaving(true);
     try {
       const saved = await updateMatchPreferences(draft);
+      // Show what the server kept, which can differ from what was sent (a distance beyond
+      // the community's limit is brought back to it), and treat it as the saved state.
       setDraft(saved);
+      setSavedPreferences(saved);
       show({ title: t('matchPreferences.save_success'), variant: 'success' });
     } catch (saveError) {
       show({
@@ -171,7 +185,9 @@ function MatchPreferencesScreen() {
                 <Slider
                   value={draft.max_distance_km}
                   minValue={1}
-                  maxValue={100}
+                  // The community's own limit. The server brings anything beyond it back
+                  // to this figure, so the slider does not offer more.
+                  maxValue={draft.max_distance_limit_km}
                   step={1}
                   onChange={(value) => setDraft((current) => current && ({
                     ...current,

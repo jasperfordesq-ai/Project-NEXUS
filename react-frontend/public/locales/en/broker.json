@@ -1520,7 +1520,7 @@
     "reject_failed": "Failed to reject match",
     "load_failed": "Failed to load match approval",
     "reject_reason_label": "Rejection reason",
-    "reject_reason_placeholder": "Explain why this match is being rejected — the member will see this.",
+    "reject_reason_placeholder": "Explain why this match is being rejected. Neither member is told; the reason is kept for coordinators.",
     "reject_reason_required": "Please provide a reason for rejection",
     "rejecting_between": "Rejecting the match between {{user1}} and {{user2}}.",
     "cancel": "Cancel",
@@ -1557,7 +1557,8 @@
     "retry": "Try again",
     "detail_description": "Check why these two were matched, then approve or reject before the member is told.",
     "listing_type_offer": "Offer",
-    "listing_type_request": "Request"
+    "listing_type_request": "Request",
+    "type_potential": "Possibly mutual"
   },
   "status": {
     "unknown": "Unknown",

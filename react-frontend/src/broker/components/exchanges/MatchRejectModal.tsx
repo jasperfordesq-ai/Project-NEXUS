@@ -4,12 +4,20 @@
 // See NOTICE file for attribution and acknowledgements.
 
 /**
- * MatchRejectModal — reject a smart-match proposal with a reason the member
- * will see. Shared by the Match approvals list and detail pages, which each
- * carried a copy until October 2026. Submit stays disabled until a reason is
- * typed; the modal closes only on success so a failed request keeps the
- * reason on screen. The server refuses a broker who is a party to the match
- * and its message is what the toast shows.
+ * MatchRejectModal — reject a smart-match proposal, with a reason.
+ *
+ * 🔴 NOBODY is told about a rejection, and the reason is never shown to
+ * either member: the pair was never introduced, and the reason can carry
+ * safeguarding detail (MatchApprovalWorkflowService::rejectMatchOutcome). It
+ * is kept on the match for coordinators and in the audit log. The field's
+ * hint used to say "the member will see this", which was untrue.
+ *
+ * Shared by the Match approvals list and detail pages, which each carried a
+ * copy until October 2026. Submit stays disabled until a reason is typed; the
+ * modal closes only on success so a failed request keeps the reason on
+ * screen. The server refuses a broker who is a party to the match, and says
+ * so when a colleague has already decided it; its message is what the toast
+ * shows.
  */
 
 import { useState } from 'react';

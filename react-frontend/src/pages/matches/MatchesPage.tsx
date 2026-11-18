@@ -19,6 +19,7 @@ import Sparkles from 'lucide-react/icons/sparkles';
 import ListChecks from 'lucide-react/icons/list-checks';
 import Heart from 'lucide-react/icons/heart';
 import Users from 'lucide-react/icons/users';
+import Calendar from 'lucide-react/icons/calendar';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import TrendingUp from 'lucide-react/icons/trending-up';
 import Target from 'lucide-react/icons/target';
@@ -45,25 +46,31 @@ import { useTranslation } from 'react-i18next';
 import { MatchCard } from './components/MatchCard';
 import { MatchesEmptyState } from './components/MatchesEmptyState';
 import type { Match, MatchesMeta, MatchModule } from './types';
-import { matchElementId } from './types';
+import { displayScore, isSuggestion, matchElementId } from './types';
 
 import { LoadError } from '@/components/feedback/LoadError';
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
 
-type TabFilter = 'all' | 'listings' | 'groups' | 'volunteering';
+type TabFilter = 'all' | 'listings' | 'groups' | 'volunteering' | 'events';
 
 const TAB_MODULE: Record<Exclude<TabFilter, 'all'>, MatchModule> = {
   listings: 'listing',
   groups: 'group',
   volunteering: 'volunteering',
+  events: 'event',
 };
+
+function isTabFilter(value: string | null): value is Exclude<TabFilter, 'all'> {
+  return value !== null && Object.prototype.hasOwnProperty.call(TAB_MODULE, value);
+}
 
 const TAB_CONFIG: Record<Exclude<TabFilter, 'all'>, { icon: typeof ListChecks; labelKey: string }> = {
   listings: { icon: ListChecks, labelKey: 'filter_people_listings' },
   groups: { icon: Users, labelKey: 'source_group' },
   volunteering: { icon: Heart, labelKey: 'source_volunteering' },
+  events: { icon: Calendar, labelKey: 'source_event' },
 };
 
 const DEFAULT_META: MatchesMeta = {
@@ -75,6 +82,7 @@ const DEFAULT_META: MatchesMeta = {
   degraded_reason: null,
   has_active_listings: null,
   paused: false,
+  disabled: false,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -97,10 +105,8 @@ export function MatchesPage() {
   const [mutualOnly, setMutualOnly] = useState(searchParams.get('type') === 'mutual');
   const [showMutualBanner, setShowMutualBanner] = useState(searchParams.get('type') === 'mutual');
 
-  const tabFromParams = (searchParams.get('tab') as TabFilter | null) ?? 'all';
-  const [tab, setTab] = useState<TabFilter>(
-    tabFromParams === 'listings' || tabFromParams === 'groups' || tabFromParams === 'volunteering' ? tabFromParams : 'all',
-  );
+  const tabFromParams = searchParams.get('tab');
+  const [tab, setTab] = useState<TabFilter>(isTabFilter(tabFromParams) ? tabFromParams : 'all');
 
   const highlightId = searchParams.get('highlight');
   const hasScrolledRef = useRef(false);
@@ -111,6 +117,9 @@ export function MatchesPage() {
     else setLoading(true);
 
     try {
+      // No `min_score` on purpose: left out, the server applies the minimum the
+      // member saved in their match preferences (else the community's own).
+      // Sending one here would override what they chose.
       const res = await api.get<{ matches?: Match[]; meta?: Partial<MatchesMeta> }>('/v2/matches/all');
       // api.get resolves { success:false } on a 4xx WITHOUT throwing — without
       // the else branch a failure envelope rendered the "no matches yet" empty
@@ -170,10 +179,14 @@ export function MatchesPage() {
   const filteredMatches = mutualOnly ? moduleFiltered.filter((m) => m.is_mutual) : moduleFiltered;
 
   // ─── Stats ───
+  // Suggestions shown to a member with nothing posted yet carry a placeholder
+  // score, so they stay out of the average and the hot-match count.
   const totalMatches = matches.length;
-  const avgScore = totalMatches > 0
-    ? Math.round(matches.reduce((sum, m) => sum + m.match_score, 0) / totalMatches)
+  const scoredMatches = useMemo(() => matches.filter((m) => !isSuggestion(m)), [matches]);
+  const avgScore = scoredMatches.length > 0
+    ? Math.round(scoredMatches.reduce((sum, m) => sum + displayScore(m.match_score), 0) / scoredMatches.length)
     : 0;
+  const hotCount = scoredMatches.filter((m) => displayScore(m.match_score) >= 80).length;
   const mutualCount = useMemo(() => matches.filter((m) => m.is_mutual).length, [matches]);
   const moduleCounts = matches.reduce<Record<string, number>>((acc, m) => {
     acc[m.module] = (acc[m.module] || 0) + 1;
@@ -181,7 +194,11 @@ export function MatchesPage() {
   }, {});
 
   // ─── Empty state variant ───
-  const emptyVariant = meta.degraded_reason === 'no_coordinates'
+  // A community that has switched matching off comes first: nothing the
+  // member does (adding a location, posting an offer) would change it.
+  const emptyVariant = meta.disabled
+    ? 'disabled'
+    : meta.degraded_reason === 'no_coordinates'
     ? 'no_coordinates'
     : meta.degraded_reason === 'safeguarding_policy_unavailable'
       ? 'safeguarding_unavailable'
@@ -218,7 +235,7 @@ export function MatchesPage() {
           </Button>
           <Button
             variant="flat"
-            startContent={<RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />}
+            startContent={<RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} aria-hidden="true" />}
             onPress={() => loadMatches(true)}
             isLoading={refreshing}
             size="sm"
@@ -303,9 +320,7 @@ export function MatchesPage() {
         </GlassCard>
         <GlassCard className="p-4 text-center">
           <Sparkles className="w-5 h-5 text-amber-400 mx-auto mb-1" aria-hidden="true" />
-          <p className="text-2xl font-bold text-theme-primary">
-            {matches.filter((m) => m.match_score >= 80).length}
-          </p>
+          <p className="text-2xl font-bold text-theme-primary">{hotCount}</p>
           <p className="text-xs text-theme-subtle">{t('stats_hot_matches')}</p>
         </GlassCard>
         <GlassCard className="p-4 text-center">
@@ -320,6 +335,7 @@ export function MatchesPage() {
         <div className="flex items-center gap-2">
           <Chip
             as="button"
+            aria-pressed={mutualOnly}
             size="sm"
             variant={mutualOnly ? 'solid' : 'flat'}
             color={mutualOnly ? 'success' : 'default'}
@@ -347,7 +363,7 @@ export function MatchesPage() {
           key="all"
           title={
             <span className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4" />
+              <Sparkles className="w-4 h-4" aria-hidden="true" />
               {t('filter_all')} ({totalMatches})
             </span>
           }
@@ -361,7 +377,7 @@ export function MatchesPage() {
               key={key}
               title={
                 <span className="flex items-center gap-2">
-                  <Icon className="w-4 h-4" />
+                  <Icon className="w-4 h-4" aria-hidden="true" />
                   {t(config.labelKey)} ({count})
                 </span>
               }

@@ -36,6 +36,7 @@ import Sparkles from 'lucide-react/icons/sparkles';
 import { usePageTitle } from '@/hooks';
 import { useTenant, useToast } from '@/contexts';
 import { formatServerDate } from '@/lib/serverTime';
+import { formatPercentValue } from '@/lib/helpers';
 import { adminMatching } from '@/admin/api/adminApi';
 import { DataTable, type Column } from '@/admin/components';
 import type { MatchApproval, MatchApprovalStats } from '@/admin/api/types';
@@ -183,7 +184,11 @@ export function MatchApprovalsPage() {
         toast.success(t('matching.approved_toast'));
         refreshAll();
       } else {
+        // The server says why in the broker's language: a colleague already
+        // decided it, or safeguarding rules do not let these two be put in
+        // touch (the match then stays waiting). Reload so the row is true.
         toast.error(res.error || t('matching.approve_failed'));
+        refreshAll();
       }
     } catch {
       toast.error(t('matching.approve_failed'));
@@ -192,6 +197,9 @@ export function MatchApprovalsPage() {
     }
   };
 
+  // No column is sortable. The server returns the queue in one fixed order
+  // (waiting first, then newest), twenty to a page; a header that only
+  // re-ordered the twenty rows on screen looked like it sorted everything.
   const columns: Column<MatchApproval>[] = [
     {
       key: 'match',
@@ -227,7 +235,6 @@ export function MatchApprovalsPage() {
     {
       key: 'match_score',
       label: t('matching.col_score'),
-      sortable: true,
       render: (item) => (
         <div className="flex min-w-[100px] items-center gap-2">
           <Progress
@@ -238,7 +245,7 @@ export function MatchApprovalsPage() {
             aria-label={t('matching.match_score_aria', { score: Math.round(item.match_score) })}
           />
           <Chip size="sm" variant="soft" color={scoreColor(item.match_score)} className="tabular-nums">
-            {Math.round(item.match_score)}%
+            {formatPercentValue(Math.round(item.match_score))}
           </Chip>
         </div>
       ),
@@ -246,13 +253,11 @@ export function MatchApprovalsPage() {
     {
       key: 'status',
       label: t('matching.col_status'),
-      sortable: true,
       render: (item) => <BrokerStatusChip status={item.status} />,
     },
     {
       key: 'created_at',
       label: t('matching.col_submitted'),
-      sortable: true,
       render: (item) => (
         <span className="text-sm tabular-nums text-muted">
           {formatServerDate(item.created_at)}
@@ -372,11 +377,13 @@ export function MatchApprovalsPage() {
     >
       {/* The four number tiles that sat here repeated the tabs above; each tab
           now carries its own count. The one figure no tab has, the share
-          approved, is a line of text. */}
+          approved, is a line of text. The counts and this rate are all-time,
+          the same set each tab lists (they were last-30-days counts above
+          all-time lists until November 2026). */}
       {stats && Number.isFinite(Number(stats.approval_rate)) && stats.approved_count + stats.rejected_count > 0 && (
         <p className="mb-3 px-1 text-sm text-muted">
           {t('matching.stat_approval_rate')}:{' '}
-          <span className="font-medium tabular-nums text-foreground">{stats.approval_rate}%</span>
+          <span className="font-medium tabular-nums text-foreground">{formatPercentValue(Number(stats.approval_rate))}</span>
         </p>
       )}
 

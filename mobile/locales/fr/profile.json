@@ -28,13 +28,12 @@
     "filter": {
       "all": "All",
       "listing": "Listings",
-      "job": "Jobs",
       "volunteering": "Volunteering",
-      "group": "Groups"
+      "group": "Groups",
+      "event": "Événements"
     },
     "source": {
       "listing": "Listing",
-      "job": "Job",
       "volunteering": "Volunteering",
       "group": "Group",
       "event": "Événement"
@@ -55,7 +54,25 @@
       "pausedAction": "Ajuster les préférences de correspondance",
       "listingsTitle": "Publiez quelque chose pour lancer les correspondances",
       "listingsBody": "Les correspondances se construisent à partir de ce que vous proposez et de ce dont vous avez besoin. Publiez votre première offre ou demande et les suggestions commenceront.",
-      "listingsAction": "Publier une offre ou une demande"
+      "listingsAction": "Publier une offre ou une demande",
+      "safeguardingTitle": "Certaines correspondances ne peuvent pas encore être affichées",
+      "safeguardingBody": "La configuration de la protection de votre communauté n’est pas terminée : les correspondances impliquant des membres protégés sont masquées pour la sécurité de tous. Revenez lorsque l’équipe de votre communauté l’aura terminée.",
+      "disabledTitle": "Les correspondances sont désactivées ici",
+      "disabledBody": "Votre communauté n’utilise pas les correspondances pour le moment. Vous pouvez toujours parcourir les offres et les demandes vous-même."
+    },
+    "suggested": "Suggéré pour vous",
+    "openNamed": "Ouvrir {{title}}",
+    "dismissNamed": "Ignorer {{title}}",
+    "going": "Participants : {{count}}",
+    "notice": {
+      "pausedTitle": "Les correspondances sont en pause",
+      "pausedBody": "Vous avez mis les correspondances en pause : certaines suggestions manquent. Vous pouvez les réactiver dans vos préférences de correspondance.",
+      "pausedAction": "Ouvrir les préférences de correspondance",
+      "locationTitle": "Indiquez votre secteur pour en voir plus",
+      "locationBody": "Nous ne pouvons pas vous suggérer d’offres et de demandes près de chez vous tant que votre profil n’indique pas à peu près où vous êtes. Personne ne voit votre adresse exacte.",
+      "locationAction": "Indiquer mon secteur",
+      "safeguardingTitle": "Certaines correspondances sont masquées",
+      "safeguardingBody": "La configuration de la protection de votre communauté n’est pas terminée : les correspondances impliquant des membres protégés sont masquées pour la sécurité de tous."
     }
   },
   "reviews": {

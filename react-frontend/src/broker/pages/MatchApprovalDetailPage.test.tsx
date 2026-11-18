@@ -228,4 +228,30 @@ describe('MatchApprovalDetailPage', () => {
     renderPage();
     await waitFor(() => expect(screen.getByText('server-dt:2026-07-01T09:00:00Z')).toBeInTheDocument());
   });
+
+  it('labels a possibly-mutual match in words instead of the stored value', async () => {
+    mockGetApproval.mockResolvedValue({ success: true, data: { ...DETAIL, match_type: 'potential' } });
+    renderPage();
+
+    expect(await screen.findByText('Possibly mutual')).toBeInTheDocument();
+    expect(screen.queryByText('potential')).not.toBeInTheDocument();
+  });
+
+  it('shows why an approval was refused and reloads the match', async () => {
+    mockApproveMatch.mockResolvedValue({
+      success: false,
+      error: 'This match has already been approved or rejected.',
+    });
+    const user = userEvent.setup();
+    renderPage();
+    await waitFor(() => expect(screen.getByText('91%')).toBeInTheDocument());
+
+    await user.click(screen.getByRole('button', { name: 'Approve match' }));
+
+    await waitFor(() =>
+      expect(mockToast.error).toHaveBeenCalledWith('This match has already been approved or rejected.')
+    );
+    await waitFor(() => expect(mockGetApproval).toHaveBeenCalledTimes(2));
+    expect(mockToast.success).not.toHaveBeenCalled();
+  });
 });

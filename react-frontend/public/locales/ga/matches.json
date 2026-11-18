@@ -3,7 +3,7 @@
   "breadcrumb_dashboard": "Deais",
   "breadcrumb_matches": "Meaitseálacha",
   "heading": "Do mheaitseálacha",
-  "subtitle": "Aimsigh naisc i measc liostuithe, post, deiseanna deonacha agus grúpaí",
+  "subtitle": "Tairiscintí, iarratais, grúpaí, obair dheonach agus imeachtaí a oireann duit",
   "refresh": "Athnuaigh",
   "preferences_link": "Sainroghanna meaitseála",
   "stats_total_matches": "Meaitseálacha san iomlán",
@@ -52,7 +52,14 @@
     "remote": "Cianda",
     "message": "Teachtaireacht",
     "join": "Glac páirt",
-    "joined": "Páirteach"
+    "joined": "Páirteach",
+    "suggested": "Molta duit",
+    "join_requested": "Iarratas seolta",
+    "join_requested_toast": "Sheolamar d’iarratas ar pháirt a ghlacadh. Cuirfidh an grúpa scéala chugat.",
+    "saved_toast": "Sábháilte le haghaidh níos déanaí",
+    "unsaved_toast": "Bainte de do mhíreanna sábháilte",
+    "already_saved": "Tá sé seo sábháilte agat cheana",
+    "attendees": "Ag freastal: {{count}}"
   },
   "explanation": {
     "ai_caption": "Míniú a ghintear le AI bunaithe ar do phróifíl agus ar do ghníomhaíocht"
@@ -93,7 +100,9 @@
     "create_listing_cta": "Cruthaigh liostú",
     "adjust_preferences_cta": "Coigeartaigh sainroghanna meaitseála",
     "safeguarding_unavailable_title": "Ní féidir roinnt meaitseálacha a thaispeáint go fóill",
-    "safeguarding_unavailable_description": "Níl socrú cosanta do phobail críochnaithe go fóill, mar sin tá meaitseálacha a bhaineann le baill atá faoi chosaint folaithe le gach duine a choinneáil slán. Féach ar ais nuair a bheidh sé críochnaithe ag foireann do phobail."
+    "safeguarding_unavailable_description": "Níl socrú cosanta do phobail críochnaithe go fóill, mar sin tá meaitseálacha a bhaineann le baill atá faoi chosaint folaithe le gach duine a choinneáil slán. Féach ar ais nuair a bheidh sé críochnaithe ag foireann do phobail.",
+    "disabled_title": "Tá meaitseáil múchta anseo",
+    "disabled_description": "Níl do phobal ag úsáid meaitseála faoi láthair. Is féidir leat tairiscintí agus iarratais a bhrabhsáil tú féin fós."
   },
   "preferences": {
     "subtitle": "Rialaigh conas a aimsíonn Meaitseáil Chliste naisc duit agus conas a chuireann sí ar an eolas thú fúthu.",
@@ -147,5 +156,10 @@
   "reasons_more_many": "+{{count}} eile",
   "reasons_more_one": "+{{count}} eile",
   "reasons_more_other": "+{{count}} eile",
-  "reasons_more_two": "+{{count}} eile"
+  "reasons_more_two": "+{{count}} eile",
+  "errors": {
+    "dismiss_failed": "Níor éirigh linn an mheaitseáil sin a chur i bhfolach. Bain triail eile as.",
+    "save_failed": "Níor éirigh linn é sin a shábháil anois. Bain triail eile as.",
+    "join_failed": "Níor éirigh linn tú a chur leis an ngrúpa sin. Bain triail eile as."
+  }
 }

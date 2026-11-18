@@ -334,9 +334,6 @@
       "TS2532": 2,
       "TS2739": 8
     },
-    "src/admin/modules/diagnostics/MatchingDiagnostic.test.tsx": {
-      "TS2345": 4
-    },
     "src/admin/modules/enterprise/GdprBreachDetail.test.tsx": {
       "TS2345": 1
     },
@@ -1850,7 +1847,7 @@
     }
   },
   "totals": {
-    "fileCount": 548,
-    "errorCount": 1661
+    "fileCount": 545,
+    "errorCount": 1648
   }
 }

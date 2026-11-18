@@ -3,7 +3,7 @@
   "breadcrumb_dashboard": "Painel",
   "breadcrumb_matches": "Correspondências",
   "heading": "As Suas Correspondências",
-  "subtitle": "Descubra conexões em anúncios, empregos, voluntariado e grupos",
+  "subtitle": "Ofertas, pedidos, grupos, voluntariado e eventos que combinam com você",
   "refresh": "Atualizar",
   "preferences_link": "Preferências de correspondência",
   "stats_total_matches": "Total de Correspondências",
@@ -52,7 +52,14 @@
     "remote": "À distância",
     "message": "Mensagem",
     "join": "Participar",
-    "joined": "A participar"
+    "joined": "A participar",
+    "suggested": "Sugerido para você",
+    "join_requested": "Pedido enviado",
+    "join_requested_toast": "Enviamos seu pedido para participar. O grupo vai avisar você.",
+    "saved_toast": "Salvo para depois",
+    "unsaved_toast": "Removido dos seus itens salvos",
+    "already_saved": "Você já tinha salvado isto",
+    "attendees": "Vão participar: {{count}}"
   },
   "explanation": {
     "ai_caption": "Explicação gerada por IA com base no seu perfil e atividade"
@@ -93,7 +100,9 @@
     "create_listing_cta": "Crie uma listagem",
     "adjust_preferences_cta": "Ajustar preferências de correspondência",
     "safeguarding_unavailable_title": "Algumas correspondências ainda não podem ser mostradas",
-    "safeguarding_unavailable_description": "A configuração de salvaguarda da sua comunidade ainda não está concluída, pelo que as correspondências que envolvem membros protegidos ficam ocultas para segurança de todos. Volte quando a equipe da sua comunidade a tiver concluído."
+    "safeguarding_unavailable_description": "A configuração de salvaguarda da sua comunidade ainda não está concluída, pelo que as correspondências que envolvem membros protegidos ficam ocultas para segurança de todos. Volte quando a equipe da sua comunidade a tiver concluído.",
+    "disabled_title": "A correspondência está desativada aqui",
+    "disabled_description": "Sua comunidade não está usando a correspondência no momento. Você ainda pode explorar ofertas e pedidos por conta própria."
   },
   "preferences": {
     "subtitle": "Controle como o Smart Matching encontra e notifica você sobre conexões.",
@@ -145,5 +154,10 @@
   "source_event": "Evento",
   "reasons_more_many": "+{{count}} mais",
   "reasons_more_one": "+{{count}} mais",
-  "reasons_more_other": "+{{count}} mais"
+  "reasons_more_other": "+{{count}} mais",
+  "errors": {
+    "dismiss_failed": "Não conseguimos ocultar essa correspondência. Tente novamente.",
+    "save_failed": "Não conseguimos salvar isso agora. Tente novamente.",
+    "join_failed": "Não conseguimos adicionar você a esse grupo. Tente novamente."
+  }
 }

@@ -3,7 +3,7 @@
   "breadcrumb_dashboard": "ダッシュボード",
   "breadcrumb_matches": "マッチ",
   "heading": "あなたのマッチ",
-  "subtitle": "リスティング、仕事、ボランティア、グループを通じてつながりを発見しましょう",
+  "subtitle": "あなたに合う提供、依頼、グループ、ボランティア、イベント",
   "refresh": "更新",
   "preferences_link": "好みの一致",
   "stats_total_matches": "合計マッチ",
@@ -52,7 +52,14 @@
     "remote": "オンライン",
     "message": "メッセージ",
     "join": "参加する",
-    "joined": "参加済み"
+    "joined": "参加済み",
+    "suggested": "あなたへのおすすめ",
+    "join_requested": "リクエストを送信しました",
+    "join_requested_toast": "参加リクエストを送信しました。グループからの返事をお待ちください。",
+    "saved_toast": "あとで見るために保存しました",
+    "unsaved_toast": "保存済みから削除しました",
+    "already_saved": "すでに保存済みです",
+    "attendees": "参加予定：{{count}}人"
   },
   "explanation": {
     "ai_caption": "プロフィールやアクティビティに基づいてAIが生成した説明"
@@ -93,7 +100,9 @@
     "create_listing_cta": "リストを作成する",
     "adjust_preferences_cta": "一致設定を調整する",
     "safeguarding_unavailable_title": "一部のマッチはまだ表示できません",
-    "safeguarding_unavailable_description": "コミュニティのセーフガーディング（保護）設定が完了していないため、保護対象メンバーに関わるマッチは安全のため非表示になっています。コミュニティ運営チームが設定を完了した後に再度ご確認ください。"
+    "safeguarding_unavailable_description": "コミュニティのセーフガーディング（保護）設定が完了していないため、保護対象メンバーに関わるマッチは安全のため非表示になっています。コミュニティ運営チームが設定を完了した後に再度ご確認ください。",
+    "disabled_title": "このコミュニティではマッチングがオフになっています",
+    "disabled_description": "あなたのコミュニティでは現在マッチングを利用していません。提供とリクエストはご自身で見ることができます。"
   },
   "preferences": {
     "subtitle": "スマート マッチングが接続を検索して通知する方法を制御します。",
@@ -144,5 +153,10 @@
   "filter_people_listings": "提供とリクエスト",
   "source_event": "イベント",
   "reasons_more_other": "+{{count}} もっと見る",
-  "reasons_more_one": "+{{count}} 以上"
+  "reasons_more_one": "+{{count}} 以上",
+  "errors": {
+    "dismiss_failed": "このマッチを非表示にできませんでした。もう一度お試しください。",
+    "save_failed": "今は保存できませんでした。もう一度お試しください。",
+    "join_failed": "このグループに追加できませんでした。もう一度お試しください。"
+  }
 }

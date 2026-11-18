@@ -8153,6 +8153,29 @@
             "nav": {
                 "network": "Féach ar do líonra iomlán",
                 "matches_board": "Oscail an clár cluichí"
+            },
+            "matches_shared": {
+                "paused_title": "Tá an mheaitseáil ar sos",
+                "paused_body": "Chuir tú an mheaitseáil ar sos, mar sin níl meaitseálacha nua á moladh againn duit faoi láthair.",
+                "paused_link": "Téigh chuig do shocruithe meaitseála chun an mheaitseáil a thosú arís",
+                "disabled_title": "Níl an mheaitseáil in úsáid anseo",
+                "disabled_body": "Níl an pobal seo ag úsáid meaitseála faoi láthair.",
+                "from_notification": "Ó d'fhógra",
+                "suggestion_tag": "Molta duit"
+            },
+            "match_settings": {
+                "heading": "Socruithe meaitseála",
+                "description": "Roghnaigh na meaitseálacha a mholaimid duit agus cé chomh minic a insímid duit fúthu.",
+                "pause_label": "Cuir an mheaitseáil ar sos",
+                "pause_hint": "Fad a bheidh an mheaitseáil ar sos, ní mholfaimid meaitseálacha duit agus ní sheolfaimid fógraí meaitseála chugat. Coinnítear do shocruithe eile.",
+                "distance_label": "Cé chomh fada uait is féidir le meaitseálacha a bheith",
+                "distance_hint": "Cuir isteach slánuimhir ciliméadar, ó 1 go :max.",
+                "distance_error": "Cuir isteach slánuimhir ciliméadar ó 1 go :max",
+                "min_score_label": "An scór meaitseála is ísle le taispeáint, mar chéatadán",
+                "min_score_hint": "Cuir isteach slánuimhir ó 0 go 100. Taispeánann uimhir níos airde níos lú meaitseálacha, ach cinn a oireann níos fearr duit. Cuir isteach 0 chun gach meaitseáil a fheiceáil.",
+                "min_score_error": "Cuir isteach slánuimhir ó 0 go 100",
+                "invalid": "Seiceáil do shocruithe meaitseála agus bain triail eile as",
+                "save": "Sábháil na socruithe meaitseála"
             }
         },
         "govuk_alpha_courses": {

@@ -28,13 +28,12 @@
     "filter": {
       "all": "All",
       "listing": "Listings",
-      "job": "Jobs",
       "volunteering": "Volunteering",
-      "group": "Groups"
+      "group": "Groups",
+      "event": "Events"
     },
     "source": {
       "listing": "Listing",
-      "job": "Job",
       "volunteering": "Volunteering",
       "group": "Group",
       "event": "Event"
@@ -55,7 +54,25 @@
       "pausedAction": "Adjust match preferences",
       "listingsTitle": "Post something to start matching",
       "listingsBody": "Matches are built around what you offer and what you need. Post your first offer or request and suggestions will start arriving.",
-      "listingsAction": "Post an offer or request"
+      "listingsAction": "Post an offer or request",
+      "safeguardingTitle": "Some matches can't be shown yet",
+      "safeguardingBody": "Your community's safeguarding setup isn't finished, so matches involving protected members are hidden to keep everyone safe. Please check back once your community team has completed it.",
+      "disabledTitle": "Matching is switched off here",
+      "disabledBody": "Your community isn't using matching at the moment. You can still browse offers and requests yourself."
+    },
+    "suggested": "Suggested for you",
+    "openNamed": "Open {{title}}",
+    "dismissNamed": "Dismiss {{title}}",
+    "going": "Going: {{count}}",
+    "notice": {
+      "pausedTitle": "Matching is paused",
+      "pausedBody": "You've paused matching, so some suggestions are missing. You can turn it back on in your match preferences.",
+      "pausedAction": "Open match preferences",
+      "locationTitle": "Add your area to see more",
+      "locationBody": "We can't suggest offers and requests near you until your profile says roughly where you are. Nobody sees your exact address.",
+      "locationAction": "Add my area",
+      "safeguardingTitle": "Some matches are hidden",
+      "safeguardingBody": "Your community's safeguarding setup isn't finished, so matches involving protected members are hidden to keep everyone safe."
     }
   },
   "reviews": {

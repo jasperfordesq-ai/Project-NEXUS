@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { getFormattingLocale } from '@/lib/helpers';
+import { formatUnit, getFormattingLocale } from '@/lib/helpers';
 import { Card, CardBody, CardHeader, Button, Spinner, Progress } from '@/components/ui';
 import {
   useState,
@@ -40,45 +40,41 @@ import { parseMatchingStatsResponse } from './matchingResponseGuards';
  * Displays smart matching statistics, score distribution, * distance distribution, and approval metrics.
  */
 
-/** Color map for score distribution bars */
+/**
+ * Colour per score bucket. The keys are the ranges the server sends
+ * (SmartMatchingAnalyticsService::SCORE_BUCKETS) — half-open, so every score
+ * lands in exactly one. Until November 2026 this map expected four different
+ * ranges and every bar was labelled "Other score range".
+ */
 const SCORE_COLORS: Record<string, 'danger' | 'warning' | 'primary' | 'success'> = {
-  '0-40': 'danger',
+  '0-20': 'danger',
+  '20-40': 'danger',
   '40-60': 'warning',
   '60-80': 'primary',
   '80-100': 'success',
 };
 
-const SCORE_LABEL_KEYS: Record<string, string> = {
-  '0-40': 'matching.score_range_low',
-  '40-60': 'matching.score_range_medium',
-  '60-80': 'matching.score_range_good',
-  '80-100': 'matching.score_range_hot',
-};
-
-/** Color map for distance distribution bars */
+/** Colour per distance bucket (SmartMatchingAnalyticsService::DISTANCE_BUCKETS). */
 const DIST_COLORS: Record<string, 'success' | 'primary' | 'secondary' | 'warning' | 'danger'> = {
-  walking: 'success',
-  local: 'primary',
-  city: 'secondary',
-  regional: 'warning',
-  distant: 'danger',
+  '0-5': 'success',
+  '5-15': 'primary',
+  '15-30': 'secondary',
+  '30-50': 'warning',
+  '50+': 'danger',
+  unknown: 'secondary',
 };
 
-const DIST_LABEL_KEYS: Record<string, string> = {
-  walking: 'matching.dist_walking',
-  local: 'matching.dist_local',
-  city: 'matching.dist_city',
-  regional: 'matching.dist_regional',
-  distant: 'matching.dist_distant',
-};
-
-/** Label map for known dismiss/feedback reasons — unknown keys render raw */
+/**
+ * Labels for the reasons a member can give when dismissing a match — the
+ * list MatchingController::DISMISS_REASONS accepts. An unknown key (an older
+ * stored reason) is labelled "Other reason".
+ */
 const REASON_LABEL_KEYS: Record<string, string> = {
-  not_interested: 'matching.reason_not_interested',
+  not_relevant: 'matching.reason_not_relevant',
   too_far: 'matching.reason_too_far',
-  wrong_category: 'matching.reason_wrong_category',
-  already_connected: 'matching.reason_already_connected',
-  inappropriate: 'matching.reason_inappropriate',
+  already_done: 'matching.reason_already_done',
+  not_my_skills: 'matching.reason_not_my_skills',
+  not_interested: 'matching.reason_not_interested',
   other: 'matching.reason_other',
 };
 
@@ -96,8 +92,31 @@ function formatPercentage(value: number): string {
   }).format(value / 100);
 }
 
+/** A closed bucket key such as "20-40" or "5-15". */
+const RANGE_KEY = /^(\d+)-(\d+)$/;
+/** An open-ended bucket key such as "50+". */
+const OPEN_RANGE_KEY = /^(\d+)\+$/;
+
 export function MatchingAnalytics() {
   const { t } = useTranslation('admin_matching');
+
+  // A bucket key is a range of numbers, so its label is built from the
+  // numbers rather than looked up per bucket.
+  const scoreLabel = (range: string): string => {
+    const bounds = RANGE_KEY.exec(range);
+    return bounds
+      ? t('matching.score_range', { from: bounds[1], to: bounds[2] })
+      : t('matching.score_range_unknown');
+  };
+  const distanceLabel = (range: string): string => {
+    if (range === 'unknown') return t('matching.distance_none');
+    const bounds = RANGE_KEY.exec(range);
+    if (bounds) return t('matching.distance_range', { from: bounds[1], to: bounds[2] });
+    const over = OPEN_RANGE_KEY.exec(range);
+    return over
+      ? t('matching.distance_range_over', { from: over[1] })
+      : t('matching.distance_unknown');
+  };
   usePageTitle(t('matching.page_title'));
   const { tenantPath } = useTenant();
   const navigate = useNavigate();
@@ -185,9 +204,11 @@ export function MatchingAnalytics() {
           )}
           {/* Stats Row */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+            {/* Every match on record now. (This tile was headed "Total
+                matches" but showed only this month's new ones.) */}
             <StatCard
-              label={t('matching.label_total_matches')}
-              value={overview?.total_matches_month ?? 0}
+              label={t('matching.label_current_matches')}
+              value={overview?.cache_entries ?? 0}
               icon={Target}
               loading={loading}
             />
@@ -209,7 +230,7 @@ export function MatchingAnalytics() {
             <StatCard
               label={t('matching.label_avg_distance')}
               value={overview?.avg_distance_km !== undefined
-                ? `${overview.avg_distance_km} km`
+                ? formatUnit(overview.avg_distance_km, 'kilometer', { maximumFractionDigits: 1 })
                 : '---'}
               icon={MapPin}
               color="warning"
@@ -237,7 +258,7 @@ export function MatchingAnalytics() {
                         <div key={range}>
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-sm text-muted">
-                              {SCORE_LABEL_KEYS[range] ? t(SCORE_LABEL_KEYS[range]) : t('matching.score_range_unknown')}
+                              {scoreLabel(range)}
                             </span>
                             <span className="text-sm font-medium tabular-nums">
                               {count} ({formatPercentage(pct)})
@@ -248,7 +269,7 @@ export function MatchingAnalytics() {
                             color={SCORE_COLORS[range] ?? 'primary'}
                             size="sm"
                             aria-label={t('matching.distribution_aria', {
-                              label: SCORE_LABEL_KEYS[range] ? t(SCORE_LABEL_KEYS[range]) : t('matching.score_range_unknown'),
+                              label: scoreLabel(range),
                               count,
                               percent: pct,
                             })}
@@ -285,7 +306,7 @@ export function MatchingAnalytics() {
                           <div key={band}>
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-sm text-muted">
-                                {DIST_LABEL_KEYS[band] ? t(DIST_LABEL_KEYS[band]) : t('matching.distance_unknown')}
+                                {distanceLabel(band)}
                               </span>
                               <span className="text-sm font-medium tabular-nums">
                                 {count} ({formatPercentage(pct)})
@@ -296,7 +317,7 @@ export function MatchingAnalytics() {
                               color={DIST_COLORS[band] ?? 'primary'}
                               size="sm"
                               aria-label={t('matching.distribution_aria', {
-                                label: DIST_LABEL_KEYS[band] ? t(DIST_LABEL_KEYS[band]) : t('matching.distance_unknown'),
+                                label: distanceLabel(band),
                                 count,
                                 percent: pct,
                               })}
@@ -349,13 +370,8 @@ export function MatchingAnalytics() {
                     />
                     <Separator />
                     <ActivityRow
-                      label={t('matching.label_active_users_in_matching')}
+                      label={t('matching.label_members_with_matches')}
                       value={overview.active_users_matching}
-                    />
-                    <Separator />
-                    <ActivityRow
-                      label={t('matching.label_cache_entries')}
-                      value={overview.cache_entries}
                     />
                   </div>
                 ) : (
@@ -405,21 +421,6 @@ export function MatchingAnalytics() {
                       size="sm"
                       aria-label={t('matching.approval_rate_aria', { value: stats.approval_rate })}
                     />
-                    <Separator />
-                    <div className="flex items-center justify-between py-1">
-                      <span className="text-sm text-muted">
-                        {t('matching.label_broker_approval')}
-                      </span>
-                      <span
-                        className={`text-sm font-medium ${
-                          stats.broker_approval_enabled
-                            ? 'text-success'
-                            : 'text-muted'
-                        }`}
-                      >
-                        {stats.broker_approval_enabled ? t('matching.enabled') : t('matching.disabled')}
-                      </span>
-                    </div>
                   </div>
                 ) : (
                   <p className="py-8 text-center text-sm text-muted">

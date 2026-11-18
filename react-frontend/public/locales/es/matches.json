@@ -3,7 +3,7 @@
   "breadcrumb_dashboard": "Panel",
   "breadcrumb_matches": "Coincidencias",
   "heading": "Tus Coincidencias",
-  "subtitle": "Descubre conexiones en anuncios, empleos, voluntariado y grupos",
+  "subtitle": "Ofertas, solicitudes, grupos, voluntariado y eventos que encajan contigo",
   "refresh": "Actualizar",
   "preferences_link": "Preferencias de coincidencia",
   "stats_total_matches": "Total de Coincidencias",
@@ -52,7 +52,14 @@
     "remote": "A distancia",
     "message": "Mensaje",
     "join": "Unirse",
-    "joined": "Te has unido"
+    "joined": "Te has unido",
+    "suggested": "Sugerido para ti",
+    "join_requested": "Solicitud enviada",
+    "join_requested_toast": "Hemos enviado tu solicitud para unirte. El grupo te avisará.",
+    "saved_toast": "Guardado para más tarde",
+    "unsaved_toast": "Quitado de tus elementos guardados",
+    "already_saved": "Ya lo tenías guardado",
+    "attendees": "Asistirán: {{count}}"
   },
   "explanation": {
     "ai_caption": "Explicación generada por IA basada en su perfil y actividad"
@@ -93,7 +100,9 @@
     "create_listing_cta": "Crear un listado",
     "adjust_preferences_cta": "Ajustar las preferencias de coincidencia",
     "safeguarding_unavailable_title": "Algunas coincidencias aún no se pueden mostrar",
-    "safeguarding_unavailable_description": "La configuración de protección de su comunidad no está terminada, por lo que las coincidencias con miembros protegidos se ocultan por la seguridad de todos. Vuelva cuando el equipo de su comunidad la haya completado."
+    "safeguarding_unavailable_description": "La configuración de protección de su comunidad no está terminada, por lo que las coincidencias con miembros protegidos se ocultan por la seguridad de todos. Vuelva cuando el equipo de su comunidad la haya completado.",
+    "disabled_title": "El emparejamiento está desactivado aquí",
+    "disabled_description": "Tu comunidad no usa el emparejamiento por ahora. Puedes seguir explorando ofertas y solicitudes por tu cuenta."
   },
   "preferences": {
     "subtitle": "Controle cómo Smart Matching encuentra conexiones y le notifica sobre ellas.",
@@ -145,5 +154,10 @@
   "source_event": "Evento",
   "reasons_more_many": "+{{count}} más",
   "reasons_more_one": "+{{count}} más",
-  "reasons_more_other": "+{{count}} más"
+  "reasons_more_other": "+{{count}} más",
+  "errors": {
+    "dismiss_failed": "No hemos podido ocultar esa coincidencia. Vuelve a intentarlo.",
+    "save_failed": "No hemos podido guardar eso ahora. Vuelve a intentarlo.",
+    "join_failed": "No hemos podido añadirte a ese grupo. Vuelve a intentarlo."
+  }
 }

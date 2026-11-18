@@ -1535,7 +1535,7 @@
     "reject_failed": "No se pudo rechazar la coincidencia",
     "load_failed": "No se pudo cargar la aprobación de la coincidencia",
     "reject_reason_label": "Motivo de rechazo",
-    "reject_reason_placeholder": "Explica por qué se rechaza esta coincidencia — el miembro verá esto.",
+    "reject_reason_placeholder": "Explica por qué se rechaza esta coincidencia. No se informa a ninguno de los miembros; el motivo se guarda para los coordinadores.",
     "reject_reason_required": "Proporciona un motivo para el rechazo",
     "rejecting_between": "Rechazando la coincidencia entre {{user1}} y {{user2}}.",
     "cancel": "Cancelar",
@@ -1572,7 +1572,8 @@
     "retry": "Intentar de nuevo",
     "detail_description": "Compruebe por qué se emparejó a estas dos personas y apruebe o rechace antes de avisar al miembro.",
     "listing_type_offer": "Oferta",
-    "listing_type_request": "Solicitud"
+    "listing_type_request": "Solicitud",
+    "type_potential": "Posiblemente mutua"
   },
   "status": {
     "active": "Activo",

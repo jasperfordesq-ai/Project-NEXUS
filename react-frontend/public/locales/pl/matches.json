@@ -3,7 +3,7 @@
   "breadcrumb_dashboard": "Panel główny",
   "breadcrumb_matches": "Dopasowania",
   "heading": "Twoje dopasowania",
-  "subtitle": "Odkryj połączenia w ogłoszeniach, ofertach pracy, wolontariacie i grupach",
+  "subtitle": "Oferty, prośby, grupy, wolontariat i wydarzenia dopasowane do Ciebie",
   "refresh": "Odśwież",
   "preferences_link": "Dopasuj preferencje",
   "stats_total_matches": "Łączna liczba dopasowań",
@@ -55,7 +55,14 @@
     "dismiss": "Nie jestem zainteresowany",
     "view_group": "Zobacz grupę",
     "join": "Dołącz",
-    "joined": "Dołączono"
+    "joined": "Dołączono",
+    "suggested": "Propozycja dla Ciebie",
+    "join_requested": "Prośba wysłana",
+    "join_requested_toast": "Wysłaliśmy Twoją prośbę o dołączenie. Grupa da Ci znać.",
+    "saved_toast": "Zapisano na później",
+    "unsaved_toast": "Usunięto z Twoich zapisanych",
+    "already_saved": "Masz to już zapisane",
+    "attendees": "Wezmą udział: {{count}}"
   },
   "explanation": {
     "ai_caption": "Wyjaśnienia generowane przez sztuczną inteligencję na podstawie Twojego profilu i aktywności"
@@ -96,7 +103,9 @@
     "create_listing_cta": "Utwórz listę",
     "adjust_preferences_cta": "Dostosuj preferencje dopasowania",
     "safeguarding_unavailable_title": "Niektórych dopasowań nie można jeszcze pokazać",
-    "safeguarding_unavailable_description": "Konfiguracja ochrony w Twojej społeczności nie została ukończona, dlatego dopasowania z udziałem chronionych członków są ukryte dla bezpieczeństwa wszystkich. Wróć, gdy zespół Twojej społeczności ją ukończy."
+    "safeguarding_unavailable_description": "Konfiguracja ochrony w Twojej społeczności nie została ukończona, dlatego dopasowania z udziałem chronionych członków są ukryte dla bezpieczeństwa wszystkich. Wróć, gdy zespół Twojej społeczności ją ukończy.",
+    "disabled_title": "Dopasowywanie jest tutaj wyłączone",
+    "disabled_description": "Twoja społeczność nie korzysta obecnie z dopasowywania. Nadal możesz samodzielnie przeglądać oferty i prośby."
   },
   "preferences": {
     "page_title": "Preferencje dopasowania",
@@ -146,5 +155,10 @@
   "reasons_more_few": "+{{count}} więcej",
   "reasons_more_many": "+{{count}} więcej",
   "reasons_more_one": "+{{count}} więcej",
-  "reasons_more_other": "+{{count}} więcej"
+  "reasons_more_other": "+{{count}} więcej",
+  "errors": {
+    "dismiss_failed": "Nie udało się nam ukryć tego dopasowania. Spróbuj ponownie.",
+    "save_failed": "Nie udało się nam tego teraz zapisać. Spróbuj ponownie.",
+    "join_failed": "Nie udało się nam dodać Cię do tej grupy. Spróbuj ponownie."
+  }
 }

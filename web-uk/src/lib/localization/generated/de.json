@@ -8153,6 +8153,29 @@
             "nav": {
                 "network": "Sehen Sie sich Ihr gesamtes Netzwerk an",
                 "matches_board": "Öffne die Spieletafel"
+            },
+            "matches_shared": {
+                "paused_title": "Der Abgleich ist pausiert",
+                "paused_body": "Sie haben den Abgleich pausiert. Deshalb schlagen wir Ihnen im Moment keine neuen Treffer vor.",
+                "paused_link": "Zu Ihren Abgleich-Einstellungen, um den Abgleich wieder zu starten",
+                "disabled_title": "Der Abgleich wird hier nicht genutzt",
+                "disabled_body": "Diese Gemeinschaft nutzt den Abgleich zurzeit nicht.",
+                "from_notification": "Aus Ihrer Benachrichtigung",
+                "suggestion_tag": "Für Sie vorgeschlagen"
+            },
+            "match_settings": {
+                "heading": "Abgleich-Einstellungen",
+                "description": "Legen Sie fest, welche Treffer wir Ihnen vorschlagen und wie oft wir Sie darüber informieren.",
+                "pause_label": "Abgleich pausieren",
+                "pause_hint": "Solange der Abgleich pausiert ist, schlagen wir Ihnen keine Treffer vor und senden Ihnen keine Trefferbenachrichtigungen. Ihre übrigen Einstellungen bleiben erhalten.",
+                "distance_label": "Wie weit entfernt Treffer sein dürfen",
+                "distance_hint": "Geben Sie eine ganze Zahl in Kilometern ein, von 1 bis :max.",
+                "distance_error": "Geben Sie eine ganze Zahl in Kilometern von 1 bis :max ein",
+                "min_score_label": "Niedrigster Trefferwert, der angezeigt wird, in Prozent",
+                "min_score_hint": "Geben Sie eine ganze Zahl von 0 bis 100 ein. Bei einer höheren Zahl sehen Sie weniger Treffer, die aber besser zu Ihnen passen. Mit 0 sehen Sie alle Treffer.",
+                "min_score_error": "Geben Sie eine ganze Zahl von 0 bis 100 ein",
+                "invalid": "Prüfen Sie Ihre Abgleich-Einstellungen und versuchen Sie es erneut",
+                "save": "Abgleich-Einstellungen speichern"
             }
         },
         "govuk_alpha_courses": {

@@ -1580,7 +1580,7 @@
     "reject_failed": "Níorbh fhéidir diúltú don mheaitseáil",
     "load_failed": "Níorbh fhéidir an faomhadh meaitseála a luchtú",
     "reject_reason_label": "Cúis an diúltaithe",
-    "reject_reason_placeholder": "Mínigh cén fáth a bhfuil an mheaitseáil seo á diúltú — feicfidh an ball é seo.",
+    "reject_reason_placeholder": "Mínigh cén fáth a bhfuil an mheaitseáil seo á diúltú. Ní insítear do cheachtar ball; coinnítear an chúis do chomhordaitheoirí.",
     "reject_reason_required": "Tabhair cúis leis an diúltú",
     "rejecting_between": "An mheaitseáil idir {{user1}} agus {{user2}} á diúltú.",
     "cancel": "Cealaigh",
@@ -1617,7 +1617,8 @@
     "retry": "Bain triail eile as",
     "detail_description": "Féach cén fáth ar meaitseáladh an bheirt seo, ansin ceadaigh nó diúltaigh sula gcuirtear in iúl don bhall.",
     "listing_type_offer": "Tairiscint",
-    "listing_type_request": "Iarratas"
+    "listing_type_request": "Iarratas",
+    "type_potential": "Cómhalartach, b'fhéidir"
   },
   "status": {
     "active": "Gníomhach",

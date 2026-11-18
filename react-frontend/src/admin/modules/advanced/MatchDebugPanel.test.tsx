@@ -57,24 +57,29 @@ vi.mock('../../components/PageHeader', adminComponentsMock);
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 const USER_SEARCH_RESULT = [{ id: 5, name: 'Alice Jones', email: 'alice@example.com', avatar_url: null }];
 
+// The shape GET /v2/matches/all?debug=true really sends. (This fixture used to
+// carry `_debug_scores`, `reasons`, `matched_user`, `category` and
+// `source_type`, none of which the server has ever returned.) What the panel
+// renders from it is pinned in MatchDebugPanel.breakdown.test.tsx.
 const DEBUG_MATCH = {
-  id: 1,
-  source_type: 'listing' as const,
-  source_id: 10,
+  module: 'listing',
+  listing_id: 10,
   match_score: 82,
   title: 'Gardening Help',
   description: 'Need someone to help in the garden',
-  reasons: ['Skills match', 'Location nearby'],
-  matched_user: null,
-  matched_at: '2025-05-01T00:00:00Z',
-  category: 'Outdoors',
-  _debug_scores: {
-    category: 90,
-    skill: 85,
-    proximity: 70,
-    freshness: 80,
-    reciprocity: 60,
-    quality: 75,
+  match_reasons: ['Skills match your expertise', 'Nearby listing that might interest you'],
+  user_name: 'Bob Owner',
+  avatar_url: null,
+  category_name: 'Outdoors',
+  distance_km: 3.2,
+  score_breakdown: {
+    pillars: { relevance: 0.9, feasibility: 0.7, trust: 0.6 },
+    signals: {
+      relevance: { category: 0.9, skill: 0.85, semantic: 0.8 },
+      feasibility: { proximity: 0.7, availability: 0.5, activity: 0.6 },
+      trust: { reviews: 0.6, trust_tier: 0.5, completion: 0.7 },
+    },
+    adjustments: { freshness: 2 },
   },
 };
 

@@ -1,3 +1,8 @@
+// Copyright © 2024–2026 Jasper Ford
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Author: Jasper Ford
+// See NOTICE file for attribution and acknowledgements.
+
 import { Card, CardBody, CardHeader, Chip, Input, Spinner, Button, Progress, Avatar } from '@/components/ui';
 import { useState, useCallback, useRef } from 'react';
 
@@ -9,52 +14,56 @@ import Sparkles from 'lucide-react/icons/sparkles';
 import { usePageTitle } from '@/hooks';
 import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
-import { formatPercentValue, resolveAvatarUrl } from '@/lib/helpers';
+import { formatPercentValue, formatUnit, resolveAvatarUrl } from '@/lib/helpers';
 import { PageHeader } from '../../components/PageHeader';
 import { adminUsers } from '../../api/adminApi';
 import { useTranslation } from 'react-i18next';
-// Copyright © 2024–2026 Jasper Ford
-// SPDX-License-Identifier: AGPL-3.0-or-later
-// Author: Jasper Ford
-// See NOTICE file for attribution and acknowledgements.
 
 /**
- * Match Debug Panel
- * Admin tool to inspect match score breakdowns for any user.
- * Shows top matches with per-component score bars (category, skill, * proximity, freshness, reciprocity, quality).
+ * Match Debug Panel (platform team)
+ *
+ * Shows a member's top matches with the score breakdown the engine really
+ * produced, from GET /v2/matches/all?user_id=&debug=true:
+ *  - current scoring method: three pillars (relevance, feasibility, trust),
+ *    the signals inside each, and the points added or taken off afterwards;
+ *  - older scoring method: the six flat component scores;
+ *  - group / volunteering / event suggestions: no breakdown exists.
+ *
+ * Until November 2026 this page read field names the server never sent
+ * (`_debug_scores`, `reasons`, `matched_user`, `category`, `source_type`),
+ * so every card showed a title, a score and "No debug scores available".
  */
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Types
+// Types — the shape CrossModuleMatchingService::getAllMatches() sends
 // ─────────────────────────────────────────────────────────────────────────────
 
-interface DebugScores {
-  category: number;
-  skill: number;
-  proximity: number;
-  freshness: number;
-  reciprocity: number;
-  quality: number;
-}
-
-interface MatchedUser {
-  id: number;
-  name: string;
-  avatar_url?: string | null;
+/** Every pillar and signal value is 0–1; adjustments are points on the 0–100 score. */
+interface ScoreBreakdown {
+  pillars?: Record<string, number>;
+  signals?: Record<string, Record<string, number> | number>;
+  adjustments?: Record<string, number>;
 }
 
 interface DebugMatch {
-  id: number;
-  source_type: 'listing' | 'job' | 'volunteering' | 'group';
-  source_id: number;
+  module?: string;
+  listing_id?: number;
+  group_id?: number;
+  organization_id?: number;
+  event_id?: number;
   match_score: number;
-  title: string;
-  description?: string;
-  reasons: string[];
-  matched_user?: MatchedUser | null;
-  matched_at: string;
-  category?: string | null;
-  _debug_scores?: DebugScores;
+  match_type?: string;
+  title?: string | null;
+  description?: string | null;
+  match_reasons?: string[] | null;
+  user_name?: string | null;
+  avatar_url?: string | null;
+  category_name?: string | null;
+  distance_km?: number | null;
+  matched_listing?: string | null;
+  score_breakdown?: ScoreBreakdown | null;
+  /** Older scoring method only: six flat 0–1 component scores. */
+  match_breakdown?: unknown;
 }
 
 interface UserSearchResult {
@@ -65,7 +74,7 @@ interface UserSearchResult {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Score colour helper
+// Score helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
 type ProgressColor = 'success' | 'warning' | 'danger' | 'default';
@@ -77,14 +86,61 @@ function scoreColor(value: number): ProgressColor {
   return 'default';
 }
 
+function scoreTextClass(value: number): string {
+  if (value >= 70) return 'text-success';
+  if (value >= 40) return 'text-warning';
+  if (value >= 1) return 'text-danger';
+  return 'text-muted';
+}
+
+/** The kinds of suggestion the server sends (its `module` field). */
 const SOURCE_I18N_KEYS: Record<string, string> = {
   listing: 'source_listing',
-  job: 'source_job',
   volunteering: 'source_volunteering',
   group: 'source_group',
+  event: 'source_event',
 };
 
-const SCORE_COMPONENTS: Array<{ key: keyof DebugScores; i18nKey: string }> = [
+const SOURCE_COLORS: Record<string, 'primary' | 'warning' | 'danger' | 'success'> = {
+  listing: 'primary',
+  volunteering: 'danger',
+  group: 'success',
+  event: 'warning',
+};
+
+/** Current scoring method: three pillars and the signals inside each. */
+const PILLARS: Array<{ key: string; i18nKey: string; signals: Array<{ key: string; i18nKey: string }> }> = [
+  {
+    key: 'relevance',
+    i18nKey: 'pillar_relevance',
+    signals: [
+      { key: 'category', i18nKey: 'score_category' },
+      { key: 'skill', i18nKey: 'score_skill' },
+      { key: 'semantic', i18nKey: 'signal_semantic' },
+    ],
+  },
+  {
+    key: 'feasibility',
+    i18nKey: 'pillar_feasibility',
+    signals: [
+      { key: 'proximity', i18nKey: 'score_proximity' },
+      { key: 'availability', i18nKey: 'signal_availability' },
+      { key: 'activity', i18nKey: 'signal_activity' },
+    ],
+  },
+  {
+    key: 'trust',
+    i18nKey: 'pillar_trust',
+    signals: [
+      { key: 'reviews', i18nKey: 'signal_reviews' },
+      { key: 'trust_tier', i18nKey: 'signal_trust_tier' },
+      { key: 'completion', i18nKey: 'signal_completion' },
+    ],
+  },
+];
+
+/** Older scoring method: six flat component scores. */
+const LEGACY_COMPONENTS: Array<{ key: string; i18nKey: string }> = [
   { key: 'category', i18nKey: 'score_category' },
   { key: 'skill', i18nKey: 'score_skill' },
   { key: 'proximity', i18nKey: 'score_proximity' },
@@ -92,6 +148,39 @@ const SCORE_COMPONENTS: Array<{ key: keyof DebugScores; i18nKey: string }> = [
   { key: 'reciprocity', i18nKey: 'score_reciprocity' },
   { key: 'quality', i18nKey: 'score_quality' },
 ];
+
+function isNumber(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value);
+}
+
+/** 0–1 → a whole percentage. */
+function toPercent(value: number): number {
+  return Math.round(Math.min(1, Math.max(0, value)) * 100);
+}
+
+/** The current method's breakdown, when the match carries one. */
+function pillarBreakdown(match: DebugMatch): ScoreBreakdown | null {
+  const breakdown = match.score_breakdown;
+  if (!breakdown || typeof breakdown !== 'object' || !breakdown.pillars) return null;
+  return PILLARS.some(({ key }) => isNumber(breakdown.pillars?.[key])) ? breakdown : null;
+}
+
+/** The older method's six flat scores, when that is what the match carries. */
+function legacyBreakdown(match: DebugMatch): Record<string, number> | null {
+  const raw = match.match_breakdown;
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const flat: Record<string, number> = {};
+  for (const { key } of LEGACY_COMPONENTS) {
+    const value = (raw as Record<string, unknown>)[key];
+    if (isNumber(value)) flat[key] = value;
+  }
+  return Object.keys(flat).length > 0 ? flat : null;
+}
+
+function matchKey(match: DebugMatch, index: number): string {
+  const id = match.listing_id ?? match.group_id ?? match.event_id ?? match.organization_id ?? 'x';
+  return `${match.module ?? 'match'}-${id}-${index}`;
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Component
@@ -164,7 +253,6 @@ export function MatchDebugPanel() {
     setTotal(0);
 
     try {
-      // Try the admin debug endpoint first, fall back to standard matches endpoint
       const res = await api.get(`/v2/matches/all?limit=10&debug=true&user_id=${user.id}`);
       if (res.success && res.data) {
         const payload = res.data as unknown;
@@ -173,6 +261,10 @@ export function MatchDebugPanel() {
           : ((payload as { matches?: DebugMatch[] }).matches ?? []);
         setMatches(items);
         setTotal(items.length);
+      } else if (!res.success) {
+        // A refusal (not on the platform team, member not in this community)
+        // must not read as "this member has no matches".
+        toast.error(t('failed_to_load_matches_for_this_user'));
       }
     } catch {
       toast.error(t('failed_to_load_matches_for_this_user'));
@@ -189,6 +281,91 @@ export function MatchDebugPanel() {
       selectUser(selectedUser);
     }
   }, [selectedUser, selectUser]);
+
+  // ─── One labelled score bar (value is 0–100) ─────────────────────────────
+
+  const scoreBar = (key: string, label: string, value: number, strong = false) => (
+    <div key={key}>
+      <div className="flex justify-between text-xs mb-1">
+        <span className={strong ? 'font-semibold text-foreground' : 'text-muted'}>{label}</span>
+        <span className={`font-medium tabular-nums ${scoreTextClass(value)}`}>{value}</span>
+      </div>
+      <Progress
+        value={value}
+        color={scoreColor(value)}
+        size="sm"
+        aria-label={t('component_match_score_aria', { component: label, score: value })}
+      />
+    </div>
+  );
+
+  const renderBreakdown = (match: DebugMatch) => {
+    // Group, volunteering and event suggestions are not scored by the
+    // listing engine, so there is nothing to break down.
+    if (match.module && match.module !== 'listing') {
+      return <p className="text-xs text-muted italic">{t('no_breakdown_for_module')}</p>;
+    }
+
+    const breakdown = pillarBreakdown(match);
+    if (breakdown) {
+      const adjustments = Object.entries(breakdown.adjustments ?? {}).filter(([, points]) => isNumber(points));
+      return (
+        <div>
+          <p className="text-xs font-medium text-muted mb-2">{t('score_breakdown')}</p>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            {PILLARS.map(({ key, i18nKey, signals }) => {
+              const pillarValue = breakdown.pillars?.[key];
+              const pillarSignals = breakdown.signals?.[key];
+              return (
+                <div key={key} className="space-y-3 rounded-lg border border-divider p-3">
+                  {isNumber(pillarValue) && scoreBar(key, t(i18nKey), toPercent(pillarValue), true)}
+                  {typeof pillarSignals === 'object' && pillarSignals !== null && signals.map((signal) => {
+                    const value = pillarSignals[signal.key];
+                    return isNumber(value)
+                      ? scoreBar(`${key}-${signal.key}`, t(signal.i18nKey), toPercent(value))
+                      : null;
+                  })}
+                </div>
+              );
+            })}
+          </div>
+          {adjustments.length > 0 && (
+            <div className="mt-3">
+              <p className="text-xs font-medium text-muted mb-2">{t('adjustments_title')}</p>
+              <ul className="flex flex-wrap gap-1.5">
+                {adjustments.map(([name, points]) => (
+                  <li key={name} className="rounded-full border border-divider px-2.5 py-1 text-xs">
+                    {/* The engine's own name for the adjustment, as stored. */}
+                    <code className="text-muted">{name}</code>{' '}
+                    <span className="font-semibold tabular-nums text-foreground">
+                      {points > 0 ? '+' : ''}{points}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    const legacy = legacyBreakdown(match);
+    if (legacy) {
+      return (
+        <div>
+          <p className="text-xs font-medium text-muted mb-2">{t('score_breakdown')}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
+            {LEGACY_COMPONENTS.map(({ key, i18nKey }) => {
+              const value = legacy[key];
+              return value === undefined ? null : scoreBar(key, t(i18nKey), toPercent(value));
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    return <p className="text-xs text-muted italic">{t('no_debug_scores')}</p>;
+  };
 
   // ─────────────────────────────────────────────────────────────────────────
   // Render
@@ -350,140 +527,114 @@ export function MatchDebugPanel() {
             {t('top_matches_for_user', { count: matches.length, name: selectedUser?.name ?? '' })}
           </p>
 
-          {matches.map((match, index) => (
-            <Card key={`${match.source_type}-${match.id}-${index}`}>
-              <CardHeader className="flex items-start justify-between gap-4 pb-2">
-                <div className="flex items-start gap-3 flex-1 min-w-0">
-                  {/* Rank badge */}
-                  <div className="shrink-0 w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center text-xs font-bold text-accent-soft-foreground">
-                    {index + 1}
-                  </div>
+          {matches.map((match, index) => {
+            const moduleName = match.module ?? 'listing';
+            const sourceKey = SOURCE_I18N_KEYS[moduleName];
+            const score = Math.round(match.match_score);
+            const reasons = Array.isArray(match.match_reasons) ? match.match_reasons : [];
 
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className="font-semibold text-foreground truncate">{match.title}</span>
-                      <Chip
-                        size="sm"
-                        variant="soft"
-                        color={match.source_type === 'listing' ? 'primary'
-                          : match.source_type === 'job' ? 'warning'
-                          : match.source_type === 'volunteering' ? 'danger'
-                          : 'success'}
-                      >
-                        {t(SOURCE_I18N_KEYS[match.source_type] ?? match.source_type)}
-                      </Chip>
-                      {match.category && (
-                        <Chip size="sm" variant="soft" className="text-xs">
-                          {t('match_category.value', { category: match.category })}
+            return (
+              <Card key={matchKey(match, index)}>
+                <CardHeader className="flex items-start justify-between gap-4 pb-2">
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    {/* Rank badge */}
+                    <div className="shrink-0 w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center text-xs font-bold text-accent-soft-foreground">
+                      {index + 1}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span className="font-semibold text-foreground truncate">{match.title}</span>
+                        <Chip size="sm" variant="soft" color={SOURCE_COLORS[moduleName] ?? 'primary'}>
+                          {/* An unknown kind is shown as the server named it. */}
+                          {sourceKey ? t(sourceKey) : moduleName}
                         </Chip>
+                        {match.category_name && (
+                          <Chip size="sm" variant="soft" className="text-xs">
+                            {t('match_category.value', { category: match.category_name })}
+                          </Chip>
+                        )}
+                        {isNumber(match.distance_km) && (
+                          <Chip size="sm" variant="soft" className="text-xs tabular-nums">
+                            {formatUnit(match.distance_km, 'kilometer', { maximumFractionDigits: 1 })}
+                          </Chip>
+                        )}
+                      </div>
+
+                      {match.description && (
+                        <p className="text-xs text-muted line-clamp-2 mb-2">
+                          {match.description}
+                        </p>
+                      )}
+
+                      {/* The member who posted it */}
+                      {match.user_name && (
+                        <div className="flex items-center gap-2 mb-2">
+                          <Avatar
+                            src={resolveAvatarUrl(match.avatar_url)}
+                            name={match.user_name}
+                            size="sm"
+                            className="w-5 h-5"
+                          />
+                          <span className="text-xs text-muted">{match.user_name}</span>
+                        </div>
+                      )}
+
+                      {match.matched_listing && (
+                        <p className="text-xs text-muted">
+                          {t('matched_against', { title: match.matched_listing })}
+                        </p>
                       )}
                     </div>
+                  </div>
 
-                    {match.description && (
-                      <p className="text-xs text-muted line-clamp-2 mb-2">
-                        {match.description}
-                      </p>
-                    )}
+                  {/* Overall score */}
+                  <div className="shrink-0 text-right">
+                    <div className={`text-2xl font-bold tabular-nums ${
+                      score >= 70 ? 'text-success'
+                      : score >= 40 ? 'text-warning'
+                      : 'text-danger'
+                    }`}>
+                      {score}
+                    </div>
+                    <div className="text-xs text-muted">{t('score_out_of', { maximum: 100 })}</div>
+                  </div>
+                </CardHeader>
 
-                    {/* Matched user row */}
-                    {match.matched_user && (
-                      <div className="flex items-center gap-2 mb-2">
-                        <Avatar
-                          src={resolveAvatarUrl(match.matched_user.avatar_url)}
-                          name={match.matched_user.name}
-                          size="sm"
-                          className="w-5 h-5"
-                        />
-                        <span className="text-xs text-muted">{match.matched_user.name}</span>
+                <CardBody className="pt-0 space-y-4">
+                  {/* Overall score bar */}
+                  <div>
+                    <div className="flex justify-between text-xs text-muted mb-1">
+                      <span className="font-medium">{t('overall_match_score')}</span>
+                      <span>{formatPercentValue(score)}</span>
+                    </div>
+                    <Progress
+                      value={score}
+                      color={scoreColor(score)}
+                      size="md"
+                      aria-label={t('overall_match_score_aria', { score })}
+                    />
+                  </div>
+
+                  {renderBreakdown(match)}
+
+                  {/* Match reasons */}
+                  {reasons.length > 0 && (
+                    <div>
+                      <p className="text-xs font-medium text-muted mb-2">{t('match_reasons')}</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {reasons.map((reason) => (
+                          <Chip key={reason} size="sm" variant="soft" className="text-xs">
+                            {reason}
+                          </Chip>
+                        ))}
                       </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Overall score */}
-                <div className="shrink-0 text-right">
-                  <div className={`text-2xl font-bold ${
-                    match.match_score >= 70 ? 'text-success'
-                    : match.match_score >= 40 ? 'text-warning'
-                    : 'text-danger'
-                  }`}>
-                    {match.match_score}
-                  </div>
-                  <div className="text-xs text-muted">{t('score_out_of', { maximum: 100 })}</div>
-                </div>
-              </CardHeader>
-
-              <CardBody className="pt-0 space-y-4">
-                {/* Overall score bar */}
-                <div>
-                  <div className="flex justify-between text-xs text-muted mb-1">
-                    <span className="font-medium">{t('overall_match_score')}</span>
-                    <span>{formatPercentValue(match.match_score)}</span>
-                  </div>
-                  <Progress
-                    value={match.match_score}
-                    color={scoreColor(match.match_score)}
-                    size="md"
-                    aria-label={t('overall_match_score_aria', { score: match.match_score })}
-                  />
-                </div>
-
-                {/* Per-component score breakdown */}
-                {match._debug_scores && (
-                  <div>
-                    <p className="text-xs font-medium text-muted mb-2">{t('score_breakdown')}</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
-                      {SCORE_COMPONENTS.map(({ key, i18nKey }) => {
-                        const value = match._debug_scores![key] ?? 0;
-                        return (
-                          <div key={key}>
-                            <div className="flex justify-between text-xs mb-1">
-                              <span className="text-muted">{t(i18nKey)}</span>
-                              <span className={`font-medium ${
-                                value >= 70 ? 'text-success'
-                                : value >= 40 ? 'text-warning'
-                                : value >= 1 ? 'text-danger'
-                                : 'text-muted'
-                              }`}>
-                                {value}
-                              </span>
-                            </div>
-                            <Progress
-                              value={value}
-                              color={scoreColor(value)}
-                              size="sm"
-                              aria-label={t('component_match_score_aria', { component: t(i18nKey), score: value })}
-                            />
-                          </div>
-                        );
-                      })}
                     </div>
-                  </div>
-                )}
-
-                {/* Debug scores not available notice */}
-                {!match._debug_scores && (
-                  <p className="text-xs text-muted italic">
-                    {t('no_debug_scores')}
-                  </p>
-                )}
-
-                {/* Match reasons */}
-                {match.reasons && match.reasons.length > 0 && (
-                  <div>
-                    <p className="text-xs font-medium text-muted mb-2">{t('match_reasons')}</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {match.reasons.map((reason) => (
-                        <Chip key={reason} size="sm" variant="soft" className="text-xs">
-                          {reason}
-                        </Chip>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </CardBody>
-            </Card>
-          ))}
+                  )}
+                </CardBody>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>

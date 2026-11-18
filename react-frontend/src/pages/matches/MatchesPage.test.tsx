@@ -94,6 +94,9 @@ const emptyResponse = { success: true, data: { matches: [], meta: { total: 0, mo
 describe('MatchesPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // The test router is a BrowserRouter on the shared jsdom window, so a tab
+    // chosen in one test (?tab=events) would still be selected in the next.
+    window.history.replaceState({}, '', '/');
   });
 
   it('renders without crashing and shows content after loading', async () => {
@@ -198,5 +201,86 @@ describe('MatchesPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Matching is paused')).toBeInTheDocument();
     });
+  });
+
+  const baseMeta = { total: 0, modules: [], min_score: 55, needs_location: false, degraded: false, degraded_reason: null, has_active_listings: true, paused: false, disabled: false };
+
+  it('asks for matches without a min_score, so the saved minimum is the one applied', async () => {
+    // Sending min_score would override the "Minimum match quality" the member
+    // chose in their preferences; left out, the server applies it.
+    mockApiGet.mockResolvedValue(emptyResponse);
+    render(<MatchesPage />);
+    await waitFor(() => expect(mockApiGet).toHaveBeenCalled());
+    expect(mockApiGet).toHaveBeenCalledWith('/v2/matches/all');
+  });
+
+  it('says matching is switched off instead of asking for a listing', async () => {
+    mockApiGet.mockResolvedValue({
+      success: true,
+      data: { matches: [], meta: { ...baseMeta, has_active_listings: false, disabled: true } },
+    });
+    render(<MatchesPage />);
+
+    expect(await screen.findByText('Matching is switched off here')).toBeInTheDocument();
+    expect(screen.queryByText('Matching works from your listings')).not.toBeInTheDocument();
+    expect(screen.queryByText('No matches yet')).not.toBeInTheDocument();
+  });
+
+  it('offers an Events tab that shows only the event matches', async () => {
+    mockApiGet.mockResolvedValue({
+      success: true,
+      data: {
+        matches: [
+          { module: 'listing', listing_id: 10, match_score: 85, title: 'Gardening Help', user_id: 5, user_name: 'Jane' },
+          { module: 'event', event_id: 164, match_score: 60, title: 'Repair café', event_date: '2026-12-05 14:00:00', location: 'Town Hall', attendee_count: 3 },
+        ],
+        meta: { ...baseMeta, total: 2 },
+      },
+    });
+    render(<MatchesPage />);
+
+    const eventsTab = await screen.findByRole('tab', { name: /Event \(1\)/ });
+    expect(screen.getByText('Gardening Help')).toBeInTheDocument();
+
+    fireEvent.click(eventsTab);
+
+    await waitFor(() => expect(screen.queryByText('Gardening Help')).not.toBeInTheDocument());
+    expect(screen.getByText('Repair café')).toBeInTheDocument();
+  });
+
+  it('keeps suggestions for a member with nothing posted out of the average score', async () => {
+    mockApiGet.mockResolvedValue({
+      success: true,
+      data: {
+        matches: [
+          { module: 'listing', listing_id: 10, match_score: 45, match_type: 'cold_start', title: 'Bike repair' },
+          { module: 'group', group_id: 8, match_score: 70.4, match_type: 'group_recommendation', title: 'Walkers' },
+        ],
+        meta: { ...baseMeta, total: 2, has_active_listings: false },
+      },
+    });
+    render(<MatchesPage />);
+
+    expect(await screen.findByText('Suggested for you')).toBeInTheDocument();
+    // Average of the one scored match (70.4 → 70), not of 45 and 70.
+    expect(screen.getByText('70%')).toBeInTheDocument();
+  });
+
+  it('tells assistive technology whether the mutual-only filter is on', async () => {
+    mockApiGet.mockResolvedValue({
+      success: true,
+      data: {
+        matches: [
+          { module: 'listing', listing_id: 10, match_score: 85, match_type: 'mutual', is_mutual: true, title: 'Gardening Help' },
+        ],
+        meta: { ...baseMeta, total: 1 },
+      },
+    });
+    render(<MatchesPage />);
+
+    const toggle = await screen.findByRole('button', { name: 'Mutual matches only' });
+    expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute('aria-pressed', 'true');
   });
 });

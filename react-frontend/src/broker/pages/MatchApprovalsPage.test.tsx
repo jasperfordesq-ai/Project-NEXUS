@@ -276,4 +276,31 @@ describe('MatchApprovalsPage', () => {
       expect(screen.getByText('No matches waiting')).toBeInTheDocument();
     });
   });
+
+  it('shows the server\'s reason and reloads the queue when an approval is refused', async () => {
+    const reason = 'This match cannot be approved: safeguarding rules do not allow these two members to contact each other. It is still waiting for a decision.';
+    mockApproveMatch.mockResolvedValue({ success: false, error: reason });
+    const user = userEvent.setup();
+    renderPage();
+    await waitFor(() => expect(screen.getByText('Alice Member')).toBeInTheDocument());
+    const loadsBefore = mockGetApprovals.mock.calls.length;
+
+    await user.click(screen.getByRole('button', { name: 'Approve match' }));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith(reason));
+    await waitFor(() => expect(mockGetApprovals.mock.calls.length).toBeGreaterThan(loadsBefore));
+    expect(mockToast.success).not.toHaveBeenCalled();
+  });
+
+  it('offers no column sorting, because the server orders the whole queue', async () => {
+    renderPage();
+    await waitFor(() => expect(screen.getByText('Alice Member')).toBeInTheDocument());
+
+    const headers = screen.getAllByRole('columnheader');
+    expect(headers.length).toBeGreaterThan(0);
+    for (const header of headers) {
+      // A sortable column carries aria-sort (even "none"); these must not.
+      expect(header).not.toHaveAttribute('aria-sort');
+    }
+  });
 });

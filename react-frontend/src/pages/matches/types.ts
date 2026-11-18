@@ -56,15 +56,21 @@ export interface Match {
   title: string;
   description?: string | null;
   match_score: number;
+  /**
+   * one_way | potential | mutual | cold_start | group_recommendation |
+   * volunteering_recommendation | event_recommendation. `cold_start` items are
+   * browsing suggestions for a member with nothing posted yet, not scored
+   * matches, and are labelled as suggestions.
+   */
   match_type?: string;
   match_reasons?: string[];
   distance_km?: number | null;
-  created_at?: string;
+  created_at?: string | null;
 
   // Listing extras
   listing_id?: number;
   type?: 'offer' | 'request';
-  category_name?: string;
+  category_name?: string | null;
   user_id?: number;
   user_name?: string;
   avatar_url?: string | null;
@@ -81,22 +87,35 @@ export interface Match {
   member_count?: number;
   visibility?: string;
 
-  // Volunteering extras
-  organization_id?: number;
+  // Volunteering extras. The match is an OPPORTUNITY: `opportunity_id` is the
+  // only id that may be linked to. `organization_id` names the organisation
+  // offering it and must never be used as an opportunity id.
+  opportunity_id?: number;
+  organization_id?: number | null;
+  organization_name?: string | null;
+
+  // Volunteering and event extras
+  location?: string | null;
 
   // Event extras
   event_id?: number;
+  /** Start date-time of the event. */
+  event_date?: string | null;
+  attendee_count?: number;
 }
 
 export interface MatchesMeta {
   total: number;
   modules: string[];
+  /** The minimum score the server applied (the member's saved one, else the community's). */
   min_score: number;
   needs_location: boolean;
   degraded: boolean;
   degraded_reason: 'no_coordinates' | 'safeguarding_policy_unavailable' | null;
   has_active_listings: boolean | null;
   paused: boolean;
+  /** The community has switched matching off; `matches` is empty. */
+  disabled: boolean;
 }
 
 export interface MatchesResponse {
@@ -115,8 +134,65 @@ export interface MatchPreferences {
   availability: string[];
 }
 
+/**
+ * What GET / PUT /v2/users/me/match-preferences answers with: the editable
+ * preferences plus the community's own distance ceiling, which is read-only.
+ */
+export interface MatchPreferencesResponse extends MatchPreferences {
+  max_distance_limit_km?: number;
+}
+
+/** Used for the distance slider when the server does not say what the community allows. */
+export const FALLBACK_MAX_DISTANCE_LIMIT_KM = 100;
+
+/**
+ * The id of the record a match card opens, read from the field that belongs
+ * to its module. A volunteering match is an opportunity, so only
+ * `opportunity_id` counts — never `organization_id`, which names a different
+ * kind of record and used to send members to an unrelated opportunity.
+ */
+export function matchDetailId(
+  match: Pick<Match, 'module' | 'listing_id' | 'group_id' | 'opportunity_id' | 'event_id'>,
+): number | undefined {
+  const id = (() => {
+    switch (match.module) {
+      case 'listing':
+        return match.listing_id;
+      case 'group':
+        return match.group_id;
+      case 'volunteering':
+        return match.opportunity_id;
+      case 'event':
+        return match.event_id;
+      default:
+        return undefined;
+    }
+  })();
+
+  return typeof id === 'number' && Number.isFinite(id) && id > 0 ? id : undefined;
+}
+
 /** Returns a stable per-card id used for scroll-to-highlight deep links. */
-export function matchElementId(match: Pick<Match, 'module' | 'listing_id' | 'group_id' | 'organization_id' | 'event_id'>): string {
-  const id = match.listing_id ?? match.group_id ?? match.organization_id ?? match.event_id ?? 0;
-  return `${match.module}-${id}`;
+export function matchElementId(
+  match: Pick<Match, 'module' | 'listing_id' | 'group_id' | 'opportunity_id' | 'organization_id' | 'event_id'>,
+): string {
+  const id = matchDetailId(match);
+  if (id !== undefined) return `${match.module}-${id}`;
+  // A volunteering match from a server that has not sent the opportunity yet:
+  // still give the card a distinct id so two of them never share a key.
+  if (match.module === 'volunteering' && match.organization_id) {
+    return `${match.module}-organisation-${match.organization_id}`;
+  }
+  return `${match.module}-0`;
+}
+
+/** The score a member is shown: a whole number from 0 to 100. */
+export function displayScore(score: number): number {
+  if (!Number.isFinite(score)) return 0;
+  return Math.min(100, Math.max(0, Math.round(score)));
+}
+
+/** A browsing suggestion for a member with nothing posted yet, not a scored match. */
+export function isSuggestion(match: Pick<Match, 'match_type'>): boolean {
+  return match.match_type === 'cold_start';
 }

@@ -28,13 +28,12 @@
     "filter": {
       "all": "All",
       "listing": "Listings",
-      "job": "Jobs",
       "volunteering": "Volunteering",
-      "group": "Groups"
+      "group": "Groups",
+      "event": "Eventos"
     },
     "source": {
       "listing": "Listing",
-      "job": "Job",
       "volunteering": "Volunteering",
       "group": "Group",
       "event": "Evento"
@@ -55,7 +54,25 @@
       "pausedAction": "Ajustar las preferencias de coincidencia",
       "listingsTitle": "Publica algo para empezar",
       "listingsBody": "Las coincidencias se construyen con lo que ofreces y lo que necesitas. Publica tu primera oferta o petición y empezarán a llegar sugerencias.",
-      "listingsAction": "Publicar una oferta o petición"
+      "listingsAction": "Publicar una oferta o petición",
+      "safeguardingTitle": "Algunas coincidencias aún no se pueden mostrar",
+      "safeguardingBody": "La configuración de protección de tu comunidad no está terminada, así que las coincidencias con miembros protegidos se ocultan por la seguridad de todos. Vuelve cuando el equipo de tu comunidad la haya completado.",
+      "disabledTitle": "Las coincidencias están desactivadas aquí",
+      "disabledBody": "Tu comunidad no usa las coincidencias por ahora. Puedes seguir explorando ofertas y peticiones por tu cuenta."
+    },
+    "suggested": "Sugerido para ti",
+    "openNamed": "Abrir {{title}}",
+    "dismissNamed": "Descartar {{title}}",
+    "going": "Asistirán: {{count}}",
+    "notice": {
+      "pausedTitle": "Las coincidencias están en pausa",
+      "pausedBody": "Has puesto las coincidencias en pausa, así que faltan algunas sugerencias. Puedes volver a activarlas en tus preferencias de coincidencia.",
+      "pausedAction": "Abrir las preferencias de coincidencia",
+      "locationTitle": "Indica tu zona para ver más",
+      "locationBody": "No podemos sugerirte ofertas y peticiones cerca de ti hasta que tu perfil indique, a grandes rasgos, dónde estás. Nadie ve tu dirección exacta.",
+      "locationAction": "Indicar mi zona",
+      "safeguardingTitle": "Algunas coincidencias están ocultas",
+      "safeguardingBody": "La configuración de protección de tu comunidad no está terminada, así que las coincidencias con miembros protegidos se ocultan por la seguridad de todos."
     }
   },
   "reviews": {

@@ -28,13 +28,12 @@
     "filter": {
       "all": "Gach ceann",
       "listing": "Liostuithe",
-      "job": "Poist",
       "volunteering": "Obair dheonach",
-      "group": "Grúpaí"
+      "group": "Grúpaí",
+      "event": "Imeachtaí"
     },
     "source": {
       "listing": "Liostú",
-      "job": "Post",
       "volunteering": "Obair dheonach",
       "group": "Grúpa",
       "event": "Imeacht"
@@ -55,7 +54,25 @@
       "pausedAction": "Coigeartaigh sainroghanna meaitseála",
       "listingsTitle": "Postáil rud éigin chun tosú ag meaitseáil",
       "listingsBody": "Tógtar cluichí timpeall ar an rud a thugann tú agus an rud a theastaíonn uait. Postáil do chéad tairiscint nó iarratas agus tosóidh moltaí ag teacht.",
-      "listingsAction": "Postáil tairiscint nó iarratas"
+      "listingsAction": "Postáil tairiscint nó iarratas",
+      "safeguardingTitle": "Ní féidir roinnt meaitseálacha a thaispeáint go fóill",
+      "safeguardingBody": "Níl socrú cosanta do phobail críochnaithe go fóill, mar sin tá meaitseálacha a bhaineann le baill atá faoi chosaint folaithe le gach duine a choinneáil slán. Féach ar ais nuair a bheidh sé críochnaithe ag foireann do phobail.",
+      "disabledTitle": "Tá meaitseáil múchta anseo",
+      "disabledBody": "Níl do phobal ag úsáid meaitseála faoi láthair. Is féidir leat tairiscintí agus iarratais a bhrabhsáil tú féin fós."
+    },
+    "suggested": "Molta duit",
+    "openNamed": "Oscail {{title}}",
+    "dismissNamed": "Folaigh {{title}}",
+    "going": "Ag freastal: {{count}}",
+    "notice": {
+      "pausedTitle": "Tá an mheaitseáil ar sos",
+      "pausedBody": "Chuir tú an mheaitseáil ar sos, mar sin tá roinnt moltaí in easnamh. Is féidir leat í a chur ar siúl arís i do shainroghanna meaitseála.",
+      "pausedAction": "Oscail sainroghanna meaitseála",
+      "locationTitle": "Cuir do cheantar leis chun níos mó a fheiceáil",
+      "locationBody": "Ní féidir linn tairiscintí agus iarratais in aice leat a mholadh go dtí go ndeir do phróifíl cá bhfuil tú, go garbh. Ní fheiceann aon duine do sheoladh cruinn.",
+      "locationAction": "Cuir mo cheantar leis",
+      "safeguardingTitle": "Tá roinnt meaitseálacha i bhfolach",
+      "safeguardingBody": "Níl socrú cosanta do phobail críochnaithe go fóill, mar sin tá meaitseálacha a bhaineann le baill atá faoi chosaint folaithe le gach duine a choinneáil slán."
     }
   },
   "reviews": {

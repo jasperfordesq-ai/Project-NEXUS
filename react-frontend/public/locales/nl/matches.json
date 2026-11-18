@@ -3,7 +3,7 @@
   "breadcrumb_dashboard": "Dashboard",
   "breadcrumb_matches": "Overeenkomsten",
   "heading": "Jouw Matches",
-  "subtitle": "Ontdek verbindingen tussen aanbiedingen, banen, vrijwilligerswerk en groepen",
+  "subtitle": "Aanbod, vragen, groepen, vrijwilligerswerk en evenementen die bij je passen",
   "refresh": "Vernieuwen",
   "preferences_link": "Match voorkeuren",
   "stats_total_matches": "Totaal aantal Matches",
@@ -55,7 +55,14 @@
     "dismiss": "Niet geïnteresseerd",
     "view_group": "Groep bekijken",
     "join": "Deelnemen",
-    "joined": "Deelnemer"
+    "joined": "Deelnemer",
+    "suggested": "Voorgesteld voor jou",
+    "join_requested": "Verzoek verzonden",
+    "join_requested_toast": "We hebben je verzoek om deel te nemen verzonden. De groep laat het je weten.",
+    "saved_toast": "Bewaard voor later",
+    "unsaved_toast": "Verwijderd uit je bewaarde items",
+    "already_saved": "Dit had je al bewaard",
+    "attendees": "Aanwezig: {{count}}"
   },
   "explanation": {
     "ai_caption": "Door AI gegenereerde uitleg op basis van uw profiel en activiteit"
@@ -96,7 +103,9 @@
     "create_listing_cta": "Maak een vermelding",
     "adjust_preferences_cta": "Matchvoorkeuren aanpassen",
     "safeguarding_unavailable_title": "Sommige matches kunnen nog niet worden getoond",
-    "safeguarding_unavailable_description": "De veiligheidsinstellingen van uw community zijn nog niet voltooid. Matches met beschermde leden worden voor ieders veiligheid verborgen. Kom terug zodra uw communityteam dit heeft afgerond."
+    "safeguarding_unavailable_description": "De veiligheidsinstellingen van uw community zijn nog niet voltooid. Matches met beschermde leden worden voor ieders veiligheid verborgen. Kom terug zodra uw communityteam dit heeft afgerond.",
+    "disabled_title": "Matchen staat hier uit",
+    "disabled_description": "Je community gebruikt matchen op dit moment niet. Je kunt nog steeds zelf aanbod en verzoeken bekijken."
   },
   "preferences": {
     "page_title": "Matchvoorkeuren",
@@ -144,5 +153,10 @@
     }
   },
   "reasons_more_one": "+{{count}} meer",
-  "reasons_more_other": "+{{count}} meer"
+  "reasons_more_other": "+{{count}} meer",
+  "errors": {
+    "dismiss_failed": "We konden die match niet verbergen. Probeer het opnieuw.",
+    "save_failed": "We konden dat nu niet opslaan. Probeer het opnieuw.",
+    "join_failed": "We konden je niet aan die groep toevoegen. Probeer het opnieuw."
+  }
 }

@@ -1535,7 +1535,7 @@
     "reject_failed": "Échec du rejet de l'appariement",
     "load_failed": "Échec du chargement de l'approbation d'appariement",
     "reject_reason_label": "Motif du rejet",
-    "reject_reason_placeholder": "Expliquez pourquoi cet appariement est rejeté — le membre le verra.",
+    "reject_reason_placeholder": "Expliquez pourquoi cet appariement est rejeté. Aucun des deux membres n'est informé ; le motif est conservé pour les coordinateurs.",
     "reject_reason_required": "Veuillez indiquer un motif de rejet",
     "rejecting_between": "Rejet de l'appariement entre {{user1}} et {{user2}}.",
     "cancel": "Annuler",
@@ -1572,7 +1572,8 @@
     "retry": "Réessayer",
     "detail_description": "Vérifiez pourquoi ces deux personnes ont été appariées, puis approuvez ou refusez avant d'en informer le membre.",
     "listing_type_offer": "Offre",
-    "listing_type_request": "Demande"
+    "listing_type_request": "Demande",
+    "type_potential": "Peut-être mutuel"
   },
   "status": {
     "active": "Actif",

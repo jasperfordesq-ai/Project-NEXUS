@@ -20,6 +20,10 @@
 
   <span class="govuk-caption-xl" id="matches-top">{{ t("govuk_alpha_connections.matches.caption", { community: tenantName }) }}</span>
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_connections.matches.title") }}</h1>
+  {# The community has switched matching off: say so plainly and stop (as the list view does). #}
+  {% if matchingDisabled and not errorMessage %}
+    {% set notice = "disabled" %}{% include "matches/_state-notice.njk" %}
+  {% else %}
   <p class="govuk-body-l">{{ t("govuk_alpha_connections.matches.description") }}</p>
 
   <dl class="govuk-summary-list govuk-!-margin-bottom-6">
@@ -51,6 +55,13 @@
     </ul>
   </nav>
 
+  {# The same reasons the list view gives: paused by the member, or no location. #}
+  {% if matchingPaused and not errorMessage %}
+    {% set notice = "paused" %}{% include "matches/_state-notice.njk" %}
+  {% elif noCoordinates and not errorMessage %}
+    {% set notice = "location" %}{% include "matches/_state-notice.njk" %}
+  {% endif %}
+
   {% if errorMessage %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
       <div role="alert">
@@ -77,15 +88,21 @@
             {% endif %}
           </div>
 
-          <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ t("govuk_alpha_connections.matches.by_label", { name: match.userName }) }}{% if match.category %} - {{ match.category }}{% endif %}{% if match.matchedWhen %} - {{ t("govuk_alpha_connections.matches.matched_when", { when: match.matchedWhen }) }}{% endif %}</p>
+          {# Only a listing has a member behind it; the route builds the right line per kind. #}
+          {% if match.metaLine %}<p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ match.metaLine }}</p>{% endif %}
           {% if match.description %}
             <p class="govuk-body govuk-!-margin-bottom-2" dir="auto">{{ match.description }}</p>
           {% endif %}
 
+          {# A cold-start match is a suggestion, not a scored match: no percentage, no score bar. #}
+          {% if match.isSuggestion %}
+            <p class="govuk-body govuk-!-margin-bottom-2">{{ govukTag({ text: t("govuk_alpha_connections.matches_shared.suggestion_tag"), classes: "govuk-tag--grey" }) }}</p>
+          {% else %}
           <div class="govuk-!-margin-bottom-2">
             <strong class="govuk-tag {% if match.pct >= 80 %}govuk-tag--green{% elif match.pct >= 60 %}govuk-tag--yellow{% else %}govuk-tag--grey{% endif %}">{{ t("govuk_alpha_connections.matches.score_label", { percent: match.pct }) }}</strong>
             <progress max="100" value="{{ match.pct }}" aria-label="{{ t('govuk_alpha_connections.matches.score_bar_label', { percent: match.pct }) }}">{{ match.pct }}%</progress>
           </div>
+          {% endif %}
 
           {% if match.reasons.length %}
             <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("govuk_alpha_connections.matches.reasons_label") }}</h3>
@@ -101,7 +118,8 @@
             </ul>
           {% endif %}
 
-          {# React MatchCard hides listing AND group matches. #}
+          {# Only listing and group matches can be hidden: the API has no dismiss for
+             a volunteering opportunity or an event. #}
           {% if match.module == 'listing' and match.listingId %}{% set dismissPath = '/matches/board/' + (match.listingId | string) + '/dismiss' %}{% set dismissKey = match.listingId %}{% elif match.module == 'group' and match.groupId %}{% set dismissPath = '/matches/board/group/' + (match.groupId | string) + '/dismiss' %}{% set dismissKey = 'group-' + (match.groupId | string) %}{% else %}{% set dismissPath = '' %}{% endif %}
           {% if dismissPath %}
             <div class="govuk-warning-text govuk-!-margin-top-2 govuk-!-margin-bottom-2">
@@ -141,14 +159,19 @@
         </article>
       {% endfor %}
     </div>
+  {% elif matchingPaused %}
+    {# Nothing to add: the paused notice above already says why and what to do. #}
   {% elif safeguardingDegraded %}
     {% set variant = "empty" %}{% include "matches/_safeguarding-notice.njk" %}
+  {% elif noActiveListings and activeSource in ["all", "listing"] %}
+    {% set notice = "no-listings" %}{% include "matches/_state-notice.njk" %}
   {% else %}
     <div class="govuk-inset-text">
       <h2 class="govuk-heading-m govuk-!-margin-bottom-1">{% if activeSource == 'all' %}{{ t("govuk_alpha_connections.matches_empty.title_all") }}{% else %}{{ t("govuk_alpha_connections.matches_empty.title_filtered", { source: sourceLabels[activeSource] }) }}{% endif %}</h2>
       <p class="govuk-body">{{ t("govuk_alpha_connections.matches_empty.body") }}</p>
     </div>
     <a class="govuk-button" href="{{ urlFor('/listings') }}" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha_connections.matches_empty.browse_listings") }}</a>
+  {% endif %}
   {% endif %}
 
   <p class="govuk-body govuk-!-margin-top-6">

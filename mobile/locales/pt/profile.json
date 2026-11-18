@@ -28,13 +28,12 @@
     "filter": {
       "all": "All",
       "listing": "Listings",
-      "job": "Jobs",
       "volunteering": "Volunteering",
-      "group": "Groups"
+      "group": "Groups",
+      "event": "Eventos"
     },
     "source": {
       "listing": "Listing",
-      "job": "Job",
       "volunteering": "Volunteering",
       "group": "Group",
       "event": "Evento"
@@ -55,7 +54,25 @@
       "pausedAction": "Ajustar preferências de correspondência",
       "listingsTitle": "Publique algo para começar",
       "listingsBody": "As correspondências são criadas a partir do que oferece e do que precisa. Publique a sua primeira oferta ou pedido e as sugestões começarão a aparecer.",
-      "listingsAction": "Publicar uma oferta ou pedido"
+      "listingsAction": "Publicar uma oferta ou pedido",
+      "safeguardingTitle": "Algumas correspondências ainda não podem ser mostradas",
+      "safeguardingBody": "A configuração de proteção da sua comunidade ainda não foi concluída, então as correspondências com membros protegidos ficam ocultas para a segurança de todos. Volte quando a equipe da sua comunidade tiver concluído.",
+      "disabledTitle": "As correspondências estão desativadas aqui",
+      "disabledBody": "Sua comunidade não está usando as correspondências no momento. Você ainda pode explorar ofertas e pedidos por conta própria."
+    },
+    "suggested": "Sugerido para você",
+    "openNamed": "Abrir {{title}}",
+    "dismissNamed": "Dispensar {{title}}",
+    "going": "Vão participar: {{count}}",
+    "notice": {
+      "pausedTitle": "As correspondências estão em pausa",
+      "pausedBody": "Você pausou as correspondências, então algumas sugestões estão faltando. Você pode reativá-las nas suas preferências de correspondência.",
+      "pausedAction": "Abrir preferências de correspondência",
+      "locationTitle": "Informe sua região para ver mais",
+      "locationBody": "Não podemos sugerir ofertas e pedidos perto de você enquanto seu perfil não disser mais ou menos onde você está. Ninguém vê seu endereço exato.",
+      "locationAction": "Informar minha região",
+      "safeguardingTitle": "Algumas correspondências estão ocultas",
+      "safeguardingBody": "A configuração de proteção da sua comunidade ainda não foi concluída, então as correspondências com membros protegidos ficam ocultas para a segurança de todos."
     }
   },
   "reviews": {

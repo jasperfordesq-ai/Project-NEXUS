@@ -1520,7 +1520,7 @@
     "reject_failed": "Afwijzen van match mislukt",
     "load_failed": "Laden van matchgoedkeuring mislukt",
     "reject_reason_label": "Reden van afwijzing",
-    "reject_reason_placeholder": "Leg uit waarom deze match wordt afgewezen — het lid ziet dit.",
+    "reject_reason_placeholder": "Leg uit waarom deze match wordt afgewezen. Geen van beide leden krijgt bericht; de reden wordt bewaard voor coördinatoren.",
     "reject_reason_required": "Geef een reden op voor de afwijzing",
     "rejecting_between": "Bezig met het afwijzen van de match tussen {{user1}} en {{user2}}.",
     "cancel": "Annuleren",
@@ -1557,7 +1557,8 @@
     "retry": "Opnieuw proberen",
     "detail_description": "Bekijk waarom deze twee zijn gematcht en keur goed of af voordat het lid wordt geïnformeerd.",
     "listing_type_offer": "Aanbod",
-    "listing_type_request": "Verzoek"
+    "listing_type_request": "Verzoek",
+    "type_potential": "Mogelijk wederzijds"
   },
   "status": {
     "active": "Actief",

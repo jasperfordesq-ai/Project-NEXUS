@@ -1600,7 +1600,7 @@
     "reject_failed": "فشل رفض التطابق",
     "load_failed": "فشل تحميل موافقة التطابق",
     "reject_reason_label": "سبب الرفض",
-    "reject_reason_placeholder": "اشرح سبب رفض هذا التطابق — سيرى العضو هذا.",
+    "reject_reason_placeholder": "اشرح سبب رفض هذا التطابق. لا يُبلَّغ أيٌّ من العضوين؛ ويُحفظ السبب للمنسقين.",
     "reject_reason_required": "يرجى تقديم سبب للرفض",
     "rejecting_between": "رفض التطابق بين {{user1}} و{{user2}}.",
     "cancel": "إلغاء",
@@ -1637,7 +1637,8 @@
     "retry": "إعادة المحاولة",
     "detail_description": "تحقق من سبب التطابق بين هذين العضوين، ثم وافق أو ارفض قبل إبلاغ العضو.",
     "listing_type_offer": "عرض",
-    "listing_type_request": "طلب"
+    "listing_type_request": "طلب",
+    "type_potential": "ربما متبادل"
   },
   "status": {
     "active": "نشط",

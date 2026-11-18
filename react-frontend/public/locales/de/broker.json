@@ -1520,7 +1520,7 @@
     "reject_failed": "Ablehnen des Matches fehlgeschlagen",
     "load_failed": "Laden der Match-Genehmigung fehlgeschlagen",
     "reject_reason_label": "Ablehnungsgrund",
-    "reject_reason_placeholder": "Erklären Sie, warum dieser Match abgelehnt wird — das Mitglied sieht diesen Text.",
+    "reject_reason_placeholder": "Erklären Sie, warum dieser Match abgelehnt wird. Keines der Mitglieder wird informiert; der Grund wird für die Koordination festgehalten.",
     "reject_reason_required": "Bitte geben Sie einen Grund für die Ablehnung an",
     "rejecting_between": "Der Match zwischen {{user1}} und {{user2}} wird abgelehnt.",
     "cancel": "Abbrechen",
@@ -1557,7 +1557,8 @@
     "retry": "Erneut versuchen",
     "detail_description": "Prüfen Sie, warum diese beiden zusammengeführt wurden, und genehmigen oder lehnen Sie ab, bevor das Mitglied benachrichtigt wird.",
     "listing_type_offer": "Angebot",
-    "listing_type_request": "Gesuch"
+    "listing_type_request": "Gesuch",
+    "type_potential": "Möglicherweise gegenseitig"
   },
   "status": {
     "active": "Aktiv",

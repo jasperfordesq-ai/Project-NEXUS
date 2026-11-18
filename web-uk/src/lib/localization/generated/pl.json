@@ -8153,6 +8153,29 @@
             "nav": {
                 "network": "Wyświetl całą swoją sieć",
                 "matches_board": "Otwórz tablicę zapałek"
+            },
+            "matches_shared": {
+                "paused_title": "Dopasowywanie jest wstrzymane",
+                "paused_body": "Dopasowywanie zostało przez Ciebie wstrzymane, dlatego obecnie nie proponujemy Ci nowych dopasowań.",
+                "paused_link": "Przejdź do ustawień dopasowywania, aby je wznowić",
+                "disabled_title": "Dopasowywanie nie jest tutaj używane",
+                "disabled_body": "Ta społeczność obecnie nie korzysta z dopasowywania.",
+                "from_notification": "Z Twojego powiadomienia",
+                "suggestion_tag": "Propozycja dla Ciebie"
+            },
+            "match_settings": {
+                "heading": "Ustawienia dopasowywania",
+                "description": "Wybierz, jakie dopasowania Ci proponujemy i jak często Cię o nich informujemy.",
+                "pause_label": "Wstrzymaj dopasowywanie",
+                "pause_hint": "Gdy dopasowywanie jest wstrzymane, nie proponujemy dopasowań i nie wysyłamy powiadomień o nich. Pozostałe ustawienia zostają zachowane.",
+                "distance_label": "Jak daleko mogą znajdować się dopasowania",
+                "distance_hint": "Wpisz liczbę całkowitą kilometrów, od 1 do :max.",
+                "distance_error": "Wpisz liczbę całkowitą kilometrów od 1 do :max",
+                "min_score_label": "Najniższy wynik dopasowania, który pokazujemy, w procentach",
+                "min_score_hint": "Wpisz liczbę całkowitą od 0 do 100. Przy wyższej liczbie zobaczysz mniej dopasowań, ale lepiej do Ciebie pasujących. Wpisz 0, aby zobaczyć wszystkie dopasowania.",
+                "min_score_error": "Wpisz liczbę całkowitą od 0 do 100",
+                "invalid": "Sprawdź ustawienia dopasowywania i spróbuj ponownie",
+                "save": "Zapisz ustawienia dopasowywania"
             }
         },
         "govuk_alpha_courses": {

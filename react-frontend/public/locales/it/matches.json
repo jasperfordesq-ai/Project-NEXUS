@@ -3,7 +3,7 @@
   "breadcrumb_dashboard": "Cruscotto",
   "breadcrumb_matches": "Abbinamenti",
   "heading": "I Tuoi Abbinamenti",
-  "subtitle": "Scopri connessioni tra annunci, lavori, volontariato e gruppi",
+  "subtitle": "Offerte, richieste, gruppi, volontariato ed eventi adatti a te",
   "refresh": "Aggiorna",
   "preferences_link": "Abbina le preferenze",
   "stats_total_matches": "Abbinamenti Totali",
@@ -52,7 +52,14 @@
     "remote": "Da remoto",
     "message": "Messaggio",
     "join": "Partecipa",
-    "joined": "Partecipi"
+    "joined": "Partecipi",
+    "suggested": "Suggerito per te",
+    "join_requested": "Richiesta inviata",
+    "join_requested_toast": "Abbiamo inviato la tua richiesta di partecipazione. Il gruppo ti farà sapere.",
+    "saved_toast": "Salvato per dopo",
+    "unsaved_toast": "Rimosso dai tuoi elementi salvati",
+    "already_saved": "L’hai già salvato",
+    "attendees": "Partecipanti: {{count}}"
   },
   "explanation": {
     "ai_caption": "Spiegazione generata dall'intelligenza artificiale in base al tuo profilo e alla tua attività"
@@ -93,7 +100,9 @@
     "create_listing_cta": "Crea un elenco",
     "adjust_preferences_cta": "Modifica le preferenze di corrispondenza",
     "safeguarding_unavailable_title": "Alcune corrispondenze non possono ancora essere mostrate",
-    "safeguarding_unavailable_description": "La configurazione della tutela della tua comunità non è completa: le corrispondenze che coinvolgono membri protetti sono nascoste per la sicurezza di tutti. Riprova quando il team della tua comunità l’avrà completata."
+    "safeguarding_unavailable_description": "La configurazione della tutela della tua comunità non è completa: le corrispondenze che coinvolgono membri protetti sono nascoste per la sicurezza di tutti. Riprova quando il team della tua comunità l’avrà completata.",
+    "disabled_title": "La corrispondenza è disattivata qui",
+    "disabled_description": "La tua comunità al momento non usa la corrispondenza. Puoi comunque sfogliare offerte e richieste per conto tuo."
   },
   "preferences": {
     "subtitle": "Controlla il modo in cui Smart Matching trova e ti avvisa sulle connessioni.",
@@ -145,5 +154,10 @@
   "source_event": "Evento",
   "reasons_more_many": "+{{count}} altri",
   "reasons_more_one": "+{{count}} altri",
-  "reasons_more_other": "+{{count}} altri"
+  "reasons_more_other": "+{{count}} altri",
+  "errors": {
+    "dismiss_failed": "Non siamo riusciti a nascondere questa corrispondenza. Riprova.",
+    "save_failed": "Non siamo riusciti a salvarlo in questo momento. Riprova.",
+    "join_failed": "Non siamo riusciti ad aggiungerti a questo gruppo. Riprova."
+  }
 }

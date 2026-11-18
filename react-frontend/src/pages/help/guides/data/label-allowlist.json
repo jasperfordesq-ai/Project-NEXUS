@@ -26,6 +26,13 @@
         "en"
       ],
       "reason": "A key word bolded where the guide explains who runs a community, not an on-screen label."
+    },
+    {
+      "label": "Your score",
+      "locales": [
+        "en"
+      ],
+      "reason": "The quiz result reads \"Your score: 72%\" (courses:lesson.quiz.score); the guide bolds the words before the figure, which the label check cannot match against a sentence with a number in it."
     }
   ]
 }

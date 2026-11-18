@@ -8153,6 +8153,29 @@
             "nav": {
                 "network": "Bekijk uw volledige netwerk",
                 "matches_board": "Open het wedstrijdbord"
+            },
+            "matches_shared": {
+                "paused_title": "Matchen is gepauzeerd",
+                "paused_body": "Je hebt het matchen gepauzeerd. Daarom stellen we je op dit moment geen nieuwe matches voor.",
+                "paused_link": "Ga naar je matchinstellingen om het matchen weer te starten",
+                "disabled_title": "Matchen wordt hier niet gebruikt",
+                "disabled_body": "Deze gemeenschap gebruikt het matchen op dit moment niet.",
+                "from_notification": "Uit je melding",
+                "suggestion_tag": "Voorgesteld voor jou"
+            },
+            "match_settings": {
+                "heading": "Matchinstellingen",
+                "description": "Kies welke matches we je voorstellen en hoe vaak we je erover berichten.",
+                "pause_label": "Matchen pauzeren",
+                "pause_hint": "Zolang het matchen is gepauzeerd, stellen we je geen matches voor en sturen we je geen matchmeldingen. Je andere instellingen blijven bewaard.",
+                "distance_label": "Hoe ver weg matches mogen zijn",
+                "distance_hint": "Vul een heel getal in kilometers in, van 1 tot en met :max.",
+                "distance_error": "Vul een heel getal in kilometers in van 1 tot en met :max",
+                "min_score_label": "Laagste matchscore die we tonen, als percentage",
+                "min_score_hint": "Vul een heel getal in van 0 tot en met 100. Bij een hoger getal zie je minder matches, maar ze passen beter bij je. Vul 0 in om alle matches te zien.",
+                "min_score_error": "Vul een heel getal in van 0 tot en met 100",
+                "invalid": "Controleer je matchinstellingen en probeer het opnieuw",
+                "save": "Matchinstellingen opslaan"
             }
         },
         "govuk_alpha_courses": {

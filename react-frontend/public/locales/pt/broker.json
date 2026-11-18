@@ -1535,7 +1535,7 @@
     "reject_failed": "Falha ao rejeitar a correspondência",
     "load_failed": "Falha ao carregar a aprovação de correspondência",
     "reject_reason_label": "Motivo da rejeição",
-    "reject_reason_placeholder": "Explique porque está esta correspondência a ser rejeitada — o membro verá isto.",
+    "reject_reason_placeholder": "Explique por que esta correspondência está sendo rejeitada. Nenhum dos membros é avisado; o motivo fica registrado para os coordenadores.",
     "reject_reason_required": "Indique um motivo para a rejeição",
     "rejecting_between": "A rejeitar a correspondência entre {{user1}} e {{user2}}.",
     "cancel": "Cancelar",
@@ -1572,7 +1572,8 @@
     "retry": "Tentar novamente",
     "detail_description": "Veja porque é que estas duas pessoas foram correspondidas e aprove ou rejeite antes de o membro ser avisado.",
     "listing_type_offer": "Oferta",
-    "listing_type_request": "Pedido"
+    "listing_type_request": "Pedido",
+    "type_potential": "Possivelmente mútua"
   },
   "status": {
     "active": "Ativo",

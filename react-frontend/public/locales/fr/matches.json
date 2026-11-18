@@ -3,7 +3,7 @@
   "breadcrumb_dashboard": "Tableau de bord",
   "breadcrumb_matches": "Correspondances",
   "heading": "Vos correspondances",
-  "subtitle": "Découvrez des connexions dans les annonces, les emplois, le bénévolat et les groupes",
+  "subtitle": "Des offres, des demandes, des groupes, du bénévolat et des événements qui vous correspondent",
   "refresh": "Actualiser",
   "preferences_link": "Préférences de correspondance",
   "stats_total_matches": "Total des correspondances",
@@ -52,7 +52,14 @@
     "remote": "À distance",
     "message": "Envoyer un message",
     "join": "Rejoindre",
-    "joined": "Inscription effectuée"
+    "joined": "Inscription effectuée",
+    "suggested": "Suggéré pour vous",
+    "join_requested": "Demande envoyée",
+    "join_requested_toast": "Nous avons envoyé votre demande d’adhésion. Le groupe vous tiendra au courant.",
+    "saved_toast": "Enregistré pour plus tard",
+    "unsaved_toast": "Retiré de vos éléments enregistrés",
+    "already_saved": "Vous l’avez déjà enregistré",
+    "attendees": "Participants : {{count}}"
   },
   "explanation": {
     "ai_caption": "Explication générée par l'IA en fonction de votre profil et de votre activité"
@@ -93,7 +100,9 @@
     "create_listing_cta": "Créer une annonce",
     "adjust_preferences_cta": "Ajuster les préférences de correspondance",
     "safeguarding_unavailable_title": "Certaines correspondances ne peuvent pas encore être affichées",
-    "safeguarding_unavailable_description": "La configuration de la protection de votre communauté n'est pas terminée : les correspondances impliquant des membres protégés sont masquées pour la sécurité de tous. Revenez lorsque l'équipe de votre communauté l'aura terminée."
+    "safeguarding_unavailable_description": "La configuration de la protection de votre communauté n'est pas terminée : les correspondances impliquant des membres protégés sont masquées pour la sécurité de tous. Revenez lorsque l'équipe de votre communauté l'aura terminée.",
+    "disabled_title": "La correspondance est désactivée ici",
+    "disabled_description": "Votre communauté n’utilise pas la correspondance pour le moment. Vous pouvez toujours parcourir les offres et demandes vous-même."
   },
   "preferences": {
     "subtitle": "Contrôlez la façon dont Smart Matching recherche et vous informe des connexions.",
@@ -145,5 +154,10 @@
   "source_event": "Événement",
   "reasons_more_many": "+{{count}} de plus",
   "reasons_more_one": "+{{count}} de plus",
-  "reasons_more_other": "+{{count}} de plus"
+  "reasons_more_other": "+{{count}} de plus",
+  "errors": {
+    "dismiss_failed": "Nous n’avons pas pu masquer cette correspondance. Veuillez réessayer.",
+    "save_failed": "Nous n’avons pas pu enregistrer cela pour le moment. Veuillez réessayer.",
+    "join_failed": "Nous n’avons pas pu vous ajouter à ce groupe. Veuillez réessayer."
+  }
 }

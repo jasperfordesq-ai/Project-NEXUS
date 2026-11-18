@@ -28,13 +28,12 @@
     "filter": {
       "all": "All",
       "listing": "Listings",
-      "job": "Jobs",
       "volunteering": "Volunteering",
-      "group": "Groups"
+      "group": "Groups",
+      "event": "Veranstaltungen"
     },
     "source": {
       "listing": "Listing",
-      "job": "Job",
       "volunteering": "Volunteering",
       "group": "Group",
       "event": "Veranstaltung"
@@ -55,7 +54,25 @@
       "pausedAction": "Matching-Einstellungen anpassen",
       "listingsTitle": "Veröffentlichen Sie etwas, um Vorschläge zu erhalten",
       "listingsBody": "Vorschläge entstehen aus dem, was Sie anbieten und was Sie brauchen. Veröffentlichen Sie Ihr erstes Angebot oder Ihre erste Anfrage, dann beginnen die Vorschläge.",
-      "listingsAction": "Angebot oder Anfrage veröffentlichen"
+      "listingsAction": "Angebot oder Anfrage veröffentlichen",
+      "safeguardingTitle": "Einige Vorschläge können noch nicht angezeigt werden",
+      "safeguardingBody": "Die Schutzkonzept-Einrichtung Ihrer Community ist noch nicht abgeschlossen. Vorschläge mit geschützten Mitgliedern werden zur Sicherheit aller ausgeblendet. Schauen Sie wieder vorbei, sobald Ihr Community-Team die Einrichtung abgeschlossen hat.",
+      "disabledTitle": "Vorschläge sind hier ausgeschaltet",
+      "disabledBody": "Ihre Community nutzt die Vorschläge im Moment nicht. Sie können Angebote und Anfragen weiterhin selbst durchsuchen."
+    },
+    "suggested": "Für Sie vorgeschlagen",
+    "openNamed": "{{title}} öffnen",
+    "dismissNamed": "{{title}} ausblenden",
+    "going": "Zusagen: {{count}}",
+    "notice": {
+      "pausedTitle": "Vorschläge sind pausiert",
+      "pausedBody": "Sie haben die Vorschläge pausiert, deshalb fehlen einige. In Ihren Matching-Einstellungen können Sie sie wieder einschalten.",
+      "pausedAction": "Matching-Einstellungen öffnen",
+      "locationTitle": "Geben Sie Ihre Region an, um mehr zu sehen",
+      "locationBody": "Wir können Ihnen keine Angebote und Anfragen in Ihrer Nähe vorschlagen, solange Ihr Profil nicht ungefähr angibt, wo Sie sind. Ihre genaue Adresse sieht niemand.",
+      "locationAction": "Region angeben",
+      "safeguardingTitle": "Einige Vorschläge sind ausgeblendet",
+      "safeguardingBody": "Die Schutzkonzept-Einrichtung Ihrer Community ist noch nicht abgeschlossen. Vorschläge mit geschützten Mitgliedern werden zur Sicherheit aller ausgeblendet."
     }
   },
   "reviews": {

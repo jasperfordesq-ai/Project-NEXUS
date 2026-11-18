@@ -50,11 +50,10 @@ const CONFIG_RESPONSE = {
     quality_weight: 0.05,
     min_score_threshold: 40,
     max_distance_km: 50,
-    broker_approval_enabled: false,
     max_matches_per_user: 20,
     proximity_bands: [
-      { distance_km: 5, score: 1 },
-      { distance_km: 25, score: 0.75 },
+      { distance_km: 5 },
+      { distance_km: 25 },
     ],
   },
 };
@@ -69,18 +68,16 @@ const STATS_RESPONSE = {
       total_matches_today: 18,
       avg_match_score: 68,
       avg_distance_km: 5.5,
-      cache_hit_rate: 80,
       hot_matches_count: 20,
       mutual_matches_count: 45,
       active_users_matching: 90,
     },
-    score_distribution: { '0-40': 5, '40-60': 80, '60-80': 250, '80-100': 165 },
-    distance_distribution: { walking: 50, local: 100, city: 200, regional: 40, distant: 10 },
+    score_distribution: { '0-20': 5, '40-60': 80, '60-80': 250, '80-100': 165 },
+    distance_distribution: { '0-5': 50, '5-15': 100, '15-30': 200, '30-50': 40, '50+': 10 },
     pending_approvals: 3,
     approved_count: 400,
     rejected_count: 30,
     approval_rate: 88,
-    broker_approval_enabled: false,
   },
 };
 
@@ -99,13 +96,13 @@ describe('SmartMatchingOverview', () => {
     expect(spinners.length).toBeGreaterThan(0);
   });
 
-  it('renders algorithm weights after data loads', async () => {
+  it('renders the scoring weights after data loads', async () => {
     mockAdminMatching.getConfig.mockResolvedValue(CONFIG_RESPONSE);
     mockAdminMatching.getMatchingStats.mockResolvedValue(STATS_RESPONSE);
     render(<SmartMatchingOverview />);
 
     await waitFor(() => {
-      expect(screen.getByText(/algorithm weights/i)).toBeInTheDocument();
+      expect(screen.getByText(/scoring weights/i)).toBeInTheDocument();
     });
     // Config is enabled → at least one "Active" chip visible
     expect(screen.queryAllByText(/active/i).length).toBeGreaterThan(0);

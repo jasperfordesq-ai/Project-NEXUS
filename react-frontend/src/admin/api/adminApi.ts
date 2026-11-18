@@ -31,6 +31,8 @@ import type {
   MatchApproval,
   MatchApprovalDetail,
   MatchApprovalStats,
+  MatchingListingDiagnosis,
+  MatchingUserDiagnosis,
   SmartMatchingConfig,
   TimebankingStats,
   FraudAlert,
@@ -2495,10 +2497,12 @@ export const adminDeliverability = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const adminDiagnostics = {
+  // Real per-member / per-listing answers. Both used to call
+  // /v2/admin/matching/stats with an id that endpoint never read.
   diagnoseUser: (userId: number) =>
-    api.get<Record<string, unknown>>(`/v2/admin/matching/stats${buildQuery({ user_id: userId })}`),
+    api.get<MatchingUserDiagnosis>(`/v2/admin/matching/diagnose/user/${userId}`),
   diagnoseListing: (listingId: number) =>
-    api.get<Record<string, unknown>>(`/v2/admin/matching/stats${buildQuery({ listing_id: listingId })}`),
+    api.get<MatchingListingDiagnosis>(`/v2/admin/matching/diagnose/listing/${listingId}`),
   getMatchingStats: () => api.get<Record<string, unknown>>('/v2/admin/matching/stats'),
   getNexusScoreStats: () => api.get<GamificationStats>('/v2/admin/gamification/stats'),
 };

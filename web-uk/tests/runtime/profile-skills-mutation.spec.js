@@ -174,7 +174,8 @@ test('changes and restores match notification preferences through Web UK', async
   const auth = await login(smoke.email, smoke.password, smoke.tenant);
   const token = auth.access_token;
   const initial = matchPreferencesFrom(await callUserSettingsApi(token, 'GET', '/match-preferences'));
-  const frequencies = ['daily', 'weekly', 'monthly', 'fortnightly', 'never'];
+  // No 'weekly': the accessible form no longer offers it (Laravel stores it as monthly).
+  const frequencies = ['daily', 'fortnightly', 'monthly', 'never'];
   const changed = {
     notification_frequency: frequencies.find(value => value !== initial.notification_frequency),
     notify_hot_matches: !initial.notify_hot_matches,

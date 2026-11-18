@@ -13,7 +13,18 @@ const mockShowToast = jest.fn();
 jest.mock('heroui-native', () => {
   const actual = jest.requireActual('heroui-native');
   const { View } = require('react-native');
-  const Slider = ({ children }: { children: React.ReactNode }) => <View>{children}</View>;
+  // Carries the limits the screen gives each slider, so a test can read them.
+  const Slider = ({ children, accessibilityLabel, minValue, maxValue, value }: {
+    children: React.ReactNode;
+    accessibilityLabel?: string;
+    minValue?: number;
+    maxValue?: number;
+    value?: number;
+  }) => (
+    <View accessibilityLabel={accessibilityLabel} accessibilityValue={{ min: minValue, max: maxValue, now: value }}>
+      {children}
+    </View>
+  );
   Slider.Track = ({ children }: { children: React.ReactNode }) => <View>{children}</View>;
   Slider.Fill = () => <View />;
   Slider.Thumb = () => <View />;
@@ -22,6 +33,13 @@ jest.mock('heroui-native', () => {
 
 jest.mock('@/lib/hooks/useApi', () => ({
   useApi: (...args: unknown[]) => mockUseApi(...args),
+}));
+
+// Records whether the screen believes it holds unsaved changes — which is what decides
+// whether Back asks "Discard your changes?".
+const mockUnsavedGuard = jest.fn();
+jest.mock('@/lib/hooks/useUnsavedChangesGuard', () => ({
+  useUnsavedChangesGuard: (options: { isDirty: boolean }) => mockUnsavedGuard(options),
 }));
 
 jest.mock('@/lib/api/matches', () => ({
@@ -121,7 +139,14 @@ const preferences = {
   matching_paused: false,
   categories: [],
   availability: [],
+  max_distance_limit_km: 50,
 };
+
+/** Whether the screen last told the unsaved-changes guard that the form is dirty. */
+function lastDirty(): boolean {
+  const calls = mockUnsavedGuard.mock.calls;
+  return (calls[calls.length - 1][0] as { isDirty: boolean }).isDirty;
+}
 
 describe('MatchPreferencesScreen', () => {
   const refresh = jest.fn();
@@ -157,6 +182,57 @@ describe('MatchPreferencesScreen', () => {
       matching_paused: true,
     }));
     expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'success' }));
+  });
+
+  it('does not ask to discard changes after they have been saved', async () => {
+    // Regression: "dirty" was measured against the values the screen opened with, which a
+    // save never updated — so after a successful save, Back still asked "Discard your
+    // changes?" about changes that had just been kept.
+    const { getByLabelText, getByText } = render(<MatchPreferencesScreen />);
+    expect(lastDirty()).toBe(false);
+
+    fireEvent.press(getByLabelText('Pause matching'));
+    expect(lastDirty()).toBe(true);
+
+    fireEvent.press(getByText('Save preferences'));
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'success' })));
+
+    await waitFor(() => expect(lastDirty()).toBe(false));
+  });
+
+  it('is dirty again when the member changes something after saving', async () => {
+    const { getByLabelText, getByText } = render(<MatchPreferencesScreen />);
+
+    fireEvent.press(getByLabelText('Pause matching'));
+    fireEvent.press(getByText('Save preferences'));
+    await waitFor(() => expect(lastDirty()).toBe(false));
+
+    fireEvent.press(getByLabelText('Pause matching'));
+    expect(lastDirty()).toBe(true);
+  });
+
+  it("stops the distance slider at the community's own limit", () => {
+    // The server brings anything beyond the limit back to it, so a slider that ran to
+    // 100 km let a member "choose" a distance that was then quietly cut.
+    const { getByLabelText } = render(<MatchPreferencesScreen />);
+
+    expect(getByLabelText('Maximum distance').props.accessibilityValue).toMatchObject({ min: 1, max: 50, now: 25 });
+  });
+
+  it('offers the whole 0 to 100 range for minimum match quality, as the website does', () => {
+    const { getByLabelText } = render(<MatchPreferencesScreen />);
+
+    expect(getByLabelText('Minimum match quality').props.accessibilityValue).toMatchObject({ min: 0, max: 100, now: 50 });
+  });
+
+  it('shows the value the server kept after a save', async () => {
+    mockUpdatePreferences.mockResolvedValue({ ...preferences, max_distance_km: 40 });
+    const { getByText } = render(<MatchPreferencesScreen />);
+    expect(getByText('25 km')).toBeTruthy();
+
+    fireEvent.press(getByText('Save preferences'));
+
+    await waitFor(() => expect(getByText('40 km')).toBeTruthy());
   });
 
   it('does not expose a save button when stored preferences failed to load', () => {

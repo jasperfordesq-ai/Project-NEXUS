@@ -36,7 +36,8 @@ import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
-import type { MatchPreferences } from './types';
+import type { MatchPreferences, MatchPreferencesResponse } from './types';
+import { FALLBACK_MAX_DISTANCE_LIMIT_KM } from './types';
 
 import { LoadError } from '@/components/feedback/LoadError';
 interface Category {
@@ -55,6 +56,27 @@ const DEFAULT_PREFERENCES: MatchPreferences = {
   availability: [],
 };
 
+/**
+ * Split what the server answers into the editable preferences and the
+ * community's distance ceiling, which is read-only and never sent back.
+ */
+function readPreferences(data: Partial<MatchPreferencesResponse>): { preferences: MatchPreferences; distanceLimit: number } {
+  const { max_distance_limit_km: limit, ...saved } = data;
+  const distanceLimit = typeof limit === 'number' && Number.isFinite(limit) && limit >= 1
+    ? Math.round(limit)
+    : FALLBACK_MAX_DISTANCE_LIMIT_KM;
+  const preferences: MatchPreferences = { ...DEFAULT_PREFERENCES, ...saved };
+
+  return {
+    preferences: {
+      ...preferences,
+      // Never show a distance the community does not allow.
+      max_distance_km: Math.min(Math.max(1, preferences.max_distance_km), distanceLimit),
+    },
+    distanceLimit,
+  };
+}
+
 export function MatchPreferencesPage() {
   const { t } = useTranslation('matches');
   usePageTitle(t('preferences.page_title'));
@@ -63,6 +85,8 @@ export function MatchPreferencesPage() {
 
   const [preferences, setPreferences] = useState<MatchPreferences>(DEFAULT_PREFERENCES);
   const [initialPreferences, setInitialPreferences] = useState<MatchPreferences>(DEFAULT_PREFERENCES);
+  // The furthest the community lets a member search: the top of the slider.
+  const [distanceLimit, setDistanceLimit] = useState<number>(FALLBACK_MAX_DISTANCE_LIMIT_KM);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -80,7 +104,7 @@ export function MatchPreferencesPage() {
     setError(null);
     try {
       const [prefsRes, categoriesRes] = await Promise.all([
-        api.get<Partial<MatchPreferences>>('/v2/users/me/match-preferences'),
+        api.get<Partial<MatchPreferencesResponse>>('/v2/users/me/match-preferences'),
         api.get<Category[]>('/v2/categories').catch(() => null),
       ]);
 
@@ -88,9 +112,10 @@ export function MatchPreferencesPage() {
       // saved preferences fail to load, the form must NOT stay editable with
       // defaults — saving would silently overwrite the user's real preferences.
       if (prefsRes.success && prefsRes.data) {
-        const merged: MatchPreferences = { ...DEFAULT_PREFERENCES, ...prefsRes.data };
-        setPreferences(merged);
-        setInitialPreferences(merged);
+        const loaded = readPreferences(prefsRes.data);
+        setPreferences(loaded.preferences);
+        setInitialPreferences(loaded.preferences);
+        setDistanceLimit(loaded.distanceLimit);
       } else {
         setError(t('preferences.load_failed'));
       }
@@ -113,9 +138,14 @@ export function MatchPreferencesPage() {
     if (error) return;
     setIsSaving(true);
     try {
-      const res = await api.put('/v2/users/me/match-preferences', preferences);
+      const res = await api.put<Partial<MatchPreferencesResponse>>('/v2/users/me/match-preferences', preferences);
       if (res.success) {
-        setInitialPreferences(preferences);
+        // Show what the server actually kept, not what was typed: it may have
+        // adjusted a value (a distance beyond the community's limit, say).
+        const saved = readPreferences({ ...preferences, ...(res.data ?? {}) });
+        setPreferences(saved.preferences);
+        setInitialPreferences(saved.preferences);
+        if (typeof res.data?.max_distance_limit_km === 'number') setDistanceLimit(saved.distanceLimit);
         toast.success(t('preferences.save_success'));
       } else {
         toast.error(res.error || t('preferences.save_failed'));
@@ -230,7 +260,7 @@ export function MatchPreferencesPage() {
           <Slider
             label={t('preferences.thresholds.distance_label')}
             minValue={1}
-            maxValue={100}
+            maxValue={distanceLimit}
             step={1}
             value={preferences.max_distance_km}
             onChange={(value) => setPreferences((prev) => ({ ...prev, max_distance_km: Array.isArray(value) ? value[0] ?? prev.max_distance_km : value }))}
@@ -242,8 +272,8 @@ export function MatchPreferencesPage() {
         <div>
           <Slider
             label={t('preferences.thresholds.quality_label')}
-            minValue={30}
-            maxValue={90}
+            minValue={0}
+            maxValue={100}
             step={5}
             value={preferences.min_match_score}
             onChange={(value) => setPreferences((prev) => ({ ...prev, min_match_score: Array.isArray(value) ? value[0] ?? prev.min_match_score : value }))}

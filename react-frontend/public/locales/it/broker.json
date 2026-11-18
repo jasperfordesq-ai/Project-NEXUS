@@ -1535,7 +1535,7 @@
     "reject_failed": "Impossibile rifiutare l'abbinamento",
     "load_failed": "Impossibile caricare l'approvazione dell'abbinamento",
     "reject_reason_label": "Motivo del rifiuto",
-    "reject_reason_placeholder": "Spiega perché questo abbinamento viene rifiutato — il membro lo vedrà.",
+    "reject_reason_placeholder": "Spiega perché questo abbinamento viene rifiutato. Nessuno dei due membri viene informato; il motivo resta a disposizione dei coordinatori.",
     "reject_reason_required": "Fornisci un motivo per il rifiuto",
     "rejecting_between": "Rifiuto dell'abbinamento tra {{user1}} e {{user2}}.",
     "cancel": "Annulla",
@@ -1572,7 +1572,8 @@
     "retry": "Riprova",
     "detail_description": "Verifica perché queste due persone sono state abbinate, poi approva o rifiuta prima che il membro venga avvisato.",
     "listing_type_offer": "Offerta",
-    "listing_type_request": "Richiesta"
+    "listing_type_request": "Richiesta",
+    "type_potential": "Forse reciproco"
   },
   "status": {
     "active": "Attivo",

@@ -28,7 +28,7 @@ import { adminMatching } from '../../api/adminApi';
 import { StatCard } from '../../components/StatCard';
 import { PageHeader } from '../../components/PageHeader';
 import { ConfirmModal } from '../../components/ConfirmModal';
-import type { SmartMatchingConfig, MatchingStatsResponse } from '../../api/types';
+import type { SmartMatchingConfig, MatchingStatsResponse, MatchingPillarWeights } from '../../api/types';
 import { useTranslation } from 'react-i18next';
 import { logError } from '@/lib/logger';
 import { formatPercentValue } from '@/lib/helpers';
@@ -54,6 +54,17 @@ const WEIGHT_META: Array<{
   { key: 'freshness_weight',   label: 'matching.weight_freshness',   color: 'default' },
   { key: 'reciprocity_weight', label: 'matching.weight_reciprocity', color: 'default' },
   { key: 'quality_weight',     label: 'matching.weight_quality',     color: 'danger' },
+];
+
+/** The three weights of the current scoring method. */
+const PILLAR_META: Array<{
+  key: keyof MatchingPillarWeights;
+  label: string;
+  color: 'default' | 'success' | 'warning';
+}> = [
+  { key: 'relevance',   label: 'matching.pillar_relevance',   color: 'default' },
+  { key: 'feasibility', label: 'matching.pillar_feasibility', color: 'warning' },
+  { key: 'trust',       label: 'matching.pillar_trust',       color: 'success' },
 ];
 
 export function SmartMatchingOverview() {
@@ -172,7 +183,7 @@ export function SmartMatchingOverview() {
       {/* Stats Row */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
         <StatCard
-          label={t('matching.label_active_matches')}
+          label={t('matching.label_members_with_matches')}
           value={overview?.active_users_matching ?? '---'}
           icon={Target}
           color="default"
@@ -194,11 +205,13 @@ export function SmartMatchingOverview() {
           color="success"
           loading={initialLoading}
         />
+        {/* Matches waiting for a coordinator. (This tile used to read "Broker
+            approval: Enabled", a setting nothing ever acted on.) */}
         <StatCard
-          label={t('matching.label_broker_approval')}
-          value={stats ? (stats.broker_approval_enabled ? t('matching.enabled') : t('matching.disabled')) : '---'}
+          label={t('matching.label_pending_approvals')}
+          value={stats ? stats.pending_approvals : '---'}
           icon={ShieldCheck}
-          color={stats?.broker_approval_enabled ? 'success' : 'warning'}
+          color={stats && stats.pending_approvals > 0 ? 'warning' : 'success'}
           loading={initialLoading}
         />
       </div>
@@ -210,7 +223,7 @@ export function SmartMatchingOverview() {
           <CardHeader className="flex items-center justify-between px-4 pt-4 pb-0">
             <div className="flex items-center gap-2">
               <Zap aria-hidden="true" size={18} className="text-accent" />
-              <h3 className="font-semibold">{t('matching.algorithm_weights')}</h3>
+              <h3 className="font-semibold">{t('matching.scoring_weights')}</h3>
             </div>
             {config && (
               <Chip
@@ -226,6 +239,33 @@ export function SmartMatchingOverview() {
             {loading && config === null ? (
               <div role="status" aria-busy="true" aria-label={t('common.loading')} className="flex h-48 items-center justify-center">
                 <Spinner />
+              </div>
+            ) : config && config.engine_version !== 1 ? (
+              // Current scoring method: three weights, balanced against each
+              // other by the scorer, so there is no "total" to show.
+              <div className="space-y-4">
+                {PILLAR_META.map(({ key, label: labelKey, color }) => {
+                  const value = config.pillars?.[key];
+                  if (value === undefined) return null;
+                  const pct = Math.round(value * 100);
+                  const labelText = t(labelKey);
+                  return (
+                    <div key={key}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm text-foreground/80">{labelText}</span>
+                        <span className="text-sm font-medium text-foreground">
+                          {formatPercentValue(pct)}
+                        </span>
+                      </div>
+                      <Progress
+                        value={pct}
+                        color={color}
+                        size="sm"
+                        aria-label={t('matching.weight_aria', { label: labelText, value: pct })}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             ) : config ? (
               <div className="space-y-4">
@@ -367,7 +407,7 @@ export function SmartMatchingOverview() {
                   <p className="text-2xl font-bold text-foreground">
                     {overview.active_users_matching}
                   </p>
-                  <p className="text-xs text-muted">{t('matching.active_users')}</p>
+                  <p className="text-xs text-muted">{t('matching.label_members_with_matches')}</p>
                 </div>
                 <div className="text-center p-3 rounded-lg bg-surface-secondary">
                   <p className="text-2xl font-bold text-foreground">

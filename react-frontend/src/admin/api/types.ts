@@ -500,9 +500,14 @@ export interface SmartMatchingConfig {
   freshness_weight: number;
   reciprocity_weight: number;
   quality_weight: number;
-  proximity_bands: Array<{ distance_km: number; score: number }>;
+  /**
+   * Five distances, nearest first. The score each band earns is fixed inside
+   * the scorer and is not part of the settings (the server stopped sending
+   * `score` in November 2026; it was never saved).
+   */
+  proximity_bands: Array<{ distance_km: number; score?: number }>;
+  /** Master switch: off = no matches, nothing cached, no match alerts. */
   enabled?: boolean;
-  broker_approval_enabled?: boolean;
   max_distance_km?: number;
   min_match_score?: number;
   hot_match_threshold?: number;
@@ -522,7 +527,6 @@ export interface MatchingOverviewStats {
   avg_match_score: number;
   avg_distance_km: number;
   cache_entries: number;
-  cache_hit_rate?: number;
   active_users_matching: number;
 }
 
@@ -545,11 +549,81 @@ export interface MatchingPillarAverages {
   };
 }
 
+/** One fact sheet from GET /v2/admin/matching/diagnose/user/{id}. */
+export interface MatchingUserDiagnosis {
+  member: {
+    id: number;
+    name: string;
+    status: string;
+    is_approved: boolean;
+    has_coordinates: boolean;
+    last_active_at: string | null;
+    days_since_active: number | null;
+    last_login_at: string | null;
+  };
+  listings: {
+    active_count: number;
+    awaiting_or_refused_review_count: number;
+    by_type: Record<string, number>;
+    by_category: Array<{ type: string; category_name: string | null; count: number }>;
+  };
+  preferences: {
+    has_saved_preferences: boolean;
+    matching_paused: boolean;
+    min_match_score: number | null;
+    max_distance_km: number | null;
+    notification_frequency: string | null;
+  };
+  cache: { cached_matches: number; best_score: number | null };
+  dismissals: { total: number; last_90_days: number };
+  held_for_approval_count: number;
+  community: MatchingDiagnosisSettings;
+  effective: { min_match_score: number; max_distance_km: number };
+  /** null = the server could not check. */
+  needs_coordinator_approval: boolean | null;
+  findings: string[];
+}
+
+/** One fact sheet from GET /v2/admin/matching/diagnose/listing/{id}. */
+export interface MatchingListingDiagnosis {
+  listing: {
+    id: number;
+    title: string;
+    status: string;
+    moderation_status: string | null;
+    type: string;
+    category_name: string | null;
+    service_type: string;
+    has_coordinates: boolean;
+    created_at: string | null;
+  };
+  owner: {
+    id: number;
+    name: string;
+    status: string;
+    has_coordinates: boolean;
+    last_active_at: string | null;
+    days_since_active: number | null;
+  };
+  cache: { members_cached: number; best_score: number | null };
+  dismissals: { total: number };
+  community: MatchingDiagnosisSettings;
+  findings: string[];
+}
+
+export interface MatchingDiagnosisSettings {
+  matching_enabled: boolean;
+  min_match_score: number;
+  max_distance_km: number;
+  geo_hard_gate: boolean;
+  missing_coords_mode: 'remote_only' | 'tenant_wide';
+  dormancy_days: number;
+}
+
 export interface MatchingStatsResponse {
   overview: MatchingOverviewStats;
   score_distribution: Record<string, number>;
   distance_distribution: Record<string, number>;
-  broker_approval_enabled: boolean;
   pending_approvals: number;
   approved_count: number;
   rejected_count: number;

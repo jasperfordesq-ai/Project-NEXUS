@@ -28,13 +28,12 @@
     "filter": {
       "all": "All",
       "listing": "Listings",
-      "job": "Jobs",
       "volunteering": "Volunteering",
-      "group": "Groups"
+      "group": "Groups",
+      "event": "Eventi"
     },
     "source": {
       "listing": "Listing",
-      "job": "Job",
       "volunteering": "Volunteering",
       "group": "Group",
       "event": "Evento"
@@ -55,7 +54,25 @@
       "pausedAction": "Modifica le preferenze di corrispondenza",
       "listingsTitle": "Pubblica qualcosa per iniziare",
       "listingsBody": "Le corrispondenze nascono da ciò che offri e da ciò che ti serve. Pubblica la tua prima offerta o richiesta e i suggerimenti inizieranno ad arrivare.",
-      "listingsAction": "Pubblica un’offerta o una richiesta"
+      "listingsAction": "Pubblica un’offerta o una richiesta",
+      "safeguardingTitle": "Alcune corrispondenze non possono ancora essere mostrate",
+      "safeguardingBody": "La configurazione della tutela della tua comunità non è completa: le corrispondenze che coinvolgono membri protetti sono nascoste per la sicurezza di tutti. Riprova quando il team della tua comunità l’avrà completata.",
+      "disabledTitle": "Le corrispondenze sono disattivate qui",
+      "disabledBody": "La tua comunità al momento non usa le corrispondenze. Puoi comunque sfogliare offerte e richieste per conto tuo."
+    },
+    "suggested": "Suggerito per te",
+    "openNamed": "Apri {{title}}",
+    "dismissNamed": "Ignora {{title}}",
+    "going": "Partecipanti: {{count}}",
+    "notice": {
+      "pausedTitle": "Le corrispondenze sono in pausa",
+      "pausedBody": "Hai messo in pausa le corrispondenze, quindi mancano alcuni suggerimenti. Puoi riattivarle nelle tue preferenze di corrispondenza.",
+      "pausedAction": "Apri le preferenze di corrispondenza",
+      "locationTitle": "Indica la tua zona per vedere di più",
+      "locationBody": "Non possiamo suggerirti offerte e richieste vicino a te finché il tuo profilo non indica, a grandi linee, dove sei. Nessuno vede il tuo indirizzo esatto.",
+      "locationAction": "Indica la mia zona",
+      "safeguardingTitle": "Alcune corrispondenze sono nascoste",
+      "safeguardingBody": "La configurazione della tutela della tua comunità non è completa: le corrispondenze che coinvolgono membri protetti sono nascoste per la sicurezza di tutti."
     }
   },
   "reviews": {

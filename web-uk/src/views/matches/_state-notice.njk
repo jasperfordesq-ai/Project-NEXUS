@@ -1,0 +1,37 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  Why the matches list or board has nothing (or less) to show, from Laravel's
+  `meta` on GET /api/v2/matches/all. Shared so both pages say the same thing.
+  `notice` is one of:
+    "disabled"    - the community has switched matching off (nothing the member can do)
+    "paused"      - the member paused matching; links to the setting that resumes it
+    "location"    - the member has no location, so distance cannot be used
+    "no-listings" - matching works from offers and requests and the member has none
+#}
+{% if notice == "disabled" %}
+  <div class="govuk-inset-text" id="matches-disabled-notice">
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_connections.matches_shared.disabled_title") }}</h2>
+    <p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha_connections.matches_shared.disabled_body") }}</p>
+  </div>
+{% elif notice == "paused" %}
+  <div class="govuk-inset-text" id="matches-paused-notice">
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_connections.matches_shared.paused_title") }}</h2>
+    <p class="govuk-body">{{ t("govuk_alpha_connections.matches_shared.paused_body") }}</p>
+    <p class="govuk-body govuk-!-margin-bottom-0"><a class="govuk-link" href="{{ urlFor('/profile/settings#match-preferences') }}">{{ t("govuk_alpha_connections.matches_shared.paused_link") }}</a></p>
+  </div>
+{% elif notice == "location" %}
+  <div class="govuk-inset-text" id="matches-location-notice">
+    <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("matches.no_location_title") }}</h2>
+    <p class="govuk-body govuk-!-margin-bottom-0">{{ t("matches.no_location_desc") }} <a class="govuk-link" href="{{ urlFor('/profile/settings#location') }}">{{ t("matches.set_location_cta") }}</a></p>
+  </div>
+{% elif notice == "no-listings" %}
+  <div class="govuk-inset-text" id="matches-no-listings-notice">
+    <h2 class="govuk-heading-m">{{ t("matches.no_listings_title") }}</h2>
+    <p class="govuk-body govuk-!-margin-bottom-0">{{ t("matches.no_listings_description") }}</p>
+  </div>
+  <a class="govuk-button" href="{{ urlFor('/listings/new') }}" role="button" draggable="false" data-module="govuk-button">{{ t("matches.add_listing") }}</a>
+{% endif %}

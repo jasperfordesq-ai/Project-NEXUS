@@ -3,7 +3,7 @@
   "breadcrumb_dashboard": "Übersicht",
   "breadcrumb_matches": "Übereinstimmungen",
   "heading": "Ihre Übereinstimmungen",
-  "subtitle": "Entdecken Sie Verbindungen über Anzeigen, Stellen, Freiwilligenarbeit und Gruppen",
+  "subtitle": "Angebote, Gesuche, Gruppen, Freiwilligenarbeit und Veranstaltungen, die zu Ihnen passen",
   "refresh": "Aktualisieren",
   "preferences_link": "Passen Sie Ihre Präferenzen an",
   "stats_total_matches": "Übereinstimmungen insgesamt",
@@ -52,7 +52,14 @@
     "remote": "Online",
     "message": "Nachricht senden",
     "join": "Beitreten",
-    "joined": "Beigetreten"
+    "joined": "Beigetreten",
+    "suggested": "Für Sie vorgeschlagen",
+    "join_requested": "Anfrage gesendet",
+    "join_requested_toast": "Wir haben Ihre Beitrittsanfrage gesendet. Die Gruppe meldet sich bei Ihnen.",
+    "saved_toast": "Für später gespeichert",
+    "unsaved_toast": "Aus Ihren gespeicherten Einträgen entfernt",
+    "already_saved": "Das haben Sie bereits gespeichert",
+    "attendees": "Zusagen: {{count}}"
   },
   "explanation": {
     "ai_caption": "KI-generierte Erklärung basierend auf Ihrem Profil und Ihrer Aktivität"
@@ -93,7 +100,9 @@
     "create_listing_cta": "Erstellen Sie einen Eintrag",
     "adjust_preferences_cta": "Matching-Einstellungen anpassen",
     "safeguarding_unavailable_title": "Einige Übereinstimmungen können noch nicht angezeigt werden",
-    "safeguarding_unavailable_description": "Die Schutzkonzept-Einrichtung Ihrer Community ist noch nicht abgeschlossen. Übereinstimmungen mit geschützten Mitgliedern werden zur Sicherheit aller ausgeblendet. Schauen Sie wieder vorbei, sobald Ihr Community-Team die Einrichtung abgeschlossen hat."
+    "safeguarding_unavailable_description": "Die Schutzkonzept-Einrichtung Ihrer Community ist noch nicht abgeschlossen. Übereinstimmungen mit geschützten Mitgliedern werden zur Sicherheit aller ausgeblendet. Schauen Sie wieder vorbei, sobald Ihr Community-Team die Einrichtung abgeschlossen hat.",
+    "disabled_title": "Der Abgleich ist hier ausgeschaltet",
+    "disabled_description": "Ihre Community nutzt den Abgleich im Moment nicht. Sie können Angebote und Gesuche weiterhin selbst durchsuchen."
   },
   "preferences": {
     "subtitle": "Steuern Sie, wie Smart Matching Verbindungen findet und Sie darüber benachrichtigt.",
@@ -144,5 +153,10 @@
   "filter_people_listings": "Angebote und Gesuche",
   "source_event": "Veranstaltung",
   "reasons_more_one": "+{{count}} mehr",
-  "reasons_more_other": "+{{count}} mehr"
+  "reasons_more_other": "+{{count}} mehr",
+  "errors": {
+    "dismiss_failed": "Wir konnten diese Übereinstimmung nicht ausblenden. Bitte versuchen Sie es noch einmal.",
+    "save_failed": "Wir konnten das gerade nicht speichern. Bitte versuchen Sie es noch einmal.",
+    "join_failed": "Wir konnten Sie nicht zu dieser Gruppe hinzufügen. Bitte versuchen Sie es noch einmal."
+  }
 }

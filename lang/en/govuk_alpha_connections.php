@@ -116,4 +116,31 @@ return [
         'network' => 'View your full network',
         'matches_board' => 'Open the matches board',
     ],
+    // Shared by the matches list and the matches board (web-uk): why there is
+    // nothing to show, a match opened from a notification, and cold-start suggestions.
+    'matches_shared' => [
+        'paused_title' => 'Matching is paused',
+        'paused_body' => 'You have paused matching, so we are not suggesting new matches for you at the moment.',
+        'paused_link' => 'Go to your matching settings to start matching again',
+        'disabled_title' => 'Matching is not in use here',
+        'disabled_body' => 'This community is not using matching at the moment.',
+        'from_notification' => 'From your notification',
+        'suggestion_tag' => 'Suggested for you',
+    ],
+    // The matching part of the accessible settings page (web-uk):
+    // GET/PUT /api/v2/users/me/match-preferences.
+    'match_settings' => [
+        'heading' => 'Matching settings',
+        'description' => 'Choose which matches we suggest to you and how often we tell you about them.',
+        'pause_label' => 'Pause matching',
+        'pause_hint' => 'While matching is paused we will not suggest matches or send you match notifications. Your other settings are kept.',
+        'distance_label' => 'How far away matches can be',
+        'distance_hint' => 'Enter a whole number of kilometres, from 1 to :max.',
+        'distance_error' => 'Enter a whole number of kilometres from 1 to :max',
+        'min_score_label' => 'Lowest match score to show, as a percentage',
+        'min_score_hint' => 'Enter a whole number from 0 to 100. A higher number shows fewer matches, but ones that fit you better. Enter 0 to see every match.',
+        'min_score_error' => 'Enter a whole number from 0 to 100',
+        'invalid' => 'Check your matching settings and try again',
+        'save' => 'Save matching settings',
+    ],
 ];

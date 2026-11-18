@@ -2715,7 +2715,10 @@ describe('shared accessible frontend shell', () => {
     expect(signed.text).toContain('id="notif_email_messages" name="email_messages"');
     expect(signed.text).toContain('id="digest_frequency" name="digest_frequency" aria-describedby="digest-frequency-hint"');
     expect(signed.text).toContain('Match notifications');
-    expect(signed.text).toContain('Every week');
+    // The stored legacy 'weekly' is shown as monthly (what Laravel sends for it),
+    // and "Every week" is no longer offered.
+    expect(signed.text).toContain('<option value="monthly" selected>Every month</option>');
+    expect(signed.text).not.toContain('Every week');
     expect(signed.text).toContain('Personalisation and translation');
     expect(signed.text).toContain('Safeguarding');
     expect(signed.text).toContain('Broker approval');
@@ -2768,7 +2771,7 @@ describe('shared accessible frontend shell', () => {
     expect(arabic.text).toContain(translate('ar', 'profile_settings.privacy_options.members'));
     expect(arabic.text).toContain(translate('ar', 'profile_settings.languages.ar'));
     expect(arabic.text).toContain(translate('ar', 'profile_settings.notifications.digest_options.daily'));
-    expect(arabic.text).toContain(translate('ar', 'profile_settings.match.frequency.weekly'));
+    expect(arabic.text).toContain(translate('ar', 'profile_settings.match.frequency.monthly'));
     expect(arabic.text).not.toContain('Profile photo');
     expect(arabic.text).not.toContain('Save notification preferences');
     expect(arabic.text).not.toContain('Tell me about high priority matches');

@@ -1515,7 +1515,7 @@
     "reject_failed": "マッチの却下に失敗しました",
     "load_failed": "マッチ承認の読み込みに失敗しました",
     "reject_reason_label": "却下理由",
-    "reject_reason_placeholder": "このマッチを却下する理由を説明してください — この内容はメンバーに表示されます。",
+    "reject_reason_placeholder": "このマッチを却下する理由を説明してください。どちらのメンバーにも通知されず、理由はコーディネーター用に記録されます。",
     "reject_reason_required": "却下の理由を入力してください",
     "rejecting_between": "{{user1}}と{{user2}}の間のマッチを却下します。",
     "cancel": "キャンセル",
@@ -1552,7 +1552,8 @@
     "retry": "もう一度試す",
     "detail_description": "この2人がマッチした理由を確認し、メンバーに通知される前に承認または却下してください。",
     "listing_type_offer": "提供",
-    "listing_type_request": "依頼"
+    "listing_type_request": "依頼",
+    "type_potential": "相互の可能性あり"
   },
   "status": {
     "active": "有効",

@@ -92,14 +92,13 @@ const makeConfig = (overrides = {}) => ({
   reciprocity_weight: 0.15,
   quality_weight: 0.05,
   proximity_bands: [
-    { distance_km: 5, score: 1.0 },
-    { distance_km: 15, score: 0.9 },
-    { distance_km: 30, score: 0.7 },
-    { distance_km: 50, score: 0.5 },
-    { distance_km: 100, score: 0.2 },
+    { distance_km: 5 },
+    { distance_km: 15 },
+    { distance_km: 30 },
+    { distance_km: 50 },
+    { distance_km: 100 },
   ],
   enabled: true,
-  broker_approval_enabled: true,
   max_distance_km: 50,
   min_match_score: 40,
   hot_match_threshold: 80,
@@ -368,5 +367,216 @@ describe('MatchingConfig', () => {
     await waitFor(() => {
       expect(mockToast.error).toHaveBeenCalled();
     });
+  });
+
+  // ── What the page offers, and what it refuses to send (audit of Nov 2026) ──
+
+  const DEFAULT_GATES = {
+    geo_hard_gate: true,
+    missing_coords_mode: 'remote_only',
+    dormancy_days: 90,
+    owner_dismissal_threshold: 3,
+  };
+  const DEFAULT_PILLARS = { relevance: 0.45, feasibility: 0.35, trust: 0.2 };
+
+  /** The whole payload the server sends, on the current scoring method. */
+  const liveConfig = (overrides = {}) =>
+    makeConfig({
+      engine_version: 2,
+      pillars: DEFAULT_PILLARS,
+      gates: DEFAULT_GATES,
+      ai: { semantic_signal: true, llm_explanations: true, explanation_top_n: 5, available: true },
+      ...overrides,
+    });
+
+  async function renderLoaded(config: Record<string, unknown> = liveConfig()) {
+    mockAdminMatching.getConfig.mockResolvedValue({ success: true, data: config });
+    const { MatchingConfig } = await import('./MatchingConfig');
+    render(<MatchingConfig />);
+    await screen.findByText('Scoring weights');
+  }
+
+  const saveButton = () =>
+    screen.getAllByRole('button').find((b) => b.textContent?.toLowerCase().includes('save changes')) as HTMLElement;
+
+  const typeInto = (label: string | RegExp, value: string) =>
+    fireEvent.change(screen.getByLabelText(label), { target: { value } });
+
+  const sentPayload = () => mockAdminMatching.updateConfig.mock.calls[0]?.[0] as Record<string, unknown>;
+
+  it('offers one master switch that says what it does, and no broker-approval switch', async () => {
+    await renderLoaded();
+
+    expect(
+      screen.getByText('When this is off, members get no matches, nothing new is stored and no match alerts are sent.')
+    ).toBeInTheDocument();
+    expect(screen.getAllByLabelText('Toggle Smart Matching').length).toBeGreaterThan(0);
+    expect(screen.queryByText(/broker approval/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/broker approval/i)).not.toBeInTheDocument();
+  });
+
+  it('shows the three scoring weights on the current method, not the six older ones', async () => {
+    await renderLoaded();
+
+    for (const label of ['Relevance', 'Feasibility', 'Trust']) {
+      expect(screen.getAllByText(label).length).toBeGreaterThan(0);
+    }
+    expect(screen.queryByText('Category Weight')).not.toBeInTheDocument();
+    expect(screen.queryByText('Reciprocity Weight')).not.toBeInTheDocument();
+  });
+
+  it('shows the six older weights only for a community on the older scoring method', async () => {
+    await renderLoaded(liveConfig({ engine_version: 1 }));
+
+    expect(screen.getAllByText('Category Weight').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Reciprocity Weight').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Feasibility')).not.toBeInTheDocument();
+  });
+
+  it('lets a band have a distance but no editable score', async () => {
+    await renderLoaded();
+
+    expect(screen.getAllByLabelText(/ distance$/)).toHaveLength(5);
+    expect(screen.queryByLabelText(/ score$/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'Score' })).not.toBeInTheDocument();
+  });
+
+  it('marks a maximum distance of -5 and does not send it', async () => {
+    await renderLoaded();
+
+    typeInto('Max Distance', '-5');
+
+    expect(await screen.findByText('Enter a distance from 1 to 20,000 km.')).toBeInTheDocument();
+    fireEvent.click(saveButton());
+    await waitFor(() =>
+      expect(mockToast.error).toHaveBeenCalledWith('Please correct the fields marked in red, then save again.')
+    );
+    expect(mockAdminMatching.updateConfig).not.toHaveBeenCalled();
+  });
+
+  it('treats a cleared field as an error, never as a silent default', async () => {
+    await renderLoaded();
+
+    typeInto('Min Match Score', '');
+
+    expect(await screen.findByText('Enter a number from 0 to 100.')).toBeInTheDocument();
+    fireEvent.click(saveButton());
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalled());
+    expect(mockAdminMatching.updateConfig).not.toHaveBeenCalled();
+  });
+
+  it('refuses a hot-match score below the minimum score', async () => {
+    await renderLoaded();
+
+    typeInto('Min Match Score', '70');
+    typeInto('Hot Match Threshold', '60');
+
+    expect(await screen.findByText('This cannot be lower than the minimum match score.')).toBeInTheDocument();
+    fireEvent.click(saveButton());
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalled());
+    expect(mockAdminMatching.updateConfig).not.toHaveBeenCalled();
+  });
+
+  it('refuses distance bands that are not each further than the one before', async () => {
+    await renderLoaded();
+
+    typeInto('Local distance', '3'); // walking is 5
+
+    expect(
+      await screen.findByText('Enter a distance above 0 km that is further than the band before it.')
+    ).toBeInTheDocument();
+    fireEvent.click(saveButton());
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalled());
+    expect(mockAdminMatching.updateConfig).not.toHaveBeenCalled();
+  });
+
+  it('sends only what the page shows: limits, bands as distances, gates and the three weights', async () => {
+    await renderLoaded();
+
+    typeInto('Max Distance', '75');
+    fireEvent.click(saveButton());
+
+    await waitFor(() => expect(mockAdminMatching.updateConfig).toHaveBeenCalledTimes(1));
+    const payload = sentPayload();
+    expect(payload).toMatchObject({
+      enabled: true,
+      max_distance_km: 75,
+      min_match_score: 40,
+      hot_match_threshold: 80,
+      pillars: DEFAULT_PILLARS,
+      gates: DEFAULT_GATES,
+      proximity_bands: [
+        { distance_km: 5 }, { distance_km: 15 }, { distance_km: 30 }, { distance_km: 50 }, { distance_km: 100 },
+      ],
+    });
+    expect(payload).not.toHaveProperty('broker_approval_enabled');
+    // The older method's weights are not on screen, so they are not sent.
+    expect(payload).not.toHaveProperty('category_weight');
+    for (const band of payload.proximity_bands as Array<Record<string, unknown>>) {
+      expect(Object.keys(band)).toEqual(['distance_km']);
+    }
+  });
+
+  it('resets gates, AI and weights too, and keeps every card on the page', async () => {
+    await renderLoaded(
+      liveConfig({
+        enabled: false,
+        max_distance_km: 9,
+        pillars: { relevance: 1, feasibility: 0, trust: 0 },
+        gates: { geo_hard_gate: false, missing_coords_mode: 'tenant_wide', dormancy_days: 10, owner_dismissal_threshold: 8 },
+        ai: { semantic_signal: false, llm_explanations: false, explanation_top_n: 2, available: true },
+      })
+    );
+
+    const resetBtn = screen.getAllByRole('button').find((b) => b.textContent?.toLowerCase().includes('reset'));
+    fireEvent.click(resetBtn!);
+    await waitFor(() => screen.getByRole('dialog'));
+    fireEvent.click(screen.getByRole('button', { name: /confirm/i }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+    // The Gates card used to vanish here until the page was reloaded.
+    expect(screen.getByText('Gates & Intelligence')).toBeInTheDocument();
+    expect(screen.getByText('Proximity Bands')).toBeInTheDocument();
+    expect(screen.getByText('Scoring weights')).toBeInTheDocument();
+
+    fireEvent.click(saveButton());
+    await waitFor(() => expect(mockAdminMatching.updateConfig).toHaveBeenCalledTimes(1));
+    expect(sentPayload()).toMatchObject({
+      enabled: true,
+      max_distance_km: 50,
+      min_match_score: 40,
+      hot_match_threshold: 80,
+      pillars: DEFAULT_PILLARS,
+      gates: DEFAULT_GATES,
+      // Whether AI is available is a fact about the community, not a setting.
+      ai: { semantic_signal: true, llm_explanations: true, explanation_top_n: 5, available: true },
+    });
+  });
+
+  it('says which limit the server refused, in the page\'s own words', async () => {
+    mockAdminMatching.updateConfig.mockResolvedValue({
+      success: false,
+      code: 'VALIDATION_ERROR',
+      error: 'raw server text',
+      errors: [{ code: 'VALIDATION_ERROR', message: 'raw server text', field: 'max_distance_km' }],
+    });
+    await renderLoaded();
+
+    typeInto('Max Distance', '60');
+    fireEvent.click(saveButton());
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Enter a distance from 1 to 20,000 km.'));
+    expect(mockToast.error).not.toHaveBeenCalledWith('raw server text');
+    expect(mockToast.success).not.toHaveBeenCalled();
+  });
+
+  it('says the save failed when the server refuses without naming a field', async () => {
+    mockAdminMatching.updateConfig.mockResolvedValue({ success: false, code: 'SERVER_ERROR', error: 'raw server text' });
+    await renderLoaded();
+
+    typeInto('Max Distance', '60');
+    fireEvent.click(saveButton());
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Failed to save configuration'));
   });
 });

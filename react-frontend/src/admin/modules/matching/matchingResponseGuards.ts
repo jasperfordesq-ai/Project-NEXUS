@@ -169,13 +169,11 @@ export function parseMatchingStatsResponse(
   const mutualMatchesCount = readFiniteNumber(overviewRecord, [
     "mutual_matches_count",
   ]);
-  const cacheHitRate = readFiniteNumber(overviewRecord, ["cache_hit_rate"]);
 
   const optionalOverview = [
     totalMatchesToday,
     totalMatchesWeek,
     mutualMatchesCount,
-    cacheHitRate,
   ];
 
   if (
@@ -188,7 +186,8 @@ export function parseMatchingStatsResponse(
   )
     return null;
   if (optionalOverview.some((metric) => metric === null)) return null;
-  if (typeof stats.broker_approval_enabled !== "boolean") return null;
+  // `broker_approval_enabled` is no longer part of the contract: the server
+  // stopped sending it (it described a switch that never did anything).
   const pendingApprovals = stats.pending_approvals;
   const approvedCount = stats.approved_count;
   const rejectedCount = stats.rejected_count;
@@ -222,14 +221,11 @@ export function parseMatchingStatsResponse(
     normalizedOverview.total_matches_week = totalMatchesWeek;
   if (isFiniteNumber(mutualMatchesCount))
     normalizedOverview.mutual_matches_count = mutualMatchesCount;
-  if (isFiniteNumber(cacheHitRate))
-    normalizedOverview.cache_hit_rate = cacheHitRate;
 
   return {
     overview: normalizedOverview,
     score_distribution: scoreDistribution,
     distance_distribution: distanceDistribution,
-    broker_approval_enabled: stats.broker_approval_enabled,
     pending_approvals: pendingApprovals,
     approved_count: approvedCount,
     rejected_count: rejectedCount,
@@ -270,8 +266,9 @@ export function isSmartMatchingConfig(
       (band) =>
         typeof band === "object" &&
         band !== null &&
-        isFiniteNumber((band as Record<string, unknown>).distance_km) &&
-        isFiniteNumber((band as Record<string, unknown>).score),
+        // Distances only: the band score is fixed in the scorer and the
+        // server no longer sends one.
+        isFiniteNumber((band as Record<string, unknown>).distance_km),
     )
   );
 }

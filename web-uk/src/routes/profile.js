@@ -42,7 +42,15 @@ const PROFILE_LOCALES = SUPPORTED_LOCALES;
 const PROFILE_DIGEST_FREQUENCIES = ['off', 'instant', 'daily', 'monthly'];
 const PROFILE_PRIVACY_OPTIONS = ['public', 'members', 'connections'];
 const PROFILE_TYPES = ['individual', 'organisation'];
-const PROFILE_MATCH_FREQUENCIES = ['daily', 'weekly', 'monthly', 'fortnightly', 'never'];
+// 🔴 No 'weekly': Laravel silently stores a weekly match digest as monthly
+// (MatchPreferencesController), so offering it promised a rhythm nobody got.
+// A stored legacy 'weekly' is shown as what it really is: monthly.
+const PROFILE_MATCH_FREQUENCIES = ['daily', 'fortnightly', 'monthly', 'never'];
+// Used only if Laravel's answer names no limit (`max_distance_limit_km`), which
+// it always does today. Laravel still clamps to the community's real ceiling.
+const MATCH_DISTANCE_FALLBACK_LIMIT_KM = 100;
+const MATCH_SETTINGS_REPLAY_BUCKET = 'matchSettings';
+const MATCH_SETTINGS_REPLAY_KEY = 'settings';
 // The API's own list (SkillTaxonomyService::addUserSkill); anything else is stored as
 // 'intermediate', which is also React's default in SkillSelector.
 const SKILL_PROFICIENCY_LEVELS = ['beginner', 'intermediate', 'advanced', 'expert'];
@@ -96,7 +104,6 @@ const PROFILE_DIGEST_LABELS = {
 };
 const PROFILE_MATCH_FREQUENCY_LABELS = {
   daily: 'Every day',
-  weekly: 'Every week',
   fortnightly: 'Every fortnight',
   monthly: 'Every month',
   never: 'Never'
@@ -220,6 +227,13 @@ const PROFILE_STATUS_MESSAGES = {
     message: 'Your match notification preferences could not be saved.',
     anchor: 'match-preferences'
   },
+  // The distance or the lowest score was not a number in range. The error summary
+  // names each box; this line is what shows if that detail is no longer available.
+  'match-prefs-invalid': {
+    type: 'error',
+    message: 'Check your matching settings and try again',
+    anchor: 'match-preferences'
+  },
   'skill-added': { type: 'success', message: 'Your skill has been added.' },
   'skill-removed': { type: 'success', message: 'Your skill has been removed.' },
   'skill-name-required': { type: 'error', message: 'Enter a skill name.', anchor: 'skills' },
@@ -318,6 +332,7 @@ const PROFILE_STATUS_MESSAGE_KEYS = Object.freeze({
   'personalisation-failed': 'profile_settings.personalisation.failed',
   'match-prefs-saved': 'profile_settings.match.saved',
   'match-prefs-failed': 'profile_settings.match.failed',
+  'match-prefs-invalid': 'govuk_alpha_connections.match_settings.invalid',
   'skill-added': 'profile_settings.skills.added',
   'skill-removed': 'profile_settings.skills.removed',
   'skill-name-required': 'profile_settings.skills.name_required',
@@ -773,7 +788,7 @@ async function atomicNotificationSettingsPayload(token, body, tenant = {}) {
 
   return {
     notifications,
-    match_preferences: storedMatch,
+    match_preferences: matchEmailPrefs(storedMatch),
     digest_frequency: digestFrequency
   };
 }
@@ -915,12 +930,106 @@ function normalizeNotificationPrefs(payload) {
   };
 }
 
+// A whole number as the API sends it (a number, or digits in a string), else null.
+function storedWholeNumber(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const number = Number(value);
+  return Number.isInteger(number) && number >= 0 ? number : null;
+}
+
+// A whole number as a member types it into a text box: digits only, so "12.5",
+// "1e3", "-4" and "12km" are refused rather than quietly reinterpreted.
+function typedWholeNumber(value) {
+  const text = trimmed(value);
+  return /^\d{1,6}$/.test(text) ? Number(text) : null;
+}
+
 function normalizeMatchPrefs(payload) {
   const source = payload && typeof payload === 'object' ? payload : {};
   return {
+    // 'weekly' is no longer offered, so a stored legacy value falls back to monthly,
+    // which is what Laravel has been sending for it all along.
     notification_frequency: allowedValue(source.notification_frequency, PROFILE_MATCH_FREQUENCIES, 'monthly'),
     notify_hot_matches: boolValue(source.notify_hot_matches, true),
-    notify_mutual_matches: boolValue(source.notify_mutual_matches, true)
+    notify_mutual_matches: boolValue(source.notify_mutual_matches, true),
+    matching_paused: boolValue(source.matching_paused, false),
+    max_distance_km: storedWholeNumber(source.max_distance_km),
+    min_match_score: storedWholeNumber(source.min_match_score),
+    // Read-only: the furthest distance this community allows a member to choose.
+    max_distance_limit_km: storedWholeNumber(source.max_distance_limit_km) || MATCH_DISTANCE_FALLBACK_LIMIT_KM
+  };
+}
+
+// The three match-email choices PUT /users/me/notification-settings accepts. The
+// other matching settings belong to the match-preferences form alone.
+function matchEmailPrefs(prefs) {
+  return {
+    notification_frequency: prefs.notification_frequency,
+    notify_hot_matches: prefs.notify_hot_matches,
+    notify_mutual_matches: prefs.notify_mutual_matches
+  };
+}
+
+function translateWithValues(req, key, replacements, fallbackMessage) {
+  const requestTranslator = typeof req?.t === 'function' ? req.t : fallbackTranslator;
+  const translated = requestTranslator(key, replacements);
+  if (typeof translated === 'string' && translated !== '' && translated !== key) return translated;
+  const english = fallbackTranslator(key, replacements);
+  return typeof english === 'string' && english !== '' && english !== key ? english : fallbackMessage;
+}
+
+// Checkbox with a hidden "0" before it: the last value wins, and no value at all
+// means the form did not offer the choice (so the stored one must be left alone).
+function lastSubmitted(value) {
+  return Array.isArray(value) ? value[value.length - 1] : value;
+}
+
+/**
+ * The matching part of the settings page: what is stored, or (once) what the
+ * member typed when the last save was refused, with an error for each box that
+ * needs fixing. Only echoed input is ever read back from the session.
+ */
+function matchSettingsForm(req, prefs, replay, status) {
+  const typed = replay && typeof replay.values === 'object' && replay.values ? replay.values : null;
+  const limit = prefs.max_distance_limit_km;
+  const errorFields = status === 'match-prefs-invalid' && replay && Array.isArray(replay.errorFields)
+    ? replay.errorFields
+    : [];
+  const errors = {
+    max_distance_km: errorFields.includes('max_distance_km')
+      ? translateWithValues(
+        req,
+        'govuk_alpha_connections.match_settings.distance_error',
+        { max: limit },
+        `Enter a whole number of kilometres from 1 to ${limit}`
+      )
+      : '',
+    min_match_score: errorFields.includes('min_match_score')
+      ? translateWithValues(
+        req,
+        'govuk_alpha_connections.match_settings.min_score_error',
+        {},
+        'Enter a whole number from 0 to 100'
+      )
+      : ''
+  };
+  const stored = (value) => (value === null || value === undefined ? '' : String(value));
+
+  return {
+    paused: typed ? checked(typed.matching_paused) : prefs.matching_paused,
+    notifyHot: typed ? checked(typed.notify_hot_matches) : prefs.notify_hot_matches,
+    notifyMutual: typed ? checked(typed.notify_mutual_matches) : prefs.notify_mutual_matches,
+    frequency: typed
+      ? allowedValue(typed.notification_frequency, PROFILE_MATCH_FREQUENCIES, prefs.notification_frequency)
+      : prefs.notification_frequency,
+    distance: typed && typeof typed.max_distance_km === 'string' ? typed.max_distance_km : stored(prefs.max_distance_km),
+    minScore: typed && typeof typed.min_match_score === 'string' ? typed.min_match_score : stored(prefs.min_match_score),
+    distanceLimit: limit,
+    errors,
+    errorList: [
+      errors.max_distance_km ? { anchor: 'max_distance_km', text: errors.max_distance_km } : null,
+      errors.min_match_score ? { anchor: 'min_match_score', text: errors.min_match_score } : null
+    ].filter(Boolean)
   };
 }
 
@@ -1213,6 +1322,14 @@ function buildProfileSettingsViewModel(req, data) {
   );
   const status = typeof req.query.status === 'string' ? req.query.status : '';
   const statusConfig = profileStatusConfig(req, status);
+  // Consumed once, like the profile form above: what the member typed into the
+  // matching settings when the last save was refused.
+  const matchForm = matchSettingsForm(
+    req,
+    data.matchPrefs,
+    consumeFormReplay(req, MATCH_SETTINGS_REPLAY_BUCKET, MATCH_SETTINGS_REPLAY_KEY),
+    status
+  );
   const vettingStatus = data.vettingStatus && typeof data.vettingStatus === 'object'
     ? data.vettingStatus
     : null;
@@ -1303,10 +1420,11 @@ function buildProfileSettingsViewModel(req, data) {
       PROFILE_MATCH_FREQUENCIES,
       (value) => `profile_settings.match.frequency.${value}`,
       PROFILE_MATCH_FREQUENCY_LABELS,
-      data.matchPrefs.notification_frequency
+      matchForm.frequency
     ),
     notificationPrefs: data.notificationPrefs,
     matchPrefs: data.matchPrefs,
+    matchForm,
     mySkills: data.skills,
     skillCategories: Array.isArray(data.skillCategories) ? data.skillCategories : [],
     skillProficiencyLevels: SKILL_PROFICIENCY_LEVELS,
@@ -2050,15 +2168,74 @@ router.post('/match-preferences', asyncRoute(async (req, res) => {
   if (!token) return redirectTo(res, loginRedirect());
 
   const notificationFrequency = allowedValue(req.body.notification_frequency, PROFILE_MATCH_FREQUENCIES, 'monthly');
+  const payload = {
+    notification_frequency: notificationFrequency,
+    notify_hot_matches: checked(req.body.notify_hot_matches),
+    notify_mutual_matches: checked(req.body.notify_mutual_matches)
+  };
+  // Laravel changes only the settings it is sent, so a setting the form did not
+  // offer is left out rather than reset.
+  const pausedChoice = lastSubmitted(req.body.matching_paused);
+  if (pausedChoice !== undefined) payload.matching_paused = checked(pausedChoice);
+
+  const errorFields = [];
+  if (req.body.max_distance_km !== undefined) {
+    // The furthest distance is the community's to set, so it is read fresh rather
+    // than trusted from the page. Laravel would otherwise clamp silently and the
+    // member would see a different number from the one they typed.
+    let distanceLimit = MATCH_DISTANCE_FALLBACK_LIMIT_KM;
+    try {
+      distanceLimit = normalizeMatchPrefs(
+        payloadFrom(await callUserSettings(token, 'GET', '/match-preferences'))
+      ).max_distance_limit_km;
+    } catch (error) {
+      if (redirectOnAuthError(error, res)) return undefined;
+    }
+    const distance = typedWholeNumber(lastSubmitted(req.body.max_distance_km));
+    if (distance === null || distance < 1 || distance > distanceLimit) {
+      errorFields.push('max_distance_km');
+    } else {
+      payload.max_distance_km = distance;
+    }
+  }
+  if (req.body.min_match_score !== undefined) {
+    const score = typedWholeNumber(lastSubmitted(req.body.min_match_score));
+    if (score === null || score > 100) {
+      errorFields.push('min_match_score');
+    } else {
+      payload.min_match_score = score;
+    }
+  }
+
+  // Keep what the member typed for the one re-render that follows a refusal.
+  const rememberTyped = (fields) => rememberFormReplay(req, MATCH_SETTINGS_REPLAY_BUCKET, MATCH_SETTINGS_REPLAY_KEY, {
+    values: {
+      notification_frequency: notificationFrequency,
+      notify_hot_matches: payload.notify_hot_matches,
+      notify_mutual_matches: payload.notify_mutual_matches,
+      matching_paused: checked(pausedChoice),
+      // Left out when the form did not send the box, so the stored value shows.
+      max_distance_km: req.body.max_distance_km === undefined
+        ? undefined
+        : trimmed(lastSubmitted(req.body.max_distance_km), 12),
+      min_match_score: req.body.min_match_score === undefined
+        ? undefined
+        : trimmed(lastSubmitted(req.body.min_match_score), 12)
+    },
+    errorFields: fields
+  });
+
+  if (errorFields.length > 0) {
+    rememberTyped(errorFields);
+    return redirectTo(res, profileSettingsRedirect('match-prefs-invalid', '#match-preferences'));
+  }
+
   let status = 'match-prefs-saved';
   try {
-    await callUserSettings(token, 'PUT', '/match-preferences', {
-      notification_frequency: notificationFrequency,
-      notify_hot_matches: checked(req.body.notify_hot_matches),
-      notify_mutual_matches: checked(req.body.notify_mutual_matches)
-    });
+    await callUserSettings(token, 'PUT', '/match-preferences', payload);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    rememberTyped([]);
     status = 'match-prefs-failed';
   }
 

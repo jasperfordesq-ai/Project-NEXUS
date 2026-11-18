@@ -1560,7 +1560,7 @@
     "reject_failed": "Nie udało się odrzucić dopasowania",
     "load_failed": "Nie udało się załadować zatwierdzenia dopasowania",
     "reject_reason_label": "Powód odrzucenia",
-    "reject_reason_placeholder": "Wyjaśnij, dlaczego to dopasowanie jest odrzucane — członek to zobaczy.",
+    "reject_reason_placeholder": "Wyjaśnij, dlaczego to dopasowanie jest odrzucane. Żaden z członków nie zostanie o tym poinformowany; powód jest zachowywany dla koordynatorów.",
     "reject_reason_required": "Podaj powód odrzucenia",
     "rejecting_between": "Odrzucanie dopasowania między {{user1}} a {{user2}}.",
     "cancel": "Anuluj",
@@ -1597,7 +1597,8 @@
     "retry": "Spróbuj ponownie",
     "detail_description": "Sprawdź, dlaczego te dwie osoby zostały dopasowane, a następnie zatwierdź lub odrzuć, zanim członek zostanie powiadomiony.",
     "listing_type_offer": "Oferta",
-    "listing_type_request": "Prośba"
+    "listing_type_request": "Prośba",
+    "type_potential": "Możliwe wzajemne"
   },
   "status": {
     "active": "Aktywny",

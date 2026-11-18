@@ -20,8 +20,19 @@
 
   <span class="govuk-caption-xl">{{ t("matches.caption", { community: tenantName }) }}</span>
   <h1 class="govuk-heading-xl">{{ t("matches.title") }}</h1>
+  {# The community has switched matching off: say so plainly and stop. There is
+     nothing to count, filter or add, and nothing the member can change. #}
+  {% if matchingDisabled and not errorMessage %}
+    {% set notice = "disabled" %}{% include "matches/_state-notice.njk" %}
+  {% else %}
   <p class="govuk-body-l">{{ t("matches.description") }}</p>
   <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/matches/board') }}">{{ t("govuk_alpha_connections.nav.matches_board") }}</a></p>
+
+  {# A notification brought the member here for one match: it is first in the
+     list below, and this link moves straight to it without any script. #}
+  {% if highlightedMatch and highlightedMatch.anchorId %}
+    <p class="govuk-body" id="matches-from-notification">{{ govukTag({ text: t("govuk_alpha_connections.matches_shared.from_notification"), classes: "govuk-tag--turquoise" }) }} <a class="govuk-link" href="#{{ highlightedMatch.anchorId }}">{{ highlightedMatch.title }}</a></p>
+  {% endif %}
 
   <dl class="govuk-summary-list govuk-!-margin-bottom-6">
     <div class="govuk-summary-list__row">
@@ -46,11 +57,11 @@
 
   <p class="govuk-body">{% if mutualOnly %}<a class="govuk-link" href="{{ urlFor('/matches?source=' + activeSource) }}">{{ t("polish_listings.matches_source_all") }}</a>{% else %}<a class="govuk-link" href="{{ urlFor('/matches?source=' + activeSource + '&mutual=1') }}">{{ t("matches.filter_mutual_only") }}</a>{% endif %}</p>
 
-  {% if noCoordinates and not errorMessage %}
-    <div class="govuk-inset-text">
-      <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("matches.no_location_title") }}</h2>
-      <p class="govuk-body">{{ t("matches.no_location_desc") }} <a class="govuk-link" href="{{ urlFor('/profile/settings#location') }}">{{ t("matches.set_location_cta") }}</a></p>
-    </div>
+  {# Paused by the member: the reason there is nothing new, and where to resume. #}
+  {% if matchingPaused and not errorMessage %}
+    {% set notice = "paused" %}{% include "matches/_state-notice.njk" %}
+  {% elif noCoordinates and not errorMessage %}
+    {% set notice = "location" %}{% include "matches/_state-notice.njk" %}
   {% endif %}
 
   {% if errorMessage %}
@@ -64,7 +75,8 @@
     {% if safeguardingDegraded %}{% set variant = "banner" %}{% include "matches/_safeguarding-notice.njk" %}{% endif %}
     <div class="nexus-alpha-card-list govuk-!-margin-top-4">
       {% for match in matches %}
-        <article class="nexus-alpha-card">
+        <article class="nexus-alpha-card"{% if match.anchorId %} id="{{ match.anchorId }}"{% endif %}{% if match.highlighted %} tabindex="-1"{% endif %}>
+          {% if match.highlighted %}<p class="govuk-body govuk-!-margin-bottom-2">{{ govukTag({ text: t("govuk_alpha_connections.matches_shared.from_notification"), classes: "govuk-tag--turquoise" }) }}</p>{% endif %}
           <div class="nexus-alpha-module-row">
             <h2 class="govuk-heading-m govuk-!-margin-bottom-1">
               {% if match.href %}
@@ -79,11 +91,13 @@
               <strong class="govuk-tag {% if match.type == 'request' %}govuk-tag--purple{% else %}govuk-tag--blue{% endif %}">{{ match.typeLabel }}</strong>
             {% endif %}
           </div>
-          <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ t("matches.by_label", { name: match.userName }) }}{% if match.category %} - {{ match.category }}{% endif %}</p>
+          {# Only a listing has a member behind it; the route builds the right line per kind. #}
+          {% if match.metaLine %}<p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ match.metaLine }}</p>{% endif %}
           {% if match.description %}
             <p class="govuk-body govuk-!-margin-bottom-2" dir="auto">{{ match.description }}</p>
           {% endif %}
-          <p class="govuk-body govuk-!-margin-bottom-2">{{ govukTag({ text: t("matches.match_label", { percent: match.pct }), classes: "govuk-tag--green" }) }}</p>
+          {# A cold-start match is a suggestion, not a scored match: no percentage. #}
+          <p class="govuk-body govuk-!-margin-bottom-2">{% if match.isSuggestion %}{{ govukTag({ text: t("govuk_alpha_connections.matches_shared.suggestion_tag"), classes: "govuk-tag--grey" }) }}{% else %}{{ govukTag({ text: t("matches.match_label", { percent: match.pct }), classes: "govuk-tag--green" }) }}{% endif %}</p>
           {% if match.reasons.length %}
             <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("matches.reasons_label") }}</h3>
             <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-2">
@@ -92,7 +106,8 @@
               {% endfor %}
             </ul>
           {% endif %}
-          {# React MatchCard hides listing AND group matches. #}
+          {# Only listing and group matches can be hidden: the API has no dismiss for
+             a volunteering opportunity or an event. #}
           {% if match.module == 'listing' and match.listingId %}{% set dismissPath = '/matches/' + (match.listingId | string) + '/dismiss' %}{% elif match.module == 'group' and match.groupId %}{% set dismissPath = '/matches/group/' + (match.groupId | string) + '/dismiss' %}{% else %}{% set dismissPath = '' %}{% endif %}
           {% if match.module == 'listing' and match.listingId %}
             <form method="post" action="{{ urlFor('/matches/listing/' + (match.listingId | string) + '/save') }}" class="govuk-!-margin-top-2" novalidate>
@@ -115,13 +130,16 @@
         </article>
       {% endfor %}
     </div>
+  {% elif matchingPaused %}
+    {# Nothing to add: the paused notice above already says why and what to do.
+       Never the "add a listing" prompt, which would not bring any matches back. #}
   {% elif safeguardingDegraded %}
     {% set variant = "empty" %}{% include "matches/_safeguarding-notice.njk" %}
   {% elif noActiveListings and activeSource in ["all", "listing"] %}
-    <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("matches.no_listings_title") }}</h2><p class="govuk-body">{{ t("matches.no_listings_description") }}</p></div>
-    <a class="govuk-button" href="{{ urlFor('/listings/new') }}" role="button" draggable="false" data-module="govuk-button">{{ t("matches.add_listing") }}</a>
+    {% set notice = "no-listings" %}{% include "matches/_state-notice.njk" %}
   {% else %}
     <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2>{{ t("matches.empty") }}</div>
     <a class="govuk-button" href="{{ urlFor('/listings/new') }}" role="button" draggable="false" data-module="govuk-button">{{ t("matches.add_listing") }}</a>
+  {% endif %}
   {% endif %}
 {% endblock %}

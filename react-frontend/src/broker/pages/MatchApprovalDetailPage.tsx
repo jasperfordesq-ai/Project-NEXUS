@@ -31,6 +31,7 @@ import Sparkles from 'lucide-react/icons/sparkles';
 import { usePageTitle } from '@/hooks';
 import { useTenant, useToast } from '@/contexts';
 import { formatServerDateTime } from '@/lib/serverTime';
+import { formatPercentValue } from '@/lib/helpers';
 import { adminMatching } from '@/admin/api/adminApi';
 import type { MatchApproval, MatchApprovalDetail } from '@/admin/api/types';
 import {
@@ -159,7 +160,11 @@ export function MatchApprovalDetailPage() {
         toast.success(t('matching.approved_toast'));
         void queue.goNext();
       } else {
+        // The server says why in the broker's language: a colleague already
+        // decided it, or safeguarding rules do not let these two be put in
+        // touch (the match then stays waiting). Reload so the page is true.
         toast.error(res.error || t('matching.approve_failed'));
+        void loadItem();
       }
     } catch {
       toast.error(t('matching.approve_failed'));
@@ -272,7 +277,7 @@ export function MatchApprovalDetailPage() {
                 aria-label={t('matching.match_score_aria', { score: Math.round(item.match_score) })}
               />
               <p className="text-3xl font-bold tabular-nums tracking-tight text-foreground">
-                {Math.round(item.match_score)}%
+                {formatPercentValue(Math.round(item.match_score))}
               </p>
               <Chip size="sm" variant="soft" color={scoreColor(item.match_score)} className="mt-1">
                 {t(scoreLabelKey(item.match_score))}

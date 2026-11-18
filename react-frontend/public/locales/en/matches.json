@@ -3,7 +3,7 @@
   "breadcrumb_dashboard": "Dashboard",
   "breadcrumb_matches": "Matches",
   "heading": "Your Matches",
-  "subtitle": "Discover connections across listings, groups, and volunteering",
+  "subtitle": "Offers, requests, groups, volunteering and events that fit you",
   "refresh": "Refresh",
   "preferences_link": "Match preferences",
   "stats_total_matches": "Total Matches",
@@ -55,7 +55,14 @@
     "dismiss": "Not interested",
     "view_group": "View group",
     "join": "Join",
-    "joined": "Joined"
+    "joined": "Joined",
+    "suggested": "Suggested for you",
+    "join_requested": "Request sent",
+    "join_requested_toast": "We've sent your request to join. The group will let you know.",
+    "saved_toast": "Saved for later",
+    "unsaved_toast": "Removed from your saved items",
+    "already_saved": "You've already saved this one",
+    "attendees": "Going: {{count}}"
   },
   "explanation": {
     "ai_caption": "AI-generated explanation based on your profile and activity"
@@ -96,7 +103,9 @@
     "create_listing_cta": "Create a listing",
     "adjust_preferences_cta": "Adjust match preferences",
     "safeguarding_unavailable_title": "Some matches can't be shown yet",
-    "safeguarding_unavailable_description": "Your community's safeguarding setup isn't finished, so matches involving protected members are hidden to keep everyone safe. Please check back once your community team has completed it."
+    "safeguarding_unavailable_description": "Your community's safeguarding setup isn't finished, so matches involving protected members are hidden to keep everyone safe. Please check back once your community team has completed it.",
+    "disabled_title": "Matching is switched off here",
+    "disabled_description": "Your community isn't using matching at the moment. You can still browse offers and requests yourself."
   },
   "preferences": {
     "page_title": "Match Preferences",
@@ -144,5 +153,10 @@
     }
   },
   "reasons_more_one": "+{{count}} more",
-  "reasons_more_other": "+{{count}} more"
+  "reasons_more_other": "+{{count}} more",
+  "errors": {
+    "dismiss_failed": "We couldn't hide that match. Please try again.",
+    "save_failed": "We couldn't save that just now. Please try again.",
+    "join_failed": "We couldn't add you to that group. Please try again."
+  }
 }

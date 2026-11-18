@@ -9,11 +9,12 @@ import Sparkles from 'lucide-react/icons/sparkles';
 import MapPin from 'lucide-react/icons/map-pin';
 import ListChecks from 'lucide-react/icons/list-checks';
 import ShieldAlert from 'lucide-react/icons/shield-alert';
+import PowerOff from 'lucide-react/icons/power-off';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/feedback';
 import { useTenant } from '@/contexts';
 
-export type MatchesEmptyVariant = 'no_coordinates' | 'no_listings' | 'safeguarding_unavailable' | 'none';
+export type MatchesEmptyVariant = 'disabled' | 'no_coordinates' | 'no_listings' | 'safeguarding_unavailable' | 'none';
 
 export interface MatchesEmptyStateProps {
   variant: MatchesEmptyVariant;
@@ -21,12 +22,30 @@ export interface MatchesEmptyStateProps {
 
 /**
  * Empty state for the matches page. Picks copy + CTA based on why there
- * are no matches to show: missing location, no active listings to match
- * against, or genuinely nothing found yet.
+ * are no matches to show: the community has matching switched off, a missing
+ * location, no active listings to match against, or genuinely nothing found
+ * yet.
  */
 export function MatchesEmptyState({ variant }: MatchesEmptyStateProps) {
   const { t } = useTranslation('matches');
   const { tenantPath, hasModule } = useTenant();
+
+  if (variant === 'disabled') {
+    // The community's own choice, so the member is not asked to add a
+    // location or post something — neither would bring matches back.
+    return (
+      <EmptyState
+        icon={<PowerOff className="w-12 h-12" />}
+        title={t('empty.disabled_title')}
+        description={t('empty.disabled_description')}
+        action={hasModule('listings') ? (
+          <Button as={Link} to={tenantPath('/listings')} className="bg-gradient-to-r from-accent-strong to-accent-strong-end text-white">
+            {t('browse_listings')}
+          </Button>
+        ) : undefined}
+      />
+    );
+  }
 
   if (variant === 'no_coordinates') {
     return (

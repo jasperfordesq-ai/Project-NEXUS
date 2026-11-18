@@ -57,7 +57,14 @@
             <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
             <div class="govuk-error-summary__body">
               <ul class="govuk-list govuk-error-summary__list">
-                <li><a href="#{{ errorAnchor }}">{{ statusConfig.message }}</a></li>
+                {# The matching settings can have two boxes wrong at once: name each. #}
+                {% if matchForm and matchForm.errorList.length %}
+                  {% for item in matchForm.errorList %}
+                    <li><a href="#{{ item.anchor }}">{{ item.text }}</a></li>
+                  {% endfor %}
+                {% else %}
+                  <li><a href="#{{ errorAnchor }}">{{ statusConfig.message }}</a></li>
+                {% endif %}
               </ul>
             </div>
           </div>
@@ -488,10 +495,44 @@
       <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
 
       <section id="match-preferences" aria-labelledby="match-preferences-heading">
-        <h2 class="govuk-heading-l" id="match-preferences-heading">{{ t("profile_settings.match.title") }}</h2>
-        <p class="govuk-body">{{ t("profile_settings.match.description") }}</p>
+        <h2 class="govuk-heading-l" id="match-preferences-heading">{{ t("govuk_alpha_connections.match_settings.heading") }}</h2>
+        <p class="govuk-body">{{ t("govuk_alpha_connections.match_settings.description") }}</p>
         <form method="post" action="{{ urlFor('/profile/match-preferences') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+          {# Pause matching. The hidden 0 means an unticked box is still sent, so the
+             route can tell "switched off" from "this form never offered it". #}
+          <div class="govuk-form-group">
+            <input type="hidden" name="matching_paused" value="0">
+            <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="matching_paused" name="matching_paused" type="checkbox" value="1" aria-describedby="matching_paused-hint"{% if matchForm.paused %} checked{% endif %}>
+                <label class="govuk-label govuk-checkboxes__label" for="matching_paused">{{ t("govuk_alpha_connections.match_settings.pause_label") }}</label>
+                <div id="matching_paused-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("govuk_alpha_connections.match_settings.pause_hint") }}</div>
+              </div>
+            </div>
+          </div>
+
+          {# Whole numbers in plain text boxes (GOV.UK: not type="number", no sliders). #}
+          <div class="govuk-form-group{% if matchForm.errors.max_distance_km %} govuk-form-group--error{% endif %}">
+            <label class="govuk-label" for="max_distance_km">{{ t("govuk_alpha_connections.match_settings.distance_label") }}</label>
+            <div id="max_distance_km-hint" class="govuk-hint">{{ t("govuk_alpha_connections.match_settings.distance_hint", { max: matchForm.distanceLimit }) }}</div>
+            {% if matchForm.errors.max_distance_km %}<p id="max_distance_km-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ matchForm.errors.max_distance_km }}</p>{% endif %}
+            <div class="govuk-input__wrapper">
+              <input class="govuk-input govuk-input--width-5{% if matchForm.errors.max_distance_km %} govuk-input--error{% endif %}" id="max_distance_km" name="max_distance_km" type="text" inputmode="numeric" spellcheck="false" value="{{ matchForm.distance }}" aria-describedby="max_distance_km-hint{% if matchForm.errors.max_distance_km %} max_distance_km-error{% endif %}">
+              <div class="govuk-input__suffix" aria-hidden="true">{{ t("federation.settings.travel_radius_suffix") }}</div>
+            </div>
+          </div>
+
+          <div class="govuk-form-group{% if matchForm.errors.min_match_score %} govuk-form-group--error{% endif %}">
+            <label class="govuk-label" for="min_match_score">{{ t("govuk_alpha_connections.match_settings.min_score_label") }}</label>
+            <div id="min_match_score-hint" class="govuk-hint">{{ t("govuk_alpha_connections.match_settings.min_score_hint") }}</div>
+            {% if matchForm.errors.min_match_score %}<p id="min_match_score-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ matchForm.errors.min_match_score }}</p>{% endif %}
+            <input class="govuk-input govuk-input--width-3{% if matchForm.errors.min_match_score %} govuk-input--error{% endif %}" id="min_match_score" name="min_match_score" type="text" inputmode="numeric" spellcheck="false" value="{{ matchForm.minScore }}" aria-describedby="min_match_score-hint{% if matchForm.errors.min_match_score %} min_match_score-error{% endif %}">
+          </div>
+
+          <h3 class="govuk-heading-m govuk-!-margin-top-6">{{ t("profile_settings.match.title") }}</h3>
+          <p class="govuk-body">{{ t("profile_settings.match.description") }}</p>
           <div class="govuk-form-group">
             <label class="govuk-label" for="notification_frequency">{{ t("profile_settings.match.frequency_label") }}</label>
             <select class="govuk-select" id="notification_frequency" name="notification_frequency">
@@ -504,16 +545,16 @@
             <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("profile_settings.match.instant_legend") }}</legend>
             <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
             <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="notify_hot_matches" name="notify_hot_matches" type="checkbox" value="1"{% if matchPrefs.notify_hot_matches %} checked{% endif %}>
+              <input class="govuk-checkboxes__input" id="notify_hot_matches" name="notify_hot_matches" type="checkbox" value="1"{% if matchForm.notifyHot %} checked{% endif %}>
               <label class="govuk-label govuk-checkboxes__label" for="notify_hot_matches">{{ t("profile_settings.match.notify_hot") }}</label>
             </div>
             <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="notify_mutual_matches" name="notify_mutual_matches" type="checkbox" value="1"{% if matchPrefs.notify_mutual_matches %} checked{% endif %}>
+              <input class="govuk-checkboxes__input" id="notify_mutual_matches" name="notify_mutual_matches" type="checkbox" value="1"{% if matchForm.notifyMutual %} checked{% endif %}>
               <label class="govuk-label govuk-checkboxes__label" for="notify_mutual_matches">{{ t("profile_settings.match.notify_mutual") }}</label>
             </div>
             </div>
           </fieldset>
-          <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("profile_settings.match.save") }}</button>
+          <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_connections.match_settings.save") }}</button>
         </form>
       </section>
 
