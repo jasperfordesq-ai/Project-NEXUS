@@ -3080,4 +3080,15 @@ CANDIDATOS::candidates',
     'platform_agreement_contact_name_too_long' => 'El nombre del contacto puede tener hasta 160 caracteres.',
     'platform_agreement_notes_too_long' => 'Las notas pueden tener hasta 5000 caracteres.',
     'platform_agreement_community_unknown' => 'Esa comunidad no existe.',
+
+    // Smart matching: admin settings validation and coordinator match approvals.
+    'match_approval_not_found' => 'No encontramos esa coincidencia. Puede que la hayan retirado.',
+    'match_approval_already_reviewed' => 'Esta coincidencia ya fue aprobada o rechazada.',
+    'match_approval_contact_blocked' => 'Esta coincidencia no se puede aprobar: las normas de protección no permiten que estos dos miembros se pongan en contacto. Sigue pendiente de una decisión.',
+    'matching_max_distance_range' => 'La distancia máxima debe estar entre 1 y 20.000 km.',
+    'matching_min_score_range' => 'La puntuación mínima de coincidencia debe estar entre 0 y 100.',
+    'matching_hot_threshold_range' => 'El umbral de coincidencia caliente debe estar entre 0 y 100.',
+    'matching_hot_below_min' => 'El umbral de coincidencia caliente no puede ser inferior a la puntuación mínima de coincidencia.',
+    'matching_bands_invalid' => 'Cada franja de distancia debe ser mayor que 0 km y mayor que la anterior.',
+    'matching_weights_invalid' => 'Cada peso de la puntuación debe estar entre 0 % y 100 %, y no pueden ser todos 0 %.',
 ];

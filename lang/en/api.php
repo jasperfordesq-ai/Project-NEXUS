@@ -3589,4 +3589,15 @@ return [
     'platform_agreement_contact_name_too_long' => 'The contact\'s name can be up to 160 characters.',
     'platform_agreement_notes_too_long' => 'Notes can be up to 5,000 characters.',
     'platform_agreement_community_unknown' => 'That community does not exist.',
+
+    // Smart matching: admin settings validation and coordinator match approvals.
+    'match_approval_not_found' => 'That match could not be found. It may have been removed.',
+    'match_approval_already_reviewed' => 'This match has already been approved or rejected.',
+    'match_approval_contact_blocked' => 'This match cannot be approved: safeguarding rules do not allow these two members to contact each other. It is still waiting for a decision.',
+    'matching_max_distance_range' => 'The maximum distance must be between 1 and 20,000 km.',
+    'matching_min_score_range' => 'The minimum match score must be between 0 and 100.',
+    'matching_hot_threshold_range' => 'The hot match threshold must be between 0 and 100.',
+    'matching_hot_below_min' => 'The hot match threshold cannot be lower than the minimum match score.',
+    'matching_bands_invalid' => 'Each distance band must be more than 0 km and further than the one before it.',
+    'matching_weights_invalid' => 'Each scoring weight must be between 0% and 100%, and they cannot all be 0%.',
 ];

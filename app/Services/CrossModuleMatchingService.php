@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Support\UserDisplayName;
 use App\Support\Matching\MatchReasonText;
+use App\Services\Matching\KeywordExtractor;
 use App\Services\Translation\TaxonomyNameLocalizer;
 
 /**
@@ -32,7 +33,7 @@ class CrossModuleMatchingService
      *
      * Options:
      * - limit: int (default 20)
-     * - min_score: int (default 30)
+     * - min_score: int (default: the member's saved minimum, else the community's)
      * - modules: string[] (default all: listings, groups, volunteering, events)
      * - debug: bool (include breakdown data)
      *
@@ -67,12 +68,33 @@ class CrossModuleMatchingService
     {
         $tenantId = TenantContext::getId();
         $limit = $options['limit'] ?? 20;
-        $minScore = $options['min_score'] ?? 30;
+        $minScore = isset($options['min_score'])
+            ? (int) $options['min_score']
+            : (int) round($this->smartMatchingEngine->effectiveMinScore($userId));
         $debug = $options['debug'] ?? false;
         $modules = self::enabledModules($options['modules'] ?? ['listings', 'groups', 'volunteering', 'events']);
 
         $allMatches = [];
         $engineMeta = null;
+
+        // The community has switched Smart Matching off: nothing is matched,
+        // from any source, and the page is told why it is empty.
+        if (!$this->smartMatchingEngine->isEnabled()) {
+            return [
+                'matches' => [],
+                'meta' => [
+                    'total' => 0,
+                    'modules' => $modules,
+                    'min_score' => $minScore,
+                    'needs_location' => false,
+                    'degraded' => false,
+                    'degraded_reason' => null,
+                    'has_active_listings' => null,
+                    'paused' => false,
+                    'disabled' => true,
+                ],
+            ];
+        }
 
         try {
             if (in_array('listings', $modules, true)) {
@@ -132,6 +154,7 @@ class CrossModuleMatchingService
                 'degraded_reason' => $engineMeta['degraded_reason'] ?? null,
                 'has_active_listings' => $engineMeta['has_active_listings'] ?? null,
                 'paused' => (bool) ($engineMeta['paused'] ?? false),
+                'disabled' => false,
             ],
         ];
     }
@@ -239,131 +262,231 @@ class CrossModuleMatchingService
     }
 
     /**
-     * Get volunteering opportunity matches.
+     * Volunteering matches: open opportunities whose needed skills, or
+     * wording, overlap what the member says they can do.
+     *
+     * Until 17 Nov 2026 this listed the newest ORGANISATIONS, gave each a
+     * floor score of 35 and the reason "matches your profile" whether or not
+     * anything matched, and sent an organisation id that two of the three
+     * clients opened as an opportunity id (so the card led to an unrelated
+     * opportunity). It now matches opportunities, under the same public
+     * visibility rule as the volunteering pages
+     * (VolunteerMatchingService::suggestOpportunities), and offers one only
+     * when there is real overlap.
      */
     private function getVolunteeringMatches(int $userId, int $tenantId, int $minScore, int $limit): array
     {
         try {
-            // vol_organizations is the live table (volunteering_organizations
-            // is a legacy table nothing writes to). No address column.
-            $orgs = DB::select(
-                "SELECT vo.id, vo.name, vo.description, vo.contact_email, vo.website,
-                        NULL as address, vo.status, vo.created_at
-                 FROM vol_organizations vo
-                 WHERE vo.tenant_id = ? AND vo.status IN ('approved', 'active')
-                 ORDER BY vo.created_at DESC
-                 LIMIT ?",
-                [$tenantId, $limit * 2]
-            );
+            $memberKeywords = $this->getMemberOfferKeywords($userId, $tenantId);
+            if ($memberKeywords === []) {
+                // Nothing to match on. The volunteering pages list everything.
+                return [];
+            }
 
-            $userSkills = $this->getUserSkillKeywords($userId, $tenantId);
+            $appliedIds = DB::table('vol_applications')
+                ->where('tenant_id', $tenantId)
+                ->where('user_id', $userId)
+                ->pluck('opportunity_id')
+                ->all();
 
-            $matches = [];
-            foreach ($orgs as $org) {
-                $score = $this->scoreTextRelevance(
-                    $userSkills,
-                    ($org->name ?? '') . ' ' . ($org->description ?? '')
+            $federationColumnExists = VolunteerService::opportunitiesHaveFederatedColumn();
+            $query = DB::table('vol_opportunities as opp')
+                ->leftJoin('vol_organizations as org', function ($join) {
+                    $join->on('opp.organization_id', '=', 'org.id')
+                        ->on('opp.tenant_id', '=', 'org.tenant_id');
+                })
+                ->where('opp.tenant_id', $tenantId)
+                ->where('opp.is_active', 1)
+                ->whereIn('opp.status', VolunteerService::PUBLIC_OPPORTUNITY_STATUSES)
+                ->where(function ($outer) use ($federationColumnExists) {
+                    $outer->whereIn('org.status', VolunteerService::PUBLIC_ORGANIZATION_STATUSES);
+                    if ($federationColumnExists) {
+                        $outer->orWhere('opp.is_federated', 1);
+                    }
+                })
+                ->where(function ($open) {
+                    $open->whereNull('opp.end_date')->orWhere('opp.end_date', '>=', now()->toDateString());
+                })
+                ->select(
+                    'opp.id', 'opp.title', 'opp.description', 'opp.location', 'opp.skills_needed',
+                    'opp.organization_id', 'opp.created_at', 'org.name as organization_name'
                 );
 
-                // Base score for approved volunteering orgs
-                $score = max($score, 35);
-
-                if ($score >= $minScore) {
-                    $matches[] = [
-                        'module' => 'volunteering',
-                        'organization_id' => (int) $org->id,
-                        'title' => $org->name,
-                        'description' => mb_substr($org->description ?? '', 0, 200),
-                        'match_score' => $score,
-                        'match_type' => 'volunteering_recommendation',
-                        'match_reasons' => MatchReasonText::localize(['Volunteering opportunity that matches your profile']),
-                        'distance_km' => null,
-                        'created_at' => $org->created_at ?? null,
-                    ];
-                }
+            if (!empty($appliedIds)) {
+                $query->whereNotIn('opp.id', $appliedIds);
             }
+
+            $opportunities = $query->orderByDesc('opp.id')->limit(200)->get();
+
+            $matches = [];
+            foreach ($opportunities as $opp) {
+                $needed = KeywordExtractor::extract(implode(' ', self::skillNames((string) ($opp->skills_needed ?? ''))));
+                $skillShare = $needed !== []
+                    ? count(array_intersect($needed, $memberKeywords)) / count($needed)
+                    : 0.0;
+                $wording = KeywordExtractor::extract(($opp->title ?? '') . ' ' . ($opp->description ?? ''));
+                $wordingOverlap = count(array_intersect($wording, $memberKeywords));
+
+                if ($skillShare <= 0.0 && $wordingOverlap === 0) {
+                    continue;
+                }
+
+                $score = $skillShare > 0.0
+                    ? 55.0 + 40.0 * $skillShare
+                    : min(60.0, 40.0 + 5.0 * $wordingOverlap);
+                $score = round(min(95.0, $score), 1);
+
+                if ($score < $minScore) {
+                    continue;
+                }
+
+                $matches[] = [
+                    'module' => 'volunteering',
+                    'opportunity_id' => (int) $opp->id,
+                    'organization_id' => $opp->organization_id !== null ? (int) $opp->organization_id : null,
+                    'organization_name' => $opp->organization_name ?? null,
+                    'title' => (string) $opp->title,
+                    'description' => mb_substr((string) ($opp->description ?? ''), 0, 200),
+                    'location' => $opp->location ?? null,
+                    'match_score' => $score,
+                    'match_type' => 'volunteering_recommendation',
+                    'match_reasons' => MatchReasonText::localize([
+                        $skillShare > 0.0 ? 'Matches your skills' : 'Volunteering opportunity that matches your profile',
+                    ]),
+                    'distance_km' => null,
+                    'is_remote' => false,
+                    'is_mutual' => false,
+                    'created_at' => $opp->created_at ?? null,
+                ];
+            }
+
+            usort($matches, fn ($a, $b) => $b['match_score'] <=> $a['match_score']);
 
             return array_slice($matches, 0, $limit);
         } catch (\Throwable $e) {
-            // Table may not exist — degrade gracefully
+            // One source failing must not blank the page, but it must be SEEN:
+            // the silent `return []` that used to sit here is how event
+            // matching stayed broken for months.
+            Log::error('[CrossModuleMatchingService] Volunteering matches failed', [
+                'user_id' => $userId,
+                'exception' => $e::class,
+                'error' => $e->getMessage(),
+            ]);
             return [];
         }
     }
 
     /**
-     * Get upcoming event matches based on user interests.
+     * Event matches: upcoming events the member may see and has not answered,
+     * that share a category with their listings or wording with their skills.
+     *
+     * The previous query selected `events.event_date` and joined
+     * `event_attendees`. Neither exists (the column is `start_time`, the
+     * table `event_rsvps`), so it threw on every call and a bare catch turned
+     * that into an empty list: no member was ever shown an event match. The
+     * list of events now comes from EventService::getAll(), the one place the
+     * "may this member see this event" rule lives, so drafts and private
+     * events cannot leak in through matching.
      */
     private function getEventMatches(int $userId, int $tenantId, int $minScore, int $limit): array
     {
         try {
-            $userCategoryIds = $this->getUserCategoryIds($userId, $tenantId);
-            $userSkills = $this->getUserSkillKeywords($userId, $tenantId);
+            $listing = EventService::getAll([
+                'when' => 'upcoming',
+                'viewer_id' => $userId,
+                'limit' => min(100, max(20, $limit * 3)),
+            ]);
+            $events = is_array($listing['items'] ?? null) ? $listing['items'] : [];
+            if ($events === []) {
+                return [];
+            }
 
-            // Get future events the user has NOT RSVP'd to
-            $events = DB::select(
-                "SELECT e.id, e.title, e.description, e.event_date, e.location,
-                        e.latitude, e.longitude, e.category_id, e.image_url,
-                        e.created_at,
-                        (SELECT COUNT(*) FROM event_attendees ea WHERE ea.event_id = e.id) as attendee_count
-                 FROM events e
-                 WHERE e.tenant_id = ?
-                   AND e.event_date >= NOW()
-                   AND e.id NOT IN (
-                       SELECT ea2.event_id FROM event_attendees ea2 WHERE ea2.user_id = ?
-                   )
-                 ORDER BY e.event_date ASC
-                 LIMIT ?",
-                [$tenantId, $userId, $limit * 2]
-            );
-
-            $matches = [];
-            foreach ($events as $event) {
-                $score = 30; // Base
-
-                // Category match boost
-                if ($event->category_id && in_array((int) $event->category_id, $userCategoryIds, true)) {
-                    $score += 30;
-                }
-
-                // Text relevance boost
-                $textScore = $this->scoreTextRelevance(
-                    $userSkills,
-                    ($event->title ?? '') . ' ' . ($event->description ?? '')
-                );
-                $score += (int) ($textScore * 0.3);
-
-                // Freshness boost for imminent events
-                if ($event->event_date) {
-                    $daysUntil = max(0, (strtotime($event->event_date) - time()) / 86400);
-                    if ($daysUntil <= 7) {
-                        $score += 10;
-                    }
-                }
-
-                $score = min(95, $score);
-
-                if ($score >= $minScore) {
-                    $matches[] = [
-                        'module' => 'event',
-                        'event_id' => (int) $event->id,
-                        'title' => $event->title,
-                        'description' => mb_substr($event->description ?? '', 0, 200),
-                        'event_date' => $event->event_date,
-                        'location' => $event->location ?? null,
-                        'image_url' => $event->image_url ?? null,
-                        'attendee_count' => (int) ($event->attendee_count ?? 0),
-                        'match_score' => (float) $score,
-                        'match_type' => 'event_recommendation',
-                        'match_reasons' => MatchReasonText::localize(['Upcoming event that matches your interests']),
-                        'distance_km' => null,
-                        'created_at' => $event->created_at ?? null,
-                    ];
+            $eventIds = array_values(array_filter(array_map(fn ($e) => (int) ($e['id'] ?? 0), $events)));
+            $answered = [];
+            if ($eventIds !== []) {
+                $rows = DB::table('event_rsvps')
+                    ->where('tenant_id', $tenantId)
+                    ->where('user_id', $userId)
+                    ->whereIn('event_id', $eventIds)
+                    ->pluck('event_id');
+                foreach ($rows as $eventId) {
+                    $answered[(int) $eventId] = true;
                 }
             }
 
+            $userCategoryIds = $this->getUserCategoryIds($userId, $tenantId);
+            $userSkills = $this->getUserSkillKeywords($userId, $tenantId);
+
+            $matches = [];
+            foreach ($events as $event) {
+                $eventId = (int) ($event['id'] ?? 0);
+                if ($eventId <= 0
+                    || (int) ($event['user_id'] ?? 0) === $userId
+                    || isset($answered[$eventId])
+                    || in_array((string) ($event['operational_status'] ?? ''), ['cancelled', 'postponed', 'completed'], true)
+                    || in_array((string) ($event['status'] ?? ''), ['cancelled', 'completed', 'draft'], true)
+                ) {
+                    continue;
+                }
+
+                $categoryHit = !empty($event['category_id'])
+                    && in_array((int) $event['category_id'], $userCategoryIds, true);
+                $textScore = $this->scoreTextRelevance(
+                    $userSkills,
+                    ($event['title'] ?? '') . ' ' . ($event['description'] ?? '')
+                );
+
+                // A match needs a reason. Every upcoming event used to get a
+                // base score and the words "matches your interests".
+                if (!$categoryHit && $textScore <= 0) {
+                    continue;
+                }
+
+                $score = ($categoryHit ? 60.0 : 40.0) + $textScore * 0.3;
+
+                $startsAt = $event['start_time'] ?? null;
+                $startsAtTs = $startsAt ? strtotime((string) $startsAt) : false;
+                if ($startsAtTs !== false && ($startsAtTs - time()) <= 7 * 86400) {
+                    $score += 5.0;
+                }
+
+                $score = round(min(95.0, $score), 1);
+                if ($score < $minScore) {
+                    continue;
+                }
+
+                $matches[] = [
+                    'module' => 'event',
+                    'event_id' => $eventId,
+                    'title' => (string) ($event['title'] ?? ''),
+                    'description' => mb_substr((string) ($event['description'] ?? ''), 0, 200),
+                    'event_date' => $startsAt,
+                    // The event's own time zone and whether it is all-day, so a
+                    // client can show the date the organiser meant.
+                    'timezone' => $event['timezone'] ?? null,
+                    'all_day' => !empty($event['all_day']),
+                    'location' => $event['location'] ?? null,
+                    'image_url' => $event['cover_image'] ?? $event['image_url'] ?? null,
+                    'attendee_count' => (int) ($event['attendee_count'] ?? 0),
+                    'match_score' => $score,
+                    'match_type' => 'event_recommendation',
+                    'match_reasons' => MatchReasonText::localize(['Upcoming event that matches your interests']),
+                    'distance_km' => null,
+                    'is_remote' => false,
+                    'is_mutual' => false,
+                    'created_at' => $event['created_at'] ?? null,
+                ];
+            }
+
+            usort($matches, fn ($a, $b) => $b['match_score'] <=> $a['match_score']);
+
             return array_slice($matches, 0, $limit);
         } catch (\Throwable $e) {
-            // Table may not exist — degrade gracefully
+            Log::error('[CrossModuleMatchingService] Event matches failed', [
+                'user_id' => $userId,
+                'exception' => $e::class,
+                'error' => $e->getMessage(),
+            ]);
             return [];
         }
     }
@@ -395,6 +518,55 @@ class CrossModuleMatchingService
             Log::debug('[CrossModuleMatching] getUserSkillKeywords failed: ' . $e->getMessage());
             return [];
         }
+    }
+
+    /**
+     * Stemmed keywords for what the member says they can DO: the skills they
+     * offer (user_skills) plus the free-text skills on their profile. Their
+     * bio is left out on purpose: it is prose about the person, and matching
+     * its ordinary words against an opportunity produced accidental "fits".
+     *
+     * @return string[]
+     */
+    private function getMemberOfferKeywords(int $userId, int $tenantId): array
+    {
+        $names = DB::table('user_skills')
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $userId)
+            ->where('is_offering', 1)
+            ->pluck('skill_name')
+            ->all();
+
+        $profileSkills = (string) (DB::table('users')
+            ->where('id', $userId)
+            ->where('tenant_id', $tenantId)
+            ->value('skills') ?? '');
+
+        return KeywordExtractor::extract(implode(' ', $names) . ' ' . $profileSkills);
+    }
+
+    /**
+     * `vol_opportunities.skills_needed` holds either a JSON array or a
+     * comma-separated list.
+     *
+     * @return string[]
+     */
+    private static function skillNames(string $raw): array
+    {
+        $raw = trim($raw);
+        if ($raw === '') {
+            return [];
+        }
+
+        $decoded = json_decode($raw, true);
+        if (is_array($decoded)) {
+            return array_values(array_filter(array_map(
+                static fn ($skill) => is_scalar($skill) ? trim((string) $skill) : '',
+                $decoded
+            )));
+        }
+
+        return array_values(array_filter(array_map('trim', explode(',', $raw))));
     }
 
     /**

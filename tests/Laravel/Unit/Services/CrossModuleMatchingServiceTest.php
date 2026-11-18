@@ -26,6 +26,9 @@ class CrossModuleMatchingServiceTest extends TestCase
         $this->mockGroupMatching = Mockery::mock(GroupMatchingService::class);
         // Default: no group matches unless a test overrides.
         $this->mockGroupMatching->shouldReceive('getMatchesForUser')->andReturn([])->byDefault();
+        // Default: matching is switched on, and the member's floor is 40.
+        $this->mockSmartMatching->shouldReceive('isEnabled')->andReturn(true)->byDefault();
+        $this->mockSmartMatching->shouldReceive('effectiveMinScore')->andReturn(40.0)->byDefault();
         $this->service = new CrossModuleMatchingService(
             $this->mockSmartMatching,
             $this->mockGroupMatching
@@ -109,5 +112,32 @@ class CrossModuleMatchingServiceTest extends TestCase
         $result = $this->service->getAllMatches(1, ['limit' => 5]);
 
         $this->assertLessThanOrEqual(5, count($result['matches']));
+    }
+
+    public function test_getAllMatches_uses_the_members_own_floor_when_the_caller_names_none(): void
+    {
+        $this->mockSmartMatching->shouldReceive('effectiveMinScore')->once()->with(1)->andReturn(65.0);
+        $this->mockSmartMatching->shouldReceive('findMatchesForUser')
+            ->once()
+            ->withArgs(fn ($userId, $options) => $userId === 1 && $options['min_score'] === 65)
+            ->andReturn([]);
+        DB::shouldReceive('select')->andReturn([]);
+
+        $result = $this->service->getAllMatches(1, ['modules' => ['listings']]);
+
+        $this->assertSame(65, $result['meta']['min_score']);
+        $this->assertFalse($result['meta']['disabled']);
+    }
+
+    public function test_getAllMatches_returns_nothing_when_the_community_switched_matching_off(): void
+    {
+        $this->mockSmartMatching->shouldReceive('isEnabled')->andReturn(false);
+        $this->mockSmartMatching->shouldNotReceive('findMatchesForUser');
+        $this->mockGroupMatching->shouldNotReceive('getMatchesForUser');
+
+        $result = $this->service->getAllMatches(1);
+
+        $this->assertSame([], $result['matches']);
+        $this->assertTrue($result['meta']['disabled']);
     }
 }

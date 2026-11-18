@@ -11,7 +11,6 @@ use App\Models\Listing;
 use App\Models\User;
 use App\Services\Matching\MatchApprovalGate;
 use App\Services\MatchApprovalWorkflowService;
-use App\Services\MatchingService;
 use App\Services\SafeguardingTriggerService;
 use App\Services\SmartMatchingEngine;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -335,18 +334,8 @@ class MatchApprovalGateTest extends TestCase
         $this->assertSame('pending', $this->approvalRow($searcher, $restrictedListing)?->status);
     }
 
-    public function test_digest_suggestions_never_include_a_restricted_member(): void
-    {
-        $searcher = $this->member();
-        $restricted = $this->member();
-        $this->chooseOption($restricted, ['restricts_matching' => true]);
-
-        for ($i = 0; $i < 5; $i++) {
-            $ids = array_map(fn ($s) => (int) $s->id, MatchingService::getSuggestionsForUser($searcher->id, 100));
-            $this->assertNotContains($restricted->id, $ids);
-        }
-
-        $this->assertSame([], MatchingService::getSuggestionsForUser($restricted->id, 100),
-            'A restricted member gets no automatic member suggestions');
-    }
+    // The digest and the match alerts are covered in
+    // MatchNotificationServiceTest::test_a_member_who_restricted_matching_is_never_named_in_an_alert_or_a_digest.
+    // (A test here used to check MatchingService::getSuggestionsForUser(),
+    // which returned random members and has been removed.)
 }

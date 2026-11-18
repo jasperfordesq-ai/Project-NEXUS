@@ -1434,45 +1434,6 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/CronJobRunner.php:2500:NotificationDispatcher::dispatchMatchDigest",
-            "file": "app/Services/CronJobRunner.php",
-            "line": 2500,
-            "transport": "NotificationDispatcher::dispatchMatchDigest",
-            "role": "producer",
-            "recipient_expression": "$user['id']",
-            "title_expression": null,
-            "body_expression": null,
-            "type_expression": "match_digest",
-            "link_expression": "/matches",
-            "data_expression": null
-        },
-        {
-            "id": "app/Services/CronJobRunner.php:2684:NotificationDispatcher::dispatchHotMatch",
-            "file": "app/Services/CronJobRunner.php",
-            "line": 2684,
-            "transport": "NotificationDispatcher::dispatchHotMatch",
-            "role": "producer",
-            "recipient_expression": "$user['user_id']",
-            "title_expression": null,
-            "body_expression": null,
-            "type_expression": "hot_match",
-            "link_expression": "/matches?highlight=listing-{listing_id}",
-            "data_expression": null
-        },
-        {
-            "id": "app/Services/CronJobRunner.php:3405:NotificationDispatcher::dispatchMatchDigest",
-            "file": "app/Services/CronJobRunner.php",
-            "line": 3405,
-            "transport": "NotificationDispatcher::dispatchMatchDigest",
-            "role": "producer",
-            "recipient_expression": "$user['id']",
-            "title_expression": null,
-            "body_expression": null,
-            "type_expression": "match_digest",
-            "link_expression": "/matches",
-            "data_expression": null
-        },
-        {
             "id": "app/Services/DonationAdminNotificationService.php:189:NotificationDispatcher::fanOutPush",
             "file": "app/Services/DonationAdminNotificationService.php",
             "line": 189,
@@ -2435,9 +2396,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/MatchApprovalWorkflowService.php:218:NotificationDispatcher::dispatchMatchApproved",
+            "id": "app/Services/MatchApprovalWorkflowService.php:249:NotificationDispatcher::dispatchMatchApproved",
             "file": "app/Services/MatchApprovalWorkflowService.php",
-            "line": 218,
+            "line": 249,
             "transport": "NotificationDispatcher::dispatchMatchApproved",
             "role": "producer",
             "recipient_expression": "(int) $approval->user_id",
@@ -2448,9 +2409,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/MatchApprovalWorkflowService.php:378:NotificationDispatcher::dispatchMatchApproved",
+            "id": "app/Services/MatchApprovalWorkflowService.php:422:NotificationDispatcher::dispatchMatchApproved",
             "file": "app/Services/MatchApprovalWorkflowService.php",
-            "line": 378,
+            "line": 422,
             "transport": "NotificationDispatcher::dispatchMatchApproved",
             "role": "producer",
             "recipient_expression": "(int) $row->user_id",
@@ -2458,6 +2419,45 @@
             "body_expression": null,
             "type_expression": "match_approved",
             "link_expression": "/listings/{listing_id}",
+            "data_expression": null
+        },
+        {
+            "id": "app/Services/Matching/MatchNotificationService.php:205:NotificationDispatcher::dispatchMatchDigest",
+            "file": "app/Services/Matching/MatchNotificationService.php",
+            "line": 205,
+            "transport": "NotificationDispatcher::dispatchMatchDigest",
+            "role": "producer",
+            "recipient_expression": "$memberId",
+            "title_expression": null,
+            "body_expression": null,
+            "type_expression": "match_digest",
+            "link_expression": "/matches",
+            "data_expression": null
+        },
+        {
+            "id": "app/Services/Matching/MatchNotificationService.php:329:NotificationDispatcher::dispatchHotMatch",
+            "file": "app/Services/Matching/MatchNotificationService.php",
+            "line": 329,
+            "transport": "NotificationDispatcher::dispatchHotMatch",
+            "role": "producer",
+            "recipient_expression": "$memberId",
+            "title_expression": null,
+            "body_expression": null,
+            "type_expression": "hot_match",
+            "link_expression": "/matches?highlight=listing-{listing_id}",
+            "data_expression": null
+        },
+        {
+            "id": "app/Services/Matching/MatchNotificationService.php:332:NotificationDispatcher::dispatchMutualMatch",
+            "file": "app/Services/Matching/MatchNotificationService.php",
+            "line": 332,
+            "transport": "NotificationDispatcher::dispatchMutualMatch",
+            "role": "producer",
+            "recipient_expression": "$memberId",
+            "title_expression": null,
+            "body_expression": null,
+            "type_expression": "mutual_match",
+            "link_expression": "/matches?type=mutual&highlight=listing-{listing_id}",
             "data_expression": null
         },
         {

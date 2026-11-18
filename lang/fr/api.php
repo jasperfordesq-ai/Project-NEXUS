@@ -3080,4 +3080,15 @@ CANDIDATS ::candidates',
     'platform_agreement_contact_name_too_long' => 'Le nom du contact peut compter jusqu\'à 160 caractères.',
     'platform_agreement_notes_too_long' => 'Les notes peuvent compter jusqu\'à 5 000 caractères.',
     'platform_agreement_community_unknown' => 'Cette communauté n\'existe pas.',
+
+    // Smart matching: admin settings validation and coordinator match approvals.
+    'match_approval_not_found' => 'Nous ne trouvons pas cet appariement. Il a peut-être été retiré.',
+    'match_approval_already_reviewed' => 'Cet appariement a déjà été approuvé ou rejeté.',
+    'match_approval_contact_blocked' => 'Cet appariement ne peut pas être approuvé : les règles de protection n’autorisent pas ces deux membres à se contacter. Il reste en attente d’une décision.',
+    'matching_max_distance_range' => 'La distance maximale doit être comprise entre 1 et 20 000 km.',
+    'matching_min_score_range' => 'Le score minimal de correspondance doit être compris entre 0 et 100.',
+    'matching_hot_threshold_range' => 'Le seuil de correspondance chaude doit être compris entre 0 et 100.',
+    'matching_hot_below_min' => 'Le seuil de correspondance chaude ne peut pas être inférieur au score minimal de correspondance.',
+    'matching_bands_invalid' => 'Chaque tranche de distance doit être supérieure à 0 km et plus grande que la précédente.',
+    'matching_weights_invalid' => 'Chaque pondération doit être comprise entre 0 % et 100 %, et elles ne peuvent pas toutes valoir 0 %.',
 ];

@@ -44,6 +44,7 @@ class MatchPreferencesController extends BaseApiController
      *
      * Request body (JSON, all optional):
      * - notification_frequency: 'daily' | 'monthly' | 'fortnightly' | 'never'
+     *   ('weekly' is accepted from old clients and stored as 'monthly')
      * - notify_hot_matches: bool
      * - notify_mutual_matches: bool
      * - matching_paused: bool
@@ -91,16 +92,11 @@ class MatchPreferencesController extends BaseApiController
             $updated['matching_paused'] = (bool) $paused;
         }
 
-        // Distance preference can tighten but never exceed the tenant ceiling.
+        // Distance preference can tighten but never exceed the community's
+        // ceiling, which getPreferences() reports as max_distance_limit_km.
         $maxDistance = $this->input('max_distance_km');
         if ($maxDistance !== null) {
-            $tenantMax = 100;
-            try {
-                $config = app(\App\Services\SmartMatchingEngine::class)->getConfig();
-                $tenantMax = (int) ($config['max_distance_km'] ?? 100);
-            } catch (\Throwable $e) {
-                // Keep the conservative fallback ceiling.
-            }
+            $tenantMax = max(1, (int) ($current['max_distance_limit_km'] ?? 50));
             $updated['max_distance_km'] = max(1, min($tenantMax, (int) $maxDistance));
         }
 

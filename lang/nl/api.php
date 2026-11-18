@@ -3080,4 +3080,15 @@ KANDIDATEN::candidates',
     'platform_agreement_contact_name_too_long' => 'De naam van de contactpersoon mag maximaal 160 tekens zijn.',
     'platform_agreement_notes_too_long' => 'Notities mogen maximaal 5.000 tekens zijn.',
     'platform_agreement_community_unknown' => 'Die gemeenschap bestaat niet.',
+
+    // Smart matching: admin settings validation and coordinator match approvals.
+    'match_approval_not_found' => 'We kunnen die match niet vinden. Misschien is die weggehaald.',
+    'match_approval_already_reviewed' => 'Deze match is al goedgekeurd of afgewezen.',
+    'match_approval_contact_blocked' => 'Deze match kan niet worden goedgekeurd: de beschermingsregels staan niet toe dat deze twee leden contact met elkaar opnemen. De match wacht nog op een beslissing.',
+    'matching_max_distance_range' => 'De maximale afstand moet tussen 1 en 20.000 km liggen.',
+    'matching_min_score_range' => 'De minimale matchscore moet tussen 0 en 100 liggen.',
+    'matching_hot_threshold_range' => 'De drempel voor hot matches moet tussen 0 en 100 liggen.',
+    'matching_hot_below_min' => 'De drempel voor hot matches mag niet lager zijn dan de minimale matchscore.',
+    'matching_bands_invalid' => 'Elke afstandsband moet groter zijn dan 0 km en groter dan de vorige.',
+    'matching_weights_invalid' => 'Elke weging moet tussen 0% en 100% liggen, en ze mogen niet allemaal 0% zijn.',
 ];

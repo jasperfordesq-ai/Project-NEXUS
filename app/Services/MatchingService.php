@@ -10,128 +10,63 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
- * MatchingService — handles match suggestions, preferences, and interaction tracking.
+ * MatchingService — a member's matching preferences and their cached match figures.
  */
 class MatchingService
 {
-    /** Default preference values */
+    /**
+     * Fallbacks used only when the community's matching settings cannot be
+     * read. The real defaults come from those settings: see defaults().
+     */
     private const DEFAULT_PREFERENCES = [
-        'max_distance_km'         => 25,
-        'min_match_score'         => 50,
+        'max_distance_km'         => 50,
+        'min_match_score'         => 40,
         'notification_frequency'  => 'monthly',
         'notify_hot_matches'      => true,
         'notify_mutual_matches'   => true,
+        'matching_paused'         => false,
         'categories'              => [],
+        'availability'            => [],
     ];
+
+    /**
+     * What applies to a member who has saved nothing, plus the community's
+     * distance ceiling.
+     *
+     * The settings page used to show 25 km and 50% to such a member while
+     * the engine was really using the community's own figures (50 km and 40%
+     * by default). Worse, saving ANY one setting then wrote 25/50 as if the
+     * member had chosen them. The defaults shown are now the ones applied.
+     *
+     * @return array<string, mixed>
+     */
+    private static function defaults(): array
+    {
+        $defaults = self::DEFAULT_PREFERENCES;
+        try {
+            $config = app(SmartMatchingEngine::class)->getConfig();
+            $defaults['max_distance_km'] = max(1, (int) ($config['max_distance_km'] ?? $defaults['max_distance_km']));
+            $defaults['min_match_score'] = max(0, min(100, (int) ($config['min_match_score'] ?? $defaults['min_match_score'])));
+        } catch (\Throwable $e) {
+            Log::warning('[MatchingService] community matching settings unreadable; using fallbacks', [
+                'exception' => $e::class,
+            ]);
+        }
+        $defaults['max_distance_limit_km'] = $defaults['max_distance_km'];
+
+        return $defaults;
+    }
 
     public function __construct()
     {
     }
 
-    /**
-     * Get match suggestions for a user.
-     */
-    public static function getSuggestionsForUser($userId, $limit = 5, array $options = [])
-    {
-        try {
-            $tenantId = \App\Core\TenantContext::getId();
-            $userId = (int) $userId;
-            $limit = max(1, min(100, (int) $limit));
-            $candidateLimit = min(500, max($limit, $limit * 5));
-
-            $candidates = DB::select(
-                "SELECT u.id, u.first_name, u.last_name, u.avatar_url, u.location, u.skills
-                 FROM users u
-                 WHERE u.tenant_id = ? AND u.id != ? AND u.status = 'active' AND u.is_approved = 1
-                 ORDER BY RAND()
-                 LIMIT ?",
-                [$tenantId, $userId, $candidateLimit]
-            );
-
-            // Safeguarding: these member suggestions feed the match digest
-            // email. A member suggestion has no listing, so it cannot go to the
-            // Match Approvals queue — a pair needing a coordinator's approval
-            // is simply never suggested here. Throws (fails closed) if unreadable.
-            $needsReview = app(\App\Services\Matching\MatchApprovalGate::class)->membersNeedingApproval(
-                array_merge([$userId], array_map(fn ($c) => (int) ($c->id ?? 0), $candidates)),
-                $tenantId,
-            );
-            if (isset($needsReview[$userId])) {
-                return [];
-            }
-
-            $policy = app(SafeguardingInteractionPolicy::class);
-            $suggestions = [];
-            foreach ($candidates as $candidate) {
-                $candidateId = (int) ($candidate->id ?? 0);
-                if ($candidateId <= 0 || isset($needsReview[$candidateId])) {
-                    continue;
-                }
-
-                $requesterToCandidate = $policy->evaluateLocalContact(
-                    $userId,
-                    $candidateId,
-                    $tenantId,
-                    'legacy_match_suggestion',
-                );
-                $candidateToRequester = $policy->evaluateLocalContact(
-                    $candidateId,
-                    $userId,
-                    $tenantId,
-                    'legacy_match_suggestion',
-                );
-                if (! $requesterToCandidate->isAllowed() || ! $candidateToRequester->isAllowed()) {
-                    continue;
-                }
-
-                $suggestions[] = $candidate;
-                if (count($suggestions) >= $limit) {
-                    break;
-                }
-            }
-
-            return $suggestions;
-        } catch (\Throwable $e) {
-            Log::debug('[MatchingService] getSuggestionsForUser failed closed', [
-                'exception' => $e::class,
-            ]);
-            return [];
-        }
-    }
-
-    /**
-     * Get hot matches for a user.
-     */
-    public static function getHotMatches($userId, $limit = 5)
-    {
-        return self::getSuggestionsForUser($userId, $limit) ?? [];
-    }
-
-    /**
-     * Get mutual matches for a user.
-     */
-    public static function getMutualMatches($userId, $limit = 10)
-    {
-        return [];
-    }
-
-    /**
-     * Get matches grouped by type.
-     *
-     * @return array{hot: array, good: array, mutual: array, all: array}
-     */
-    public static function getMatchesByType($userId)
-    {
-        $hot = self::getHotMatches($userId, 5);
-        $mutual = self::getMutualMatches($userId, 5);
-
-        return [
-            'hot'    => is_array($hot) ? $hot : [],
-            'good'   => [],
-            'mutual' => is_array($mutual) ? $mutual : [],
-            'all'    => is_array($hot) ? $hot : [],
-        ];
-    }
+    // NOTE: getSuggestionsForUser(), getHotMatches(), getMutualMatches() and
+    // getMatchesByType() used to live here. They returned RANDOM active
+    // members (ORDER BY RAND()), not matches, and existed only to feed the
+    // match digest, which they crashed. Matches come from
+    // SmartMatchingEngine::findMatchesForUser(); notifications from
+    // Matching\MatchNotificationService.
 
     /**
      * Save matching preferences for a user.
@@ -205,8 +140,10 @@ class MatchingService
                 ->where('tenant_id', \App\Core\TenantContext::getId())
                 ->first();
 
+            $defaults = self::defaults();
+
             if (!$row) {
-                return self::DEFAULT_PREFERENCES;
+                return $defaults;
             }
 
             // The `categories` JSON column is the only source — see the note in
@@ -228,18 +165,26 @@ class MatchingService
                 }
             }
 
+            // A saved distance can never exceed the community's ceiling (the
+            // engine applies the same cap), so show the figure really used.
+            $limit = (int) $defaults['max_distance_limit_km'];
+            $distance = (int) ($row->max_distance_km ?? $defaults['max_distance_km']);
+
             return [
-                'max_distance_km'        => (int) ($row->max_distance_km ?? self::DEFAULT_PREFERENCES['max_distance_km']),
-                'min_match_score'        => (int) ($row->min_match_score ?? self::DEFAULT_PREFERENCES['min_match_score']),
-                'notification_frequency' => $row->notification_frequency ?? self::DEFAULT_PREFERENCES['notification_frequency'],
-                'notify_hot_matches'     => (bool) ($row->notify_hot_matches ?? self::DEFAULT_PREFERENCES['notify_hot_matches']),
-                'notify_mutual_matches'  => (bool) ($row->notify_mutual_matches ?? self::DEFAULT_PREFERENCES['notify_mutual_matches']),
+                'max_distance_km'        => max(1, min($limit, $distance)),
+                'min_match_score'        => (int) ($row->min_match_score ?? $defaults['min_match_score']),
+                'notification_frequency' => $row->notification_frequency ?? $defaults['notification_frequency'],
+                'notify_hot_matches'     => (bool) ($row->notify_hot_matches ?? $defaults['notify_hot_matches']),
+                'notify_mutual_matches'  => (bool) ($row->notify_mutual_matches ?? $defaults['notify_mutual_matches']),
                 'matching_paused'        => (bool) ($row->matching_paused ?? false),
                 'categories'             => $categories,
                 'availability'           => $availability,
+                'max_distance_limit_km'  => $limit,
             ];
         } catch (\Throwable $e) {
-            return self::DEFAULT_PREFERENCES;
+            Log::error('[MatchingService] getPreferences failed', ['user_id' => $userId, 'exception' => $e::class]);
+
+            return self::DEFAULT_PREFERENCES + ['max_distance_limit_km' => self::DEFAULT_PREFERENCES['max_distance_km']];
         }
     }
 
@@ -261,6 +206,7 @@ class MatchingService
             $tenantId = \App\Core\TenantContext::getId();
 
             $total = (int) DB::table('match_cache')
+                ->where('tenant_id', $tenantId)
                 ->where('user_id', $userId)
                 ->count();
 
@@ -269,20 +215,24 @@ class MatchingService
             // `is_mutual` or `distance` column. Naming them threw on the second
             // query, and the catch below turned the whole method into zeroes.
             $hot = (int) DB::table('match_cache')
+                ->where('tenant_id', $tenantId)
                 ->where('user_id', $userId)
                 ->where('match_score', '>=', 80)
                 ->count();
 
             $mutual = (int) DB::table('match_cache')
+                ->where('tenant_id', $tenantId)
                 ->where('user_id', $userId)
                 ->where('match_type', 'mutual')
                 ->count();
 
             $avgScore = DB::table('match_cache')
+                ->where('tenant_id', $tenantId)
                 ->where('user_id', $userId)
                 ->avg('match_score');
 
             $avgDistance = DB::table('match_cache')
+                ->where('tenant_id', $tenantId)
                 ->where('user_id', $userId)
                 ->avg('distance_km');
 
@@ -302,16 +252,5 @@ class MatchingService
                 'avg_distance'   => 0,
             ];
         }
-    }
-
-    /**
-     * Send notifications for new matches.
-     *
-     * @return int Number of notifications sent
-     */
-    public static function notifyNewMatches($userId): int
-    {
-        // Stub: notifications are handled elsewhere
-        return 0;
     }
 }

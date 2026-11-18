@@ -42,6 +42,12 @@ class GroupMatchingServiceTest extends TestCase
     {
         // Table-exists probe succeeds.
         DB::shouldReceive('selectOne')->andReturn((object) ['1' => 1]);
+        // Expired, never-acted-on suggestions are removed first.
+        DB::shouldReceive('delete')->once()->withArgs(function ($sql) {
+            $normalised = preg_replace('/\s+/', ' ', $sql);
+            // Dismissed and joined rows are the member's decision: never pruned.
+            return str_contains($normalised, "status IN ('new', 'viewed')");
+        })->andReturn(0);
         // One user needing a warm.
         DB::shouldReceive('select')->once()->andReturn([(object) ['id' => 42]]);
 
@@ -99,6 +105,8 @@ class GroupMatchingServiceTest extends TestCase
     {
         DB::shouldReceive('selectOne')->andReturn((object) ['1' => 1]);
         DB::shouldReceive('select')->once()->andReturn([]); // cold cache
+        // Groups this member already dismissed or joined: none.
+        DB::shouldReceive('table->where->where->whereIn->pluck')->once()->andReturn(collect([]));
 
         $this->mockEngine->shouldReceive('getRecommendations')->once()->with(42, 10)->andReturn([
             [

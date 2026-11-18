@@ -28,6 +28,12 @@ use Illuminate\Support\Facades\DB;
  *    unknown, not dormant — legacy rows never populated it).
  *  - Dismissal gate: listings the searcher has already dismissed are excluded
  *    in SQL instead of post-hoc.
+ *  - Owner gate: the listing's owner must be an ACTIVE member. This used to
+ *    exclude only banned and suspended owners, so a member was introduced to
+ *    accounts that were deactivated, refused, or still waiting for approval.
+ *  - Moderation gate: the same rule as ListingService::applyPublicVisibility().
+ *    A listing that is in review or was not approved is never a candidate,
+ *    even if its `status` still reads 'active'.
  *
  * A bounding-box pre-filter runs before the Haversine HAVING so the geo gate
  * stays index-assisted at tenant scale. Distances are NULL-safe: candidates
@@ -136,7 +142,8 @@ class CandidateRetriever
                 JOIN users u ON l.user_id = u.id
                 LEFT JOIN categories c ON l.category_id = c.id
                 WHERE l.tenant_id = ? AND l.status = 'active' AND l.user_id != ?
-                  AND u.status NOT IN ('banned', 'suspended')";
+                  AND (l.moderation_status IS NULL OR l.moderation_status = 'approved')
+                  AND u.status = 'active'";
         array_push($params, $tenantId, $excludeUserId);
 
         if ($targetType !== null) {

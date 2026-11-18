@@ -157,6 +157,7 @@ class MatchApprovalWorkflowServiceTest extends TestCase
         // Row lookup before update
         DB::shouldReceive('first')->andReturn((object) [
             'id' => 1, 'user_id' => 20, 'listing_owner_id' => 30, 'listing_id' => 5, 'match_score' => 80,
+            'status' => 'pending',
         ]);
         DB::shouldReceive('update')->andReturn(1);
         // Listing title lookup for the approval notification
@@ -180,6 +181,74 @@ class MatchApprovalWorkflowServiceTest extends TestCase
         $this->assertFalse(MatchApprovalWorkflowService::approveMatch(999, 5));
     }
 
+    public function test_approveMatchOutcome_says_not_found_when_there_is_no_row(): void
+    {
+        DB::shouldReceive('table')->with('match_approvals')->andReturnSelf();
+        DB::shouldReceive('where')->andReturnSelf();
+        DB::shouldReceive('first')->andReturn(null);
+        DB::shouldReceive('update')->never();
+
+        $this->assertSame(
+            MatchApprovalWorkflowService::OUTCOME_NOT_FOUND,
+            MatchApprovalWorkflowService::approveMatchOutcome(999, 5)
+        );
+    }
+
+    public function test_outcome_says_already_reviewed_for_a_decided_row(): void
+    {
+        DB::shouldReceive('table')->with('match_approvals')->andReturnSelf();
+        DB::shouldReceive('where')->andReturnSelf();
+        DB::shouldReceive('first')->andReturn((object) [
+            'id' => 1, 'user_id' => 20, 'listing_owner_id' => 30, 'listing_id' => 5, 'match_score' => 80,
+            'status' => 'rejected',
+        ]);
+        DB::shouldReceive('update')->never();
+
+        $this->assertSame(
+            MatchApprovalWorkflowService::OUTCOME_ALREADY_REVIEWED,
+            MatchApprovalWorkflowService::approveMatchOutcome(1, 5)
+        );
+        $this->assertSame(
+            MatchApprovalWorkflowService::OUTCOME_ALREADY_REVIEWED,
+            MatchApprovalWorkflowService::rejectMatchOutcome(1, 5, 'Too late')
+        );
+    }
+
+    public function test_approveMatchOutcome_says_contact_blocked_and_does_not_update(): void
+    {
+        $this->bindPolicy(SafeguardingInteractionDecision::DENY);
+        DB::shouldReceive('table')->andReturnSelf();
+        DB::shouldReceive('where')->andReturnSelf();
+        DB::shouldReceive('first')->andReturn((object) [
+            'id' => 1, 'user_id' => 20, 'listing_owner_id' => 30, 'listing_id' => 5, 'match_score' => 80,
+            'status' => 'pending',
+        ]);
+        DB::shouldReceive('update')->never();
+        Log::shouldReceive('info')->once();
+
+        $this->assertSame(
+            MatchApprovalWorkflowService::OUTCOME_CONTACT_BLOCKED,
+            MatchApprovalWorkflowService::approveMatchOutcome(1, 5)
+        );
+    }
+
+    public function test_approveMatchOutcome_says_failed_when_the_write_throws(): void
+    {
+        DB::shouldReceive('table')->andReturnSelf();
+        DB::shouldReceive('where')->andReturnSelf();
+        DB::shouldReceive('first')->andReturn((object) [
+            'id' => 1, 'user_id' => 20, 'listing_owner_id' => 30, 'listing_id' => 5, 'match_score' => 80,
+            'status' => 'pending',
+        ]);
+        DB::shouldReceive('update')->andThrow(new \RuntimeException('deadlock'));
+        Log::shouldReceive('error')->once();
+
+        $this->assertSame(
+            MatchApprovalWorkflowService::OUTCOME_FAILED,
+            MatchApprovalWorkflowService::approveMatchOutcome(1, 5)
+        );
+    }
+
     public function test_approveMatch_does_not_update_when_policy_is_unavailable(): void
     {
         $this->bindPolicy(SafeguardingInteractionDecision::UNAVAILABLE);
@@ -191,6 +260,7 @@ class MatchApprovalWorkflowServiceTest extends TestCase
             'listing_owner_id' => 30,
             'listing_id' => 5,
             'match_score' => 80,
+            'status' => 'pending',
         ]);
         DB::shouldReceive('update')->never();
         Log::shouldReceive('info')->once();
@@ -204,6 +274,7 @@ class MatchApprovalWorkflowServiceTest extends TestCase
         DB::shouldReceive('where')->andReturnSelf();
         DB::shouldReceive('first')->andReturn((object) [
             'id' => 1, 'user_id' => 20, 'listing_id' => 5, 'match_score' => 80,
+            'status' => 'pending',
         ]);
         DB::shouldReceive('update')->andReturn(1);
         DB::shouldReceive('value')->andReturn('Listing Title');
@@ -248,6 +319,40 @@ class MatchApprovalWorkflowServiceTest extends TestCase
         $this->assertArrayHasKey('pending', $result);
         $this->assertArrayHasKey('approval_rate', $result);
         $this->assertArrayHasKey('avg_review_hours', $result);
+    }
+
+    public function test_getStatistics_counts_every_status_all_time(): void
+    {
+        $statusSql = null;
+        $statusBindings = null;
+        DB::shouldReceive('select')->andReturnUsing(function (string $sql, array $bindings = []) use (&$statusSql, &$statusBindings) {
+            if (str_contains($sql, 'GROUP BY status')) {
+                $statusSql = $sql;
+                $statusBindings = $bindings;
+
+                return [
+                    (object) ['status' => 'pending', 'cnt' => 2],
+                    (object) ['status' => 'approved', 'cnt' => 30],
+                    (object) ['status' => 'rejected', 'cnt' => 10],
+                ];
+            }
+
+            return [];
+        });
+        DB::shouldReceive('selectOne')->andReturn((object) ['avg_hours' => 2.5]);
+
+        $result = MatchApprovalWorkflowService::getStatistics(30);
+
+        // The tab counts must describe the same rows the tabs list, which are
+        // not limited to the last 30 days.
+        $this->assertNotNull($statusSql);
+        $this->assertStringNotContainsString('submitted_at', $statusSql);
+        $this->assertCount(1, $statusBindings, 'Only the tenant id is bound: no time window');
+        $this->assertSame(2, $result['pending_count']);
+        $this->assertSame(30, $result['approved_count']);
+        $this->assertSame(10, $result['rejected_count']);
+        $this->assertSame(42, $result['total']);
+        $this->assertSame(75.0, $result['approval_rate']);
     }
 
     public function test_getStatistics_handles_error(): void

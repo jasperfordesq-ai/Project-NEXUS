@@ -9,6 +9,7 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use App\Services\CrossModuleMatchingService;
+use App\Services\GroupMatchingService;
 use App\Services\MatchLearningService;
 
 /**
@@ -25,6 +26,7 @@ class MatchingController extends BaseApiController
     public function __construct(
         private readonly CrossModuleMatchingService $crossModuleMatchingService,
         private readonly MatchLearningService $matchLearningService,
+        private readonly GroupMatchingService $groupMatchingService,
     ) {}
 
     /**
@@ -35,8 +37,8 @@ class MatchingController extends BaseApiController
      *
      * Query Parameters:
      * - limit: int (default 20, max 100)
-     * - min_score: int (default 30, minimum match score 0-100)
-     * - modules: string (comma-separated: 'listings,jobs,volunteering,groups')
+     * - min_score: int 0-100 (default: the member's saved minimum, else the community's)
+     * - modules: string (comma-separated: 'listings,groups,volunteering,events')
      * - user_id: int (platform team only — view another member's matches)
      * - debug: 'true' (platform team only — include the scoring breakdown)
      *
@@ -77,13 +79,21 @@ class MatchingController extends BaseApiController
 
         $options = [
             'limit' => min(100, max(1, $this->queryInt('limit', 20))),
-            'min_score' => max(0, min(100, $this->queryInt('min_score', 30))),
             'debug' => $debug,
         ];
 
+        // Only when the caller names one. Absent, the member's saved minimum
+        // (else the community's) applies: a fixed 30 here overrode both.
+        $requestedMinScore = $this->query('min_score');
+        if ($requestedMinScore !== null && $requestedMinScore !== '' && is_numeric($requestedMinScore)) {
+            $options['min_score'] = max(0, min(100, (int) $requestedMinScore));
+        }
+
         $modulesParam = $this->query('modules');
         if ($modulesParam) {
-            $allowed = ['listings', 'jobs', 'volunteering', 'groups'];
+            // The four sources the service really has. This list named
+            // 'jobs' (which has no matcher) and left out 'events'.
+            $allowed = ['listings', 'groups', 'volunteering', 'events'];
             $requested = array_map('trim', explode(',', $modulesParam));
             $options['modules'] = array_values(array_intersect($requested, $allowed));
         }
@@ -154,15 +164,8 @@ class MatchingController extends BaseApiController
                 break;
 
             case 'group':
-                try {
-                    DB::statement(
-                        "UPDATE group_match_cache SET status = 'dismissed'
-                         WHERE tenant_id = ? AND user_id = ? AND group_id = ?",
-                        [$tenantId, $userId, $sourceId]
-                    );
-                } catch (\Throwable $e) {
-                    // Table may not exist yet — degrade gracefully.
-                    \Log::warning('MatchingController::dismissTyped group DB error — ' . $e->getMessage());
+                if (!$this->groupMatchingService->dismiss($userId, $sourceId)) {
+                    return $this->respondWithError('NOT_FOUND', __('api.not_found', ['model' => 'Group']), 'sourceId', 404);
                 }
                 break;
 
@@ -191,30 +194,14 @@ class MatchingController extends BaseApiController
             \Log::warning('MatchingController::dismiss DB error — ' . $e->getMessage());
         }
 
+        // The cached copy of this match is what the admin figures count, so
+        // it is marked too (nothing ever wrote a status other than 'new').
+        DB::update(
+            "UPDATE match_cache SET status = 'dismissed' WHERE tenant_id = ? AND user_id = ? AND listing_id = ?",
+            [$tenantId, $userId, $listingId]
+        );
+
         // Record negative signal in MatchLearningService
         $this->matchLearningService->recordInteraction($userId, $listingId, 'dismissed', []);
-    }
-
-    /**
-     * Resolve the current user's role from the auth user or legacy session.
-     */
-    private function resolveUserRole(): string
-    {
-        $user = \Illuminate\Support\Facades\Auth::user();
-        if ($user) {
-            return $user->role ?? 'member';
-        }
-
-        // Legacy session fallback
-        if (session_status() === PHP_SESSION_ACTIVE && !empty($_SESSION['user_id'])) {
-            $row = DB::table('users')
-                ->where('id', (int) $_SESSION['user_id'])
-                ->where('tenant_id', $this->getTenantId())
-                ->select('role')
-                ->first();
-            return $row->role ?? 'member';
-        }
-
-        return 'member';
     }
 }

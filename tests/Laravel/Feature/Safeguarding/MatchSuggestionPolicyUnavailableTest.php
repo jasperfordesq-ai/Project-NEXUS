@@ -9,8 +9,10 @@ declare(strict_types=1);
 namespace Tests\Laravel\Feature\Safeguarding;
 
 use App\Core\TenantContext;
+use App\Models\Category;
+use App\Models\Listing;
 use App\Models\User;
-use App\Services\MatchingService;
+use App\Services\SmartMatchingEngine;
 use App\Services\SafeguardingJurisdictionService;
 use App\Services\SafeguardingTriggerService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -43,13 +45,12 @@ use Tests\Laravel\TestCase;
  * unavailable decision apply to untriggered members, this test fails and the
  * matches page stops silently emptying itself in production instead.
  *
- * 🔴 Determinism note, learned the hard way. `getSuggestionsForUser()` samples
- * candidates with `ORDER BY RAND()` and stops at the requested limit, so
- * "member X is absent from the results" is NOT evidence of a policy decision —
- * X may simply not have been sampled. The first draft of this test asserted
- * presence of a freshly-created member and failed for exactly that reason,
- * which reads identically to a backend fault. Each test below therefore
- * narrows the candidate pool to the members it created before asserting.
+ * 🔴 Which code this exercises (corrected 17 Nov 2026). Until then these tests
+ * called `MatchingService::getSuggestionsForUser()`, which was NOT what the
+ * matches page runs: it returned random members for the (broken) match digest
+ * and has been removed. They now drive `SmartMatchingEngine::findMatchesForUser()`,
+ * the call behind `GET /api/v2/matches/all`, with real listings, so they prove
+ * what the comment above always claimed to prove.
  */
 class MatchSuggestionPolicyUnavailableTest extends TestCase
 {
@@ -72,12 +73,15 @@ class MatchSuggestionPolicyUnavailableTest extends TestCase
 
     public function test_unconfigured_jurisdiction_withholds_only_the_protected_member(): void
     {
+        $category = $this->category();
         $viewer = $this->activeMember();
+        $this->listing($viewer, 'offer', $category);
         $ordinary = $this->activeMember();
+        $this->listing($ordinary, 'request', $category);
         $protected = $this->activeMember();
+        $this->listing($protected, 'request', $category);
 
         $this->requireVettedInteraction($protected);
-        $this->confineCandidatePoolTo($viewer, $ordinary, $protected);
 
         $suggestedIds = $this->suggestedIdsFor($viewer);
 
@@ -102,11 +106,13 @@ class MatchSuggestionPolicyUnavailableTest extends TestCase
         // The engine evaluates viewer->candidate AND candidate->viewer, and
         // drops the pair if either direction is refused. So a protected VIEWER
         // gets no unvetted suggestions either — the shield works both ways.
+        $category = $this->category();
         $protectedViewer = $this->activeMember();
+        $this->listing($protectedViewer, 'offer', $category);
         $ordinary = $this->activeMember();
+        $this->listing($ordinary, 'request', $category);
 
         $this->requireVettedInteraction($protectedViewer);
-        $this->confineCandidatePoolTo($protectedViewer, $ordinary);
 
         self::assertNotContains(
             $ordinary->id,
@@ -116,32 +122,21 @@ class MatchSuggestionPolicyUnavailableTest extends TestCase
     }
 
     /**
+     * The owners of the listings the matches page would show this member.
+     *
      * @return list<int>
      */
     private function suggestedIdsFor(User $viewer): array
     {
-        return array_map(
-            static fn (object $row): int => (int) $row->id,
-            MatchingService::getSuggestionsForUser($viewer->id, 50),
+        $matches = app(SmartMatchingEngine::class)->findMatchesForUser(
+            $viewer->id,
+            ['min_score' => 0, 'limit' => 50],
         );
-    }
 
-    /**
-     * Leave only these members eligible as candidates.
-     *
-     * Required for a meaningful assertion: the candidate query is
-     * `ORDER BY RAND()` and stops at the limit, so against the shared fixture
-     * (149 eligible members locally) neither presence nor absence of one
-     * specific member proves anything. Rolled back with the transaction.
-     */
-    private function confineCandidatePoolTo(User ...$keep): void
-    {
-        $keepIds = array_map(static fn (User $u): int => (int) $u->id, $keep);
-
-        DB::table('users')
-            ->where('tenant_id', $this->testTenantId)
-            ->whereNotIn('id', $keepIds)
-            ->update(['status' => 'inactive']);
+        return array_values(array_map(
+            static fn (array $match): int => (int) ($match['user_id'] ?? 0),
+            $matches,
+        ));
     }
 
     private function activeMember(): User
@@ -149,6 +144,35 @@ class MatchSuggestionPolicyUnavailableTest extends TestCase
         return User::factory()->forTenant($this->testTenantId)->create([
             'status' => 'active',
             'is_approved' => 1,
+            'latitude' => 51.5000,
+            'longitude' => -0.1200,
+            'last_active_at' => now(),
+        ]);
+    }
+
+    private function category(): Category
+    {
+        return Category::factory()->create([
+            'tenant_id' => $this->testTenantId,
+            'type' => 'listing',
+            'name' => 'Policy test ' . uniqid(),
+        ]);
+    }
+
+    private function listing(User $owner, string $type, Category $category): Listing
+    {
+        return Listing::factory()->forTenant($this->testTenantId)->create([
+            'user_id' => $owner->id,
+            'type' => $type,
+            'status' => 'active',
+            'moderation_status' => 'approved',
+            'category_id' => $category->id,
+            'title' => 'Gardening help ' . uniqid(),
+            'description' => 'Weeding, mowing and hedge trimming in the garden every week.',
+            'latitude' => 51.5000,
+            'longitude' => -0.1200,
+            'service_type' => 'physical_only',
+            'created_at' => now(),
         ]);
     }
 

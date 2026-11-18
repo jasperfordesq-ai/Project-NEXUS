@@ -351,8 +351,12 @@ class SmartMatchingEngineTest extends TestCase
 
         $this->engine->warmUpCache(20);
 
-        $this->assertNull(
-            $prop->getValue($this->engine),
+        // warmUpCache() now re-reads the config straight away (it checks the
+        // community's on/off switch), so the cache is repopulated rather than
+        // left null. What matters is that the previous tenant's value is gone.
+        $this->assertNotSame(
+            999,
+            $prop->getValue($this->engine)['min_match_score'] ?? null,
             'warmUpCache must clear the singleton config cache so the next tenant re-reads its own config'
         );
     }

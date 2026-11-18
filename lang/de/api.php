@@ -3080,4 +3080,15 @@ KANDIDATEN::candidates',
     'platform_agreement_contact_name_too_long' => 'Der Name der Kontaktperson darf höchstens 160 Zeichen lang sein.',
     'platform_agreement_notes_too_long' => 'Notizen dürfen höchstens 5.000 Zeichen lang sein.',
     'platform_agreement_community_unknown' => 'Diese Gemeinschaft gibt es nicht.',
+
+    // Smart matching: admin settings validation and coordinator match approvals.
+    'match_approval_not_found' => 'Dieser Match wurde nicht gefunden. Vielleicht wurde er entfernt.',
+    'match_approval_already_reviewed' => 'Dieser Match wurde bereits freigegeben oder abgelehnt.',
+    'match_approval_contact_blocked' => 'Dieser Match kann nicht freigegeben werden: Die Schutzregeln erlauben diesen beiden Mitgliedern keinen Kontakt miteinander. Er wartet weiterhin auf eine Entscheidung.',
+    'matching_max_distance_range' => 'Die maximale Entfernung muss zwischen 1 und 20.000 km liegen.',
+    'matching_min_score_range' => 'Der Mindest-Match-Wert muss zwischen 0 und 100 liegen.',
+    'matching_hot_threshold_range' => 'Der Schwellenwert für Hot Matches muss zwischen 0 und 100 liegen.',
+    'matching_hot_below_min' => 'Der Schwellenwert für Hot Matches darf nicht unter dem Mindest-Match-Wert liegen.',
+    'matching_bands_invalid' => 'Jeder Entfernungsbereich muss über 0 km liegen und größer sein als der vorherige.',
+    'matching_weights_invalid' => 'Jede Gewichtung muss zwischen 0 % und 100 % liegen, und sie dürfen nicht alle 0 % betragen.',
 ];

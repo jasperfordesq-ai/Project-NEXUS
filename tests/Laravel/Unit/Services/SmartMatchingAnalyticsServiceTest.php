@@ -22,24 +22,66 @@ class SmartMatchingAnalyticsServiceTest extends TestCase
 
     // ── getOverallStats ──
 
-    public function test_getOverallStats_returns_expected_keys(): void
+    public function test_getOverallStats_maps_the_single_pass_row_to_the_response_keys(): void
     {
-        // Mock all DB::selectOne calls
-        DB::shouldReceive('selectOne')->andReturn(
-            (object) ['cnt' => 100],
-            (object) ['cnt' => 10],
-            (object) ['avg_score' => 72.5],
-            (object) ['avg_dist' => 12.3],
-            (object) ['cnt' => 50],
-            (object) ['cnt' => 30],
-        );
-        DB::shouldReceive('select')->andReturn([]);
+        // One aggregate row over the community's live cache rows, then the
+        // per-type breakdown.
+        DB::shouldReceive('selectOne')->once()->andReturn((object) [
+            'total' => 100, 'month_cnt' => 40, 'week_cnt' => 12, 'today_cnt' => 3,
+            'avg_score' => 72.46, 'avg_dist' => 12.34, 'users_cnt' => 50,
+            'hot_cnt' => 30, 'mutual_cnt' => 7,
+        ]);
+        DB::shouldReceive('select')->once()->andReturn([
+            (object) ['match_type' => 'mutual', 'cnt' => 7],
+            (object) ['match_type' => 'one_way', 'cnt' => 93],
+        ]);
 
-        $result = $this->service->getOverallStats();
-        $this->assertArrayHasKey('total_cached_matches', $result);
-        $this->assertArrayHasKey('average_score', $result);
-        $this->assertArrayHasKey('hot_matches', $result);
-        $this->assertArrayHasKey('match_type_breakdown', $result);
+        $result = $this->service->getOverallStats(65.0);
+
+        $this->assertSame(100, $result['total_cached_matches']);
+        $this->assertSame(40, $result['total_matches_month']);
+        $this->assertSame(12, $result['total_matches_week']);
+        $this->assertSame(3, $result['total_matches_today']);
+        $this->assertSame(72.5, $result['average_score']);
+        $this->assertSame(12.3, $result['average_distance_km']);
+        $this->assertSame(50, $result['active_users_with_matches']);
+        $this->assertSame(30, $result['hot_matches']);
+        $this->assertSame(65.0, $result['hot_match_threshold']);
+        $this->assertSame(7, $result['mutual_matches_count']);
+        $this->assertSame(['mutual' => 7, 'one_way' => 93], $result['match_type_breakdown']);
+    }
+
+    public function test_every_match_cache_query_is_tenant_scoped_and_counts_only_unexpired_rows(): void
+    {
+        $seen = [];
+        DB::shouldReceive('selectOne')->andReturnUsing(function (string $sql, array $bindings = []) use (&$seen) {
+            $seen[] = [$sql, $bindings];
+
+            return (object) ['cnt' => 0];
+        });
+        DB::shouldReceive('select')->andReturnUsing(function (string $sql, array $bindings = []) use (&$seen) {
+            $seen[] = [$sql, $bindings];
+
+            return [];
+        });
+
+        $this->service->getOverallStats();
+        $this->service->getScoreDistribution();
+        $this->service->getDistanceDistribution();
+        $this->service->getGateImpact();
+        $this->service->getPillarAverages();
+        $this->service->getConversionFunnel();
+
+        $cacheQueries = 0;
+        foreach ($seen as [$sql, $bindings]) {
+            $this->assertStringContainsString('tenant_id = ?', $sql, 'Every analytics query is scoped to the community');
+            $this->assertNotEmpty($bindings);
+            if (str_contains($sql, 'match_cache')) {
+                $cacheQueries++;
+                $this->assertStringContainsString('expires_at > NOW()', $sql, 'An expired cache row must not be counted: ' . $sql);
+            }
+        }
+        $this->assertGreaterThanOrEqual(10, $cacheQueries);
     }
 
     public function test_getOverallStats_propagates_query_errors(): void
@@ -52,14 +94,28 @@ class SmartMatchingAnalyticsServiceTest extends TestCase
 
     // ── getScoreDistribution ──
 
-    public function test_getScoreDistribution_returns_five_buckets(): void
+    public function test_getScoreDistribution_returns_five_half_open_buckets(): void
     {
-        DB::shouldReceive('selectOne')->times(5)->andReturn((object) ['cnt' => 5]);
+        DB::shouldReceive('selectOne')->once()->andReturn(
+            (object) ['b0' => 1, 'b1' => 2, 'b2' => 3, 'b3' => 4, 'b4' => 5]
+        );
 
         $result = $this->service->getScoreDistribution();
-        $this->assertCount(5, $result);
-        $this->assertEquals('0-20', $result[0]['range']);
-        $this->assertEquals('81-100', $result[4]['range']);
+
+        // Ranges share their edges ("20-40" then "40-60"): each is [min, max),
+        // so no score falls between two buckets. The old "21-40 / 41-60" keys
+        // described integer bounds that a DECIMAL score of 40.70 slipped past.
+        $this->assertSame(
+            [
+                ['range' => '0-20', 'count' => 1],
+                ['range' => '20-40', 'count' => 2],
+                ['range' => '40-60', 'count' => 3],
+                ['range' => '60-80', 'count' => 4],
+                ['range' => '80-100', 'count' => 5],
+            ],
+            $result
+        );
+        $this->assertSame(SmartMatchingAnalyticsService::SCORE_BUCKETS, array_column($result, 'range'));
     }
 
     public function test_getScoreDistribution_propagates_query_errors(): void
@@ -71,13 +127,27 @@ class SmartMatchingAnalyticsServiceTest extends TestCase
 
     // ── getDistanceDistribution ──
 
-    public function test_getDistanceDistribution_returns_buckets(): void
+    public function test_getDistanceDistribution_returns_the_documented_bucket_keys(): void
     {
-        DB::shouldReceive('selectOne')->times(6)->andReturn((object) ['cnt' => 3]);
+        DB::shouldReceive('selectOne')->once()->andReturn(
+            (object) ['b0' => 3, 'b1' => 3, 'b2' => 3, 'b3' => 3, 'b4' => 3, 'b5' => 2]
+        );
 
         $result = $this->service->getDistanceDistribution();
-        $this->assertGreaterThanOrEqual(5, count($result));
-        $this->assertEquals('0-5km', $result[0]['range']);
+
+        $this->assertSame(SmartMatchingAnalyticsService::DISTANCE_BUCKETS, array_column($result, 'range'));
+        $this->assertSame(['range' => 'unknown', 'count' => 2], $result[5]);
+    }
+
+    public function test_getDistanceDistribution_leaves_out_an_empty_unknown_bucket(): void
+    {
+        DB::shouldReceive('selectOne')->once()->andReturn(
+            (object) ['b0' => 3, 'b1' => 0, 'b2' => 0, 'b3' => 0, 'b4' => 1, 'b5' => 0]
+        );
+
+        $result = $this->service->getDistanceDistribution();
+
+        $this->assertSame(['0-5', '5-15', '15-30', '30-50', '50+'], array_column($result, 'range'));
     }
 
     public function test_getDistanceDistribution_propagates_query_errors(): void

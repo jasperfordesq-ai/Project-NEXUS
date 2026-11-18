@@ -159,13 +159,41 @@ class MatchApprovalWorkflowService
         }
     }
 
+    /** The decision was recorded. */
+    public const OUTCOME_OK = 'ok';
+    /** No such row in this community. */
+    public const OUTCOME_NOT_FOUND = 'not_found';
+    /** The row exists but somebody has already approved or rejected it. */
+    public const OUTCOME_ALREADY_REVIEWED = 'already_reviewed';
+    /** The safeguarding contact policy forbids these two members contacting each other; the row stays pending. */
+    public const OUTCOME_CONTACT_BLOCKED = 'contact_blocked';
+    /** The write itself failed (logged at error). */
+    public const OUTCOME_FAILED = 'failed';
+
     /**
      * Approve a pending match approval request.
      *
-     * Returns true if the row was updated (was pending), false if not found
-     * or already reviewed.
+     * Returns true if the row was updated (was pending), false otherwise.
+     * Callers that must tell the reviewer WHY it did not happen use
+     * approveMatchOutcome().
      */
     public static function approveMatch(int $requestId, int $approvedBy, string $notes = ''): bool
+    {
+        return self::approveMatchOutcome($requestId, $approvedBy, $notes) === self::OUTCOME_OK;
+    }
+
+    /**
+     * Approve a pending match approval request and say what happened.
+     *
+     * Until November 2026 the only answer was true/false, so the broker screen
+     * showed "…not found" for three different things: the row really was
+     * missing, a colleague had already decided it, or the safeguarding contact
+     * policy refused the pair (in which case the row was — and still is — left
+     * pending, with nothing telling the reviewer why).
+     *
+     * @return string one of the OUTCOME_* constants
+     */
+    public static function approveMatchOutcome(int $requestId, int $approvedBy, string $notes = ''): string
     {
         $tenantId = TenantContext::getId();
 
@@ -174,11 +202,14 @@ class MatchApprovalWorkflowService
             $approval = DB::table('match_approvals')
                 ->where('id', $requestId)
                 ->where('tenant_id', $tenantId)
-                ->where('status', 'pending')
                 ->first();
 
             if (!$approval) {
-                return false;
+                return self::OUTCOME_NOT_FOUND;
+            }
+
+            if ((string) $approval->status !== 'pending') {
+                return self::OUTCOME_ALREADY_REVIEWED;
             }
 
             if (! self::contactPolicyAllowsBoth(
@@ -187,7 +218,7 @@ class MatchApprovalWorkflowService
                 $tenantId,
                 'match_approval',
             )) {
-                return false;
+                return self::OUTCOME_CONTACT_BLOCKED;
             }
 
             $affected = DB::table('match_approvals')
@@ -234,39 +265,52 @@ class MatchApprovalWorkflowService
                     ]);
                 }
 
-                return true;
+                return self::OUTCOME_OK;
             }
 
-            return false;
+            // Somebody decided it between our read and our write.
+            return self::OUTCOME_ALREADY_REVIEWED;
         } catch (\Throwable $e) {
             Log::error('[MatchApprovalWorkflow] approveMatch failed', [
                 'request_id' => $requestId,
                 'error' => $e->getMessage(),
             ]);
-            return false;
+            return self::OUTCOME_FAILED;
         }
     }
 
     /**
      * Reject a pending match approval request.
      *
-     * Returns true if the row was updated (was pending), false if not found
-     * or already reviewed.
+     * Returns true if the row was updated (was pending), false otherwise.
+     * See rejectMatchOutcome() for the reason.
      */
     public static function rejectMatch(int $requestId, int $rejectedBy, string $reason = ''): bool
+    {
+        return self::rejectMatchOutcome($requestId, $rejectedBy, $reason) === self::OUTCOME_OK;
+    }
+
+    /**
+     * Reject a pending match approval request and say what happened.
+     *
+     * @return string OUTCOME_OK, OUTCOME_NOT_FOUND, OUTCOME_ALREADY_REVIEWED or OUTCOME_FAILED
+     */
+    public static function rejectMatchOutcome(int $requestId, int $rejectedBy, string $reason = ''): string
     {
         $tenantId = TenantContext::getId();
 
         try {
-            // Fetch the approval row before updating so we have data for notifications
             $approval = DB::table('match_approvals')
                 ->where('id', $requestId)
                 ->where('tenant_id', $tenantId)
-                ->where('status', 'pending')
                 ->first();
 
             if (!$approval) {
-                return false;
+                return self::OUTCOME_NOT_FOUND;
+            }
+
+            if ((string) $approval->status !== 'pending') {
+                return self::OUTCOME_ALREADY_REVIEWED;
             }
 
             $affected = DB::table('match_approvals')
@@ -294,16 +338,16 @@ class MatchApprovalWorkflowService
                 // rejected row keeps the pair from being proposed again, and
                 // the controller writes the audit entry.
 
-                return true;
+                return self::OUTCOME_OK;
             }
 
-            return false;
+            return self::OUTCOME_ALREADY_REVIEWED;
         } catch (\Throwable $e) {
             Log::error('[MatchApprovalWorkflow] rejectMatch failed', [
                 'request_id' => $requestId,
                 'error' => $e->getMessage(),
             ]);
-            return false;
+            return self::OUTCOME_FAILED;
         }
     }
 
@@ -461,7 +505,15 @@ class MatchApprovalWorkflowService
     /**
      * Get approval workflow statistics for the current tenant.
      *
-     * @param int $days Lookback window in days (default 30)
+     * 🔴 The three status counts and the approval rate are ALL-TIME, not
+     * windowed. The broker Match approvals page puts them on its Pending /
+     * Approved / Rejected tabs, and each tab lists every row of that status
+     * however old it is. Until November 2026 approved and rejected were
+     * counted over the last $days only, so a tab could read "Approved 3" above
+     * a list of forty. $days now bounds only the two figures that are about
+     * recent activity: the average review time and the top reviewers.
+     *
+     * @param int $days Lookback window in days for review time and reviewers (default 30)
      * @return array{total: int, pending: int, approved: int, rejected: int, approval_rate: float, avg_review_hours: float, top_reviewers: array}
      */
     public static function getStatistics(int $days = 30): array
@@ -470,29 +522,22 @@ class MatchApprovalWorkflowService
         $since = now()->subDays($days)->toDateTimeString();
 
         try {
-            // Aggregate counts
+            // Status counts, ALL-TIME (see the method comment): the same sets
+            // the Pending / Approved / Rejected lists show.
             $rows = DB::select(
                 "SELECT status, COUNT(*) as cnt
                  FROM match_approvals
-                 WHERE tenant_id = ? AND submitted_at >= ?
+                 WHERE tenant_id = ?
                  GROUP BY status",
-                [$tenantId, $since]
+                [$tenantId]
             );
 
             $counts = ['pending' => 0, 'approved' => 0, 'rejected' => 0];
             foreach ($rows as $row) {
-                $counts[$row->status] = (int) $row->cnt;
+                if (array_key_exists((string) $row->status, $counts)) {
+                    $counts[(string) $row->status] = (int) $row->cnt;
+                }
             }
-
-            // Pending is a live review queue, not activity history — count it
-            // WITHOUT the time window. A match submitted 40 days ago that
-            // nobody reviewed must still light up the stat card, the tab
-            // chip, and the broker sidebar badge; the windowed query silently
-            // dropped exactly the items that most need attention.
-            $counts['pending'] = (int) DB::selectOne(
-                "SELECT COUNT(*) as cnt FROM match_approvals WHERE tenant_id = ? AND status = 'pending'",
-                [$tenantId]
-            )->cnt;
 
             $total = array_sum($counts);
             $reviewed = $counts['approved'] + $counts['rejected'];

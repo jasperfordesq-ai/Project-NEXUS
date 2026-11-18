@@ -3080,4 +3080,15 @@ IARRTHÓIRÍ: :candidates',
     'platform_agreement_contact_name_too_long' => 'Is féidir le hainm an teagmhálaí a bheith suas le 160 carachtar.',
     'platform_agreement_notes_too_long' => 'Is féidir le nótaí a bheith suas le 5,000 carachtar.',
     'platform_agreement_community_unknown' => 'Níl an pobal sin ann.',
+
+    // Smart matching: admin settings validation and coordinator match approvals.
+    'match_approval_not_found' => 'Ní féidir linn an mheaitseáil sin a aimsiú. Seans gur baineadh anuas í.',
+    'match_approval_already_reviewed' => 'Faomhadh nó diúltaíodh an mheaitseáil seo cheana féin.',
+    'match_approval_contact_blocked' => 'Ní féidir an mheaitseáil seo a fhaomhadh: ní cheadaíonn na rialacha cumhdaigh don dá bhall seo teagmháil a dhéanamh lena chéile. Tá sí fós ag fanacht le cinneadh.',
+    'matching_max_distance_range' => 'Caithfidh an t-uasfhad a bheith idir 1 agus 20,000 km.',
+    'matching_min_score_range' => 'Caithfidh an scór meaitseála íosta a bheith idir 0 agus 100.',
+    'matching_hot_threshold_range' => 'Caithfidh an tairseach meaitseála te a bheith idir 0 agus 100.',
+    'matching_hot_below_min' => 'Ní féidir leis an tairseach meaitseála te a bheith níos ísle ná an scór meaitseála íosta.',
+    'matching_bands_invalid' => 'Caithfidh gach banda faid a bheith os cionn 0 km agus níos faide ná an ceann roimhe.',
+    'matching_weights_invalid' => 'Caithfidh gach meáchan scórála a bheith idir 0% agus 100%, agus ní féidir leo go léir a bheith 0%.',
 ];

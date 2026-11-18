@@ -3080,4 +3080,15 @@ KANDYDACI::candidates',
     'platform_agreement_contact_name_too_long' => 'Imię i nazwisko osoby kontaktowej może mieć do 160 znaków.',
     'platform_agreement_notes_too_long' => 'Notatki mogą mieć do 5000 znaków.',
     'platform_agreement_community_unknown' => 'Taka społeczność nie istnieje.',
+
+    // Smart matching: admin settings validation and coordinator match approvals.
+    'match_approval_not_found' => 'Nie możemy znaleźć tego dopasowania. Być może zostało usunięte.',
+    'match_approval_already_reviewed' => 'To dopasowanie zostało już zatwierdzone lub odrzucone.',
+    'match_approval_contact_blocked' => 'Tego dopasowania nie można zatwierdzić: zasady ochrony nie pozwalają tym dwóm członkom kontaktować się ze sobą. Nadal czeka ono na decyzję.',
+    'matching_max_distance_range' => 'Maksymalna odległość musi wynosić od 1 do 20 000 km.',
+    'matching_min_score_range' => 'Minimalny wynik dopasowania musi wynosić od 0 do 100.',
+    'matching_hot_threshold_range' => 'Próg gorącego dopasowania musi wynosić od 0 do 100.',
+    'matching_hot_below_min' => 'Próg gorącego dopasowania nie może być niższy niż minimalny wynik dopasowania.',
+    'matching_bands_invalid' => 'Każdy przedział odległości musi być większy niż 0 km i większy od poprzedniego.',
+    'matching_weights_invalid' => 'Każda waga punktacji musi wynosić od 0% do 100% i nie wszystkie mogą być równe 0%.',
 ];

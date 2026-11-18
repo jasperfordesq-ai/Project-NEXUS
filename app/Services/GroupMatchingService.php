@@ -7,6 +7,7 @@
 namespace App\Services;
 
 use App\Core\TenantContext;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -51,28 +52,56 @@ class GroupMatchingService
             return $results;
         }
 
+        $limit = max(1, $limit);
+
         try {
-            // Active users without a fresh group cache, most recently active first.
-            $users = DB::select(
-                "SELECT DISTINCT u.id
+            // Expired suggestions the member never acted on are removed.
+            // Dismissed and joined rows are KEPT: they are the only record
+            // that the member turned a group down.
+            DB::delete(
+                "DELETE FROM group_match_cache
+                 WHERE tenant_id = ? AND status IN ('new', 'viewed')
+                   AND expires_at IS NOT NULL AND expires_at < NOW()
+                 LIMIT 5000",
+                [$tenantId]
+            );
+
+            // Active users with no unexpired suggestion, most recently active
+            // first. (The old test, "no row or any expired row", re-ran the
+            // same members every half hour: see SmartMatchingEngine::warmUpCache.)
+            $candidates = DB::select(
+                "SELECT u.id
                  FROM users u
-                 LEFT JOIN group_match_cache gmc
-                     ON u.id = gmc.user_id AND gmc.tenant_id = ?
                  WHERE u.tenant_id = ?
                    AND u.status = 'active'
-                   AND (gmc.id IS NULL OR gmc.expires_at < NOW())
+                   AND NOT EXISTS (
+                       SELECT 1 FROM group_match_cache gmc
+                       WHERE gmc.user_id = u.id AND gmc.tenant_id = u.tenant_id
+                         AND gmc.status IN ('new', 'viewed') AND gmc.expires_at > NOW())
                  ORDER BY u.last_login_at DESC
-                 LIMIT " . max(1, $limit),
-                [$tenantId, $tenantId]
+                 LIMIT " . ($limit * 4),
+                [$tenantId]
             );
         } catch (\Throwable $e) {
             Log::warning('[GroupMatchingService] warm user query failed', ['error' => $e->getMessage()]);
             return $results;
         }
 
+        $users = [];
+        foreach ($candidates as $candidate) {
+            if (Cache::has(self::warmEmptyKey((int) $tenantId, (int) $candidate->id))) {
+                continue;
+            }
+            $users[] = $candidate;
+            if (count($users) >= $limit) {
+                break;
+            }
+        }
+
         foreach ($users as $row) {
             $userId = (int) $row->id;
             $results['processed']++;
+            $cachedBefore = $results['cached'];
 
             try {
                 $recommendations = $this->recommendationEngine->getRecommendations(
@@ -117,9 +146,19 @@ class GroupMatchingService
                     ]);
                 }
             }
+
+            if ($results['cached'] === $cachedBefore) {
+                // Nothing to suggest: come back tomorrow, not in thirty minutes.
+                Cache::put(self::warmEmptyKey((int) $tenantId, $userId), 1, now()->addHours(24));
+            }
         }
 
         return $results;
+    }
+
+    private static function warmEmptyKey(int $tenantId, int $userId): string
+    {
+        return "group_match_warm_empty:{$tenantId}:{$userId}";
     }
 
     /**
@@ -167,9 +206,14 @@ class GroupMatchingService
             }
         }
 
-        // Cold cache: live-compute via the recommendation engine.
+        // Cold cache: live-compute via the recommendation engine. "Cold" also
+        // covers a member who has dismissed everything that WAS cached, so
+        // the groups they turned down (or joined) are taken out here too:
+        // without this a dismissed group came straight back.
+        $settled = $this->settledGroupIds($userId, $tenantId);
+
         try {
-            $recommendations = $this->recommendationEngine->getRecommendations($userId, $limit);
+            $recommendations = $this->recommendationEngine->getRecommendations($userId, $limit + count($settled));
         } catch (\Throwable $e) {
             Log::warning('[GroupMatchingService] live recommendations failed', [
                 'user_id' => $userId, 'error' => $e->getMessage(),
@@ -179,6 +223,9 @@ class GroupMatchingService
 
         $matches = [];
         foreach ($recommendations as $group) {
+            if (isset($settled[(int) ($group['id'] ?? 0)])) {
+                continue;
+            }
             $score = round(max(0.0, min(1.0, (float) ($group['recommendation_score'] ?? 0))) * 100, 1);
             if ($score < $minScore) {
                 continue;
@@ -199,6 +246,65 @@ class GroupMatchingService
         }
 
         return array_slice($matches, 0, $limit);
+    }
+
+    /**
+     * Record that the member does not want this group suggested.
+     *
+     * An UPSERT, not an UPDATE: a group offered from a cold cache has no row
+     * yet, so the old UPDATE changed nothing and the group came back on the
+     * next visit. The row is written already expired, so it never counts as
+     * a fresh cache entry; a later warm-up keeps its status.
+     *
+     * @return bool false when the group is not in this community or the
+     *              write failed (the caller reports that, it is not swallowed)
+     */
+    public function dismiss(int $userId, int $groupId): bool
+    {
+        $tenantId = TenantContext::getId();
+        if (!$tenantId || $groupId <= 0 || !$this->cacheTableExists()) {
+            return false;
+        }
+
+        $inCommunity = DB::table('groups')->where('id', $groupId)->where('tenant_id', $tenantId)->exists();
+        if (!$inCommunity) {
+            return false;
+        }
+
+        DB::insert(
+            "INSERT INTO group_match_cache
+                (tenant_id, user_id, group_id, match_score, match_reasons, algorithm_version, status, created_at, expires_at)
+             VALUES (?, ?, ?, 0, '[]', ?, 'dismissed', NOW(), NOW())
+             ON DUPLICATE KEY UPDATE status = 'dismissed'",
+            [$tenantId, $userId, $groupId, self::ALGORITHM_VERSION]
+        );
+
+        return true;
+    }
+
+    /**
+     * Groups this member has dismissed or joined through a suggestion.
+     *
+     * @return array<int, true>
+     */
+    private function settledGroupIds(int $userId, int $tenantId): array
+    {
+        if (!$this->cacheTableExists()) {
+            return [];
+        }
+
+        $ids = DB::table('group_match_cache')
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $userId)
+            ->whereIn('status', ['dismissed', 'joined'])
+            ->pluck('group_id');
+
+        $map = [];
+        foreach ($ids as $id) {
+            $map[(int) $id] = true;
+        }
+
+        return $map;
     }
 
     /** Mark a cached group match with a member interaction. */

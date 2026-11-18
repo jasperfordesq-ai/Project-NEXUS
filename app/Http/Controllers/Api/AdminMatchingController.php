@@ -13,14 +13,16 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use App\Core\TenantContext;
 use App\Services\MatchApprovalWorkflowService;
+use App\Services\Matching\MatchApprovalGate;
+use Illuminate\Support\Facades\Log;
 
 /**
  * AdminMatchingController -- Admin matching approval, configuration, cache, and statistics.
  *
  * The five approval endpoints (index/approvalStats/show/approve/reject) are
  * broker-or-admin — reviewing proposed matches is a core broker duty and the
- * broker panel surfaces them at /broker/match-approvals. Configuration, cache
- * and analytics stay admin-only.
+ * broker panel surfaces them at /broker/match-approvals. Configuration, cache,
+ * analytics and the two diagnosis endpoints stay admin-only.
  */
 class AdminMatchingController extends BaseApiController
 {
@@ -198,13 +200,41 @@ class AdminMatchingController extends BaseApiController
         $reviewerId = $this->requireBrokerOrAdmin();
         if ($guard = $this->guardBrokerNotParty($id, $reviewerId)) return $guard;
 
-        $notes = trim($this->input('notes', ''));
-        $success = $this->matchApprovalWorkflowService->approveMatch($id, $reviewerId, $notes);
-        if (!$success) return $this->respondWithError('NOT_FOUND', __('api.not_found', ['model' => 'Match approval or already reviewed']), null, 404);
+        $notesInput = $this->input('notes', '');
+        $notes = is_string($notesInput) ? trim($notesInput) : '';
+        $outcome = MatchApprovalWorkflowService::approveMatchOutcome($id, $reviewerId, $notes);
+        if ($outcome !== MatchApprovalWorkflowService::OUTCOME_OK) {
+            return $this->decisionRefused($outcome);
+        }
 
         $this->auditLogService->log('match_approved', null, $reviewerId, ['approval_id' => $id]);
 
         return $this->respondWithData(['approved' => true, 'id' => $id]);
+    }
+
+    /**
+     * Turn "the decision was not recorded" into an answer the reviewer can act
+     * on. Each case has its own code and its own translated sentence: the old
+     * single 404 ("Match approval or already reviewed not found.", half of it
+     * untranslated) was also what a broker saw when the safeguarding contact
+     * policy refused the pair, which left the row pending with no explanation.
+     */
+    private function decisionRefused(string $outcome): JsonResponse
+    {
+        return match ($outcome) {
+            MatchApprovalWorkflowService::OUTCOME_NOT_FOUND => $this->respondWithError(
+                'NOT_FOUND', __('api.match_approval_not_found'), null, 404
+            ),
+            MatchApprovalWorkflowService::OUTCOME_ALREADY_REVIEWED => $this->respondWithError(
+                'MATCH_ALREADY_REVIEWED', __('api.match_approval_already_reviewed'), null, 409
+            ),
+            // The row is deliberately left pending: the policy can change
+            // (a vetting record arrives, a restriction is lifted).
+            MatchApprovalWorkflowService::OUTCOME_CONTACT_BLOCKED => $this->respondWithError(
+                'MATCH_CONTACT_NOT_ALLOWED', __('api.match_approval_contact_blocked'), null, 409
+            ),
+            default => $this->respondWithError('SERVER_ERROR', __('api.server_error'), null, 500),
+        };
     }
 
     /** POST /api/v2/admin/matching/{id}/reject */
@@ -213,11 +243,14 @@ class AdminMatchingController extends BaseApiController
         $reviewerId = $this->requireBrokerOrAdmin();
         if ($guard = $this->guardBrokerNotParty($id, $reviewerId)) return $guard;
 
-        $reason = trim($this->input('reason', ''));
+        $reasonInput = $this->input('reason', '');
+        $reason = is_string($reasonInput) ? trim($reasonInput) : '';
         if (empty($reason)) return $this->respondWithError('VALIDATION_ERROR', __('api.reason_required'), 'reason', 422);
 
-        $success = $this->matchApprovalWorkflowService->rejectMatch($id, $reviewerId, $reason);
-        if (!$success) return $this->respondWithError('NOT_FOUND', __('api.not_found', ['model' => 'Match approval or already reviewed']), null, 404);
+        $outcome = MatchApprovalWorkflowService::rejectMatchOutcome($id, $reviewerId, $reason);
+        if ($outcome !== MatchApprovalWorkflowService::OUTCOME_OK) {
+            return $this->decisionRefused($outcome);
+        }
 
         $this->auditLogService->log('match_rejected', null, $reviewerId, ['approval_id' => $id, 'reason' => $reason]);
 
@@ -232,6 +265,19 @@ class AdminMatchingController extends BaseApiController
         $weights = $config['weights'] ?? [];
         $proximity = $config['proximity'] ?? [];
 
+        // 🔴 `broker_approval_enabled` is deliberately NOT returned (and not
+        // written by updateConfig()). Nothing in the matching engine has ever
+        // read it: whether a match waits for a coordinator is decided by the
+        // members' own safeguarding choices and by administrative monitoring
+        // (App\Services\Matching\MatchApprovalGate), and that protection must
+        // not be something a settings screen can switch off. The screen used
+        // to show a "Broker approval required" switch and an "Enabled" chip
+        // that changed nothing. Any value already stored in a community's
+        // configuration is left exactly as it is.
+        //
+        // The proximity bands carry distances only. The score each band earns
+        // is fixed inside the scorer; the screen used to offer an editable
+        // "Score" column that this endpoint silently threw away.
         return $this->respondWithData([
             'category_weight' => (float) ($weights['category'] ?? 0.25),
             'skill_weight' => (float) ($weights['skill'] ?? 0.20),
@@ -240,14 +286,13 @@ class AdminMatchingController extends BaseApiController
             'reciprocity_weight' => (float) ($weights['reciprocity'] ?? 0.15),
             'quality_weight' => (float) ($weights['quality'] ?? 0.05),
             'proximity_bands' => [
-                ['distance_km' => (int) ($proximity['walking_km'] ?? 5), 'score' => 1.0],
-                ['distance_km' => (int) ($proximity['local_km'] ?? 15), 'score' => 0.9],
-                ['distance_km' => (int) ($proximity['city_km'] ?? 30), 'score' => 0.7],
-                ['distance_km' => (int) ($proximity['regional_km'] ?? 50), 'score' => 0.5],
-                ['distance_km' => (int) ($proximity['max_km'] ?? 100), 'score' => 0.2],
+                ['distance_km' => (int) ($proximity['walking_km'] ?? 5)],
+                ['distance_km' => (int) ($proximity['local_km'] ?? 15)],
+                ['distance_km' => (int) ($proximity['city_km'] ?? 30)],
+                ['distance_km' => (int) ($proximity['regional_km'] ?? 50)],
+                ['distance_km' => (int) ($proximity['max_km'] ?? 100)],
             ],
             'enabled' => (bool) ($config['enabled'] ?? true),
-            'broker_approval_enabled' => (bool) ($config['broker_approval_enabled'] ?? true),
             'max_distance_km' => (int) ($config['max_distance_km'] ?? 50),
             'min_match_score' => (int) ($config['min_match_score'] ?? 40),
             'hot_match_threshold' => (int) ($config['hot_match_threshold'] ?? 80),
@@ -280,6 +325,102 @@ class AdminMatchingController extends BaseApiController
         ]);
     }
 
+    /** The six v1 weight fields, request name => stored name. */
+    private const WEIGHT_FIELDS = [
+        'category_weight' => 'category',
+        'skill_weight' => 'skill',
+        'proximity_weight' => 'proximity',
+        'freshness_weight' => 'freshness',
+        'reciprocity_weight' => 'reciprocity',
+        'quality_weight' => 'quality',
+    ];
+
+    private const PILLAR_DEFAULTS = ['relevance' => 0.45, 'feasibility' => 0.35, 'trust' => 0.20];
+
+    private static function numberInRange(mixed $value, float $min, float $max): bool
+    {
+        return is_numeric($value) && (float) $value >= $min && (float) $value <= $max;
+    }
+
+    /**
+     * Refuse a settings save that would break matching for the community.
+     *
+     * Until November 2026 nothing here was checked: a maximum distance of -5
+     * or a minimum score of 500 was stored as typed and quietly stopped every
+     * member getting matches. Only fields that were actually sent are checked,
+     * so a partial save still works.
+     *
+     * @param array<string, mixed> $input    request body
+     * @param array<string, mixed> $existing the stored smart_matching block
+     * @return JsonResponse|null the 422 to return, or null when the input is fine
+     */
+    private function validateConfigInput(array $input, array $existing): ?JsonResponse
+    {
+        $refuse = fn (string $field, string $messageKey): JsonResponse
+            => $this->respondWithError('VALIDATION_ERROR', __($messageKey), $field, 422);
+
+        if (array_key_exists('max_distance_km', $input) && !self::numberInRange($input['max_distance_km'], 1, 20000)) {
+            return $refuse('max_distance_km', 'api.matching_max_distance_range');
+        }
+        if (array_key_exists('min_match_score', $input) && !self::numberInRange($input['min_match_score'], 0, 100)) {
+            return $refuse('min_match_score', 'api.matching_min_score_range');
+        }
+        if (array_key_exists('hot_match_threshold', $input) && !self::numberInRange($input['hot_match_threshold'], 0, 100)) {
+            return $refuse('hot_match_threshold', 'api.matching_hot_threshold_range');
+        }
+        if (array_key_exists('min_match_score', $input) || array_key_exists('hot_match_threshold', $input)) {
+            $min = (int) ($input['min_match_score'] ?? $existing['min_match_score'] ?? 40);
+            $hot = (int) ($input['hot_match_threshold'] ?? $existing['hot_match_threshold'] ?? 80);
+            if ($hot < $min) {
+                return $refuse('hot_match_threshold', 'api.matching_hot_below_min');
+            }
+        }
+
+        // Five bands, each further than the one before. They are NOT re-sorted
+        // any more: sorting silently moved the admin's numbers under different
+        // labels ("Walking 30 km" became "City 30 km").
+        if (($input['proximity_bands'] ?? null) !== null) {
+            $bands = $input['proximity_bands'];
+            if (!is_array($bands) || count($bands) !== 5) {
+                return $refuse('proximity_bands', 'api.matching_bands_invalid');
+            }
+            $previous = 0.0;
+            foreach (array_values($bands) as $band) {
+                $distance = is_array($band) ? ($band['distance_km'] ?? null) : null;
+                if (!self::numberInRange($distance, 1, 20000) || (float) $distance <= $previous) {
+                    return $refuse('proximity_bands', 'api.matching_bands_invalid');
+                }
+                $previous = (float) $distance;
+            }
+        }
+
+        foreach (array_keys(self::WEIGHT_FIELDS) as $field) {
+            if (array_key_exists($field, $input) && !self::numberInRange($input[$field], 0, 1)) {
+                return $refuse($field, 'api.matching_weights_invalid');
+            }
+        }
+
+        if (($input['pillars'] ?? null) !== null) {
+            if (!is_array($input['pillars'])) {
+                return $refuse('pillars', 'api.matching_weights_invalid');
+            }
+            $sum = 0.0;
+            foreach (self::PILLAR_DEFAULTS as $pillar => $default) {
+                $value = $input['pillars'][$pillar] ?? $existing['pillars'][$pillar] ?? $default;
+                if (!self::numberInRange($value, 0, 1)) {
+                    return $refuse('pillars', 'api.matching_weights_invalid');
+                }
+                $sum += (float) $value;
+            }
+            // The scorer scales the three to a total of 1; all-zero cannot be scaled.
+            if ($sum <= 0.0) {
+                return $refuse('pillars', 'api.matching_weights_invalid');
+            }
+        }
+
+        return null;
+    }
+
     /** PUT /api/v2/admin/matching/config */
     public function updateConfig(): JsonResponse
     {
@@ -290,20 +431,26 @@ class AdminMatchingController extends BaseApiController
         $tenantRow = DB::selectOne("SELECT configuration FROM tenants WHERE id = ?", [$tenantId]);
         $tenant = $tenantRow ? (array)$tenantRow : null;
         $config = $tenant && $tenant['configuration'] ? json_decode($tenant['configuration'], true) : [];
+        $config = is_array($config) ? $config : [];
         $config['algorithms'] = $config['algorithms'] ?? [];
-        $existing = $config['algorithms']['smart_matching'] ?? [];
+        $existing = is_array($config['algorithms']['smart_matching'] ?? null) ? $config['algorithms']['smart_matching'] : [];
+
+        if ($refused = $this->validateConfigInput($input, $existing)) {
+            return $refused;
+        }
 
         $proximityBands = $input['proximity_bands'] ?? null;
         $proximity = $existing['proximity'] ?? ['walking_km' => 5, 'local_km' => 15, 'city_km' => 30, 'regional_km' => 50, 'max_km' => 100];
 
-        if (is_array($proximityBands) && count($proximityBands) >= 5) {
-            usort($proximityBands, fn($a, $b) => ($a['distance_km'] ?? 0) - ($b['distance_km'] ?? 0));
+        // Already checked above: exactly five, positive, strictly ascending.
+        if (is_array($proximityBands)) {
+            $proximityBands = array_values($proximityBands);
             $proximity = [
-                'walking_km' => (int) ($proximityBands[0]['distance_km'] ?? 5),
-                'local_km' => (int) ($proximityBands[1]['distance_km'] ?? 15),
-                'city_km' => (int) ($proximityBands[2]['distance_km'] ?? 30),
-                'regional_km' => (int) ($proximityBands[3]['distance_km'] ?? 50),
-                'max_km' => (int) ($proximityBands[4]['distance_km'] ?? 100),
+                'walking_km' => (int) $proximityBands[0]['distance_km'],
+                'local_km' => (int) $proximityBands[1]['distance_km'],
+                'city_km' => (int) $proximityBands[2]['distance_km'],
+                'regional_km' => (int) $proximityBands[3]['distance_km'],
+                'max_km' => (int) $proximityBands[4]['distance_km'],
             ];
         }
 
@@ -315,11 +462,18 @@ class AdminMatchingController extends BaseApiController
             $missingCoordsMode = 'remote_only';
         }
 
+        $weightDefaults = ['category' => 0.25, 'skill' => 0.20, 'proximity' => 0.25, 'freshness' => 0.10, 'reciprocity' => 0.15, 'quality' => 0.05];
+        $weights = [];
+        foreach (self::WEIGHT_FIELDS as $field => $key) {
+            $weights[$key] = (float) ($input[$field] ?? $existing['weights'][$key] ?? $weightDefaults[$key]);
+        }
+
         // Merge over the existing block so keys this endpoint doesn't manage
-        // (e.g. future pillar/AI settings) survive a save from this UI.
+        // survive a save from this UI — `adjustments`, `signals`, and the old
+        // `broker_approval_enabled` value, which is intentionally neither read
+        // nor written here (see getConfig()).
         $config['algorithms']['smart_matching'] = array_merge($existing, [
             'enabled' => (bool) ($input['enabled'] ?? $existing['enabled'] ?? true),
-            'broker_approval_enabled' => (bool) ($input['broker_approval_enabled'] ?? $existing['broker_approval_enabled'] ?? true),
             'max_distance_km' => (int) ($input['max_distance_km'] ?? $existing['max_distance_km'] ?? 50),
             'min_match_score' => (int) ($input['min_match_score'] ?? $existing['min_match_score'] ?? 40),
             'hot_match_threshold' => (int) ($input['hot_match_threshold'] ?? $existing['hot_match_threshold'] ?? 80),
@@ -341,14 +495,7 @@ class AdminMatchingController extends BaseApiController
                 'feasibility' => max(0.0, min(1.0, (float) ($input['pillars']['feasibility'] ?? $existing['pillars']['feasibility'] ?? 0.35))),
                 'trust' => max(0.0, min(1.0, (float) ($input['pillars']['trust'] ?? $existing['pillars']['trust'] ?? 0.20))),
             ],
-            'weights' => [
-                'category' => (float) ($input['category_weight'] ?? $existing['weights']['category'] ?? 0.25),
-                'skill' => (float) ($input['skill_weight'] ?? $existing['weights']['skill'] ?? 0.20),
-                'proximity' => (float) ($input['proximity_weight'] ?? $existing['weights']['proximity'] ?? 0.25),
-                'freshness' => (float) ($input['freshness_weight'] ?? $existing['weights']['freshness'] ?? 0.10),
-                'reciprocity' => (float) ($input['reciprocity_weight'] ?? $existing['weights']['reciprocity'] ?? 0.15),
-                'quality' => (float) ($input['quality_weight'] ?? $existing['weights']['quality'] ?? 0.05),
-            ],
+            'weights' => $weights,
             'proximity' => $proximity,
         ]);
 
@@ -356,6 +503,178 @@ class AdminMatchingController extends BaseApiController
         $this->smartMatchingEngine->clearCache();
 
         return $this->respondWithData(['message' => __('api.matching_config_updated')]);
+    }
+
+    // =========================================================================
+    // DIAGNOSIS — why one member / one listing does or does not get matches
+    // =========================================================================
+
+    /**
+     * The community settings a diagnosis is read against.
+     *
+     * @return array<string, mixed>
+     */
+    private function diagnosisSettings(): array
+    {
+        $config = $this->smartMatchingEngine->getConfig();
+        $gates = is_array($config['gates'] ?? null) ? $config['gates'] : [];
+
+        return [
+            'matching_enabled' => (bool) ($config['enabled'] ?? true),
+            'min_match_score' => (int) ($config['min_match_score'] ?? 40),
+            'max_distance_km' => (int) ($config['max_distance_km'] ?? 50),
+            'geo_hard_gate' => (bool) ($gates['geo_hard_gate'] ?? true),
+            'missing_coords_mode' => ($gates['missing_coords_mode'] ?? 'remote_only') === 'tenant_wide' ? 'tenant_wide' : 'remote_only',
+            'dormancy_days' => max(0, (int) ($gates['dormancy_days'] ?? 90)),
+        ];
+    }
+
+    /**
+     * GET /api/v2/admin/matching/diagnose/user/{id}
+     *
+     * Plain facts about why one member of THIS community does or does not get
+     * matches, plus `findings`: the short list of things that are holding
+     * matches back, as codes the screen words. Admin only; an id from another
+     * community answers 404, exactly like an id that does not exist.
+     *
+     * (The Matching diagnostic page used to call /v2/admin/matching/stats with
+     * ?user_id=, which that endpoint never read: any id, real or not, printed
+     * the same community-wide figures.)
+     */
+    public function diagnoseUser(int $id): JsonResponse
+    {
+        // Only the Matching diagnostic page calls this, and that page is in
+        // the Platform team panel (pinned in Security/PlatformTeamLocks).
+        $this->requireGodPlatformAdmin();
+
+        $facts = $this->smartMatchingAnalyticsService->diagnoseUser($id);
+        if ($facts === null) {
+            return $this->respondWithError('NOT_FOUND', __('api.member_not_found'), 'id', 404);
+        }
+
+        $settings = $this->diagnosisSettings();
+
+        // Does a coordinator have to approve this member's matches first?
+        // null = it could not be checked, which the screen says in words: the
+        // engine itself withholds matches in that case, so "unknown" matters.
+        $needsApproval = null;
+        try {
+            $flagged = app(MatchApprovalGate::class)->membersNeedingApproval([$id], $this->getTenantId());
+            $needsApproval = isset($flagged[$id]);
+        } catch (\Throwable $e) {
+            Log::warning('[AdminMatching] diagnoseUser could not read the approval state', [
+                'user_id' => $id,
+                'exception' => $e::class,
+            ]);
+        }
+
+        $prefs = $facts['preferences'];
+        $userMax = $prefs['max_distance_km'];
+        $effective = [
+            // The member's own floor wins; the community's applies otherwise.
+            'min_match_score' => $prefs['min_match_score'] ?? $settings['min_match_score'],
+            // The member can tighten the community maximum, never exceed it.
+            'max_distance_km' => $userMax !== null && $userMax > 0
+                ? min($userMax, $settings['max_distance_km'])
+                : $settings['max_distance_km'],
+        ];
+
+        $findings = [];
+        if (!$settings['matching_enabled']) {
+            $findings[] = 'matching_off';
+        }
+        if ($facts['member']['status'] !== 'active') {
+            $findings[] = 'member_not_active';
+        }
+        if ($prefs['matching_paused']) {
+            $findings[] = 'matching_paused';
+        }
+        if ($facts['listings']['active_count'] === 0) {
+            // No listing of their own: the engine can only offer browsing
+            // suggestions, not matches scored against what they offer or need.
+            $findings[] = 'no_active_listings';
+        }
+        if (!$facts['member']['has_coordinates']) {
+            $findings[] = $settings['geo_hard_gate'] && $settings['missing_coords_mode'] !== 'tenant_wide'
+                ? 'no_location_remote_only'
+                : 'no_location';
+        }
+        if ($needsApproval === true) {
+            $findings[] = 'needs_coordinator_approval';
+        } elseif ($needsApproval === null) {
+            $findings[] = 'approval_state_unknown';
+        }
+        if ($findings === []) {
+            $findings[] = 'nothing_blocking';
+        }
+
+        return $this->respondWithData(array_merge($facts, [
+            'community' => $settings,
+            'effective' => $effective,
+            'needs_coordinator_approval' => $needsApproval,
+            'findings' => $findings,
+        ]));
+    }
+
+    /**
+     * GET /api/v2/admin/matching/diagnose/listing/{id}
+     *
+     * Plain facts about why one listing of THIS community is or is not being
+     * offered to members as a match. Admin only; 404 outside the community.
+     */
+    public function diagnoseListing(int $id): JsonResponse
+    {
+        $this->requireGodPlatformAdmin();
+
+        $facts = $this->smartMatchingAnalyticsService->diagnoseListing($id);
+        if ($facts === null) {
+            return $this->respondWithError('NOT_FOUND', __('api.listing_not_found'), 'id', 404);
+        }
+
+        $settings = $this->diagnosisSettings();
+
+        $findings = [];
+        if (!$settings['matching_enabled']) {
+            $findings[] = 'matching_off';
+        }
+        if ($facts['listing']['status'] !== 'active') {
+            $findings[] = 'listing_not_active';
+        }
+        // …or that is waiting for review or was not approved (the same rule
+        // as ListingService::applyPublicVisibility()).
+        $moderation = $facts['listing']['moderation_status'];
+        if ($moderation !== null && $moderation !== 'approved') {
+            $findings[] = 'listing_not_approved';
+        }
+        // The candidate search only takes listings whose owner is an ACTIVE
+        // member: not deactivated, suspended, banned, refused or still
+        // waiting for approval (Matching\CandidateRetriever).
+        if ($facts['owner']['status'] !== 'active') {
+            $findings[] = 'owner_not_active';
+        }
+        // …and listings whose owner has not been active for `dormancy_days`
+        // (an owner with no recorded activity date is let through).
+        $idleDays = $facts['owner']['days_since_active'];
+        if ($settings['dormancy_days'] > 0 && $idleDays !== null && $idleDays > $settings['dormancy_days']) {
+            $findings[] = 'owner_dormant';
+        }
+        // An in-person listing needs a place: its own, or its owner's.
+        if (
+            $settings['geo_hard_gate']
+            && in_array($facts['listing']['service_type'], ['physical_only', 'location_dependent'], true)
+            && !$facts['listing']['has_coordinates']
+            && !$facts['owner']['has_coordinates']
+        ) {
+            $findings[] = 'no_location_in_person';
+        }
+        if ($findings === []) {
+            $findings[] = 'nothing_blocking';
+        }
+
+        return $this->respondWithData(array_merge($facts, [
+            'community' => $settings,
+            'findings' => $findings,
+        ]));
     }
 
     /** POST /api/v2/admin/matching/clear-cache */
@@ -380,12 +699,14 @@ class AdminMatchingController extends BaseApiController
         $this->requireAdmin();
 
         try {
-            $stats = $this->smartMatchingAnalyticsService->getOverallStats();
+            // "Hot" is whatever this community set it to on the configuration
+            // screen, not a fixed 80.
+            $config = $this->smartMatchingEngine->getConfig();
+            $hotThreshold = (float) ($config['hot_match_threshold'] ?? 80);
+
+            $stats = $this->smartMatchingAnalyticsService->getOverallStats($hotThreshold);
             $scoreDistribution = $this->smartMatchingAnalyticsService->getScoreDistribution();
             $distanceDistribution = $this->smartMatchingAnalyticsService->getDistanceDistribution();
-
-            $config = $this->smartMatchingEngine->getConfig();
-            $brokerEnabled = (bool) ($config['broker_approval_enabled'] ?? true);
 
             $pendingApprovals = 0;
             $approvedCount = 0;
@@ -401,13 +722,13 @@ class AdminMatchingController extends BaseApiController
             return $this->respondWithData([
                 'overview' => $stats, 'score_distribution' => $scoreDistribution,
                 'distance_distribution' => $distanceDistribution,
-                'broker_approval_enabled' => $brokerEnabled,
                 'pending_approvals' => $pendingApprovals, 'approved_count' => $approvedCount,
                 'rejected_count' => $rejectedCount, 'approval_rate' => $approvalRate,
                 'gate_impact' => $this->smartMatchingAnalyticsService->getGateImpact(),
                 'pillar_averages' => $this->smartMatchingAnalyticsService->getPillarAverages(),
             ]);
         } catch (\Throwable $e) {
+            Log::error('[AdminMatching] getStats failed', ['exception' => $e::class, 'error' => $e->getMessage()]);
             return $this->respondWithError('SERVER_ERROR', __('api.server_error'), null, 500);
         }
     }

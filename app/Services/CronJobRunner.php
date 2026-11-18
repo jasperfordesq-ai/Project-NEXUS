@@ -2440,74 +2440,8 @@ class CronJobRunner
     {
         header('Content-Type: text/plain');
         echo "Starting $frequency match digest processing...\n";
-
-        // Find users who have match notification frequency set to this value
-        // and have at least one listing (so we can generate matches for them)
-        // Scoped to active tenants only — deactivated communities should not receive digests
-        $sql = "SELECT DISTINCT u.id, u.name, u.email, u.tenant_id, mp.notification_frequency
-                FROM users u
-                INNER JOIN tenants t ON u.tenant_id = t.id AND t.is_active = 1
-                LEFT JOIN match_preferences mp ON u.id = mp.user_id
-                WHERE u.status = 'active'
-                AND u.id IN (SELECT DISTINCT user_id FROM listings WHERE status = 'active')
-                AND (
-                    (mp.notification_frequency = ? AND mp.notification_frequency IS NOT NULL)
-                    OR (mp.notification_frequency = 'weekly' AND ? = 'monthly')
-                    OR (mp.notification_frequency IS NULL AND ? = 'monthly')
-                )";
-
-        try {
-            $users = array_map(fn($r) => (array) $r, DB::select($sql, [$frequency, $frequency, $frequency]));
-        } catch (\Exception $e) {
-            echo "Error fetching users: " . $e->getMessage() . "\n";
-            echo "Match preferences table may not exist yet. Run the migration.\n";
-            return;
-        }
-
-        if (empty($users)) {
-            echo "No users to process for $frequency match digest.\n";
-            return;
-        }
-
-        echo "Found " . count($users) . " users to process.\n";
-
-        $processed = 0;
-        $errors = 0;
-
-        foreach ($users as $user) {
-            try {
-                // Set tenant context for this user so notifications use correct branding
-                TenantContext::setById($user['tenant_id']);
-
-                // Get fresh matches for this user (24h daily, 7d weekly, 14d fortnightly)
-                $lookbackHours = match ($frequency) {
-                    'daily' => 24,
-                    'weekly', 'monthly' => 720,
-                    'fortnightly' => 336,
-                    default => 24,
-                };
-
-                $matches = MatchingService::getSuggestionsForUser($user['id'], 20, [
-                    'created_after' => date('Y-m-d H:i:s', strtotime("-{$lookbackHours} hours"))
-                ]);
-
-                if (empty($matches)) {
-                    echo "  User {$user['id']}: No new matches.\n";
-                    continue;
-                }
-
-                // Dispatch the digest notification
-                NotificationDispatcher::dispatchMatchDigest($user['id'], $matches, $frequency);
-
-                echo "  User {$user['id']}: Sent digest with " . count($matches) . " matches.\n";
-                $processed++;
-            } catch (\Exception $e) {
-                echo "  User {$user['id']}: Error - " . $e->getMessage() . "\n";
-                $errors++;
-            }
-        }
-
-        echo "\nProcessed: $processed users, Errors: $errors\n";
+        // The scheduled task and this "run now" entry are one implementation.
+        $this->matchDigestInternal((string) $frequency);
         echo "Done.\n";
     }
 
@@ -2527,184 +2461,12 @@ class CronJobRunner
         $status = 'success';
 
         try {
-            echo "Processing hot match notifications...\n";
-
-            // Find listings created in the last hour that haven't been processed.
-            // Keep the scan tenant-scoped so category IDs cannot match users
-            // from another tenant.
-            $sql = "SELECT l.*, " . \App\Support\UserDisplayName::sqlPublic('u', 'user_name') . ", c.name as category_name
-                    FROM listings l
-                    JOIN users u ON l.user_id = u.id AND u.tenant_id = l.tenant_id
-                    LEFT JOIN categories c ON l.category_id = c.id
-                    WHERE l.status = 'active'
-                    AND l.created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR)
-                    AND NOT EXISTS (
-                        SELECT 1 FROM match_history mh
-                        WHERE mh.tenant_id = l.tenant_id
-                          AND mh.listing_id = l.id
-                          AND mh.action = 'notified'
-                          AND mh.created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR)
-                    )
-                    LIMIT 50";
-
-            $newListings = array_map(fn($r) => (array) $r, DB::select($sql));
-
-            if (empty($newListings)) {
-                echo "No new listings to process.\n";
-                echo "Done.\n";
-                $output = ob_get_clean();
-                echo $output;
-                $this->logJob($status, $output);
-                return;
-            }
-
-            echo "Found " . count($newListings) . " new listings to check for matches.\n";
-
-            $notificationsSent = 0;
-
-            foreach ($newListings as $listing) {
-                // Find users who might be interested in this listing
-                // We look for users whose listings complement this one
-                $listingType = $listing['type']; // 'offer' or 'request'
-                $oppositeType = $listingType === 'offer' ? 'request' : 'offer';
-
-                // Find users with opposite type listings in same category
-                $tenantId = (int) ($listing['tenant_id'] ?? 0);
-                if ($tenantId <= 0) {
-                    continue;
-                }
-
-                $matchSql = "SELECT DISTINCT l.user_id, u.name, u.email
-                             FROM listings l
-                             JOIN users u ON l.user_id = u.id AND u.tenant_id = ?
-                             WHERE u.deleted_at IS NULL AND u.anonymized_at IS NULL
-                             AND l.category_id = ?
-                             AND l.tenant_id = ?
-                             AND l.type = ?
-                             AND l.status = 'active'
-                             AND l.user_id != ?
-                             LIMIT 20";
-
-                $potentialUsers = array_map(fn($r) => (array) $r, DB::select($matchSql, [
-                    $tenantId,
-                    $listing['category_id'],
-                    $tenantId,
-                    $oppositeType,
-                    $listing['user_id']
-                ]));
-
-                foreach ($potentialUsers as $user) {
-                    // Calculate actual match score
-                    $prefs = MatchingService::getPreferences($user['user_id']);
-
-                    // Check if user wants hot match notifications
-                    if (empty($prefs['notify_hot_matches']) || $prefs['notification_frequency'] === 'never') {
-                        continue;
-                    }
-
-                    // Get user's listings to calculate proper match score
-                    $userListings = array_map(fn($r) => (array) $r, DB::select(
-                        "SELECT * FROM listings WHERE user_id = ? AND tenant_id = ? AND status = 'active'",
-                        [$user['user_id'], $tenantId]
-                    ));
-
-                    if (empty($userListings)) continue;
-
-                    // Calculate match score using the engine. calculateMatchScore
-                    // is an INSTANCE method — the old static call fataled under
-                    // PHP 8 every time this branch was reached, killing the rest
-                    // of the hot-match scan for the tick.
-                    $userData = User::findById($user['user_id']);
-                    if (!$userData) {
-                        continue;
-                    }
-                    $matchResult = app(SmartMatchingEngine::class)->calculateMatchScore(
-                        $userData,
-                        $userListings,
-                        $userListings[0], // Use first listing as reference
-                        $listing
-                    );
-
-                    if ($matchResult['score'] >= 85) {
-                        // Safeguarding: never email an introduction for a pair
-                        // that needs a coordinator's approval. Queue it for
-                        // review instead (idempotent: one pending row per pair).
-                        $recipientId = (int) $user['user_id'];
-                        $listingId = (int) $listing['id'];
-                        if (app(\App\Services\Matching\MatchApprovalGate::class)->pairNeedsApproval($recipientId, (int) $listing['user_id'], $tenantId)
-                            && ! app(\App\Services\Matching\MatchApprovalGate::class)->isApproved($recipientId, $listingId, $tenantId)
-                        ) {
-                            \App\Core\TenantContext::runForTenant($tenantId, function () use ($recipientId, $listingId, $matchResult): void {
-                                $exists = DB::table('match_approvals')
-                                    ->where('tenant_id', \App\Core\TenantContext::getId())
-                                    ->where('user_id', $recipientId)
-                                    ->where('listing_id', $listingId)
-                                    ->exists();
-                                if (! $exists) {
-                                    \App\Services\MatchApprovalWorkflowService::submitForApproval($recipientId, $listingId, [
-                                        'match_score' => $matchResult['score'],
-                                        'match_reasons' => $matchResult['reasons'],
-                                        'distance_km' => $matchResult['distance'] ?? null,
-                                        'match_type' => $matchResult['type'] ?? 'one_way',
-                                    ]);
-                                }
-                            });
-                            continue;
-                        }
-
-                        // Deduplication gate: skip if we already notified this user about this
-                        // listing in the last 30 days. The hot-match cron runs hourly and
-                        // re-scans recent listings — without this gate the same recipient
-                        // would be re-emailed each tick. The dedup table also has a UNIQUE
-                        // index on (tenant_id, listing_id, matched_user_id) as a second line
-                        // of defence.
-                        try {
-                            $alreadySent = DB::selectOne(
-                                "SELECT 1 FROM match_notification_sent
-                                 WHERE tenant_id = ? AND listing_id = ? AND matched_user_id = ?
-                                   AND sent_at > NOW() - INTERVAL 30 DAY
-                                 LIMIT 1",
-                                [$tenantId, $listing['id'], $user['user_id']]
-                            );
-                            if ($alreadySent) {
-                                continue;
-                            }
-                        } catch (\Throwable $e) {
-                            // Table may not exist on legacy installs — fall through to dispatch.
-                        }
-
-                        // This is a hot match! Notify the user
-                        $matchData = array_merge($listing, [
-                            'match_score' => $matchResult['score'],
-                            'match_reasons' => $matchResult['reasons'],
-                            'distance_km' => $matchResult['distance'] ?? null
-                        ]);
-
-                        $dispatched = \App\Core\TenantContext::runForTenant($tenantId, function () use ($user, $matchData): bool {
-                            return NotificationDispatcher::dispatchHotMatch($user['user_id'], $matchData);
-                        });
-                        if (!$dispatched) {
-                            continue;
-                        }
-
-                        $notificationsSent++;
-
-                        // Record dedup marker. INSERT IGNORE swallows race-condition duplicates
-                        // (two cron runners hitting the same (tenant,listing,user) tuple via
-                        // the UNIQUE (tenant_id, listing_id, matched_user_id) index).
-                        try {
-                            DB::insert(
-                                "INSERT IGNORE INTO match_notification_sent (tenant_id, listing_id, matched_user_id, match_score, sent_at) VALUES (?, ?, ?, ?, NOW())",
-                                [$tenantId, $listing['id'], $user['user_id'], $matchResult['score']]
-                            );
-                        } catch (\Throwable $e) {
-                            // Table may not exist on legacy installs — non-fatal.
-                        }
-                    }
-                }
-            }
-
-            echo "Sent $notificationsSent hot match notifications.\n";
+            echo "Processing match alerts for new listings...\n";
+            // The scheduled task and this "run now" entry are one
+            // implementation. (This method used to carry its own copy: the
+            // retired v1 scorer, a hard-coded 85, and a dedup query on a
+            // match_history action that is not in the column's enum.)
+            $this->notifyHotMatchesInternal();
             echo "Done.\n";
         } catch (\Throwable $e) {
             echo "\nError: " . $e->getMessage() . "\n";
@@ -3036,39 +2798,18 @@ class CronJobRunner
      */
     private function notifyHotMatchesInternal(): void
     {
+        // This used to end in MatchingService::notifyNewMatches(), a stub
+        // returning 0: no alert was ever sent. See MatchNotificationService.
         try {
             $totalNotified = 0;
             $this->forEachTenant(function ($tenantId, $slug) use (&$totalNotified) {
-                $sql = "SELECT l.*, c.name as category_name
-                        FROM listings l
-                        LEFT JOIN categories c ON l.category_id = c.id
-                        WHERE l.tenant_id = ? AND l.status = 'active'
-                        AND l.created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR)
-                        LIMIT 50";
-                $newListings = array_map(fn($r) => (array) $r, DB::select($sql, [$tenantId]));
-
-                foreach ($newListings as $listing) {
-                    $oppositeType = $listing['type'] === 'offer' ? 'request' : 'offer';
-                    $matchSql = "SELECT DISTINCT l2.user_id
-                                 FROM listings l2
-                                 WHERE l2.category_id = ? AND l2.type = ? AND l2.status = 'active'
-                                 AND l2.user_id != ? AND l2.tenant_id = ?
-                                 LIMIT 20";
-                    $potentialMatches = array_map(fn($r) => (array) $r, DB::select($matchSql, [
-                        $listing['category_id'], $oppositeType, $listing['user_id'], $tenantId
-                    ]));
-
-                    foreach ($potentialMatches as $match) {
-                        try {
-                            $count = MatchingService::notifyNewMatches($match['user_id']);
-                            $totalNotified += $count;
-                        } catch (\Throwable $e) {
-                            // Continue
-                        }
-                    }
+                $sent = app(\App\Services\Matching\MatchNotificationService::class)->notifyForNewListings();
+                $totalNotified += $sent;
+                if ($sent > 0) {
+                    echo "   [{$slug}] {$sent} match alert(s).\n";
                 }
             });
-            echo "   Sent $totalNotified hot match notifications.\n";
+            echo "   Sent $totalNotified match alerts.\n";
         } catch (\Throwable $e) {
             echo "   Error: " . $e->getMessage() . "\n";
         }
@@ -3372,42 +3113,16 @@ class CronJobRunner
      */
     private function matchDigestInternal(string $frequency): void
     {
+        // This used to email RANDOM members as "matches", and in fact sent
+        // nothing because it crashed on every member behind a bare catch.
+        // See MatchNotificationService.
         try {
             $totalSent = 0;
-            $lookbackHours = match ($frequency) {
-                'daily' => 24,
-                'weekly', 'monthly' => 720,
-                'fortnightly' => 336,
-                default => 24,
-            };
-
-            $this->forEachTenant(function ($tenantId, $slug) use ($frequency, $lookbackHours, &$totalSent) {
-                $sql = "SELECT DISTINCT u.id, u.name
-                        FROM users u
-                        LEFT JOIN match_preferences mp ON u.id = mp.user_id
-                        WHERE u.tenant_id = ? AND u.status = 'active'
-                        AND u.id IN (SELECT DISTINCT user_id FROM listings WHERE status = 'active')
-                        AND (
-                            (mp.notification_frequency = ? AND mp.notification_frequency IS NOT NULL)
-                            OR (mp.notification_frequency = 'weekly' AND ? = 'monthly')
-                            OR (mp.notification_frequency IS NULL AND ? = 'monthly')
-                        )
-                        LIMIT 100";
-
-                $users = array_map(fn($r) => (array) $r, DB::select($sql, [$tenantId, $frequency, $frequency, $frequency]));
-
-                foreach ($users as $user) {
-                    try {
-                        $matches = MatchingService::getSuggestionsForUser($user['id'], 20, [
-                            'created_after' => date('Y-m-d H:i:s', strtotime("-{$lookbackHours} hours"))
-                        ]);
-                        if (!empty($matches)) {
-                            NotificationDispatcher::dispatchMatchDigest($user['id'], $matches, $frequency);
-                            $totalSent++;
-                        }
-                    } catch (\Throwable $e) {
-                        // Continue
-                    }
+            $this->forEachTenant(function ($tenantId, $slug) use ($frequency, &$totalSent) {
+                $sent = app(\App\Services\Matching\MatchNotificationService::class)->sendDigests($frequency);
+                $totalSent += $sent;
+                if ($sent > 0) {
+                    echo "   [{$slug}] {$sent} digest(s).\n";
                 }
             });
             echo "   Sent $frequency match digest to $totalSent users.\n";

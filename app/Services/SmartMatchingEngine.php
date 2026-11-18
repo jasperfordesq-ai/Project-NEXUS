@@ -66,6 +66,9 @@ class SmartMatchingEngine
     // Cache warming: per-tenant wall-clock budget per cron slot (seconds)
     private const WARM_TIME_BUDGET_SECONDS = 60;
 
+    // Cache warming: how long a member whose run cached nothing is left alone
+    private const WARM_EMPTY_RETRY_HOURS = 24;
+
     // In-process caches
     private array $userDataCache = [];
     private ?array $configCache = null;
@@ -188,6 +191,17 @@ class SmartMatchingEngine
     }
 
     /**
+     * Whether this community has Smart Matching switched on (Admin > Smart
+     * Matching > "Enabled"). Until 17 Nov 2026 nothing read the switch: a
+     * community that turned matching off still had matches computed, cached
+     * and shown.
+     */
+    public function isEnabled(): bool
+    {
+        return (bool) ($this->getConfig()['enabled'] ?? true);
+    }
+
+    /**
      * Clear cached data.
      */
     public function clearCache(): void
@@ -212,6 +226,8 @@ class SmartMatchingEngine
      * For up to $limit active users (who have at least one active listing and no
      * fresh cache entry) it computes matches via findMatchesForUser() and upserts
      * them into match_cache with a 7-day TTL. Tenant-scoped via TenantContext.
+     * Expired rows are deleted first, and nothing runs when the community has
+     * Smart Matching switched off.
      *
      * @return array{processed:int, cached:int}
      */
@@ -229,23 +245,64 @@ class SmartMatchingEngine
         // each tenant warms with its own config instead of the previous tenant's.
         $this->clearCache();
 
-        // Active users with an active listing whose cache is missing or expired.
-        // $limit is an internal int (never user input) — inlined because PDO
+        if (!$this->isEnabled()) {
+            return $results;
+        }
+
+        // Expired rows are removed first. Nothing ever deleted them, so the
+        // table only grew, the admin figures counted matches that had long
+        // stopped being matches, and (below) one stale row was enough to put
+        // its member back in the queue every half hour for ever.
+        try {
+            DB::delete(
+                "DELETE FROM match_cache WHERE tenant_id = ? AND expires_at IS NOT NULL AND expires_at < NOW() LIMIT 5000",
+                [$tenantId]
+            );
+        } catch (\Throwable $e) {
+            Log::warning('SmartMatchingEngine::warmUpCache could not remove expired rows', [
+                'tenant_id' => $tenantId, 'error' => $e->getMessage(),
+            ]);
+        }
+
+        // Active users with an active listing and NO unexpired cache row.
+        //
+        // The old test was "has no row, or has any expired row". A member
+        // with nothing to match never gets a row, and a member with one stale
+        // row always had an expired one, so both were recomputed on every
+        // run. In a community with more such members than the batch size they
+        // filled every batch (ordered by last sign-in) and nobody else was
+        // ever reached. Members whose last run cached nothing are now skipped
+        // for a day (see WARM_EMPTY_RETRY_HOURS), so the queue moves on.
+        //
+        // $limit is an internal int (never user input), inlined because PDO
         // cannot reliably bind a LIMIT placeholder under emulated prepares.
-        $users = DB::select(
-            "SELECT DISTINCT u.id
+        $limit = max(1, (int) $limit);
+        $candidates = DB::select(
+            "SELECT u.id
              FROM users u
-             INNER JOIN listings l
-                 ON u.id = l.user_id AND l.status = 'active' AND l.tenant_id = u.tenant_id
-             LEFT JOIN match_cache mc
-                 ON u.id = mc.user_id AND mc.tenant_id = ?
              WHERE u.tenant_id = ?
                AND u.status = 'active'
-               AND (mc.id IS NULL OR mc.expires_at < NOW())
+               AND EXISTS (
+                   SELECT 1 FROM listings l
+                   WHERE l.user_id = u.id AND l.tenant_id = u.tenant_id AND l.status = 'active')
+               AND NOT EXISTS (
+                   SELECT 1 FROM match_cache mc
+                   WHERE mc.user_id = u.id AND mc.tenant_id = u.tenant_id AND mc.expires_at > NOW())
              ORDER BY u.last_login_at DESC
-             LIMIT " . max(1, (int) $limit),
-            [$tenantId, $tenantId]
+             LIMIT " . ($limit * 4),
+            [$tenantId]
         );
+
+        $users = [];
+        foreach ($candidates as $candidate) {
+            if (Cache::has(self::warmEmptyKey($tenantId, (int) $candidate->id))) {
+                continue;
+            }
+            $users[] = $candidate;
+            if (count($users) >= $limit) {
+                break;
+            }
+        }
 
         $hasV2Columns = $this->matchCacheHasV2Columns();
 
@@ -267,6 +324,7 @@ class SmartMatchingEngine
 
             $userId = (int) $row->id;
             $results['processed']++;
+            $cachedBefore = $results['cached'];
 
             try {
                 $runMeta = null;
@@ -275,6 +333,13 @@ class SmartMatchingEngine
                 Log::warning('SmartMatchingEngine::warmUpCache findMatches failed', [
                     'user_id' => $userId, 'tenant_id' => $tenantId, 'error' => $e->getMessage(),
                 ]);
+                continue;
+            }
+
+            if (empty($matches)) {
+                // No matches, or matching paused: come back tomorrow, not in
+                // thirty minutes.
+                Cache::put(self::warmEmptyKey($tenantId, $userId), 1, now()->addHours(self::WARM_EMPTY_RETRY_HOURS));
                 continue;
             }
 
@@ -353,9 +418,19 @@ class SmartMatchingEngine
                     ]);
                 }
             }
+
+            if ($results['cached'] === $cachedBefore) {
+                // Every write failed: do not retry this member every run either.
+                Cache::put(self::warmEmptyKey($tenantId, $userId), 1, now()->addHours(self::WARM_EMPTY_RETRY_HOURS));
+            }
         }
 
         return $results;
+    }
+
+    private static function warmEmptyKey(int $tenantId, int $userId): string
+    {
+        return "smart_match_warm_empty:{$tenantId}:{$userId}";
     }
 
     // =========================================================================
@@ -373,6 +448,23 @@ class SmartMatchingEngine
     {
         $tenantId = TenantContext::getId();
         $config = $this->getConfig();
+
+        // This service is a container singleton: the flag belongs to ONE run.
+        // Left set, every member computed later in the same process (the
+        // cache warm-up loops over hundreds) was marked "degraded" too.
+        $this->vettingPolicyUnavailable = false;
+
+        if (!$this->isEnabled()) {
+            $meta = [
+                'needs_location' => false,
+                'degraded' => false,
+                'degraded_reason' => null,
+                'has_active_listings' => true,
+                'paused' => false,
+                'disabled' => true,
+            ];
+            return [];
+        }
 
         $preferences = $this->getUserPreferences($userId);
         // Effective ceiling: the user's preference can tighten the tenant max
@@ -393,6 +485,7 @@ class SmartMatchingEngine
                 'degraded_reason' => null,
                 'has_active_listings' => true,
                 'paused' => true,
+                'disabled' => false,
             ];
             return [];
         }
@@ -405,6 +498,7 @@ class SmartMatchingEngine
                 'degraded_reason' => null,
                 'has_active_listings' => false,
                 'paused' => false,
+                'disabled' => false,
             ];
             return [];
         }
@@ -423,6 +517,7 @@ class SmartMatchingEngine
             'degraded_reason' => !$hasCoords ? 'no_coordinates' : null,
             'has_active_listings' => true,
             'paused' => false,
+            'disabled' => false,
         ];
 
         $userListings = $this->getUserListings($userId);
@@ -446,23 +541,45 @@ class SmartMatchingEngine
         // source listing by matching category_id in PHP.
         $byTargetType = ['offer' => [], 'request' => []]; // targetType => list of category_ids
         $myListingsByTarget = ['offer' => [], 'request' => []]; // targetType => list of myListings
+        // A listing of mine with no category is compared with every category,
+        // so it must not be confined to the categories of my OTHER listings.
+        $hasUncategorised = ['offer' => false, 'request' => false];
         foreach ($userListings as $myListing) {
             $targetType = ($myListing['type'] === 'offer') ? 'request' : 'offer';
             if (!empty($myListing['category_id'])) {
                 $byTargetType[$targetType][] = (int) $myListing['category_id'];
+            } else {
+                $hasUncategorised[$targetType] = true;
             }
             $myListingsByTarget[$targetType][] = $myListing;
         }
+
+        // The member's own "only these categories" choice. It used to be
+        // dropped whenever their listings had categories, i.e. almost always.
+        $preferredCategoryIds = is_array($categoryFilter)
+            ? array_values(array_unique(array_filter(array_map('intval', $categoryFilter))))
+            : [];
 
         $candidatesByTargetType = ['offer' => [], 'request' => []];
         foreach ($byTargetType as $targetType => $categoryIds) {
             if (empty($myListingsByTarget[$targetType])) {
                 continue;
             }
-            $uniqueCatIds = array_values(array_unique($categoryIds));
+            $uniqueCatIds = $hasUncategorised[$targetType] ? [] : array_values(array_unique($categoryIds));
+            if ($preferredCategoryIds !== []) {
+                if ($uniqueCatIds !== []) {
+                    $uniqueCatIds = array_values(array_intersect($uniqueCatIds, $preferredCategoryIds));
+                    if ($uniqueCatIds === []) {
+                        // None of my listings of this kind is in a category I asked for.
+                        continue;
+                    }
+                } else {
+                    $uniqueCatIds = $preferredCategoryIds;
+                }
+            }
             $candidatesByTargetType[$targetType] = $this->candidateRetriever->retrieveBatch(
                 $tenantId, $userId, $targetType, $uniqueCatIds,
-                $categoryFilter, $userLat, $userLon, $maxDistance, $gates
+                null, $userLat, $userLon, $maxDistance, $gates
             );
         }
 
@@ -681,6 +798,21 @@ class SmartMatchingEngine
         $this->applyVettingUnavailabilityToMeta($meta);
 
         return array_slice($capped, 0, $limit);
+    }
+
+    /**
+     * The lowest score this member is shown when the caller names none: their
+     * own saved minimum, else the community's configured one. The matches
+     * page used to send nothing and get a fixed 30, which silently overrode
+     * both the member's setting and the admin's.
+     */
+    public function effectiveMinScore(int $userId): float
+    {
+        $config = $this->getConfig();
+        $preferences = $this->getUserPreferences($userId);
+        $value = $preferences['min_match_score'] ?? $config['min_match_score'] ?? 40;
+
+        return max(0.0, min(100.0, (float) $value));
     }
 
     /**
@@ -1211,6 +1343,7 @@ class SmartMatchingEngine
                  FROM listings l
                  LEFT JOIN categories c ON l.category_id = c.id
                  WHERE l.user_id = ? AND l.tenant_id = ? AND l.status = 'active'
+                   AND (l.moderation_status IS NULL OR l.moderation_status = 'approved')
                  ORDER BY l.created_at DESC LIMIT 10",
                 [$userId, $tenantId]
             )

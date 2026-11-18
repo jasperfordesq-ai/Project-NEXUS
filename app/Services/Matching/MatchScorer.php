@@ -99,7 +99,10 @@ final class MatchScorer
         }
 
         [$skill, $forward, $backward] = $this->skillScore($searcher, $searcherListing, $candidate, $owner);
-        if ($skill >= 0.5) {
+        // "Both ways" only when each side really has something the other
+        // wants. A strong ONE-way fit (forward 1.0, combined 0.6) used to
+        // clear the 0.5 bar on its own and be described as two-way.
+        if ($forward > 0.0 && $backward > 0.0 && $skill >= 0.5) {
             $reasons[] = 'Skills match both ways';
         } elseif (max($forward, $backward) >= 0.5) {
             $reasons[] = 'Skills match your expertise';

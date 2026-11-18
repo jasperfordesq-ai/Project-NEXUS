@@ -3080,4 +3080,15 @@ XP: :xp | المستوى: :level | التبادلات المكتملة: :complet
     'platform_agreement_contact_name_too_long' => 'يمكن أن يصل اسم جهة الاتصال إلى 160 حرفًا.',
     'platform_agreement_notes_too_long' => 'يمكن أن تصل الملاحظات إلى 5000 حرف.',
     'platform_agreement_community_unknown' => 'هذا المجتمع غير موجود.',
+
+    // Smart matching: admin settings validation and coordinator match approvals.
+    'match_approval_not_found' => 'لا نجد هذا التطابق. ربما أُزيل.',
+    'match_approval_already_reviewed' => 'تمت الموافقة على هذا التطابق أو رفضه من قبل.',
+    'match_approval_contact_blocked' => 'لا يمكن الموافقة على هذا التطابق: قواعد الحماية لا تسمح لهذين العضوين بالتواصل. ما زال بانتظار قرار.',
+    'matching_max_distance_range' => 'يجب أن تكون المسافة القصوى بين 1 و20,000 كم.',
+    'matching_min_score_range' => 'يجب أن يكون الحد الأدنى لنتيجة المطابقة بين 0 و100.',
+    'matching_hot_threshold_range' => 'يجب أن تكون عتبة المطابقة الساخنة بين 0 و100.',
+    'matching_hot_below_min' => 'لا يمكن أن تكون عتبة المطابقة الساخنة أقل من الحد الأدنى لنتيجة المطابقة.',
+    'matching_bands_invalid' => 'يجب أن يكون كل نطاق مسافة أكبر من 0 كم وأبعد من النطاق الذي قبله.',
+    'matching_weights_invalid' => 'يجب أن يكون كل وزن تقييم بين 0% و100%، ولا يمكن أن تكون جميعها 0%.',
 ];

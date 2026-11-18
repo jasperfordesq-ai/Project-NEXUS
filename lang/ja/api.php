@@ -3080,4 +3080,15 @@ XP: :xp |レベル: :level |完了した交換: :completed_exchanges
     'platform_agreement_contact_name_too_long' => '連絡先の名前は160文字以内で入力してください。',
     'platform_agreement_notes_too_long' => 'メモは5,000文字以内で入力してください。',
     'platform_agreement_community_unknown' => 'そのコミュニティは存在しません。',
+
+    // Smart matching: admin settings validation and coordinator match approvals.
+    'match_approval_not_found' => 'そのマッチが見つかりません。削除された可能性があります。',
+    'match_approval_already_reviewed' => 'このマッチはすでに承認または却下されています。',
+    'match_approval_contact_blocked' => 'このマッチは承認できません。保護に関するルールにより、この2人のメンバーは互いに連絡を取ることができません。引き続き判断待ちの状態です。',
+    'matching_max_distance_range' => '最大距離は1〜20,000 kmの範囲で指定してください。',
+    'matching_min_score_range' => '最小マッチスコアは0〜100の範囲で指定してください。',
+    'matching_hot_threshold_range' => 'ホットマッチのしきい値は0〜100の範囲で指定してください。',
+    'matching_hot_below_min' => 'ホットマッチのしきい値を最小マッチスコアより低くすることはできません。',
+    'matching_bands_invalid' => '各距離区分は0 kmより大きく、前の区分より遠い距離にしてください。',
+    'matching_weights_invalid' => '各スコアの重みは0%〜100%の範囲で指定し、すべてを0%にすることはできません。',
 ];

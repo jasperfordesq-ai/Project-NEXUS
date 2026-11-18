@@ -6,109 +6,103 @@
 
 namespace Tests\Laravel\Unit\Services;
 
+use App\Models\User;
 use App\Services\MatchingService;
-use App\Services\SafeguardingInteractionPolicy;
-use App\Support\SafeguardingInteractionDecision;
+use App\Services\SmartMatchingEngine;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
-use Mockery;
 use Tests\Laravel\TestCase;
 
+/**
+ * A member's matching preferences, against a real database.
+ *
+ * This file used to test getSuggestionsForUser() / getHotMatches() /
+ * getMutualMatches() / getMatchesByType() with a faked database. Those
+ * methods returned random members, not matches, and were removed on
+ * 17 Nov 2026 (see Matching\MatchNotificationService). What a member is
+ * matched with is covered in Feature/Matching/MatchingJourneyTest.
+ */
 class MatchingServiceTest extends TestCase
 {
-    protected function setUp(): void
+    use DatabaseTransactions;
+
+    private function member(): User
     {
-        parent::setUp();
-        // These tests fake the database; the safeguarding match-approval gate
-        // is exercised for real in Feature/Matching/MatchApprovalGateTest.
-        $this->app->instance(\App\Services\Matching\MatchApprovalGate::class, new class extends \App\Services\Matching\MatchApprovalGate {
-            public function membersNeedingApproval(array $userIds, int $tenantId): array
-            {
-                return [];
-            }
-        });
+        return User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => 1]);
     }
 
-    public function test_getSuggestionsForUser_returns_results(): void
+    private function setMatchingConfig(array $changes): void
     {
-        DB::shouldReceive('select')->once()->andReturn([
-            (object) ['id' => 2, 'first_name' => 'Alice', 'last_name' => 'S', 'avatar_url' => null, 'location' => 'Dublin', 'skills' => 'cooking'],
-        ]);
-        $policy = Mockery::mock(SafeguardingInteractionPolicy::class);
-        $policy->shouldReceive('evaluateLocalContact')->twice()->andReturn($this->allowed());
-        $this->app->instance(SafeguardingInteractionPolicy::class, $policy);
-
-        $result = MatchingService::getSuggestionsForUser(1, 5);
-        $this->assertCount(1, $result);
+        $raw = DB::table('tenants')->where('id', $this->testTenantId)->value('configuration');
+        $config = is_string($raw) ? (json_decode($raw, true) ?: []) : [];
+        $config['algorithms']['smart_matching'] = array_merge($config['algorithms']['smart_matching'] ?? [], $changes);
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['configuration' => json_encode($config)]);
+        app(SmartMatchingEngine::class)->clearCache();
     }
 
-    public function test_getSuggestionsForUser_excludes_candidate_when_either_direction_is_restricted(): void
+    public function test_defaults_are_the_communitys_settings_and_every_key_is_present(): void
     {
-        DB::shouldReceive('select')->once()->andReturn([
-            (object) ['id' => 2, 'first_name' => 'Protected', 'last_name' => 'Member', 'avatar_url' => null, 'location' => null, 'skills' => null],
-        ]);
-        $policy = Mockery::mock(SafeguardingInteractionPolicy::class);
-        $policy->shouldReceive('evaluateLocalContact')
-            ->twice()
-            ->andReturn($this->allowed(), $this->denied());
-        $this->app->instance(SafeguardingInteractionPolicy::class, $policy);
+        $this->setMatchingConfig(['max_distance_km' => 80, 'min_match_score' => 45]);
 
-        $this->assertSame([], MatchingService::getSuggestionsForUser(1, 5));
+        $prefs = MatchingService::getPreferences($this->member()->id);
+
+        $this->assertSame(80, $prefs['max_distance_km']);
+        $this->assertSame(45, $prefs['min_match_score']);
+        $this->assertSame(80, $prefs['max_distance_limit_km']);
+        $this->assertSame('monthly', $prefs['notification_frequency']);
+        $this->assertTrue($prefs['notify_hot_matches']);
+        $this->assertTrue($prefs['notify_mutual_matches']);
+        $this->assertFalse($prefs['matching_paused']);
+        $this->assertSame([], $prefs['categories']);
+        $this->assertSame([], $prefs['availability']);
     }
 
-    public function test_getSuggestionsForUser_handles_error(): void
+    public function test_saved_preferences_round_trip(): void
     {
-        DB::shouldReceive('select')->andThrow(new \Exception('Error'));
+        $member = $this->member();
 
-        $result = MatchingService::getSuggestionsForUser(1);
-        $this->assertSame([], $result);
+        $this->assertTrue(MatchingService::savePreferences($member->id, [
+            'max_distance_km' => 12,
+            'min_match_score' => 65,
+            'notification_frequency' => 'daily',
+            'notify_hot_matches' => false,
+            'notify_mutual_matches' => true,
+            'matching_paused' => true,
+            'categories' => [3, 5],
+            'availability' => ['weekends'],
+        ]));
+
+        $prefs = MatchingService::getPreferences($member->id);
+
+        $this->assertSame(12, $prefs['max_distance_km']);
+        $this->assertSame(65, $prefs['min_match_score']);
+        $this->assertSame('daily', $prefs['notification_frequency']);
+        $this->assertFalse($prefs['notify_hot_matches']);
+        $this->assertTrue($prefs['notify_mutual_matches']);
+        $this->assertTrue($prefs['matching_paused']);
+        $this->assertSame([3, 5], $prefs['categories']);
+        $this->assertSame(['weekends'], $prefs['availability']);
     }
 
-    public function test_getHotMatches_delegates(): void
+    public function test_a_saved_distance_above_the_communitys_ceiling_is_shown_as_the_ceiling(): void
     {
-        DB::shouldReceive('select')->andReturn([]);
+        $member = $this->member();
+        MatchingService::savePreferences($member->id, ['max_distance_km' => 90]);
+        $this->setMatchingConfig(['max_distance_km' => 30]);
 
-        $result = MatchingService::getHotMatches(1);
-        $this->assertSame([], $result);
+        $prefs = MatchingService::getPreferences($member->id);
+
+        $this->assertSame(30, $prefs['max_distance_km'], 'The engine caps at the community ceiling, so the page must show that figure');
+        $this->assertSame(30, $prefs['max_distance_limit_km']);
     }
 
-    public function test_getMutualMatches_returns_empty(): void
+    public function test_clearing_the_category_choice_stores_null_meaning_all(): void
     {
-        $this->assertSame([], MatchingService::getMutualMatches(1));
-    }
+        $member = $this->member();
+        MatchingService::savePreferences($member->id, ['categories' => [4]]);
+        MatchingService::savePreferences($member->id, ['categories' => []]);
 
-    public function test_getMatchesByType_returns_structure(): void
-    {
-        DB::shouldReceive('select')->andReturn([]);
-
-        $result = MatchingService::getMatchesByType(1);
-
-        $this->assertArrayHasKey('hot', $result);
-        $this->assertArrayHasKey('good', $result);
-        $this->assertArrayHasKey('mutual', $result);
-        $this->assertArrayHasKey('all', $result);
-    }
-
-    private function allowed(): SafeguardingInteractionDecision
-    {
-        return new SafeguardingInteractionDecision(
-            status: SafeguardingInteractionDecision::ALLOW,
-            code: 'ALLOWED',
-            recipientTenantId: $this->testTenantId,
-            purposeCode: 'safeguarded_member_contact',
-            scopeType: 'tenant',
-            scopeIdentifier: '',
-        );
-    }
-
-    private function denied(): SafeguardingInteractionDecision
-    {
-        return new SafeguardingInteractionDecision(
-            status: SafeguardingInteractionDecision::DENY,
-            code: 'VETTING_REQUIRED',
-            recipientTenantId: $this->testTenantId,
-            purposeCode: 'safeguarded_member_contact',
-            scopeType: 'tenant',
-            scopeIdentifier: '',
-        );
+        $this->assertNull(DB::table('match_preferences')->where('user_id', $member->id)->value('categories'));
+        $this->assertSame([], MatchingService::getPreferences($member->id)['categories']);
     }
 }

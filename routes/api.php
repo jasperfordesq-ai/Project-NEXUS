@@ -2045,6 +2045,10 @@ Route::get('/v2/admin/matching/config', [\App\Http\Controllers\Api\AdminMatching
 Route::put('/v2/admin/matching/config', [\App\Http\Controllers\Api\AdminMatchingController::class, 'updateConfig']);
 Route::post('/v2/admin/matching/cache/clear', [\App\Http\Controllers\Api\AdminMatchingController::class, 'clearCache']);
 Route::get('/v2/admin/matching/stats', [\App\Http\Controllers\Api\AdminMatchingController::class, 'getStats']);
+// Platform team only (checked in the controller): the Matching diagnostic
+// page lives in the Platform team panel and nothing else calls these.
+Route::get('/v2/admin/matching/diagnose/user/{id}', [\App\Http\Controllers\Api\AdminMatchingController::class, 'diagnoseUser'])->whereNumber('id');
+Route::get('/v2/admin/matching/diagnose/listing/{id}', [\App\Http\Controllers\Api\AdminMatchingController::class, 'diagnoseListing'])->whereNumber('id');
 // Broker-or-admin: reviewing smart-match proposals is a core broker duty, so
 // the five approval endpoints are shared with the broker panel's Match
 // Approvals pages. Matching config/analytics/cache stay admin-only above.
