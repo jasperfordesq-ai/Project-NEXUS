@@ -249,9 +249,13 @@ function MessageBubble({ message, userName, userAvatar, onFeedback }: MessageBub
                   variant="flat"
                   color="default"
                   startContent={<BookOpen className="h-3 w-3 shrink-0" aria-hidden="true" />}
-                  className="max-w-[13rem] text-xs"
+                  // The cap must clip inside the chip: with it on the outer box only,
+                  // long titles spilled over the next chip (18 Nov 2026).
+                  className="max-w-[13rem] overflow-hidden text-xs"
+                  classNames={{ content: 'block min-w-0 truncate' }}
+                  title={source.title}
                 >
-                  <span className="truncate">{source.title}</span>
+                  {source.title}
                 </Chip>
               );
 

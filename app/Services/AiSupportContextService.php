@@ -130,10 +130,20 @@ class AiSupportContextService
 
             $content = $this->composeContext($tenant, $user, $articles, $areas);
 
+            // Technical articles stay in the model's background (composeContext
+            // tells it to simplify them), but only member help is shown to the
+            // member as a source. Timebank Ireland's Knowledge Base held only
+            // engineering reports, and every answer ended with links to them
+            // (18 Nov 2026).
+            $memberSources = array_values(array_map(
+                fn (array $article) => $article['source'],
+                array_filter($articles, fn (array $article) => ($article['audience'] ?? '') !== 'technical_reference')
+            ));
+
             return [
                 'content' => $content,
-                'sources' => array_map(fn (array $article) => $article['source'], $articles),
-                'source_count' => count($articles),
+                'sources' => $memberSources,
+                'source_count' => count($memberSources),
             ];
         } catch (\Throwable $e) {
             Log::warning('AiSupportContextService::build failed', [

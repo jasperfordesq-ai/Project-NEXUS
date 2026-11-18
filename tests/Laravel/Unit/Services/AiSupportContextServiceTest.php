@@ -83,13 +83,10 @@ class AiSupportContextServiceTest extends TestCase
             'What should I do about a docker api migration problem?'
         );
 
-        $technicalSources = array_filter(
-            $result['sources'],
-            fn (array $source) => ($source['title'] ?? '') === 'Docker API migration troubleshooting'
-                && ($source['audience'] ?? null) === 'technical_reference'
-        );
-
-        $this->assertNotEmpty($technicalSources);
+        // Since 18 Nov 2026 a technical article stays in the background but is
+        // never shown to the member as a source (ChatSourcesAreMemberHelpOnlyTest).
+        $this->assertNotContains('Docker API migration troubleshooting', array_column($result['sources'], 'title'));
+        $this->assertStringContainsString('Docker API migration troubleshooting', $result['content']);
         $this->assertStringContainsString('technical reference material', $result['content']);
     }
 }
