@@ -2565,7 +2565,7 @@
   "xp_progress": "{{current}} / {{required}} XP",
   "level_progress_aria": "Progreso del nivel {{level}}: {{percentage}}%",
   "user_fallback": "User",
-  "release_stage": "Disponible de forma general (v3.2.0)",
+  "release_stage": "Disponible de forma general (v3.3.0)",
   "theme_picker": {
     "title": "Apariencia",
     "subtitle": "Ajusta el esquema de color, el color de acento y la densidad.",
