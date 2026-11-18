@@ -105,7 +105,7 @@ final class MatchScorer
         // "Both ways" only when each side really has something the other
         // wants. A strong ONE-way fit (forward 1.0, combined 0.6) used to
         // clear the 0.5 bar on its own and be described as two-way.
-        if ($forward > 0.0 && $backward > 0.0 && $skill >= 0.5) {
+        if (min($forward, $backward) >= 0.3 && $skill >= 0.5) {
             $reasons[] = 'Skills match both ways';
         } elseif (max($forward, $backward) >= 0.5) {
             $reasons[] = 'Skills match your expertise';
@@ -310,26 +310,43 @@ final class MatchScorer
     {
         $listingKeywords = fn (array $listing) => array_values((array) ($listing['keywords'] ?? []));
 
-        // Fold the concrete listing texts into the directional profiles: an
-        // offer describes what its author gives, a request what they want.
+        // Each side twice: the two listings alone, and the listings folded
+        // into the members' profile skills (an offer describes what its
+        // author gives, a request what they want).
+        $searcherGiveListing = $searcherWantListing = $ownerGiveListing = $ownerWantListing = [];
         $searcherGive = $this->normaliseWeighted($searcher['give_keywords'] ?? []);
         $searcherWant = $this->normaliseWeighted($searcher['want_keywords'] ?? []);
         if (($searcherListing['type'] ?? '') === 'offer') {
+            $searcherGiveListing = $this->mergeWeighted([], $listingKeywords($searcherListing));
             $searcherGive = $this->mergeWeighted($searcherGive, $listingKeywords($searcherListing));
         } else {
+            $searcherWantListing = $this->mergeWeighted([], $listingKeywords($searcherListing));
             $searcherWant = $this->mergeWeighted($searcherWant, $listingKeywords($searcherListing));
         }
 
         $ownerGive = $this->normaliseWeighted($owner['give_keywords'] ?? []);
         $ownerWant = $this->normaliseWeighted($owner['want_keywords'] ?? []);
         if (($candidate['type'] ?? '') === 'offer') {
+            $ownerGiveListing = $this->mergeWeighted([], $listingKeywords($candidate));
             $ownerGive = $this->mergeWeighted($ownerGive, $listingKeywords($candidate));
         } else {
+            $ownerWantListing = $this->mergeWeighted([], $listingKeywords($candidate));
             $ownerWant = $this->mergeWeighted($ownerWant, $listingKeywords($candidate));
         }
 
-        $forward = $this->weightedJaccard($searcherGive, $ownerWant);
-        $backward = $this->weightedJaccard($ownerGive, $searcherWant);
+        // Profile skills only ever ADD evidence. Folded in alone, every
+        // unrelated skill a member listed enlarged the union and shrank the
+        // overlap, so filling in a profile lowered a member's matches
+        // (measured 18 Nov 2026: a genuine pair fell from 79.5 to 71.1 when
+        // both members had an ordinary list of other skills).
+        $forward = max(
+            $this->weightedJaccard($searcherGive, $ownerWant),
+            $this->weightedJaccard($searcherGiveListing, $ownerWantListing)
+        );
+        $backward = max(
+            $this->weightedJaccard($ownerGive, $searcherWant),
+            $this->weightedJaccard($ownerGiveListing, $searcherWantListing)
+        );
 
         if ($forward <= 0.0 && $backward <= 0.0) {
             $hasAnyData = !empty($searcherGive) || !empty($searcherWant)
@@ -337,25 +354,38 @@ final class MatchScorer
             return [$hasAnyData ? 0.0 : self::DEFAULT_SKILL, 0.0, 0.0];
         }
 
-        if ($forward > 0.0 && $backward > 0.0) {
-            // Harmonic mean rewards balanced two-way fit.
-            $combined = 2 * $forward * $backward / ($forward + $backward);
-        } else {
-            $combined = max($forward, $backward) * 0.6;
-        }
+        // A one-way fit counts 0.6 of itself; a second direction adds to it,
+        // in proportion to how strong it is. This was a harmonic mean, which
+        // a small overlap the other way dragged far BELOW the one-way score
+        // (forward 1.0 alone: 0.6; with backward 0.1 added: 0.18).
+        $high = max($forward, $backward);
+        $low = min($forward, $backward);
+        $combined = $high * (0.6 + 0.4 * ($low / $high));
 
         return [min(1.0, $combined), $forward, $backward];
     }
 
     private function semanticScore(array $searcherListing, array $candidate, ?float $cosine): float
     {
+        $wording = $this->wordingScore($searcherListing, $candidate);
         if ($cosine !== null) {
             $mapped = ($cosine - self::SEMANTIC_COSINE_MIN)
                 / (self::SEMANTIC_COSINE_MAX - self::SEMANTIC_COSINE_MIN);
-            return max(0.0, min(1.0, $mapped));
+
+            // The AI figure can only add to what the wording already shows.
+            // It is often not about these two listings at all: a listing
+            // posted since the last AI run has no figure, and the engine
+            // then passes the two MEMBERS' profile similarity instead, which
+            // used to replace clear evidence like "~childcare" on both sides.
+            return max(max(0.0, min(1.0, $mapped)), $wording);
         }
 
-        // AI off / embedding missing: what the two listing texts share.
+        return $wording;
+    }
+
+    /** What the two listing texts share, without an AI model. */
+    private function wordingScore(array $searcherListing, array $candidate): float
+    {
         $a = array_values((array) ($searcherListing['keywords'] ?? []));
         $b = array_values((array) ($candidate['keywords'] ?? []));
         if (empty($a) || empty($b)) {

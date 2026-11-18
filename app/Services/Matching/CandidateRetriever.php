@@ -34,6 +34,9 @@ use Illuminate\Support\Facades\DB;
  *  - Moderation gate: the same rule as ListingService::applyPublicVisibility().
  *    A listing that is in review or was not approved is never a candidate,
  *    even if its `status` still reads 'active'.
+ *  - Expiry gate: a listing past its `expires_at` is never a candidate. The
+ *    job that marks such listings 'expired' runs on a timer, and until it
+ *    has, their `status` still reads 'active'.
  *
  * A bounding-box pre-filter runs before the Haversine HAVING so the geo gate
  * stays index-assisted at tenant scale. Distances are NULL-safe: candidates
@@ -156,6 +159,7 @@ class CandidateRetriever
                 LEFT JOIN categories c ON l.category_id = c.id
                 WHERE l.tenant_id = ? AND l.status = 'active' AND l.user_id != ?
                   AND (l.moderation_status IS NULL OR l.moderation_status = 'approved')
+                  AND (l.expires_at IS NULL OR l.expires_at > NOW())
                   AND u.status = 'active'";
         array_push($params, $tenantId, $excludeUserId);
 

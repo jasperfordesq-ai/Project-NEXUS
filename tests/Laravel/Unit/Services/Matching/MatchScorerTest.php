@@ -256,6 +256,9 @@ class MatchScorerTest extends TestCase
     public function test_semantic_cosine_is_mapped_onto_unit_range(): void
     {
         $pair = $this->baselinePair();
+        // Texts that share nothing, so only the AI figure speaks.
+        $pair['searcherListing']['keywords'] = ['telescop', 'astronom'];
+        $pair['candidate']['keywords'] = ['plumb', 'tap'];
 
         $low = $this->score($pair, semantic: 0.15)->signals['relevance']['semantic'];
         $high = $this->score($pair, semantic: 0.90)->signals['relevance']['semantic'];
@@ -264,6 +267,50 @@ class MatchScorerTest extends TestCase
         $this->assertEqualsWithDelta(0.0, $low, 0.001);
         $this->assertEqualsWithDelta(1.0, $high, 0.001);
         $this->assertEqualsWithDelta(0.0, $out, 0.001);
+    }
+
+    public function test_a_low_ai_figure_never_erases_what_the_wording_shows(): void
+    {
+        // Both listings are about childcare; the AI figure passed in is the
+        // two MEMBERS' profile similarity (no figure for the new listing yet).
+        $pair = $this->baselinePair();
+        $pair['searcherListing']['keywords'] = \App\Services\Matching\KeywordExtractor::extract('Babysitter needed on Friday evenings');
+        $pair['candidate']['keywords'] = \App\Services\Matching\KeywordExtractor::extract('I can mind your kids');
+
+        $withoutAi = $this->score($pair)->signals['relevance']['semantic'];
+        $withLowAi = $this->score($pair, semantic: 0.10)->signals['relevance']['semantic'];
+
+        $this->assertGreaterThanOrEqual(0.6, $withoutAi);
+        $this->assertEqualsWithDelta($withoutAi, $withLowAi, 0.001);
+    }
+
+    public function test_a_small_second_direction_never_lowers_the_skill_signal(): void
+    {
+        $pair = $this->baselinePair();
+        $pair['searcher']['give_keywords'] = ['garden' => 1.0, 'mow' => 1.0];
+        $pair['owner']['want_keywords'] = ['garden' => 1.0, 'mow' => 1.0];
+        $pair['searcher']['want_keywords'] = [];
+        $pair['owner']['give_keywords'] = [];
+        $oneWay = $this->score($pair)->signals['relevance']['skill'];
+
+        // The owner also offers one thing among many that the searcher wants.
+        $pair['searcher']['want_keywords'] = ['knit' => 1.0, 'bake' => 1.0, 'tax' => 1.0, 'ital' => 1.0];
+        $pair['owner']['give_keywords'] = ['knit' => 1.0, 'cook' => 1.0, 'iron' => 1.0, 'paint' => 1.0, 'read' => 1.0];
+        $twoWay = $this->score($pair)->signals['relevance']['skill'];
+
+        $this->assertGreaterThanOrEqual($oneWay, $twoWay);
+    }
+
+    public function test_unrelated_profile_skills_do_not_lower_a_listing_pair(): void
+    {
+        $pair = $this->baselinePair();
+        $plain = $this->score($pair)->score;
+
+        $pair['searcher']['give_keywords'] = array_fill_keys(['cook', 'iron', 'knit', 'bake', 'shop', 'read', 'paint', 'sew'], 1.0);
+        $pair['owner']['want_keywords'] = array_fill_keys(['tax', 'ital', 'bike', 'lift', 'drive'], 1.0);
+        $rich = $this->score($pair)->score;
+
+        $this->assertGreaterThanOrEqual($plain, $rich, 'Filling in a profile must not cost a member matches');
     }
 
     public function test_pillar_weights_from_config_are_normalised(): void

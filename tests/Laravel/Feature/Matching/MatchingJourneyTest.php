@@ -353,6 +353,115 @@ class MatchingJourneyTest extends TestCase
         TenantContext::setById($this->testTenantId);
     }
 
+    // ---------------------------------------------------------------------
+    // Deeper audit, 18 Nov 2026
+    // ---------------------------------------------------------------------
+
+    public function test_a_listing_past_its_expiry_date_is_never_matched(): void
+    {
+        $category = $this->category();
+        $me = $this->member();
+        $this->listingFor($me, 'offer', $category->id);
+        $live = $this->listingFor($this->member(), 'request', $category->id);
+        $expired = $this->listingFor($this->member(), 'request', $category->id, ['expires_at' => now()->subDay()]);
+
+        $ids = $this->listingIds($this->matchesFor($me, 'modules=listings&min_score=0'));
+
+        $this->assertContains($live->id, $ids, 'Control');
+        $this->assertNotContains($expired->id, $ids, 'The expiry job runs on a timer; until it does, an expired listing still reads "active"');
+    }
+
+    public function test_a_match_adjusted_below_the_members_minimum_is_not_shown(): void
+    {
+        $category = $this->category();
+        $me = $this->member();
+        $this->listingFor($me, 'offer', $category->id);
+        $them = $this->member();
+        $dismissed = $this->listingFor($them, 'request', $category->id);
+        $other = $this->listingFor($them, 'request', $category->id);
+
+        $before = collect($this->matchesFor($me, 'modules=listings&min_score=0')['matches'])
+            ->firstWhere('listing_id', $other->id);
+        $this->assertNotNull($before, 'Control');
+        $minimum = (int) floor((float) $before['match_score']) - 3;
+
+        // Dismissing one of their listings costs the other one 8 points.
+        DB::table('match_dismissals')->insert([
+            'tenant_id' => $this->testTenantId, 'user_id' => $me->id, 'listing_id' => $dismissed->id, 'created_at' => now(),
+        ]);
+
+        $ids = $this->listingIds($this->matchesFor($me, 'modules=listings&min_score=' . $minimum));
+        $this->assertNotContains($other->id, $ids, 'Shown below the minimum the member asked for');
+    }
+
+    public function test_the_safety_check_is_made_once_per_member_not_once_per_listing(): void
+    {
+        $category = $this->category();
+        $me = $this->member();
+        $this->listingFor($me, 'offer', $category->id);
+        $them = $this->member();
+        for ($i = 0; $i < 4; $i++) {
+            $this->listingFor($them, 'request', $category->id);
+        }
+
+        $policy = new class(
+            app(\App\Services\MemberVettingAttestationService::class),
+            app(\App\Services\SafeguardingJurisdictionService::class),
+            app(\App\Services\SafeguardingCoordinatorDirectory::class),
+        ) extends \App\Services\SafeguardingInteractionPolicy {
+            public array $pairs = [];
+
+            public function evaluateLocalContact(int $senderId, int $recipientId, int $tenantId, string $channel = 'direct_message'): \App\Support\SafeguardingInteractionDecision
+            {
+                if ($channel === 'match_discovery') {
+                    $this->pairs[] = $senderId . '>' . $recipientId;
+                }
+
+                return parent::evaluateLocalContact($senderId, $recipientId, $tenantId, $channel);
+            }
+        };
+        $this->app->instance(\App\Services\SafeguardingInteractionPolicy::class, $policy);
+
+        $this->matchesFor($me, 'modules=listings&min_score=0');
+
+        $withThem = array_filter($policy->pairs, fn (string $pair) => in_array((string) $them->id, explode('>', $pair), true));
+        $this->assertCount(2, $withThem, 'One check each way for the two members, however many listings they have');
+    }
+
+    public function test_owners_seen_as_often_as_everyone_else_are_not_marked_down(): void
+    {
+        $category = $this->category();
+        $me = $this->member();
+        $this->listingFor($me, 'offer', $category->id);
+        $first = $this->listingFor($this->member(), 'request', $category->id);
+        $second = $this->listingFor($this->member(), 'request', $category->id);
+
+        // An active community: both owners already appear in many members' lists.
+        $others = [];
+        for ($i = 0; $i < 6; $i++) {
+            $others[] = $this->member()->id;
+        }
+        $rows = [];
+        foreach ([$first->id, $second->id] as $listingId) {
+            foreach ($others as $otherId) {
+                $rows[] = [
+                    'user_id' => $otherId, 'listing_id' => $listingId, 'tenant_id' => $this->testTenantId,
+                    'match_score' => 60, 'match_type' => 'one_way', 'status' => 'new',
+                    'created_at' => now(), 'expires_at' => now()->addDays(7),
+                ];
+            }
+        }
+        DB::table('match_cache')->insert($rows);
+
+        $matches = collect($this->matchesFor($me, 'modules=listings&min_score=0')['matches']);
+        foreach ([$first->id, $second->id] as $listingId) {
+            $match = $matches->firstWhere('listing_id', $listingId);
+            $this->assertNotNull($match);
+            $this->assertArrayNotHasKey('popularity', $match['score_breakdown']['adjustments'] ?? [],
+                'Every owner here is seen equally often: a penalty on all of them is a flat cut, not a fairer order');
+        }
+    }
+
     public function test_switching_matching_off_for_the_community_stops_matches(): void
     {
         $category = $this->category();

@@ -817,6 +817,14 @@ class SmartMatchingEngine
             unset($match);
         }
 
+        // The minimum applies to the score the member is shown. It was
+        // checked before the learning, dismissal and exposure adjustments,
+        // which could then take a match below the member's own minimum.
+        $matches = array_values(array_filter(
+            $matches,
+            fn ($m) => (float) ($m['match_score'] ?? 0) >= (float) $minScore
+        ));
+
         usort($matches, fn ($a, $b) => $b['match_score'] <=> $a['match_score']);
 
         // Anti-popularity page cap: no owner monopolises a result page. The
@@ -869,8 +877,9 @@ class SmartMatchingEngine
      *    (±5), clamped ±15 — the MatchLearningService signals
      *  - dismissed-similar: −8 when the searcher previously dismissed a
      *    listing by the same owner in the same category
-     *  - anti-popularity: −min(6, 2·ln(1+n)) where n = times this owner
-     *    appeared in the tenant's match_cache in the last 7 days
+     *  - anti-popularity: −min(6, 2·ln(n/typical)) for an owner who appeared
+     *    in the tenant's match_cache over twice as often as the typical
+     *    owner in this list did, in the last 7 days
      */
     private function applyLearningAndDiversityAdjustments(array $matches, int $userId, int $tenantId, array $config): array
     {
@@ -931,6 +940,19 @@ class SmartMatchingEngine
             // Non-fatal.
         }
 
+        // Exposure is judged against the TYPICAL owner in this list, not in
+        // absolute numbers. Every warmed member caches up to 20 matches, so
+        // in an active community almost every owner passed 20 appearances a
+        // week and the "anti-popularity" penalty became a flat -6 on nearly
+        // everyone: no change to the order, but enough to sink scores under
+        // the member's minimum and out of reach of the alert threshold.
+        $exposures = [];
+        foreach ($ownerIds as $ownerId) {
+            $exposures[] = $popularity[$ownerId] ?? 0;
+        }
+        sort($exposures);
+        $typicalExposure = max(1, $exposures[intdiv(count($exposures), 2)] ?? 0);
+
         foreach ($matches as &$match) {
             $owner = (int) ($match['user_id'] ?? 0);
             $categoryId = (int) ($match['category_id'] ?? 0);
@@ -947,8 +969,8 @@ class SmartMatchingEngine
             }
 
             $exposure = $popularity[$owner] ?? 0;
-            if ($exposure > 0) {
-                $penalty = -min(6.0, 2.0 * log(1 + $exposure));
+            if ($exposure > 2 * $typicalExposure) {
+                $penalty = -min(6.0, 2.0 * log($exposure / $typicalExposure));
                 $applied['popularity'] = round($penalty, 2);
             }
 
@@ -1652,11 +1674,22 @@ class SmartMatchingEngine
             $tenantId = TenantContext::getId();
             $policy = app(SafeguardingInteractionPolicy::class);
             $filtered = [];
+            // One decision per MEMBER, not per listing: the answer depends
+            // only on the two people. It was asked again for every listing,
+            // twice each, so an owner with ten listings cost twenty
+            // evaluations (each several queries) on every matches page load.
+            $allowedByOwner = [];
 
             foreach ($candidates as $candidate) {
                 $owner = (int) ($candidate['user_id'] ?? 0);
                 if ($owner <= 0 || $owner === $searcherId) {
                     $filtered[] = $candidate;
+                    continue;
+                }
+                if (isset($allowedByOwner[$owner])) {
+                    if ($allowedByOwner[$owner]) {
+                        $filtered[] = $candidate;
+                    }
                     continue;
                 }
 
@@ -1672,7 +1705,8 @@ class SmartMatchingEngine
                     $tenantId,
                     'match_discovery',
                 );
-                if ($searcherToOwner->isAllowed() && $ownerToSearcher->isAllowed()) {
+                $allowedByOwner[$owner] = $searcherToOwner->isAllowed() && $ownerToSearcher->isAllowed();
+                if ($allowedByOwner[$owner]) {
                     $filtered[] = $candidate;
                 } elseif ($searcherToOwner->isUnavailable() || $ownerToSearcher->isUnavailable()) {
                     // UNAVAILABLE is the gate failing closed (unconfigured or
