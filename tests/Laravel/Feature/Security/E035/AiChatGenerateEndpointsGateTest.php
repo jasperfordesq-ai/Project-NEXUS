@@ -36,7 +36,7 @@ final class AiChatGenerateEndpointsGateTest extends TestCase
         parent::setUp();
         Http::preventStrayRequests();
         TenantContext::setById($this->testTenantId);
-        foreach (['ai_enabled' => '1', 'ai_content_generation_enabled' => '1'] as $key => $value) {
+        foreach (['ai_enabled' => '1', 'ai_content_gen_enabled' => '1'] as $key => $value) {
             DB::table('ai_settings')->updateOrInsert(
                 ['tenant_id' => $this->testTenantId, 'setting_key' => $key],
                 ['setting_value' => $value, 'updated_at' => now()]

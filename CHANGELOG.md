@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Admin AI settings would not save for any community that had an Ollama address stored from before July (security register E-131, 18 Nov 2026)**: the page re-sent the stored "local AI server" address (`http://localhost:11434`) on every save, and since the June outbound-address hardening the server refuses a private address, so every save answered 422 whichever provider was chosen — Timebank Ireland could not switch provider. The address is now sent only when Ollama is the chosen provider or an administrator edits it, and a refused save shows the server's reason instead of "Save failed".
+- **The "Content generation" switch on the admin AI settings page reached nothing (security register E-131, 18 Nov 2026)**: the page saves `ai_content_gen_enabled`, but `AIServiceFactory::isFeatureEnabled('content_generation')` read `ai_content_generation_enabled`, which no screen writes, so the seven AI "generate" requests (listing, event, message, bio, newsletter, blog, page) were refused whatever an administrator chose. They now follow the switch. Every community currently has it off, so nothing changes until an administrator turns it on. A security test that seeded the unwritable key now seeds the one the page writes.
 
 ### Security
 

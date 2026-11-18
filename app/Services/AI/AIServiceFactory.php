@@ -361,9 +361,15 @@ class AIServiceFactory
             return false;
         }
 
+        // The admin page stores content generation as `ai_content_gen_enabled`;
+        // read that, not `ai_content_generation_enabled`, which nothing writes.
+        $settingKey = $feature === 'content_generation'
+            ? AiDescriptionAvailability::CONTENT_GENERATION_SETTING
+            : "ai_{$feature}_enabled";
+
         $tenantId = TenantContext::getId();
         if ($tenantId) {
-            $enabled = AiSettings::get($tenantId, "ai_{$feature}_enabled");
+            $enabled = AiSettings::get($tenantId, $settingKey);
             if ($enabled !== null) {
                 return AiSettings::parseBoolean($enabled);
             }
