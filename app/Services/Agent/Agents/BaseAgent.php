@@ -87,29 +87,32 @@ abstract class BaseAgent
     }
 
     /**
-     * Call the configured LLM (default OpenAI gpt-4o-mini). Tracks tokens.
+     * Call the community's chosen AI provider and saved model (admin AI
+     * settings page). Tracks tokens.
      *
      * Returns ['content' => string, 'input_tokens' => int, 'output_tokens' => int].
-     * If OpenAI is not configured, returns ['content' => '', 'input_tokens' => 0,
-     * 'output_tokens' => 0] — agents should fall back to deterministic copy.
+     * While the community's AI is off, or the call fails, returns
+     * ['content' => '', 'input_tokens' => 0, 'output_tokens' => 0] — agents
+     * should fall back to deterministic copy.
      *
      * @param list<array{role:string,content:string}> $messages
      * @return array{content:string,input_tokens:int,output_tokens:int}
      */
     protected function callLlm(array $messages, array $options = []): array
     {
-        if (!env('OPENAI_API_KEY')) {
+        // F-633: the community's own AI switch, provider and saved model — not
+        // the platform environment's OpenAI key and a fixed OpenAI model.
+        if (!AIServiceFactory::isEnabledForTenant($this->tenantId)) {
             return ['content' => '', 'input_tokens' => 0, 'output_tokens' => 0];
         }
 
         $opts = array_merge([
-            'model'       => 'gpt-4o-mini',
             'temperature' => 0.3,
             'max_tokens'  => 600,
         ], $options);
 
         try {
-            $response = AIServiceFactory::chatWithFallback($messages, $opts, 'openai');
+            $response = AIServiceFactory::chatWithFallback($messages, $opts);
             $in  = (int) ($response['tokens_input'] ?? 0);
             $out = (int) ($response['tokens_output'] ?? 0);
 
