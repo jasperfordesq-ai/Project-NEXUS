@@ -123,9 +123,10 @@ class AiChatService
      * @return array Parsed data with keys: skills, years_experience, job_titles, education, summary.
      *               Returns ['error' => '...'] on failure.
      */
-    public static function parseResume(string $filePath): array
+    public static function parseResume(string $filePath, ?string $apiKey): array
     {
-        $apiKey = config('services.openai.api_key');
+        // F-632: the community's own key, passed in by the caller after the
+        // community's AI switch — never the platform key.
         if (empty($apiKey)) {
             return ['error' => 'AI service is not configured.'];
         }

@@ -1550,7 +1550,12 @@ class JobVacanciesController extends BaseApiController
             return $this->respondWithError('RESOURCE_NOT_FOUND', __('api.job_no_cv_attached'), null, 404);
         }
 
-        $parsed = AiChatService::parseResume($application->cv_path);
+        // F-632: a CV goes to OpenAI only while the community's AI is on, and
+        // only on the community's own key (AI keys are per community).
+        $communityKey = \App\Services\AI\AIServiceFactory::isEnabled()
+            ? \App\Services\AI\CommunityOpenAiKey::get($tenantId)
+            : null;
+        $parsed = AiChatService::parseResume($application->cv_path, $communityKey);
 
         return $this->respondWithData($parsed);
     }
