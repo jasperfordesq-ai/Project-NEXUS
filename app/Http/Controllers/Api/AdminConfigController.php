@@ -2125,7 +2125,7 @@ class AdminConfigController extends BaseApiController
     /** PUT /api/v2/admin/config/ai */
     public function updateAiConfig(): JsonResponse
     {
-        $this->requireAdmin();
+        $adminId = $this->requireAdmin();
         $tenantId = TenantContext::getId();
         $input = $this->getAllInput();
 
@@ -2192,6 +2192,16 @@ class AdminConfigController extends BaseApiController
             \App\Services\AI\CommunityOpenAiKey::clearRefusal($tenantId);
         }
         $this->redisCache->delete('tenant_bootstrap', $tenantId);
+
+        // F-635: who changed the provider, a switch or a key, and when — names
+        // only, never a key or other value.
+        $described = array_map(
+            static fn (string $key): string => str_ends_with($key, '_api_key')
+                ? $key . ($toSave[$key] === '' ? ' (removed)' : ' (replaced)')
+                : $key,
+            array_keys($toSave)
+        );
+        \App\Models\ActivityLog::log((int) $adminId, 'admin_ai_settings_updated', 'Changed AI settings: ' . implode(', ', $described));
 
         return $this->respondWithData(['updated' => true, 'keys_updated' => array_keys($toSave)]);
     }
