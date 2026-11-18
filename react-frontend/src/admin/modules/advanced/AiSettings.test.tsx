@@ -189,6 +189,67 @@ describe('AiSettings', () => {
     expect(inputs.length).toBeGreaterThan(0);
   });
 
+  // Production, 18 Nov 2026: tenant 2 had `ollama_host = http://localhost:11434`
+  // stored from before the server started refusing private addresses. The page
+  // re-sent that untouched value on every save, so EVERY save answered 422 —
+  // whichever provider was chosen. The mocked success above could never show it.
+  it('does not send the Ollama address when Ollama is not the chosen provider', async () => {
+    const { AiSettings } = await import('./AiSettings');
+    render(<AiSettings />);
+
+    await waitFor(() => screen.getByTestId('page-header'));
+
+    const saveBtn = screen.getAllByRole('button').find(
+      (b) => b.textContent?.toLowerCase().includes('save')
+    );
+    if (saveBtn) fireEvent.click(saveBtn);
+
+    await waitFor(() => expect(mockAdminSettings.updateAiConfig).toHaveBeenCalled());
+    const payload = mockAdminSettings.updateAiConfig.mock.calls[0]![0] as Record<string, unknown>;
+    expect(payload.ai_provider).toBe('openai');
+    expect(payload).not.toHaveProperty('ollama_host');
+  });
+
+  it('sends the Ollama address when Ollama is the chosen provider, so the server can check it', async () => {
+    mockAdminSettings.getAiConfig.mockResolvedValue({
+      success: true,
+      data: { ...AI_CONFIG, ai_provider: 'ollama', ollama: { host: 'https://ollama.example.org' } },
+    });
+    const { AiSettings } = await import('./AiSettings');
+    render(<AiSettings />);
+
+    await waitFor(() => screen.getByTestId('page-header'));
+
+    const saveBtn = screen.getAllByRole('button').find(
+      (b) => b.textContent?.toLowerCase().includes('save')
+    );
+    if (saveBtn) fireEvent.click(saveBtn);
+
+    await waitFor(() => expect(mockAdminSettings.updateAiConfig).toHaveBeenCalled());
+    const payload = mockAdminSettings.updateAiConfig.mock.calls[0]![0] as Record<string, unknown>;
+    expect(payload.ollama_host).toBe('https://ollama.example.org');
+  });
+
+  it("shows the server's reason when a save is refused", async () => {
+    mockAdminSettings.updateAiConfig.mockResolvedValue({
+      success: false,
+      error: 'The address must not point to a private network.',
+    });
+    const { AiSettings } = await import('./AiSettings');
+    render(<AiSettings />);
+
+    await waitFor(() => screen.getByTestId('page-header'));
+
+    const saveBtn = screen.getAllByRole('button').find(
+      (b) => b.textContent?.toLowerCase().includes('save')
+    );
+    if (saveBtn) fireEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalledWith('The address must not point to a private network.');
+    });
+  });
+
   it('refreshes config after successful save', async () => {
     const { AiSettings } = await import('./AiSettings');
     render(<AiSettings />);

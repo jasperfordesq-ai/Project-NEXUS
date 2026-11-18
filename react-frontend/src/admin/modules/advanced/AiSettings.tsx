@@ -198,7 +198,8 @@ export function AiSettings() {
     setForm(prev => ({ ...prev, [key]: value }));
   };
 
-  const updateApiKey = (field: keyof FormState, value: string) => {
+  // For fields sent only once the admin has edited them (API keys, Ollama address).
+  const updateTrackedField = (field: keyof FormState, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }));
     setDirtyKeys(prev => new Set(prev).add(field));
   };
@@ -213,7 +214,6 @@ export function AiSettings() {
       openai_model: form.openai_model,
       claude_model: form.claude_model,
       ollama_model: form.ollama_model,
-      ollama_host: form.ollama_host,
       // Features
       ai_chat_enabled: form.ai_chat_enabled,
       ai_content_gen_enabled: form.ai_content_gen_enabled,
@@ -224,6 +224,14 @@ export function AiSettings() {
       default_daily_limit: form.default_daily_limit,
       default_monthly_limit: form.default_monthly_limit,
     };
+
+    // The Ollama address goes only when Ollama is the chosen provider or the
+    // admin edited it. The server refuses a private address (localhost
+    // included), and communities saved one before that check existed, so
+    // re-sending an untouched value made every save fail for every provider.
+    if (form.ai_provider === 'ollama' || dirtyKeys.has('ollama_host')) {
+      payload.ollama_host = form.ollama_host;
+    }
 
     // Only send API keys that the user actually typed (non-empty, dirty)
     const keyFields = ['gemini_api_key', 'openai_api_key', 'anthropic_api_key'] as const;
@@ -258,8 +266,8 @@ export function AiSettings() {
           setDirtyKeys(new Set());
         }
       } else {
-        const error = t('save_failed');
-        toast.error(error);
+        // Say why: the server names the field it refused.
+        toast.error(res.error || t('save_failed'));
       }
     } catch {
       toast.error(t('failed_to_save_a_i_settings'));
@@ -358,7 +366,7 @@ export function AiSettings() {
                           : t('desc_api_key_new')
                       }
                       value={form[apiKeyField] as string}
-                      onValueChange={(v) => updateApiKey(apiKeyField, v)}
+                      onValueChange={(v) => updateTrackedField(apiKeyField, v)}
                     />
                   ) : (
                     <Input
@@ -367,7 +375,7 @@ export function AiSettings() {
                       variant="secondary"
                       description={t('desc_ollama_host')}
                       value={form.ollama_host}
-                      onValueChange={(v) => updateField('ollama_host', v)}
+                      onValueChange={(v) => updateTrackedField('ollama_host', v)}
                     />
                   )}
 
