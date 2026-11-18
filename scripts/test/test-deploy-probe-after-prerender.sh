@@ -190,10 +190,15 @@ echo "Scenario 9: the probe's addresses come from the server's prerender plan"
 # minehead-and-coast.timebank.global after the owner removed that domain, and
 # had never named bridgwater.timebank.global. The engine's plan reads the
 # tenants table, so deploy.sh must ask it and hand the answer to the probe.
+# Count, never `| grep -q`: under `set -o pipefail`, grep -q exits at the first
+# match, the upstream grep -v can then die of SIGPIPE while still writing this
+# 20 KB file, and the pipeline reads as a failure. That failed CI on
+# e921f536e (18 Nov 2026) while passing locally and on the run before.
+deploy_code=$(grep -v '^\s*#' "$DEPLOY")
 assert "deploy.sh asks the server for prerender:plan-routes" \
-    "$(grep -v '^\s*#' "$DEPLOY" | grep -q 'prerender:plan-routes' && echo 1 || echo 0)"
+    "$([ "$(printf '%s\n' "$deploy_code" | grep -c 'prerender:plan-routes')" -gt 0 ] && echo 1 || echo 0)"
 assert "the probe is given --from-plan" \
-    "$(grep -v '^\s*#' "$DEPLOY" | grep -q -- '--from-plan=' && echo 1 || echo 0)"
+    "$([ "$(printf '%s\n' "$deploy_code" | grep -c -- '--from-plan=')" -gt 0 ] && echo 1 || echo 0)"
 assert "the probe call passes PROBE_ARGS" \
     "$(echo "$probe_call" | grep -q 'PROBE_ARGS' && echo 1 || echo 0)"
 plan_line=$(grep -nE 'prerender:plan-routes' "$DEPLOY" | grep -v ':[[:space:]]*#' | head -1 | cut -d: -f1)
