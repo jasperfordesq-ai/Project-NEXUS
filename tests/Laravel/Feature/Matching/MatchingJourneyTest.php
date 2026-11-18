@@ -46,7 +46,11 @@ class MatchingJourneyTest extends TestCase
         return Category::factory()->create([
             'tenant_id' => $this->testTenantId,
             'type' => 'listing',
-            'name' => $name . ' ' . uniqid(),
+            // Digits only: the matcher compares category names by their
+            // words, and two uniqid() suffixes made moments apart share
+            // letter runs ("6afdaa64…"), which made "Food" related to
+            // "Home and garden".
+            'name' => $name . ' ' . random_int(10000000, 99999999),
         ]);
     }
 
@@ -460,6 +464,127 @@ class MatchingJourneyTest extends TestCase
             $this->assertArrayNotHasKey('popularity', $match['score_breakdown']['adjustments'] ?? [],
                 'Every owner here is seen equally often: a penalty on all of them is a flat cut, not a fairer order');
         }
+    }
+
+    // ---------------------------------------------------------------------
+    // AI layer (OpenAI or Anthropic) and learning from exchanges, 18 Nov 2026
+    // ---------------------------------------------------------------------
+
+    private function aiSwitch(bool $on): void
+    {
+        DB::table('ai_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'ai_enabled'],
+            ['setting_value' => $on ? 'true' : 'false', 'updated_at' => now()]
+        );
+        app(SmartMatchingEngine::class)->clearCache();
+    }
+
+    private function reading(Listing $listing, array $terms, array $concepts = []): void
+    {
+        DB::table('listing_match_enrichments')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'listing_id' => $listing->id],
+            ['content_hash' => str_repeat('a', 64), 'terms' => json_encode($terms), 'concepts' => json_encode($concepts),
+             'created_at' => now(), 'updated_at' => now()]
+        );
+    }
+
+    public function test_the_ai_reading_of_two_listings_lets_them_meet_when_their_words_do_not(): void
+    {
+        $category = $this->category();
+        $me = $this->member();
+        $mine = $this->listingFor($me, 'request', $category->id, [
+            'title' => 'Wer kann meine Harfe stimmen?', 'description' => 'Sie klingt seit dem Umzug schief.',
+        ]);
+        $theirs = $this->listingFor($this->member(), 'offer', $this->category('Odd jobs')->id, [
+            'title' => 'Stringed instrument maintenance', 'description' => 'Restringing and regulating at your home.',
+        ]);
+        $this->reading($mine, ['harp tuning', 'instrument repair', 'harp']);
+        $this->reading($theirs, ['instrument repair', 'harp tuning', 'string instruments']);
+
+        $this->aiSwitch(false);
+        $this->assertNotContains($theirs->id, $this->listingIds($this->matchesFor($me, 'modules=listings')),
+            'Control: without AI these share no word');
+
+        $this->aiSwitch(true);
+        $this->assertContains($theirs->id, $this->listingIds($this->matchesFor($me, 'modules=listings')),
+            'With the AI reading, a German request meets an English offer');
+    }
+
+    public function test_the_ai_judgement_of_a_match_reaches_the_member_only_with_ai_on(): void
+    {
+        $category = $this->category();
+        $me = $this->member();
+        $this->listingFor($me, 'offer', $category->id);
+        $theirs = $this->listingFor($this->member(), 'request', $category->id);
+        DB::table('match_cache')->insert([
+            'user_id' => $me->id, 'listing_id' => $theirs->id, 'tenant_id' => $this->testTenantId,
+            'match_score' => 60, 'match_type' => 'one_way', 'status' => 'new', 'ai_rerank_delta' => 4.0,
+            'created_at' => now(), 'expires_at' => now()->addDays(7),
+        ]);
+
+        $this->aiSwitch(false);
+        $off = collect($this->matchesFor($me, 'modules=listings&min_score=0')['matches'])->firstWhere('listing_id', $theirs->id);
+        $this->aiSwitch(true);
+        $on = collect($this->matchesFor($me, 'modules=listings&min_score=0')['matches'])->firstWhere('listing_id', $theirs->id);
+
+        $this->assertArrayNotHasKey('ai_judgement', $off['score_breakdown']['adjustments'] ?? []);
+        $this->assertEqualsWithDelta(4.0, $on['score_breakdown']['adjustments']['ai_judgement'] ?? 0, 0.01);
+        $this->assertEqualsWithDelta((float) $off['match_score'] + 4.0, (float) $on['match_score'], 0.2);
+    }
+
+    private function exchange(User $requester, User $provider, Listing $listing, string $status, ?int $requesterRating = null): void
+    {
+        DB::table('exchange_requests')->insert([
+            'tenant_id' => $this->testTenantId, 'listing_id' => $listing->id,
+            'requester_id' => $requester->id, 'provider_id' => $provider->id,
+            'proposed_hours' => 1, 'status' => $status, 'requester_rating' => $requesterRating,
+        ]);
+    }
+
+    public function test_a_completed_exchange_with_a_member_counts_for_their_other_listings(): void
+    {
+        $category = $this->category();
+        $me = $this->member();
+        $this->listingFor($me, 'request', $category->id);
+        $helper = $this->member();
+        $past = $this->listingFor($helper, 'offer', $category->id, ['status' => 'closed']);
+        $current = $this->listingFor($helper, 'offer', $category->id);
+
+        $before = collect($this->matchesFor($me, 'modules=listings&min_score=0')['matches'])->firstWhere('listing_id', $current->id);
+        $this->exchange($me, $helper, $past, 'completed', 5);
+        $after = collect($this->matchesFor($me, 'modules=listings&min_score=0')['matches'])->firstWhere('listing_id', $current->id);
+
+        $this->assertEqualsWithDelta(4.0, $after['score_breakdown']['adjustments']['worked_together'] ?? 0, 0.01);
+        $this->assertGreaterThan((float) $before['match_score'], (float) $after['match_score']);
+    }
+
+    public function test_a_member_rated_poorly_is_marked_down(): void
+    {
+        $category = $this->category();
+        $me = $this->member();
+        $this->listingFor($me, 'request', $category->id);
+        $helper = $this->member();
+        $past = $this->listingFor($helper, 'offer', $category->id, ['status' => 'closed']);
+        $current = $this->listingFor($helper, 'offer', $category->id);
+        $this->exchange($me, $helper, $past, 'completed', 1);
+
+        $match = collect($this->matchesFor($me, 'modules=listings&min_score=0')['matches'])->firstWhere('listing_id', $current->id);
+        $this->assertEqualsWithDelta(-8.0, $match['score_breakdown']['adjustments']['worked_together'] ?? 0, 0.01);
+    }
+
+    public function test_a_listing_already_under_an_exchange_is_not_offered_as_a_match(): void
+    {
+        $category = $this->category();
+        $me = $this->member();
+        $this->listingFor($me, 'request', $category->id);
+        $helper = $this->member();
+        $inProgress = $this->listingFor($helper, 'offer', $category->id);
+        $other = $this->listingFor($this->member(), 'offer', $category->id);
+        $this->exchange($me, $helper, $inProgress, 'accepted');
+
+        $ids = $this->listingIds($this->matchesFor($me, 'modules=listings&min_score=0'));
+        $this->assertContains($other->id, $ids, 'Control');
+        $this->assertNotContains($inProgress->id, $ids, 'They are already in touch about it');
     }
 
     public function test_switching_matching_off_for_the_community_stops_matches(): void

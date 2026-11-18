@@ -2786,6 +2786,20 @@ class CronJobRunner
                 } catch (\Throwable $e) {
                     // explanation column may pre-date the v2 migration — non-fatal.
                 }
+
+                // AI reading of listings for matching (OpenAI or Anthropic):
+                // catches up after a community switches AI on, and retries
+                // listings whose reading failed. Bounded per run; nothing is
+                // queued while the community's AI is off or paused after a
+                // provider failure.
+                try {
+                    $enrichment = app(\App\Services\Matching\ListingEnrichmentService::class);
+                    foreach ($enrichment->listingsNeedingReading((int) $tenantId, 20) as $listingId) {
+                        \App\Jobs\EnrichListingForMatchingJob::dispatch((int) $tenantId, $listingId);
+                    }
+                } catch (\Throwable $e) {
+                    echo "   [{$slug}] Listing reading error: " . $e->getMessage() . "\n";
+                }
             });
             echo "   Cached $totalCached matches across all tenants.\n";
         } catch (\Throwable $e) {

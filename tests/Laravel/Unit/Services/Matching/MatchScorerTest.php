@@ -301,6 +301,18 @@ class MatchScorerTest extends TestCase
         $this->assertGreaterThanOrEqual($oneWay, $twoWay);
     }
 
+    public function test_a_member_with_no_exchanges_yet_is_treated_as_unknown_not_as_poor(): void
+    {
+        $pair = $this->baselinePair();
+        $pair['owner']['completed_tx'] = 0;
+        $newcomer = $this->score($pair);
+        $pair['owner']['completed_tx'] = 1;
+        $oneExchange = $this->score($pair);
+
+        $this->assertEqualsWithDelta(0.25, $newcomer->signals['trust']['completion'], 0.001);
+        $this->assertGreaterThanOrEqual($newcomer->score, $oneExchange->score, 'Experience still counts');
+    }
+
     public function test_unrelated_profile_skills_do_not_lower_a_listing_pair(): void
     {
         $pair = $this->baselinePair();

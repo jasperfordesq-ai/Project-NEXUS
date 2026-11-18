@@ -136,6 +136,73 @@ class MatchLearningService
     }
 
     /**
+     * What happened when this member and each owner actually exchanged time,
+     * read from the exchange records (either of them may have asked).
+     *
+     * Each completed exchange the member did not rate poorly counts +4 (up to
+     * +8); any exchange the member rated 1 or 2 makes it -8, whatever else
+     * happened. Until 18 Nov 2026 the learning signals saw only dismissals and
+     * clicks on the Explore page: nothing a member did after a match reached
+     * them, so a member who had a good exchange with someone was not more
+     * likely to be shown them again.
+     *
+     * @param int[] $ownerIds
+     * @return array<int, float> ownerId => boost
+     */
+    public function getExchangeOutcomeBoosts(int $userId, array $ownerIds): array
+    {
+        $tenantId = (int) TenantContext::getId();
+        $ownerIds = array_values(array_unique(array_filter(array_map('intval', $ownerIds))));
+        if ($ownerIds === [] || $userId <= 0) {
+            return [];
+        }
+
+        try {
+            $placeholders = implode(',', array_fill(0, count($ownerIds), '?'));
+            // The member's own rating: as requester it is requester_rating,
+            // as provider provider_rating.
+            $rows = DB::select(
+                "SELECT CASE WHEN requester_id = ? THEN provider_id ELSE requester_id END AS other_id,
+                        status,
+                        CASE WHEN requester_id = ? THEN requester_rating ELSE provider_rating END AS my_rating
+                 FROM exchange_requests
+                 WHERE tenant_id = ?
+                   AND ((requester_id = ? AND provider_id IN ($placeholders))
+                     OR (provider_id = ? AND requester_id IN ($placeholders)))
+                   AND reversed_at IS NULL",
+                array_merge([$userId, $userId, $tenantId, $userId], $ownerIds, [$userId], $ownerIds)
+            );
+        } catch (\Throwable $e) {
+            Log::warning('[MatchLearningService] getExchangeOutcomeBoosts failed', [
+                'user_id' => $userId,
+                'error' => $e->getMessage(),
+            ]);
+            return [];
+        }
+
+        $completed = [];
+        $ratedPoorly = [];
+        foreach ($rows as $row) {
+            $other = (int) $row->other_id;
+            if ($row->my_rating !== null && (int) $row->my_rating > 0 && (int) $row->my_rating <= 2) {
+                $ratedPoorly[$other] = true;
+            } elseif ((string) $row->status === 'completed') {
+                $completed[$other] = ($completed[$other] ?? 0) + 1;
+            }
+        }
+
+        $boosts = [];
+        foreach ($completed as $other => $count) {
+            $boosts[$other] = min(8.0, 4.0 * $count);
+        }
+        foreach (array_keys($ratedPoorly) as $other) {
+            $boosts[$other] = -8.0;
+        }
+
+        return $boosts;
+    }
+
+    /**
      * Record a user interaction with a listing for future learning.
      *
      * @param int    $userId    User who interacted

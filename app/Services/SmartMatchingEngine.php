@@ -9,6 +9,7 @@ namespace App\Services;
 use App\Core\TenantContext;
 use App\Services\Matching\CandidateRetriever;
 use App\Services\Matching\KeywordExtractor;
+use App\Services\Matching\ListingEnrichmentService;
 use App\Services\Matching\MatchApprovalGate;
 use App\Services\Matching\MatchScorer;
 use App\Services\Matching\TenantMatchingContext;
@@ -164,6 +165,8 @@ class SmartMatchingEngine
                 'semantic_signal' => true,
                 'llm_explanations' => true,
                 'explanation_top_n' => 5,
+                // The AI reads each listing once (ListingEnrichmentService).
+                'listing_enrichment' => true,
             ],
         ];
 
@@ -436,6 +439,19 @@ class SmartMatchingEngine
         return $results;
     }
 
+    /**
+     * The community's main AI switch. A failure reading it means "off":
+     * matching then runs on its own, as it does for every community without AI.
+     */
+    private function aiSwitchedOn(): bool
+    {
+        try {
+            return \App\Services\AI\AIServiceFactory::isEnabled();
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
     private static function warmEmptyKey(int $tenantId, int $userId): string
     {
         return "smart_match_warm_empty:{$tenantId}:{$userId}";
@@ -681,8 +697,27 @@ class SmartMatchingEngine
         }
         $haveSemantic = array_filter($semanticByListing) !== [] || $profileSimByOwner !== [];
 
+        // AI reading of each listing (ListingEnrichmentService): plain
+        // English terms and kinds of help, from whichever provider the
+        // community uses. Added to the listing's own words; a listing never
+        // read is matched on its own words alone.
+        $readings = [];
+        if ($this->aiSwitchedOn()) {
+            $readingIds = array_column($userListings, 'id');
+            foreach ($candidatesByTargetType as $list) {
+                foreach ($list as $cand) {
+                    $readingIds[] = (int) ($cand['id'] ?? 0);
+                }
+            }
+            try {
+                $readings = app(ListingEnrichmentService::class)->tokensFor((int) $tenantId, $readingIds);
+            } catch (\Throwable $e) {
+                Log::debug('[SmartMatchingEngine] listing readings unavailable: ' . $e->getMessage());
+            }
+        }
+
         $listingKeywordCache = [];
-        $extractListingKeywords = function (array $listing) use (&$listingKeywordCache): array {
+        $extractListingKeywords = function (array $listing) use (&$listingKeywordCache, $readings): array {
             $key = (int) ($listing['id'] ?? 0);
             if ($key > 0 && isset($listingKeywordCache[$key])) {
                 return $listingKeywordCache[$key];
@@ -690,6 +725,9 @@ class SmartMatchingEngine
             $keywords = KeywordExtractor::extract(
                 ($listing['title'] ?? '') . ' ' . ($listing['description'] ?? '')
             );
+            if ($key > 0 && isset($readings[$key])) {
+                $keywords = array_values(array_unique(array_merge($keywords, $readings[$key])));
+            }
             if ($key > 0) {
                 $listingKeywordCache[$key] = $keywords;
             }
@@ -880,6 +918,9 @@ class SmartMatchingEngine
      *  - anti-popularity: −min(6, 2·ln(n/typical)) for an owner who appeared
      *    in the tenant's match_cache over twice as often as the typical
      *    owner in this list did, in the last 7 days
+     *  - worked together: completed exchanges with the owner (+4 each, up to
+     *    +8), or −8 when this member rated one poorly
+     *  - AI judgement: the stored −5..+5 verdict on this match (AI on only)
      */
     private function applyLearningAndDiversityAdjustments(array $matches, int $userId, int $tenantId, array $config): array
     {
@@ -953,6 +994,42 @@ class SmartMatchingEngine
         sort($exposures);
         $typicalExposure = max(1, $exposures[intdiv(count($exposures), 2)] ?? 0);
 
+        // What really happened between the two members: an exchange that was
+        // completed (and not rated poorly by this member) counts for them, one
+        // this member rated poorly counts against. Read from the exchange
+        // records themselves, so every way of making an exchange is covered.
+        $worked = [];
+        try {
+            $worked = $this->matchLearningService->getExchangeOutcomeBoosts($userId, $ownerIds);
+        } catch (\Throwable $e) {
+            // Best-effort.
+        }
+
+        // The AI's judgement of each cached match (MatchExplanationService),
+        // -5..+5, where the community has AI on. It used to be added into
+        // match_cache.match_score, which no page reads and the next refresh
+        // overwrote.
+        $aiJudgement = [];
+        if ($this->aiSwitchedOn()) {
+            try {
+                $listingIds = array_values(array_filter(array_map(fn ($m) => (int) ($m['id'] ?? 0), $matches)));
+                if ($listingIds !== []) {
+                    $placeholders = implode(',', array_fill(0, count($listingIds), '?'));
+                    $rows = DB::select(
+                        "SELECT listing_id, ai_rerank_delta FROM match_cache
+                         WHERE tenant_id = ? AND user_id = ? AND ai_rerank_delta IS NOT NULL
+                           AND listing_id IN ($placeholders)",
+                        array_merge([$tenantId, $userId], $listingIds)
+                    );
+                    foreach ($rows as $row) {
+                        $aiJudgement[(int) $row->listing_id] = max(-5.0, min(5.0, (float) $row->ai_rerank_delta));
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Column not there yet, or the cache unreadable: no judgement.
+            }
+        }
+
         foreach ($matches as &$match) {
             $owner = (int) ($match['user_id'] ?? 0);
             $categoryId = (int) ($match['category_id'] ?? 0);
@@ -972,6 +1049,15 @@ class SmartMatchingEngine
             if ($exposure > 2 * $typicalExposure) {
                 $penalty = -min(6.0, 2.0 * log($exposure / $typicalExposure));
                 $applied['popularity'] = round($penalty, 2);
+            }
+
+            if (isset($worked[$owner]) && $worked[$owner] != 0.0) {
+                $applied['worked_together'] = round($worked[$owner], 2);
+            }
+
+            $listingId = (int) ($match['id'] ?? 0);
+            if (isset($aiJudgement[$listingId]) && $aiJudgement[$listingId] != 0.0) {
+                $applied['ai_judgement'] = round($aiJudgement[$listingId], 2);
             }
 
             if ($applied !== []) {

@@ -518,12 +518,21 @@ final class MatchScorer
         return max(0.0, min(1.0, $trustTier / 3.0));
     }
 
+    /**
+     * A member with no exchanges yet is unknown, not untrustworthy: they get
+     * the credit of about one exchange (0.25), as an unreviewed member gets a
+     * neutral review prior. At 0.0 every newcomer's listings scored about 3%
+     * below an established member's on this alone, which in a timebank works
+     * against exactly the members who most need a first exchange.
+     */
+    private const NEWCOMER_COMPLETION = 0.25;
+
     private function completionScore(int $completedTx): float
     {
         if ($completedTx <= 0) {
-            return 0.0;
+            return self::NEWCOMER_COMPLETION;
         }
-        return min(1.0, log(1 + $completedTx) / log(21));
+        return max(self::NEWCOMER_COMPLETION, min(1.0, log(1 + $completedTx) / log(21)));
     }
 
     // ═════════════════════════════════════════════════════════════════════

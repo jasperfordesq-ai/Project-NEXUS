@@ -6,9 +6,11 @@
 
 namespace App\Observers;
 
+use App\Jobs\EnrichListingForMatchingJob;
 use App\Models\Listing;
 use App\Observers\Concerns\IndexesEmbeddings;
 use App\Services\FeedActivityService;
+use App\Services\Matching\ListingEnrichmentService;
 use App\Services\SearchService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -35,6 +37,7 @@ class ListingObserver
     {
         $this->syncFeed($listing);
         $this->reindexEmbedding($listing, 'listing');
+        $this->readForMatching($listing);
     }
 
     public function updated(Listing $listing): void
@@ -49,6 +52,9 @@ class ListingObserver
         }
         $this->syncFeed($listing);
         $this->reindexEmbedding($listing, 'listing');
+        if ($listing->wasChanged(['title', 'description'])) {
+            $this->readForMatching($listing);
+        }
     }
 
     public function deleted(Listing $listing): void
@@ -76,6 +82,29 @@ class ListingObserver
         }
 
         $this->deleteEmbedding($listing, 'listing');
+
+        try {
+            app(ListingEnrichmentService::class)->forget((int) $listing->tenant_id, (int) $listing->id);
+        } catch (\Throwable $e) {
+            Log::info('ListingObserver: could not remove the matching reading', ['listing_id' => $listing->id]);
+        }
+    }
+
+    /**
+     * Queue the AI reading used by smart matching, where the community has
+     * AI switched on. Never blocks or breaks the save.
+     */
+    private function readForMatching(Listing $listing): void
+    {
+        try {
+            $tenantId = (int) ($listing->tenant_id ?? 0);
+            if ($tenantId > 0 && (int) $listing->id > 0
+                && \App\Services\AI\AIServiceFactory::isEnabledForTenant($tenantId)) {
+                EnrichListingForMatchingJob::dispatch($tenantId, (int) $listing->id);
+            }
+        } catch (\Throwable $e) {
+            Log::info('ListingObserver: matching reading not queued', ['listing_id' => $listing->id, 'error' => $e->getMessage()]);
+        }
     }
 
     /**

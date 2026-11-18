@@ -200,6 +200,17 @@ class CandidateRetriever
             array_push($params, $tenantId, $excludeUserId);
         }
 
+        if ($this->tableExists('exchange_requests')) {
+            // Already in touch: a listing the searcher has an exchange under
+            // way on is not "a match you might like" — they found each other.
+            $sql .= "
+                  AND l.id NOT IN (
+                      SELECT er.listing_id FROM exchange_requests er
+                      WHERE er.tenant_id = ? AND er.requester_id = ?
+                        AND er.status IN ('pending_provider','pending_broker','accepted','scheduled','in_progress','pending_confirmation','disputed'))";
+            array_push($params, $tenantId, $excludeUserId);
+        }
+
         if (!empty($categoryIds)) {
             $placeholders = implode(',', array_fill(0, count($categoryIds), '?'));
             $sql .= " AND l.category_id IN ($placeholders)";

@@ -13368,6 +13368,24 @@ CREATE TABLE `listing_images` (
   CONSTRAINT `listing_images_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=182 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `listing_match_enrichments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `listing_match_enrichments` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(11) NOT NULL,
+  `listing_id` int(11) NOT NULL,
+  `content_hash` char(64) NOT NULL,
+  `terms` text NOT NULL,
+  `concepts` text NOT NULL,
+  `provider` varchar(30) DEFAULT NULL,
+  `model` varchar(100) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_lme_tenant_listing` (`tenant_id`,`listing_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `listing_reports`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -14397,6 +14415,7 @@ CREATE TABLE `match_cache` (
   `clicked_at` timestamp NULL DEFAULT NULL,
   `match` timestamp NULL DEFAULT NULL,
   `reset_token` varchar(255) DEFAULT NULL,
+  `ai_rerank_delta` decimal(4,2) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_user_listing` (`user_id`,`listing_id`,`tenant_id`),
   KEY `idx_user_score` (`user_id`,`match_score`),
