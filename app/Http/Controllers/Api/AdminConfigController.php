@@ -124,6 +124,9 @@ class AdminConfigController extends BaseApiController
     /** Longest title a community may give the pages column in the desktop More menu. */
     private const HEADER_COLUMN_TITLE_MAX_CHARS = 30;
 
+    /** Highest daily or monthly AI request limit per member the AI settings page accepts. */
+    private const AI_LIMIT_MAX = 100000;
+
     /**
      * Settings that only a platform super-admin (God) may modify.
      * Tenant admins and tenant super-admins are rejected with 403.
@@ -2109,8 +2112,9 @@ class AdminConfigController extends BaseApiController
                 'moderation' => \App\Models\AiSettings::parseBoolean($settings['ai_moderation_enabled'] ?? false),
             ],
             'limits' => [
-                'default_daily' => (int) ($settings['default_daily_limit'] ?? 50),
-                'default_monthly' => (int) ($settings['default_monthly_limit'] ?? 1000),
+                // What is enforced (AiUserLimit), so a blank saved value shows the standard limit, not 0.
+                'default_daily' => \App\Models\AiUserLimit::communityLimits($tenantId)['daily'],
+                'default_monthly' => \App\Models\AiUserLimit::communityLimits($tenantId)['monthly'],
             ],
             'ollama' => [
                 'host' => $settings['ollama_host'] ?? 'http://localhost:11434',
@@ -2158,11 +2162,31 @@ class AdminConfigController extends BaseApiController
             }
         }
 
+        // Limits are whole numbers of AI requests per member; 0 means no AI.
+        // Anything else used to be stored and read as 0, blocking all AI.
+        foreach (['default_daily_limit', 'default_monthly_limit'] as $limitKey) {
+            if (!array_key_exists($limitKey, $toSave)) {
+                continue;
+            }
+            $toSave[$limitKey] = trim($toSave[$limitKey]);
+            if (!ctype_digit($toSave[$limitKey])) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_integer_field', ['field' => $limitKey]), $limitKey, 422);
+            }
+            if ((int) $toSave[$limitKey] > self::AI_LIMIT_MAX) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.value_out_of_range', ['min' => 0, 'max' => self::AI_LIMIT_MAX]), $limitKey, 422);
+            }
+        }
+
         if (isset($toSave['ollama_host']) && !OutboundUrlGuard::isSafeHttpUrl($toSave['ollama_host'])) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.url_no_private_ip'), 'ollama_host', 422);
         }
 
         \App\Models\AiSettings::setMultiple($tenantId, $toSave);
+        // New limits reach every member at once, not only members who first
+        // use AI after this save.
+        if (array_key_exists('default_daily_limit', $toSave) || array_key_exists('default_monthly_limit', $toSave)) {
+            \App\Models\AiUserLimit::applyCommunityLimits($tenantId);
+        }
         // A newly saved key gets a fresh chance even if the old one was refused.
         if (array_key_exists('openai_api_key', $toSave)) {
             \App\Services\AI\CommunityOpenAiKey::clearRefusal($tenantId);

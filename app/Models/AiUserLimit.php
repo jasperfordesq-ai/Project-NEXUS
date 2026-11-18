@@ -43,11 +43,57 @@ class AiUserLimit extends Model
         return $this->belongsTo(User::class);
     }
 
+    public const STANDARD_DAILY_LIMIT = 50;
+    public const STANDARD_MONTHLY_LIMIT = 1000;
+
+    /**
+     * The community's limits, as set on the admin AI settings page. A member's
+     * row is created with them, and applyCommunityLimits() writes them to every
+     * existing row when the page saves new ones — until 18 Nov 2026 a row kept
+     * the copy taken on first use for ever, and one creation path wrote a fixed
+     * 50/1000 (security register E-131). No screen sets a per-member limit.
+     * A blank or unreadable saved value means the standard limit, not 0, which
+     * would block all AI; 0 saved on purpose still means no AI.
+     *
+     * @return array{daily: int, monthly: int}
+     */
+    public static function communityLimits(int $tenantId): array
+    {
+        $read = static function (string $key, int $standard) use ($tenantId): int {
+            $value = trim((string) AiSettings::get($tenantId, $key, ''));
+
+            return ctype_digit($value) ? (int) $value : $standard;
+        };
+
+        return [
+            'daily' => $read('default_daily_limit', self::STANDARD_DAILY_LIMIT),
+            'monthly' => $read('default_monthly_limit', self::STANDARD_MONTHLY_LIMIT),
+        ];
+    }
+
+    /**
+     * Give every member of the community its current limits (called when the
+     * admin AI settings page saves them). Usage counters are untouched.
+     */
+    public static function applyCommunityLimits(int $tenantId): void
+    {
+        $community = self::communityLimits($tenantId);
+
+        DB::table('ai_user_limits')
+            ->where('tenant_id', $tenantId)
+            ->update([
+                'daily_limit' => $community['daily'],
+                'monthly_limit' => $community['monthly'],
+                'updated_at' => now(),
+            ]);
+    }
+
     /**
      * Get or create a limits record for a user, resetting counters if needed.
      */
     private static function getOrCreateRecord(int $userId, int $tenantId): array
     {
+        $community = self::communityLimits($tenantId);
         $record = DB::table('ai_user_limits')
             ->where('tenant_id', $tenantId)
             ->where('user_id', $userId)
@@ -86,15 +132,11 @@ class AiUserLimit extends Model
             return $record;
         }
 
-        // Create new record with defaults
-        $dailyLimit = 50;
-        $monthlyLimit = 1000;
-
         DB::table('ai_user_limits')->insert([
             'tenant_id' => $tenantId,
             'user_id' => $userId,
-            'daily_limit' => $dailyLimit,
-            'monthly_limit' => $monthlyLimit,
+            'daily_limit' => $community['daily'],
+            'monthly_limit' => $community['monthly'],
             'daily_used' => 0,
             'monthly_used' => 0,
             'last_reset_daily' => date('Y-m-d'),
@@ -150,14 +192,13 @@ class AiUserLimit extends Model
     {
         return DB::transaction(function () use ($userId, $tenantId): array {
             $today = now()->toDateString();
-            $dailyDefault = max(0, (int) (AiSettings::get($tenantId, 'default_daily_limit', '50') ?? 50));
-            $monthlyDefault = max(0, (int) (AiSettings::get($tenantId, 'default_monthly_limit', '1000') ?? 1000));
+            $community = self::communityLimits($tenantId);
 
             DB::table('ai_user_limits')->insertOrIgnore([
                 'tenant_id' => $tenantId,
                 'user_id' => $userId,
-                'daily_limit' => $dailyDefault,
-                'monthly_limit' => $monthlyDefault,
+                'daily_limit' => $community['daily'],
+                'monthly_limit' => $community['monthly'],
                 'daily_used' => 0,
                 'monthly_used' => 0,
                 'last_reset_daily' => $today,
@@ -174,8 +215,8 @@ class AiUserLimit extends Model
 
             $dailyUsed = (int) ($row['daily_used'] ?? 0);
             $monthlyUsed = (int) ($row['monthly_used'] ?? 0);
-            $dailyLimit = max(0, (int) ($row['daily_limit'] ?? $dailyDefault));
-            $monthlyLimit = max(0, (int) ($row['monthly_limit'] ?? $monthlyDefault));
+            $dailyLimit = max(0, (int) ($row['daily_limit'] ?? $community['daily']));
+            $monthlyLimit = max(0, (int) ($row['monthly_limit'] ?? $community['monthly']));
             $updates = [];
 
             if ((string) ($row['last_reset_daily'] ?? '') !== $today) {
