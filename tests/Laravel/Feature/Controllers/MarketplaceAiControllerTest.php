@@ -126,10 +126,14 @@ class MarketplaceAiControllerTest extends TestCase
     /** E-035 F-164: AI features now honour the community AI switch; turn it on. */
     private function enableAiForTenant(): void
     {
-        DB::table('ai_settings')->updateOrInsert(
-            ['tenant_id' => $this->testTenantId, 'setting_key' => 'ai_enabled'],
-            ['setting_value' => '1', 'updated_at' => now()]
-        );
+        // Auto-reply is AI drafting, so it needs "Content generation" as well
+        // as the main switch (security register E-131, 18 Nov 2026).
+        foreach (['ai_enabled', 'ai_content_gen_enabled'] as $key) {
+            DB::table('ai_settings')->updateOrInsert(
+                ['tenant_id' => $this->testTenantId, 'setting_key' => $key],
+                ['setting_value' => '1', 'updated_at' => now()]
+            );
+        }
         \App\Services\AI\AIServiceFactory::clearCache();
     }
 

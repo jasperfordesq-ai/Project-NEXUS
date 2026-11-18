@@ -68,6 +68,12 @@ class MarketplaceAiController extends BaseApiController
             'message' => 'required|string|min:5|max:2000',
         ]);
 
+        // The admin page's "Content generation" switch covers AI drafting of
+        // messages; checked before the allowance so a refusal costs nothing.
+        if (!\App\Services\AI\AIServiceFactory::isFeatureEnabled('content_generation')) {
+            return $this->respondWithError('FEATURE_DISABLED', __('api.ai_feature_disabled'), null, 403);
+        }
+
         // E-035 F-164: the community AI master switch and the member's AI budget.
         $admission = AiUsageGate::admit((int) $userId);
         if (!$admission['allowed']) {
