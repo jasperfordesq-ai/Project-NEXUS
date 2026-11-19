@@ -56223,6 +56223,8 @@ export default interface Resources {
   },
   "matches": {
     "banner": {
+      "from_skills_desc": "You have not posted an offer or a request, so we match you by the skills you listed. Change your skills, or post an offer or request, to change what you see.",
+      "from_skills_title": "These matches come from the skills on your profile",
       "mutual_desc": "These matches go both ways — you're a great fit for them, and they're a great fit for you.",
       "mutual_title": "Showing mutual matches",
       "no_coords_desc": "We can't calculate distance-based matches until your profile has a location. You can still see matches below based on other signals.",

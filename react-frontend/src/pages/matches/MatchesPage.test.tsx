@@ -175,6 +175,33 @@ describe('MatchesPage', () => {
     expect(screen.queryByText('Total Matches')).not.toBeInTheDocument();
   });
 
+  it('tells a member with no listing that their matches come from their profile skills', async () => {
+    mockApiGet.mockResolvedValue({
+      success: true,
+      data: {
+        matches: [{ module: 'listing', listing_id: 1, title: 'Hedge needs trimming', match_score: 70, match_reasons: [] }],
+        meta: { ...emptyResponse.data.meta, total: 1, has_active_listings: false, matched_from_skills: true },
+      },
+    });
+    render(<MatchesPage />);
+
+    expect(await screen.findByText('These matches come from the skills on your profile')).toBeInTheDocument();
+  });
+
+  it('says nothing about profile skills to a member matched by their own listings', async () => {
+    mockApiGet.mockResolvedValue({
+      success: true,
+      data: {
+        matches: [{ module: 'listing', listing_id: 1, title: 'Hedge needs trimming', match_score: 70, match_reasons: [] }],
+        meta: { ...emptyResponse.data.meta, total: 1, has_active_listings: true, matched_from_skills: false },
+      },
+    });
+    render(<MatchesPage />);
+
+    await screen.findByText('Hedge needs trimming');
+    expect(screen.queryByText('These matches come from the skills on your profile')).not.toBeInTheDocument();
+  });
+
   it('renders match items when API returns data', async () => {
     mockApiGet.mockResolvedValue({
       success: true,

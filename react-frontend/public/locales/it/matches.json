@@ -33,6 +33,8 @@
   "filter_tabs_aria": "Corrispondenza filtro di origine",
   "loading": "Caricamento delle corrispondenze...",
   "banner": {
+    "from_skills_title": "Questi abbinamenti derivano dalle competenze del tuo profilo",
+    "from_skills_desc": "Non hai pubblicato né un'offerta né una richiesta, quindi ti abbiniamo in base alle competenze che hai indicato. Modifica le tue competenze, oppure pubblica un'offerta o una richiesta, per cambiare ciò che vedi.",
     "no_coords_title": "Aggiungi la tua posizione per vedere le corrispondenze nelle vicinanze",
     "no_coords_desc": "Non possiamo calcolare corrispondenze basate sulla distanza finché il tuo profilo non ha una posizione. Puoi ancora vedere le corrispondenze di seguito in base ad altri segnali.",
     "paused_title": "La corrispondenza è in pausa",

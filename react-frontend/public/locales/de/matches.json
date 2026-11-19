@@ -33,6 +33,8 @@
   "filter_tabs_aria": "Quellfilter anpassen",
   "loading": "Übereinstimmungen werden geladen...",
   "banner": {
+    "from_skills_title": "Diese Vorschläge beruhen auf den Fähigkeiten in Ihrem Profil",
+    "from_skills_desc": "Sie haben noch kein Angebot und kein Gesuch veröffentlicht. Deshalb gleichen wir Sie anhand der Fähigkeiten ab, die Sie angegeben haben. Ändern Sie Ihre Fähigkeiten oder veröffentlichen Sie ein Angebot oder Gesuch, um andere Vorschläge zu sehen.",
     "no_coords_title": "Fügen Sie Ihren Standort hinzu, um Übereinstimmungen in der Nähe anzuzeigen",
     "no_coords_desc": "Wir können entfernungsbasierte Übereinstimmungen erst dann berechnen, wenn Ihr Profil über einen Standort verfügt. Unten können Sie immer noch Übereinstimmungen sehen, die auf anderen Signalen basieren.",
     "paused_title": "Der Abgleich ist pausiert",

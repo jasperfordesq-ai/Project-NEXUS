@@ -1818,6 +1818,16 @@ class SmartMatchingEngine
      *
      * @return array{lat: float, lon: float}|null
      */
+    /**
+     * Whether this community's own centre stands in for a member's or a
+     * listing's missing location (see gates.community_centre_fallback).
+     */
+    public function communityCentreInUse(): bool
+    {
+        return !empty($this->getConfig()['gates']['community_centre_fallback'])
+            && $this->communityCentre((int) TenantContext::getId()) !== null;
+    }
+
     private function communityCentre(int $tenantId): ?array
     {
         try {

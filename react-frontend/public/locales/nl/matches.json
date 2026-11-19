@@ -36,6 +36,8 @@
   "filter_tabs_aria": "Match bronfilter",
   "loading": "Matches laden...",
   "banner": {
+    "from_skills_title": "Deze matches komen uit de vaardigheden op uw profiel",
+    "from_skills_desc": "U hebt nog geen aanbod of vraag geplaatst, dus we matchen u op de vaardigheden die u hebt opgegeven. Pas uw vaardigheden aan, of plaats een aanbod of vraag, om te veranderen wat u ziet.",
     "no_coords_title": "Voeg uw locatie toe om matches in de buurt te bekijken",
     "no_coords_desc": "We kunnen matches op basis van afstand pas berekenen wanneer uw profiel een locatie heeft. Hieronder ziet u nog steeds matches op basis van andere signalen.",
     "paused_title": "Het matchen is onderbroken",

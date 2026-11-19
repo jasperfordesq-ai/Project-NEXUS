@@ -404,6 +404,24 @@ describe('MatchingConfig', () => {
 
   const sentPayload = () => mockAdminMatching.updateConfig.mock.calls[0]?.[0] as Record<string, unknown>;
 
+  it('resetting to defaults does not switch matching back on', async () => {
+    // "Reset to defaults" is about the scoring figures. It used to set the
+    // master switch back to on as well, so a community that had switched
+    // matching off and tidied its settings switched it on again on save.
+    await renderLoaded(liveConfig({ enabled: false }));
+
+    const resetBtn = screen.getAllByRole('button').find((b) => b.textContent?.toLowerCase().includes('reset'));
+    fireEvent.click(resetBtn!);
+    await waitFor(() => screen.getByRole('dialog'));
+    fireEvent.click(screen.getByRole('button', { name: /confirm/i }));
+
+    await waitFor(() => expect(saveButton()).not.toBeDisabled());
+    fireEvent.click(saveButton());
+
+    await waitFor(() => expect(mockAdminMatching.updateConfig).toHaveBeenCalled());
+    expect(sentPayload().enabled).toBe(false);
+  });
+
   it('offers one master switch that says what it does, and no broker-approval switch', async () => {
     await renderLoaded();
 
@@ -542,7 +560,9 @@ describe('MatchingConfig', () => {
     fireEvent.click(saveButton());
     await waitFor(() => expect(mockAdminMatching.updateConfig).toHaveBeenCalledTimes(1));
     expect(sentPayload()).toMatchObject({
-      enabled: true,
+      // Loaded switched off, and still off: the master switch is not one of
+      // the figures a reset puts back (it was until 19 Nov 2026).
+      enabled: false,
       max_distance_km: 50,
       min_match_score: 40,
       hot_match_threshold: 80,

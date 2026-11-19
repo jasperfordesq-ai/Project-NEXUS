@@ -33,6 +33,8 @@
   "filter_tabs_aria": "Filtro de origem correspondente",
   "loading": "Carregando partidas...",
   "banner": {
+    "from_skills_title": "Estas correspondências vêm das competências do seu perfil",
+    "from_skills_desc": "Você ainda não publicou nenhuma oferta nem pedido, por isso fazemos a correspondência com base nas competências que indicou. Altere as suas competências, ou publique uma oferta ou um pedido, para mudar o que vê.",
     "no_coords_title": "Adicione sua localização para ver correspondências próximas",
     "no_coords_desc": "Não podemos calcular correspondências com base na distância até que seu perfil tenha uma localização. Você ainda pode ver as correspondências abaixo com base em outros sinais.",
     "paused_title": "A correspondência está pausada",

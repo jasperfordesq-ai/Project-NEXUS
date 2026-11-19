@@ -36,6 +36,8 @@
   "filter_tabs_aria": "Dopasuj filtr źródła",
   "loading": "Ładowanie dopasowań...",
   "banner": {
+    "from_skills_title": "Te dopasowania wynikają z umiejętności w Twoim profilu",
+    "from_skills_desc": "Nie masz jeszcze opublikowanej oferty ani prośby, dlatego dopasowujemy Cię na podstawie podanych umiejętności. Zmień swoje umiejętności albo opublikuj ofertę lub prośbę, aby zmienić to, co widzisz.",
     "no_coords_title": "Dodaj swoją lokalizację, aby zobaczyć dopasowania w pobliżu",
     "no_coords_desc": "Nie możemy obliczyć dopasowań na podstawie odległości, dopóki Twój profil nie będzie miał lokalizacji. Nadal możesz zobaczyć dopasowania poniżej na podstawie innych sygnałów.",
     "paused_title": "Dopasowywanie zostało wstrzymane",

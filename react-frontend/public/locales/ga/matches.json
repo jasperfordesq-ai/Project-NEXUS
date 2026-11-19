@@ -33,6 +33,8 @@
   "filter_tabs_aria": "Scagaire foinse na meaitseálacha",
   "loading": "Meaitseálacha á lódáil...",
   "banner": {
+    "from_skills_title": "Tagann na meaitseálacha seo ó na scileanna ar do phróifíl",
+    "from_skills_desc": "Níl tairiscint ná iarratas postáilte agat, mar sin déanaimid tú a mheaitseáil de réir na scileanna a liostaigh tú. Athraigh do scileanna, nó postáil tairiscint nó iarratas, chun an méid a fheiceann tú a athrú.",
     "no_coords_title": "Cuir do shuíomh leis chun meaitseálacha i do cheantar a fheiceáil",
     "no_coords_desc": "Ní féidir linn meaitseálacha bunaithe ar fhad a ríomh go dtí go mbeidh suíomh ar do phróifíl. Is féidir leat meaitseálacha bunaithe ar chomharthaí eile a fheiceáil thíos fós.",
     "paused_title": "Cuirtear an meaitseáil ar sos",

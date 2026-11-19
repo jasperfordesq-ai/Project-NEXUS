@@ -527,6 +527,16 @@ class AdminMatchingController extends BaseApiController
         DB::update("UPDATE tenants SET configuration = ? WHERE id = ?", [json_encode($config), $tenantId]);
         $this->smartMatchingEngine->clearCache();
 
+        // Who changed matching for the whole community, and what they sent.
+        // Approving one match was recorded; switching matching off was not.
+        $this->auditLogService->log('matching_config_updated', null, $this->getUserId(), [
+            'fields' => array_keys($input),
+            'enabled' => $config['algorithms']['smart_matching']['enabled'],
+            'min_match_score' => $config['algorithms']['smart_matching']['min_match_score'],
+            'max_distance_km' => $config['algorithms']['smart_matching']['max_distance_km'],
+            'hot_match_threshold' => $config['algorithms']['smart_matching']['hot_match_threshold'],
+        ]);
+
         return $this->respondWithData(['message' => __('api.matching_config_updated')]);
     }
 
@@ -551,7 +561,19 @@ class AdminMatchingController extends BaseApiController
             'geo_hard_gate' => (bool) ($gates['geo_hard_gate'] ?? true),
             'missing_coords_mode' => ($gates['missing_coords_mode'] ?? 'remote_only') === 'tenant_wide' ? 'tenant_wide' : 'remote_only',
             'dormancy_days' => max(0, (int) ($gates['dormancy_days'] ?? 90)),
+            // The community's centre stands in for a missing location, so
+            // having none does not confine a member or hide a listing.
+            'location_stand_in' => $this->smartMatchingEngine->communityCentreInUse(),
         ];
+    }
+
+    /** Whether a member has skills on their profile for the engine to match by. */
+    private function memberHasProfileSkills(int $userId): bool
+    {
+        $tenantId = $this->getTenantId();
+
+        return DB::table('user_skills')->where('tenant_id', $tenantId)->where('user_id', $userId)->exists()
+            || trim((string) DB::table('users')->where('tenant_id', $tenantId)->where('id', $userId)->value('skills')) !== '';
     }
 
     /**
@@ -614,15 +636,16 @@ class AdminMatchingController extends BaseApiController
         if ($prefs['matching_paused']) {
             $findings[] = 'matching_paused';
         }
-        if ($facts['listings']['active_count'] === 0) {
-            // No listing of their own: the engine can only offer browsing
-            // suggestions, not matches scored against what they offer or need.
+        if ($facts['listings']['active_count'] === 0 && !$this->memberHasProfileSkills((int) $facts['member']['id'])) {
+            // No listing of their own and no skills on their profile: the
+            // engine can only offer browsing suggestions. (A member with
+            // skills is matched by them; this used to say otherwise.)
             $findings[] = 'no_active_listings';
         }
         if (!$facts['member']['has_coordinates']) {
-            $findings[] = $settings['geo_hard_gate'] && $settings['missing_coords_mode'] !== 'tenant_wide'
-                ? 'no_location_remote_only'
-                : 'no_location';
+            $confined = $settings['geo_hard_gate'] && $settings['missing_coords_mode'] !== 'tenant_wide'
+                && !$settings['location_stand_in'];
+            $findings[] = $confined ? 'no_location_remote_only' : 'no_location';
         }
         if ($needsApproval === true) {
             $findings[] = 'needs_coordinator_approval';
@@ -662,7 +685,12 @@ class AdminMatchingController extends BaseApiController
         if (!$settings['matching_enabled']) {
             $findings[] = 'matching_off';
         }
-        if ($facts['listing']['status'] !== 'active') {
+        // Past its expiry date counts as not active: the engine never offers
+        // such a listing, though its status reads 'active' until the job that
+        // marks it expired has run.
+        $expired = DB::table('listings')->where('id', $id)->where('tenant_id', $this->getTenantId())
+            ->whereNotNull('expires_at')->where('expires_at', '<=', now())->exists();
+        if ($facts['listing']['status'] !== 'active' || $expired) {
             $findings[] = 'listing_not_active';
         }
         // …or that is waiting for review or was not approved (the same rule
@@ -689,6 +717,7 @@ class AdminMatchingController extends BaseApiController
             && in_array($facts['listing']['service_type'], ['physical_only', 'location_dependent'], true)
             && !$facts['listing']['has_coordinates']
             && !$facts['owner']['has_coordinates']
+            && !$settings['location_stand_in']
         ) {
             $findings[] = 'no_location_in_person';
         }
@@ -712,6 +741,7 @@ class AdminMatchingController extends BaseApiController
             $deleted = (int) DB::selectOne("SELECT COUNT(*) as cnt FROM match_cache WHERE tenant_id = ?", [$tenantId])->cnt;
             DB::delete("DELETE FROM match_cache WHERE tenant_id = ?", [$tenantId]);
             $this->smartMatchingEngine->clearCache();
+            $this->auditLogService->log('match_cache_cleared', null, $this->getUserId(), ['entries_cleared' => $deleted]);
             return $this->respondWithData(['message' => __('api.match_cache_cleared'), 'entries_cleared' => $deleted]);
         } catch (\Exception $e) {
             return $this->respondWithError('SERVER_ERROR', __('api.failed_to_clear_cache'), null, 500);

@@ -385,6 +385,10 @@ export function MatchingConfig() {
   const handleReset = useCallback(() => {
     setConfig((prev) => ({
       ...DEFAULT_CONFIG,
+      // The master switch is not a "default" to go back to: a community
+      // that switched matching off must not have it switched on again by
+      // resetting its scoring figures.
+      enabled: prev.enabled,
       engine_version: prev.engine_version ?? 2,
       ...(prev.adjustments ? { adjustments: prev.adjustments } : {}),
       ai: { ...DEFAULT_AI, available: prev.ai?.available ?? false },

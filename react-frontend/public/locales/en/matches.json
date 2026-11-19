@@ -36,6 +36,8 @@
   "filter_tabs_aria": "Match module filter",
   "loading": "Loading matches...",
   "banner": {
+    "from_skills_title": "These matches come from the skills on your profile",
+    "from_skills_desc": "You have not posted an offer or a request, so we match you by the skills you listed. Change your skills, or post an offer or request, to change what you see.",
     "no_coords_title": "Add your location to see nearby matches",
     "no_coords_desc": "We can't calculate distance-based matches until your profile has a location. You can still see matches below based on other signals.",
     "paused_title": "Matching is paused",

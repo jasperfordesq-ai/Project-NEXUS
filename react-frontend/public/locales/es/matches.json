@@ -33,6 +33,8 @@
   "filter_tabs_aria": "Filtro de fuente coincidente",
   "loading": "Cargando coincidencias...",
   "banner": {
+    "from_skills_title": "Estas coincidencias proceden de las habilidades de tu perfil",
+    "from_skills_desc": "No has publicado ninguna oferta ni solicitud, así que te emparejamos según las habilidades que has indicado. Cambia tus habilidades, o publica una oferta o una solicitud, para cambiar lo que ves.",
     "no_coords_title": "Añade tu ubicación para ver coincidencias cercanas",
     "no_coords_desc": "No podemos calcular coincidencias basadas en la distancia hasta que su perfil tenga una ubicación. Aún puedes ver coincidencias a continuación según otras señales.",
     "paused_title": "El emparejamiento está en pausa",

@@ -221,6 +221,64 @@ class AdminMatchingScreensTest extends TestCase
         $this->assertSame($before, $this->storedConfig(), 'A refused save must not change anything');
     }
 
+    public function test_changing_the_matching_settings_and_clearing_stored_matches_leave_a_record(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+
+        $this->apiPut('/v2/admin/matching/config', ['enabled' => false, 'min_match_score' => 35])->assertStatus(200);
+        $this->apiPost('/v2/admin/matching/cache/clear')->assertStatus(200);
+
+        $actions = DB::table('org_audit_log')->where('tenant_id', $this->testTenantId)->where('user_id', $admin->id)
+            ->whereIn('action', ['matching_config_updated', 'match_cache_cleared'])->pluck('details', 'action');
+        $this->assertTrue($actions->has('matching_config_updated'), 'Switching matching off for a whole community left no record of who or when');
+        $this->assertTrue($actions->has('match_cache_cleared'));
+        $this->assertStringContainsString('enabled', (string) $actions['matching_config_updated']);
+    }
+
+    public function test_the_diagnosis_does_not_call_a_member_with_profile_skills_unmatchable(): void
+    {
+        $member = $this->member();
+        DB::table('user_skills')->insert([
+            'user_id' => $member->id, 'tenant_id' => $this->testTenantId, 'skill_name' => 'Gardening',
+            'proficiency' => 'intermediate', 'is_offering' => 1, 'is_requesting' => 0,
+        ]);
+        Sanctum::actingAs($this->platformTeam());
+
+        $data = $this->apiGet("/v2/admin/matching/diagnose/user/{$member->id}")->assertStatus(200)->json('data');
+
+        $this->assertNotContains('no_active_listings', $data['findings'], 'Members with no listing have been matched by their profile skills since 18 Nov 2026');
+    }
+
+    public function test_the_diagnosis_knows_the_community_centre_stands_in_for_a_missing_location(): void
+    {
+        DB::table('tenants')->where('id', $this->testTenantId)->update([
+            'latitude' => 53.3498, 'longitude' => -6.2603, 'service_area' => 'local',
+        ]);
+        app(SmartMatchingEngine::class)->clearCache();
+        $member = $this->member(['latitude' => null, 'longitude' => null]);
+        $listing = $this->listing($this->member(['latitude' => null, 'longitude' => null]), [
+            'latitude' => null, 'longitude' => null, 'service_type' => 'physical_only',
+        ]);
+        Sanctum::actingAs($this->platformTeam());
+
+        $forMember = $this->apiGet("/v2/admin/matching/diagnose/user/{$member->id}")->assertStatus(200)->json('data');
+        $forListing = $this->apiGet("/v2/admin/matching/diagnose/listing/{$listing->id}")->assertStatus(200)->json('data');
+
+        $this->assertNotContains('no_location_remote_only', $forMember['findings'], 'The engine places such a member at the community centre: they are not limited to remote listings');
+        $this->assertNotContains('no_location_in_person', $forListing['findings']);
+    }
+
+    public function test_the_diagnosis_says_an_expired_listing_is_not_being_matched(): void
+    {
+        $listing = $this->listing($this->member(), ['expires_at' => now()->subDay()]);
+        Sanctum::actingAs($this->platformTeam());
+
+        $data = $this->apiGet("/v2/admin/matching/diagnose/listing/{$listing->id}")->assertStatus(200)->json('data');
+
+        $this->assertContains('listing_not_active', $data['findings'], 'The engine never offers a listing past its expiry date');
+    }
+
     public function test_update_config_keeps_the_gate_and_ai_settings_the_page_has_no_control_for(): void
     {
         // Both are read by the engine and neither has a control on the page.

@@ -33,6 +33,8 @@
   "filter_tabs_aria": "Filtrer la source de correspondance",
   "loading": "Chargement des correspondances...",
   "banner": {
+    "from_skills_title": "Ces correspondances viennent des compétences de votre profil",
+    "from_skills_desc": "Vous n'avez publié ni offre ni demande ; nous vous proposons donc des correspondances d'après les compétences que vous avez indiquées. Modifiez vos compétences, ou publiez une offre ou une demande, pour changer ce que vous voyez.",
     "no_coords_title": "Ajoutez votre emplacement pour voir les correspondances à proximité",
     "no_coords_desc": "Nous ne pouvons pas calculer les correspondances basées sur la distance tant que votre profil n'a pas de localisation. Vous pouvez toujours voir les correspondances ci-dessous en fonction d'autres signaux.",
     "paused_title": "La correspondance est suspendue",

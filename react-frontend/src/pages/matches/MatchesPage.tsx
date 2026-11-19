@@ -295,6 +295,18 @@ export function MatchesPage() {
         />
       )}
 
+      {/* Matched from profile skills. The engine has matched members with
+          no listing this way since 18 Nov 2026, and no page said so: such a
+          member had no way to know why these were their matches. */}
+      {meta.matched_from_skills && !meta.paused && !meta.disabled && filteredMatches.length > 0 && (
+        <Alert
+          color="default"
+          icon={<Sparkles className="w-5 h-5" aria-hidden="true" />}
+          title={t('banner.from_skills_title')}
+          description={t('banner.from_skills_desc')}
+        />
+      )}
+
       {/* Paused banner */}
       {meta.paused && (
         <Alert
