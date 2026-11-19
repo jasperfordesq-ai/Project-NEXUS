@@ -80,6 +80,45 @@ class ResendStuckVerificationEmailsTest extends TestCase
             ->assertSuccessful();
     }
 
+    public function test_selection_skips_a_member_an_admin_added_with_a_welcome_email(): void
+    {
+        // Regression (AWID, 19 Nov 2026): the hourly run treated a member an
+        // admin had just added as "never received an activation email", because
+        // their welcome email is logged as `admin_welcome`. Within the hour they
+        // got a second email, "Verify Your Email", whose button leads to a
+        // sign-in page they have no password for. Their email is confirmed when
+        // they use the "Set your password" link instead (8 Oct 2026 decision:
+        // no second email step for admin-added members).
+        $tenantId = 995;
+        $stuckSignupId = $this->seedPendingUser($tenantId);
+        $invitedId = $this->seedInvitedMember($tenantId, 'admin_welcome');
+
+        $stuckSignupEmail = (string) DB::table('users')->where('id', $stuckSignupId)->value('email');
+        $invitedEmail = (string) DB::table('users')->where('id', $invitedId)->value('email');
+
+        $this->artisan('emails:resend-stuck-activations', ['--dry-run' => true, '--tenant' => $tenantId])
+            ->expectsOutputToContain($stuckSignupEmail)
+            ->doesntExpectOutputToContain($invitedEmail)
+            ->assertSuccessful();
+    }
+
+    public function test_selection_skips_a_member_sent_a_re_sent_or_bulk_invitation(): void
+    {
+        // "Resend Welcome Email", "Send invitation" and CSV-import invitations
+        // go through WelcomeInvitationMailer, which logs category `welcome`.
+        $tenantId = 994;
+        $stuckSignupId = $this->seedPendingUser($tenantId);
+        $invitedId = $this->seedInvitedMember($tenantId, 'welcome');
+
+        $stuckSignupEmail = (string) DB::table('users')->where('id', $stuckSignupId)->value('email');
+        $invitedEmail = (string) DB::table('users')->where('id', $invitedId)->value('email');
+
+        $this->artisan('emails:resend-stuck-activations', ['--dry-run' => true, '--tenant' => $tenantId])
+            ->expectsOutputToContain($stuckSignupEmail)
+            ->doesntExpectOutputToContain($invitedEmail)
+            ->assertSuccessful();
+    }
+
     public function test_token_table_check_keeps_the_transaction_open(): void
     {
         // CREATE TABLE commits implicitly on MariaDB even when IF NOT EXISTS
@@ -133,6 +172,29 @@ class ResendStuckVerificationEmailsTest extends TestCase
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+    }
+
+    /**
+     * A member an administrator added: active and approved, email not yet
+     * confirmed, never signed in, with their welcome email delivered.
+     */
+    private function seedInvitedMember(int $tenantId, string $welcomeEmailCategory): int
+    {
+        $userId = $this->seedPendingUser($tenantId);
+        DB::table('users')->where('id', $userId)->update(['status' => 'active', 'is_approved' => 1]);
+
+        DB::table('email_log')->insert([
+            'tenant_id' => $tenantId,
+            'user_id' => $userId,
+            'recipient_email' => (string) DB::table('users')->where('id', $userId)->value('email'),
+            'category' => $welcomeEmailCategory,
+            'status' => 'delivered',
+            'subject' => 'Your account on Recovery Test Tenant',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return $userId;
     }
 
     private function seedVerificationToken(int $userId, int $tenantId): string

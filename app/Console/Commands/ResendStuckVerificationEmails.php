@@ -31,7 +31,9 @@ use Illuminate\Support\Facades\Schema;
  * mails. Users who already have a successful verification email on record
  * (email_log category `email_verification`, status sent/delivered) are
  * excluded — so repeat runs walk through the backlog instead of re-mailing
- * the same oldest `--limit` users forever.
+ * the same oldest `--limit` users forever. So are members an administrator
+ * added: their welcome email carries a set-password link, and using it is
+ * what confirms their address (see ALREADY_EMAILED_CATEGORIES).
  *
  * Re-uses the canonical Mailer path so:
  *   - Postmark is used (the default platform provider in prod)
@@ -54,6 +56,14 @@ class ResendStuckVerificationEmails extends Command
     protected $description = 'Resend welcome / verification emails to unverified members who never received their original activation email';
 
     private const TOKEN_TTL_SECONDS = 86400; // 24h
+
+    /**
+     * A member with a successful send in any of these categories already has
+     * the email that gets them in, so they are not "stuck": the sign-up
+     * activation email, an earlier resend from this command, or an
+     * administrator's welcome email with its set-password link.
+     */
+    private const ALREADY_EMAILED_CATEGORIES = ['activation', 'email_verification', 'admin_welcome', 'welcome'];
 
     public function handle(): int
     {
@@ -85,12 +95,21 @@ class ResendStuckVerificationEmails extends Command
             // what makes this command safe to run on a schedule — in a healthy
             // system every signup has an 'activation' log, so nothing matches and
             // it sends zero; it only fires when the queue worker failed to send.
+            //
+            // A member an administrator added is out of scope too. Their first
+            // email is the welcome email with a "Set your password" link
+            // ('admin_welcome' from Add User, 'welcome' from Resend Welcome
+            // Email, Send invitation and CSV import), and using that link is
+            // what confirms their address. Until 19 Nov 2026 those categories
+            // were not excluded, so every invited member who had not used the
+            // link by the top of the hour was also sent "Verify Your Email",
+            // whose button leads to a sign-in page they have no password for.
             ->whereNotExists(function ($sub) {
                 $sub->select(DB::raw(1))
                     ->from('email_log')
                     ->whereColumn('email_log.recipient_email', 'users.email')
                     ->whereColumn('email_log.tenant_id', 'users.tenant_id')
-                    ->whereIn('email_log.category', ['activation', 'email_verification'])
+                    ->whereIn('email_log.category', self::ALREADY_EMAILED_CATEGORIES)
                     ->whereIn('email_log.status', ['sent', 'delivered']);
             })
             ->orderBy('created_at', 'asc')
