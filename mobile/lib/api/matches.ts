@@ -310,7 +310,10 @@ function normalizeMeta(raw: RawMatchesMeta | undefined): MatchesMeta {
  * what they chose.
  */
 export async function getMatches(): Promise<MatchesResponse> {
-  const response = await api.get<RawMatchesResponse>(`${API_V2}/matches/all`);
+  // 50, the number match alerts are worked out from. The server's default
+  // is 20 across every kind of match, so a tapped alert could open this list
+  // without the match it was about.
+  const response = await api.get<RawMatchesResponse>(`${API_V2}/matches/all?limit=50`);
   const payload =
     !Array.isArray(response) && response && 'data' in response && response.data !== undefined
       ? response.data

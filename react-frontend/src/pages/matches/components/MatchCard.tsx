@@ -286,7 +286,7 @@ export function MatchCard({ match, index, highlightId, hotThreshold = DEFAULT_HO
       <GlassCard
         className={`p-4 hover:border-[var(--color-primary)]/20 transition-all group ${
           match.is_mutual ? 'ring-1 ring-success/40' : ''
-        } ${isHighlighted ? 'animate-pulse ring-2 ring-[var(--color-primary)]' : ''}`}
+        } ${isHighlighted ? 'motion-safe:animate-pulse ring-2 ring-[var(--color-primary)]' : ''}`}
       >
         <div className="flex items-start gap-4">
           {/* Module icon, with the score on top when there is one. The same

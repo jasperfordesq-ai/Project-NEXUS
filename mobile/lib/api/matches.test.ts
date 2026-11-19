@@ -56,7 +56,7 @@ describe('matches API', () => {
 
     const result = await getMatches();
 
-    expect(api.get).toHaveBeenCalledWith('/api/v2/matches/all');
+    expect(api.get).toHaveBeenCalledWith('/api/v2/matches/all?limit=50');
     expect(result.data).toHaveLength(1);
     const match = result.data[0];
     expect(match.source_type).toBe('listing');
@@ -127,7 +127,7 @@ describe('matches API', () => {
 
     // Sending one would override the minimum match quality chosen in preferences.
     expect(api.get).toHaveBeenCalledTimes(1);
-    expect(api.get).toHaveBeenCalledWith('/api/v2/matches/all');
+    expect(api.get).toHaveBeenCalledWith('/api/v2/matches/all?limit=50');
   });
 
   it('treats an absent meta block as "nothing to explain", never as bad news', async () => {
