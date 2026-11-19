@@ -813,11 +813,13 @@ class NotificationDispatcher
             return false;
         }
 
-        // Normalize legacy/unsupported digest frequencies for the queue.
-        $queueFrequency = match ($frequency) {
-            'fortnightly', 'weekly' => 'monthly',
-            default => $frequency,
-        };
+        // The alert email goes now. It used to be queued under the member's
+        // DIGEST frequency, and the digest run does not send a queued email:
+        // it writes one plain line from the snippet, on the 1st of the month
+        // or next morning, and only for a member who has the general email
+        // digest switched on (off by default). So the email built below was
+        // never sent to anyone, while every client promised "straight away".
+        $queueFrequency = 'instant';
 
         // Lookup recipient so bell + email render in their preferred locale.
         $tenantId = TenantContext::getId();
@@ -869,11 +871,13 @@ class NotificationDispatcher
             return;
         }
 
-        // Normalize legacy/unsupported digest frequencies for the queue.
-        $queueFrequency = match ($frequency) {
-            'fortnightly', 'weekly' => 'monthly',
-            default => $frequency,
-        };
+        // The alert email goes now. It used to be queued under the member's
+        // DIGEST frequency, and the digest run does not send a queued email:
+        // it writes one plain line from the snippet, on the 1st of the month
+        // or next morning, and only for a member who has the general email
+        // digest switched on (off by default). So the email built below was
+        // never sent to anyone, while every client promised "straight away".
+        $queueFrequency = 'instant';
 
         // Lookup recipient so bell + email render in their preferred locale.
         $tenantId = TenantContext::getId();

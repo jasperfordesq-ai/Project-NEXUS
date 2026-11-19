@@ -477,19 +477,22 @@ class AdminMatchingController extends BaseApiController
             'max_distance_km' => (int) ($input['max_distance_km'] ?? $existing['max_distance_km'] ?? 50),
             'min_match_score' => (int) ($input['min_match_score'] ?? $existing['min_match_score'] ?? 40),
             'hot_match_threshold' => (int) ($input['hot_match_threshold'] ?? $existing['hot_match_threshold'] ?? 80),
-            'gates' => [
+            // The gates and ai blocks keep the keys this page has no control
+            // for (gates.community_centre_fallback, ai.listing_enrichment).
+            // Built from the page's own keys alone, every save reset them.
+            'gates' => array_merge($gatesExisting, [
                 'geo_hard_gate' => (bool) ($gatesIn['geo_hard_gate'] ?? $gatesExisting['geo_hard_gate'] ?? true),
                 'missing_coords_mode' => $missingCoordsMode,
                 'dormancy_days' => max(0, min(3650, (int) ($gatesIn['dormancy_days'] ?? $gatesExisting['dormancy_days'] ?? 90))),
                 'owner_dismissal_threshold' => max(1, min(100, (int) ($gatesIn['owner_dismissal_threshold'] ?? $gatesExisting['owner_dismissal_threshold'] ?? 3))),
-            ],
+            ]),
             'engine_version' => in_array((int) ($input['engine_version'] ?? $existing['engine_version'] ?? 2), [1, 2], true)
                 ? (int) ($input['engine_version'] ?? $existing['engine_version'] ?? 2) : 2,
-            'ai' => [
+            'ai' => array_merge(is_array($existing['ai'] ?? null) ? $existing['ai'] : [], [
                 'semantic_signal' => (bool) ($input['ai']['semantic_signal'] ?? $existing['ai']['semantic_signal'] ?? true),
                 'llm_explanations' => (bool) ($input['ai']['llm_explanations'] ?? $existing['ai']['llm_explanations'] ?? true),
                 'explanation_top_n' => max(1, min(10, (int) ($input['ai']['explanation_top_n'] ?? $existing['ai']['explanation_top_n'] ?? 5))),
-            ],
+            ]),
             'pillars' => [
                 'relevance' => max(0.0, min(1.0, (float) ($input['pillars']['relevance'] ?? $existing['pillars']['relevance'] ?? 0.45))),
                 'feasibility' => max(0.0, min(1.0, (float) ($input['pillars']['feasibility'] ?? $existing['pillars']['feasibility'] ?? 0.35))),

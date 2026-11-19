@@ -161,9 +161,13 @@ final class MatchScorer
         // "Both ways" only when each side really has something the other
         // wants. A strong ONE-way fit (forward 1.0, combined 0.6) used to
         // clear the 0.5 bar on its own and be described as two-way.
+        // The one-way reason is only given for the direction of this pair
+        // (see skillScore): a fit the other way round is not a reason to show
+        // this listing.
+        $pairDirection = ($searcherListing['type'] ?? '') === 'offer' ? $forward : $backward;
         if (min($forward, $backward) >= 0.3 && $skill >= 0.5) {
             $reasons[] = 'Skills match both ways';
-        } elseif (max($forward, $backward) >= 0.5) {
+        } elseif ($pairDirection >= 0.5) {
             $reasons[] = 'Skills match your expertise';
         }
 
@@ -433,13 +437,29 @@ final class MatchScorer
             return [$hasAnyData ? 0.0 : self::DEFAULT_SKILL, 0.0, 0.0];
         }
 
-        // A one-way fit counts 0.6 of itself; a second direction adds to it,
-        // in proportion to how strong it is. This was a harmonic mean, which
-        // a small overlap the other way dragged far BELOW the one-way score
-        // (forward 1.0 alone: 0.6; with backward 0.1 added: 0.18).
-        $high = max($forward, $backward);
-        $low = min($forward, $backward);
-        $combined = $high * (0.6 + 0.4 * ($low / $high));
+        // The signal is about the pair being scored: when the searcher's
+        // listing is an offer, whether the owner wants what the searcher
+        // gives ($forward); when it is a request, whether the owner gives
+        // what the searcher wants ($backward). A fit that way counts 0.6 of
+        // itself, and a fit the other way round adds to it, in proportion.
+        //
+        // Until 19 Nov 2026 the stronger of the two directions led, whichever
+        // it was. Two members whose profiles suited each other the OTHER way
+        // (I can garden, they want a gardener) therefore lifted every one of
+        // their listings against every one of my requests: "Local history
+        // talks" was shown for "Help with my tax return" at 46, and 65 in the
+        // same category, with the reason "Skills match your expertise". That
+        // other direction is still what makes a match two-way (reciprocity()).
+        //
+        // (Before that it was a harmonic mean, which a small overlap the
+        // other way dragged far BELOW the one-way score.)
+        $searcherOffers = ($searcherListing['type'] ?? '') === 'offer';
+        $primary = $searcherOffers ? $forward : $backward;
+        $secondary = $searcherOffers ? $backward : $forward;
+        if ($primary <= 0.0) {
+            return [0.0, $forward, $backward];
+        }
+        $combined = $primary * (0.6 + 0.4 * min(1.0, $secondary / $primary));
 
         return [min(1.0, $combined), $forward, $backward];
     }

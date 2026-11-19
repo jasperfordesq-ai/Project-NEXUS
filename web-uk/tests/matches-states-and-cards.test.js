@@ -305,7 +305,7 @@ describe('links from a match notification', () => {
     respond([listingMatch]);
     await get('');
 
-    expect(api.callMatchesApi).toHaveBeenCalledWith('test-token', 'GET', '/all?limit=30');
+    expect(api.callMatchesApi).toHaveBeenCalledWith('test-token', 'GET', '/all?limit=50');
   });
 
   it('shows mutual matches only for type=mutual, as it does for mutual=1', async () => {

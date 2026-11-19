@@ -81,13 +81,9 @@ const makeAlgorithmConfig = (overrides = {}) => ({
     connectivity_weight: 0.2,
     proximity_weight: 0.1,
   },
-  matching: {
-    enabled: true,
-    skill_weight: 0.4,
-    location_weight: 0.25,
-    rating_weight: 0.2,
-    availability_weight: 0.15,
-  },
+  // No `matching` block: the server has only ever sent these three areas
+  // (AdminConfigController). This fixture used to invent one, which is how a
+  // "Smart Matching" card that could neither load nor save went unnoticed.
   ...overrides,
 });
 
@@ -156,7 +152,7 @@ describe('AlgorithmSettings', () => {
     });
   });
 
-  it('renders all four algorithm area cards (feed, listings, members, matching)', async () => {
+  it('renders a card for each area the server has (feed, listings, members), and none for matching', async () => {
     const { AlgorithmSettings } = await import('./AlgorithmSettings');
     render(<AlgorithmSettings />);
 
@@ -165,9 +161,11 @@ describe('AlgorithmSettings', () => {
       const saveBtns = screen.getAllByRole('button').filter((b) =>
         b.textContent?.toLowerCase().includes('save')
       );
-      // 4 algorithm areas + 1 health refresh = at least 4 save buttons
-      expect(saveBtns.length).toBeGreaterThanOrEqual(4);
+      expect(saveBtns).toHaveLength(3);
     });
+    // Matching has its own settings page (Admin > Smart Matching). The card
+    // here showed made-up values and every save was refused by the server.
+    expect(screen.queryByText('Skill Weight')).not.toBeInTheDocument();
   });
 
   it('calls updateAlgorithmConfig when save is clicked for an area', async () => {

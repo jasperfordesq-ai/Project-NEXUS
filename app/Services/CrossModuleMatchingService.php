@@ -97,6 +97,26 @@ class CrossModuleMatchingService
             ];
         }
 
+        // "Pause matching" pauses matching: every kind, not only offers and
+        // requests. Groups, volunteering and events used to go on being
+        // suggested under the page's own "Matching is paused" notice.
+        if (!empty(MatchingService::getPreferences($userId)['matching_paused'])) {
+            return [
+                'matches' => [],
+                'meta' => [
+                    'total' => 0,
+                    'modules' => $modules,
+                    'min_score' => $minScore,
+                    'needs_location' => false,
+                    'degraded' => false,
+                    'degraded_reason' => null,
+                    'has_active_listings' => null,
+                    'paused' => true,
+                    'disabled' => false,
+                ],
+            ];
+        }
+
         try {
             if (in_array('listings', $modules, true)) {
                 $listingMatches = $this->getListingMatches($userId, $tenantId, $minScore, $limit, $debug, $engineMeta);

@@ -114,17 +114,10 @@ const ALGORITHM_AREAS: Omit<AlgorithmArea, 'enabled' | 'weights'>[] = [
       { key: 'proximity_weight',    labelKey: 'param_proximity_weight',            descriptionKey: 'param_proximity_weight_desc',            min: 0, max: 1, step: 0.05 },
     ],
   },
-  {
-    area: 'matching',
-    labelKey: 'area_smart_matching',
-    descriptionKey: 'area_smart_matching_desc',
-    params: [
-      { key: 'skill_weight',        labelKey: 'param_skill_weight',        descriptionKey: 'param_skill_weight_desc',        min: 0, max: 1, step: 0.05 },
-      { key: 'location_weight',     labelKey: 'param_match_location_weight', descriptionKey: 'param_match_location_weight_desc', min: 0, max: 1, step: 0.05 },
-      { key: 'rating_weight',       labelKey: 'param_rating_weight',       descriptionKey: 'param_rating_weight_desc',       min: 0, max: 1, step: 0.05 },
-      { key: 'availability_weight', labelKey: 'param_availability_weight', descriptionKey: 'param_availability_weight_desc', min: 0, max: 1, step: 0.05 },
-    ],
-  },
+  // No 'matching' area. One sat here until 19 Nov 2026 with four sliders the
+  // matching engine has never had; the server neither sent it values nor
+  // accepted a save for it (AdminConfigController knows feed, listings and
+  // members only). Smart matching is set on its own page, Admin > Smart Matching.
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -534,12 +527,6 @@ function getDefaultWeight(area: string, key: string): number {
       activity_weight: 0.25,
       connectivity_weight: 0.2,
       proximity_weight: 0.1,
-    },
-    matching: {
-      skill_weight: 0.4,
-      location_weight: 0.25,
-      rating_weight: 0.2,
-      availability_weight: 0.15,
     },
   };
   return defaults[area]?.[key] ?? 0.2;

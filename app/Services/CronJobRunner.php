@@ -1890,8 +1890,8 @@ class CronJobRunner
                 echo "\n[{$taskNum}] Match digest daily...\n";
                 echo $this->runSubTask('match-digest-daily', fn() => $this->matchDigestInternal('daily'));
 
-                // Fortnightly digest: runs every other Monday (weeks where ISO week number is even)
-                if ($dayOfWeek === 1 && (int)date('W') % 2 === 0) {
+                // Fortnightly digest: every second Monday.
+                if (self::isFortnightlyMatchDigestDay(new \DateTimeImmutable())) {
                     $taskNum++;
                     echo "\n[{$taskNum}] Match digest fortnightly...\n";
                     echo $this->runSubTask('match-digest-fortnightly', fn() => $this->matchDigestInternal('fortnightly'));
@@ -2713,6 +2713,30 @@ class CronJobRunner
                 echo "   [{$slug}] Geocoding error: " . $e->getMessage() . "\n";
             }
         });
+    }
+
+    /**
+     * Whether the fortnightly match digest runs on this day: every second
+     * Monday, counted from Monday 23 November 2026.
+     *
+     * It used to be "a Monday in an even-numbered ISO week". A year with 53
+     * weeks ends on an odd week and the next begins on week 1, so the digest
+     * ran on 21 December 2026 and not again until 11 January 2027: three
+     * weeks apart, each looking back two, and whatever was posted in the
+     * first of them was in no digest at all. The dates before the turn of
+     * the year are unchanged.
+     */
+    public static function isFortnightlyMatchDigestDay(\DateTimeInterface $day): bool
+    {
+        if ((int) $day->format('N') !== 1) {
+            return false;
+        }
+
+        $anchor = new \DateTimeImmutable('2026-11-23', $day->getTimezone());
+        $thisMonday = new \DateTimeImmutable($day->format('Y-m-d'), $day->getTimezone());
+        $days = (int) $anchor->diff($thisMonday)->format('%r%a');
+
+        return intdiv($days, 7) % 2 === 0;
     }
 
     /**

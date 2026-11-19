@@ -221,6 +221,33 @@ class AdminMatchingScreensTest extends TestCase
         $this->assertSame($before, $this->storedConfig(), 'A refused save must not change anything');
     }
 
+    public function test_update_config_keeps_the_gate_and_ai_settings_the_page_has_no_control_for(): void
+    {
+        // Both are read by the engine and neither has a control on the page.
+        // The save rebuilt each block from the page's own keys, so any save
+        // put them back to their defaults.
+        $this->storeConfig([
+            'gates' => ['community_centre_fallback' => false, 'dormancy_days' => 120],
+            'ai' => ['listing_enrichment' => false, 'semantic_signal' => true],
+        ]);
+        Sanctum::actingAs($this->admin());
+
+        $this->apiPut('/v2/admin/matching/config', [
+            'enabled' => true,
+            'max_distance_km' => 75,
+            'min_match_score' => 35,
+            'hot_match_threshold' => 70,
+            'gates' => ['dormancy_days' => 60],
+            'ai' => ['semantic_signal' => false],
+        ])->assertStatus(200);
+
+        $stored = $this->storedConfig();
+        $this->assertFalse($stored['gates']['community_centre_fallback']);
+        $this->assertSame(60, $stored['gates']['dormancy_days']);
+        $this->assertFalse($stored['ai']['listing_enrichment']);
+        $this->assertFalse($stored['ai']['semantic_signal']);
+    }
+
     public function test_update_config_saves_valid_settings_and_keeps_what_it_does_not_manage(): void
     {
         // A community that still has the old approval flag and tuned

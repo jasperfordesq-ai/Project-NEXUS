@@ -78,8 +78,24 @@ final class KeywordExtractor
 
     /** Words shorter than three letters that still carry meaning. */
     private const SHORT_TERMS = [
-        'ai', 'ml', 'ux', 'ui', 'go', 'vr', 'ar', 'hr', 'pr', 'qa', 'db', 'uk', 'eu', 'us', 'r',
+        // "us" and "go" are not here: as ordinary English words ("join us",
+        // "we go walking") they gave unrelated texts two words in common.
+        'ai', 'ml', 'ux', 'ui', 'vr', 'ar', 'hr', 'pr', 'qa', 'db', 'uk', 'eu', 'r',
         'cv', 'pc', 'tv', 'dj', 'gp',
+    ];
+
+    /**
+     * Words whose trimmed form is a different word, with the form to use
+     * instead. Trimmed by the general rules, "tape" became "tap" (plumbing),
+     * "care" became "car", "site" became "sit" (pet sitting), "lifting"
+     * became "lift" (a lift in a car) and "note" became the filler "not".
+     */
+    private const FIXED_STEMS = [
+        'tape' => 'tape', 'tapes' => 'tape',
+        'care' => 'care', 'cares' => 'care', 'caring' => 'care', 'carer' => 'care', 'carers' => 'care',
+        'site' => 'site', 'sites' => 'site',
+        'note' => 'note', 'notes' => 'note',
+        'lifting' => 'lifting',
     ];
 
     /** @var array<string, true>|null folded + stemmed stop words */
@@ -158,6 +174,10 @@ final class KeywordExtractor
      */
     public static function stem(string $word): string
     {
+        if (isset(self::FIXED_STEMS[$word])) {
+            return self::FIXED_STEMS[$word];
+        }
+
         $len = mb_strlen($word, 'UTF-8');
         if ($len <= 3) {
             return $word;

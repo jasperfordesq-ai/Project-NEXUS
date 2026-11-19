@@ -142,18 +142,26 @@ class NotificationSettingsService
      */
     protected function persistMatchPreferences(int $userId, int $tenantId, array $preferences): void
     {
-        DB::table('match_preferences')->updateOrInsert(
-            [
-                'user_id' => $userId,
-                'tenant_id' => $tenantId,
-            ],
-            [
-                'notification_frequency' => $preferences['notification_frequency'],
-                'notify_hot_matches' => $preferences['notify_hot_matches'] ? 1 : 0,
-                'notify_mutual_matches' => $preferences['notify_mutual_matches'] ? 1 : 0,
-                'updated_at' => now(),
-            ],
-        );
+        $values = [
+            'notification_frequency' => $preferences['notification_frequency'],
+            'notify_hot_matches' => $preferences['notify_hot_matches'] ? 1 : 0,
+            'notify_mutual_matches' => $preferences['notify_mutual_matches'] ? 1 : 0,
+            'updated_at' => now(),
+        ];
+
+        $key = ['user_id' => $userId, 'tenant_id' => $tenantId];
+        if (DB::table('match_preferences')->where($key)->exists()) {
+            DB::table('match_preferences')->where($key)->update($values);
+
+            return;
+        }
+
+        // A first record. The columns for distance and minimum score default
+        // to 25 km and 50% in the database, and the matching engine reads
+        // whatever is stored as the member's own choice: saving this page
+        // quietly cut a member's matches down from the community's settings.
+        // NULL means "no choice made": the community's figures apply.
+        DB::table('match_preferences')->insert($key + $values + MatchingService::NO_CHOICE_MADE);
     }
 
     protected function persistDigestFrequency(int $userId, string $digestFrequency): void

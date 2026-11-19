@@ -58,9 +58,13 @@ class MatchPreferencesController extends BaseApiController
         $userId = $this->requireAuth();
 
         $current = $this->matchingService->getPreferences($userId);
-        $updated = $current;
+        // Only what the member sent is saved. This used to start from
+        // $current, which for a member with no record is the COMMUNITY's
+        // distance and minimum: pausing matching, or changing one switch,
+        // stored today's community figures as the member's own choice, and
+        // they stopped following the community from then on.
+        $updated = [];
 
-        // Only update fields that were provided
         $notificationFrequency = $this->input('notification_frequency');
         if ($notificationFrequency !== null) {
             $allowed = ['daily', 'weekly', 'monthly', 'fortnightly', 'never'];

@@ -1082,9 +1082,14 @@ class MatchingJourneyTest extends TestCase
         // Changing ONE setting must not quietly tighten the others.
         $saved = $this->apiPut('/v2/users/me/match-preferences', ['matching_paused' => true])->assertStatus(200)->json('data');
         $this->assertTrue($saved['matching_paused']);
+        $this->assertSame(60, $saved['max_distance_km']);
+        $this->assertSame(35, $saved['min_match_score']);
+        // ... and must not store the community's figures as the member's own
+        // either (it did until 19 Nov 2026, which froze them): nothing chosen
+        // is stored as nothing, and the community's settings go on applying.
         $row = DB::table('match_preferences')->where('user_id', $me->id)->where('tenant_id', $this->testTenantId)->first();
-        $this->assertSame(60, (int) $row->max_distance_km);
-        $this->assertSame(35, (int) $row->min_match_score);
+        $this->assertNull($row->max_distance_km);
+        $this->assertNull($row->min_match_score);
 
         // A distance above the community's maximum is brought down to it.
         $saved = $this->apiPut('/v2/users/me/match-preferences', ['max_distance_km' => 500])->json('data');

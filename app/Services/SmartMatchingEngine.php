@@ -82,6 +82,11 @@ class SmartMatchingEngine
     // In-process caches
     private array $userDataCache = [];
     private ?array $configCache = null;
+    // The community $configCache was read for. This service is a container
+    // singleton, and the alert and digest jobs walk every community in one
+    // process: without this, each community after the first was given the
+    // first one's on/off switch, strong-match score, distance and minimum.
+    private ?int $configCacheTenantId = null;
     private array $categoryCache = [];
 
     // Set when the safeguarding filter dropped a candidate because the
@@ -102,9 +107,12 @@ class SmartMatchingEngine
      */
     public function getConfig(): array
     {
-        if ($this->configCache !== null) {
+        $tenantId = (int) TenantContext::getId();
+        if ($this->configCache !== null && $this->configCacheTenantId === $tenantId) {
             return $this->configCache;
         }
+        $this->configCache = null;
+        $this->configCacheTenantId = $tenantId;
 
         $defaults = [
             'enabled' => true,
@@ -176,8 +184,6 @@ class SmartMatchingEngine
             ],
         ];
 
-        $tenantId = TenantContext::getId();
-
         try {
             $configJson = DB::table('tenants')->where('id', $tenantId)->value('configuration');
             if ($configJson) {
@@ -224,6 +230,7 @@ class SmartMatchingEngine
     public function clearCache(): void
     {
         $this->configCache = null;
+        $this->configCacheTenantId = null;
         $this->userDataCache = [];
         $this->categoryCache = [];
     }
@@ -986,6 +993,7 @@ class SmartMatchingEngine
                  JOIN listings l ON md.listing_id = l.id AND l.tenant_id = md.tenant_id
                  WHERE md.tenant_id = ? AND md.user_id = ?
                    AND md.created_at >= DATE_SUB(NOW(), INTERVAL 90 DAY)
+                   AND " . CandidateRetriever::DISMISSAL_IS_A_JUDGEMENT . "
                    AND l.user_id IN ($placeholders)",
                 array_merge([$tenantId, $userId], $ownerIds)
             );

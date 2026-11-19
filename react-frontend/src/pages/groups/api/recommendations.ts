@@ -82,7 +82,8 @@ export async function getRecommendedGroups(
 ): Promise<RecommendedGroupMatch[]> {
   try {
     const response = await api.get<unknown>(
-      '/v2/matches/all?modules=groups&limit=3&min_score=50',
+      // No min_score: the member's own minimum, else the community's, applies.
+      '/v2/matches/all?modules=groups&limit=3',
       { signal: options.signal },
     );
     const payload = unwrapGroupResponse(response);

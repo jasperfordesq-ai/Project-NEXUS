@@ -116,9 +116,19 @@ describe('RecommendedGroups', () => {
     });
     expect(screen.getByText('Book Club')).toBeInTheDocument();
     expect(mockApiGet).toHaveBeenCalledWith(
-      '/v2/matches/all?modules=groups&limit=3&min_score=50',
+      '/v2/matches/all?modules=groups&limit=3',
       expect.objectContaining({ signal: expect.any(AbortSignal) }),
     );
+  });
+
+  it('shows the score as a whole number', async () => {
+    mockApiGet.mockResolvedValue({
+      success: true,
+      data: { matches: [{ module: 'group', group_id: 1, title: 'Garden Crew', match_score: 70.4 }] },
+    });
+    render(<RecommendedGroups />);
+
+    expect(await screen.findByText('70% match')).toBeInTheDocument();
   });
 
   it('reads out the description written for a recommended group picture', async () => {

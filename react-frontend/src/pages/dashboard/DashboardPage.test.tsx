@@ -451,6 +451,33 @@ describe('DashboardPage', () => {
     expect(screen.getByText('View all exchanges')).toBeInTheDocument();
   });
 
+  it("asks for the member's matches at their own minimum, and shows whole-number scores only on real matches", async () => {
+    mockApiGet.mockImplementation((endpoint: string) => {
+      if (endpoint.startsWith('/v2/matches/all')) {
+        return Promise.resolve({
+          success: true,
+          data: {
+            matches: [
+              { module: 'listing', listing_id: 31, title: 'Hedge trimming', type: 'offer', user_name: 'Orla', match_score: 70.4, match_type: 'one_way' },
+              // A browsing suggestion, not a match: its 63 is a placeholder.
+              { module: 'listing', listing_id: 32, title: 'Recently posted thing', type: 'offer', user_name: 'Sam', match_score: 63, match_type: 'cold_start' },
+            ],
+          },
+        });
+      }
+      return Promise.resolve(buildApiResponse(endpoint));
+    });
+    render(<DashboardPage />);
+
+    expect(await screen.findByText('Hedge trimming')).toBeInTheDocument();
+    // A fixed min_score here overrode the member's own minimum and the community's.
+    expect(mockApiGet).toHaveBeenCalledWith('/v2/matches/all?modules=listings&limit=4');
+    expect(screen.getByText('70%')).toBeInTheDocument();
+    expect(screen.queryByText('70.4%')).not.toBeInTheDocument();
+    expect(screen.getByText('Recently posted thing')).toBeInTheDocument();
+    expect(screen.queryByText('63%')).not.toBeInTheDocument();
+  });
+
   it("reads out the description written for each of the member's group pictures", async () => {
     mockApiGet.mockImplementation((endpoint: string) => {
       if (endpoint === '/v2/groups?user_id=1&per_page=3') {

@@ -30,6 +30,17 @@ class MatchingService
     ];
 
     /**
+     * A member's distance and minimum score when they have not chosen one.
+     *
+     * `match_preferences.max_distance_km` and `.min_match_score` default to
+     * 25 and 50 in the database, and the engine takes whatever is stored as
+     * the member's own choice. Every code path that creates a record must
+     * therefore say NULL for the ones the member did not set: NULL means
+     * "follow the community", now and after the community changes its mind.
+     */
+    public const NO_CHOICE_MADE = ['max_distance_km' => null, 'min_match_score' => null];
+
+    /**
      * What applies to a member who has saved nothing, plus the community's
      * distance ceiling.
      *
@@ -117,10 +128,14 @@ class MatchingService
                     : null;
             }
 
-            DB::table('match_preferences')->updateOrInsert(
-                ['user_id' => $userId, 'tenant_id' => $tenantId],
-                $data
-            );
+            $key = ['user_id' => $userId, 'tenant_id' => $tenantId];
+            if (DB::table('match_preferences')->where($key)->exists()) {
+                DB::table('match_preferences')->where($key)->update($data);
+            } else {
+                // Anything not chosen is stored as "no choice made", never
+                // left to the columns' own defaults (see NO_CHOICE_MADE).
+                DB::table('match_preferences')->insert($data + self::NO_CHOICE_MADE);
+            }
 
             return true;
         } catch (\Throwable $e) {

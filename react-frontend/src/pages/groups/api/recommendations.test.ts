@@ -42,7 +42,7 @@ describe('Groups recommendations API', () => {
     const matches = await getRecommendedGroups({ signal: controller.signal });
 
     expect(mockGet).toHaveBeenCalledWith(
-      '/v2/matches/all?modules=groups&limit=3&min_score=50',
+      '/v2/matches/all?modules=groups&limit=3',
       { signal: controller.signal },
     );
     expect(matches.map((match) => match.group_id)).toEqual([1, 2, 3]);

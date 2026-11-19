@@ -245,6 +245,10 @@ function statsFor(matches, formatNumber) {
   };
 }
 
+// Match alerts are worked out from a member's top 50, so the list asks for 50:
+// at 30, an alert for a match ranked 31st or lower opened this page without it.
+const MATCHES_SHOWN = 50;
+
 function matchesApiQuery(limit) {
   const params = new URLSearchParams();
   params.set('limit', String(limit));
@@ -350,7 +354,7 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
   let errorMessage = null;
 
   try {
-    const payload = payloadFrom(await callMatchesApi(req.token, 'GET', `/all?${matchesApiQuery(30)}`));
+    const payload = payloadFrom(await callMatchesApi(req.token, 'GET', `/all?${matchesApiQuery(MATCHES_SHOWN)}`));
     const context = normalizeContext(res);
     matches = visibleMatches(payload.matches.map((match) => normalizeMatch(match, context)), activeSource);
     matchMeta = payload.meta;

@@ -15,6 +15,15 @@
  *
  * Fetched once per session and memoised at module scope: several filters can
  * mount on one page, and this must not become N identical requests.
+ *
+ * The radius a member picks on a browse page is remembered in this browser
+ * (BROWSE_RADIUS_STORAGE_KEY) and is NOT written back to the matching
+ * preference. It was until 19 Nov 2026: `max_distance_km` is the hard limit
+ * on the member's matches, alerts and digests, so looking at members within
+ * 5 km quietly cut their matching down to 5 km, and the Members page wrote
+ * it on every "apply filters" whether or not the radius had been touched.
+ * The matching distance is still the starting value for a member who has
+ * never picked a radius here.
  */
 
 import { useEffect, useState } from 'react';
@@ -22,6 +31,19 @@ import { api } from '@/lib/api';
 
 export const RADIUS_OPTIONS = [5, 10, 25, 50, 100] as const;
 export const FALLBACK_RADIUS_KM = 25;
+export const BROWSE_RADIUS_STORAGE_KEY = 'nexus:browse_radius_km';
+
+/** The radius last picked on a browse page in this browser, if any. */
+function readRememberedRadius(): number | null {
+  try {
+    const stored = Number(window.localStorage.getItem(BROWSE_RADIUS_STORAGE_KEY));
+
+    return Number.isFinite(stored) && stored > 0 ? snapToRadiusOption(stored) : null;
+  } catch {
+    // Storage blocked or unavailable: fall back to the matching distance.
+    return null;
+  }
+}
 
 let cachedRadius: number | null = null;
 let inFlight: Promise<number> | null = null;
@@ -36,6 +58,9 @@ export function snapToRadiusOption(km: number): number {
 }
 
 async function fetchSavedRadius(): Promise<number> {
+  const remembered = readRememberedRadius();
+  if (remembered !== null) return remembered;
+
   // api.ts resolves rather than throws, so a failure arrives as success:false
   // and must fall back rather than surface an error on a discovery page.
   const res = await api.get<{ max_distance_km?: number }>('/v2/users/me/match-preferences');
@@ -85,22 +110,16 @@ export function useSavedRadiusKm(enabled = true): number {
 }
 
 /**
- * Persist a radius the member just chose, so the next page opens on it.
- * Deliberately fire-and-forget: a discovery filter must keep working even if
- * the preference write fails.
+ * Remember a radius the member just chose, so the next browse page opens on
+ * it. Kept in this browser only; see the note at the top of this file.
+ * A filter must keep working even if it cannot be stored.
  */
 export function persistRadiusPreference(km: number): void {
   cachedRadius = km;
 
-  // try/catch as well as .catch(): a rejected promise is not the only way this
-  // can fail. A synchronous throw from the client would otherwise propagate
-  // into whatever UI flow changed the radius — which is exactly what "the
-  // filter keeps working even if the write fails" is supposed to prevent.
   try {
-    void api.put('/v2/users/me/match-preferences', { max_distance_km: km })?.catch?.(() => {
-      // Non-fatal — the in-session value above still applies.
-    });
+    window.localStorage.setItem(BROWSE_RADIUS_STORAGE_KEY, String(km));
   } catch {
-    // Same posture: the chosen radius already applies for this session.
+    // The chosen radius already applies for this session.
   }
 }

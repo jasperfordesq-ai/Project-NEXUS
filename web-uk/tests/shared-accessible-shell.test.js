@@ -8858,7 +8858,7 @@ describe('shared accessible frontend shell', () => {
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
 
     expect(response.status).toBe(200);
-    expect(api.callMatchesApi).toHaveBeenCalledWith('test-token', 'GET', '/all?limit=30');
+    expect(api.callMatchesApi).toHaveBeenCalledWith('test-token', 'GET', '/all?limit=50');
     expect(response.text).toContain('Your matches');
     expect(response.text).toContain('Match hidden. We will show you fewer like it.');
     expect(response.text).toContain('Open the matches board');
@@ -9034,7 +9034,7 @@ describe('shared accessible frontend shell', () => {
       .set('Cookie', signedCookieHeader());
 
     expect(response.status).toBe(200);
-    expect(api.callMatchesApi).toHaveBeenCalledWith('test-token', 'GET', '/all?limit=30');
+    expect(api.callMatchesApi).toHaveBeenCalledWith('test-token', 'GET', '/all?limit=50');
     expect(response.text).toContain('Community picnic');
     expect(response.text).toContain('href="/events/66"');
     expect(response.text).not.toContain('Repair a bicycle');

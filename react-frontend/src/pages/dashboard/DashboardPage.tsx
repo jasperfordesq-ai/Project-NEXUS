@@ -118,7 +118,7 @@ interface SuggestionCard {
   type: 'offer' | 'request';
   authorName: string;
   authorAvatar?: string | null;
-  matchScore?: number;
+  matchScore?: number | null;
   distanceKm?: number | null;
   isRemote?: boolean;
 }
@@ -131,6 +131,7 @@ interface MatchApiItem {
   user_name?: string;
   avatar_url?: string | null;
   match_score: number;
+  match_type?: string;
   distance_km?: number | null;
   is_remote?: boolean;
 }
@@ -143,7 +144,9 @@ function suggestionFromMatch(match: MatchApiItem): SuggestionCard | null {
     type: match.type ?? 'offer',
     authorName: match.user_name ?? '',
     authorAvatar: match.avatar_url,
-    matchScore: match.match_score,
+    // A whole number, and none at all for a browsing suggestion: its score
+    // is a placeholder, not a judgement of fit.
+    matchScore: match.match_type === 'cold_start' ? null : Math.round(match.match_score),
     distanceKm: match.distance_km,
     isRemote: match.is_remote,
   };
@@ -360,7 +363,7 @@ export function DashboardPage() {
       if (hasListingsModule) {
         optionalRequests.push({
           key: 'suggested',
-          promise: api.get<{ matches?: MatchApiItem[] }>('/v2/matches/all?modules=listings&limit=4&min_score=40').catch(() => null),
+          promise: api.get<{ matches?: MatchApiItem[] }>('/v2/matches/all?modules=listings&limit=4').catch(() => null),
         });
         optionalRequests.push({ key: 'suggestedFallback', promise: api.get<Listing[]>('/v2/listings?per_page=4').catch(() => null) });
       }

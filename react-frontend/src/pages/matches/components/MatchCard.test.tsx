@@ -8,7 +8,7 @@
  * each with the right link, the right wording and honest button states.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 import React from 'react';
 
@@ -196,6 +196,34 @@ describe('MatchCard', () => {
       await waitFor(() => expect(stableToast.error).toHaveBeenCalledWith(
         "We couldn't add you to that group. Please try again.",
       ));
+    });
+  });
+
+  describe('messaging the member who posted', () => {
+    afterEach(() => {
+      stableTenant.hasFeature.mockImplementation(() => true);
+      stableTenant.hasModule.mockImplementation(() => true);
+    });
+
+    it('offers Message where the community allows members to message each other', () => {
+      renderCard(listing);
+
+      expect(screen.getByRole('link', { name: 'Message' })).toBeInTheDocument();
+    });
+
+    it('does not offer Message where direct messaging is switched off', () => {
+      // The listing page hides it too; here it led to a redirect.
+      stableTenant.hasFeature.mockImplementation((feature?: string) => feature !== 'direct_messaging');
+      renderCard(listing);
+
+      expect(screen.queryByRole('link', { name: 'Message' })).not.toBeInTheDocument();
+    });
+
+    it('does not offer Message where the community has no messages at all', () => {
+      stableTenant.hasModule.mockImplementation((module?: string) => module !== 'messages');
+      renderCard(listing);
+
+      expect(screen.queryByRole('link', { name: 'Message' })).not.toBeInTheDocument();
     });
   });
 

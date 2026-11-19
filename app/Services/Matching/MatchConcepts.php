@@ -119,7 +119,10 @@ final class MatchConcepts
             'schilder', 'behangen', 'behanger', 'malowanie', 'malarz', 'péinteáil',
         ],
         'moving' => [
-            'moving', 'removal', 'removals', 'packing', 'unpacking', 'rubbish', 'dump', 'recycling', 'van',
+            'moving', 'removal', 'removals', 'packing', 'unpacking', 'rubbish', 'dump', 'recycling',
+            // "van" alone is the Dutch for "of" and is dropped as a filler
+            // word, so it is listed joined to the word beside it.
+            'avan', 'thevan', 'myvan', 'ownvan', 'andvan', 'withvan', 'vanhire', 'vandriver',
             'mudanza', 'déménagement', 'déménager', 'umzug',
             'umziehen', 'trasloco', 'mudança', 'verhuizen', 'verhuizing', 'przeprowadzka',
         ],
@@ -186,6 +189,9 @@ final class MatchConcepts
         'arts' => [
             'art', 'arts', 'craft', 'crafts', 'crafting', 'drawing', 'sketching', 'watercolour', 'pottery',
             'graphic', 'graphics', 'graphicdesign', 'logo', 'logos', 'illustration',
+            // "painting" alone is in 'decorating' (a fence, a room).
+            'portrait', 'portraits', 'oilpainting', 'acrylic', 'acrylics', 'sculpture', 'calligraphy',
+            'artist', 'artists',
             'manualidades', 'dibujo', 'artisanat', 'dessin', 'basteln', 'zeichnen', 'kunst', 'disegno',
             'artigianato', 'artesanato', 'desenho', 'knutselen', 'tekenen', 'rękodzieło', 'rysunek', 'ealaín',
             'ceardaíocht',
@@ -206,7 +212,7 @@ final class MatchConcepts
         'fitness' => [
             'fitness', 'exercise', 'exercises', 'gym', 'jogging', 'hiking', 'swimming', 'sport', 'sports',
             'pilates', 'dance', 'dancing', 'rambling', 'hillwalking', 'aerobics', 'zumba', 'keepfit', 'badminton',
-            'tennis', 'golf', 'football', 'ejercicio', 'deporte', 'gimnasio', 'baile', 'exercice', 'danse',
+            'tennis', 'golf', 'football', 'weightlifting', 'weighttraining', 'weights', 'ejercicio', 'deporte', 'gimnasio', 'baile', 'exercice', 'danse',
             'tanzen', 'esercizio', 'ginnastica', 'palestra', 'danza', 'exercício', 'ginásio', 'dança', 'sporten',
             'dansen', 'ćwiczenia', 'taniec', 'aclaíocht', 'damhsa', 'spórt',
         ],
@@ -279,8 +285,10 @@ final class MatchConcepts
         ],
         'housesitting' => ['housesitting', 'housesit', 'housesitter'],
         'games' => [
-            'chess', 'boardgames', 'boardgame', 'bridge', 'scrabble', 'bingo', 'quiz', 'jigsaw', 'jigsaws',
+            'chess', 'boardgames', 'boardgame', 'scrabble', 'bingo', 'quiz', 'jigsaw', 'jigsaws',
             'draughts', 'dominoes',
+            // "bridge" alone is also something that gets repaired.
+            'bridgeclub', 'bridgepartner', 'bridgenight', 'bridgegame', 'bridgeplayer', 'playbridge',
         ],
         // Help running a group or an event.
         'organising' => [

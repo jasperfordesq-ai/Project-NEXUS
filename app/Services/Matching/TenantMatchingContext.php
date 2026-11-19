@@ -255,7 +255,13 @@ final class TenantMatchingContext
         return $map;
     }
 
-    /** @return array<int, array{avg: float, count: int}> */
+    /**
+     * Published reviews only, the rule the profile pages use (ReviewService).
+     * Reviews waiting for a moderator, and ones a moderator rejected, used to
+     * count towards the trust score and the "highly rated" reason.
+     *
+     * @return array<int, array{avg: float, count: int}>
+     */
     private static function loadReviewAggregates(int $tenantId, array $ownerIds): array
     {
         if (empty($ownerIds)) {
@@ -268,6 +274,7 @@ final class TenantMatchingContext
                 "SELECT receiver_id, AVG(rating) as avg_rating, COUNT(*) as cnt
                  FROM reviews
                  WHERE tenant_id = ? AND receiver_id IN ($placeholders)
+                   AND (status IS NULL OR status = 'approved')
                  GROUP BY receiver_id",
                 array_merge([$tenantId], $ownerIds)
             );

@@ -45,6 +45,17 @@ use Illuminate\Support\Facades\DB;
  */
 class CandidateRetriever
 {
+    /**
+     * Dismissal reasons that say nothing about the member who posted the
+     * listing or the kind of help it is: it was too far away, or the member
+     * has already had that help. They hide the one listing and are otherwise
+     * left out of everything that learns from dismissals.
+     */
+    public const NEUTRAL_DISMISSAL_REASONS = ['too_far', 'already_done'];
+
+    /** SQL: a `match_dismissals md` row that is a judgement on the listing. */
+    public const DISMISSAL_IS_A_JUDGEMENT = "(md.reason IS NULL OR md.reason NOT IN ('too_far','already_done'))";
+
     /** service_type values exempt from the geo gate (SQL fragment). */
     private const REMOTE_TYPES = "'remote_only','hybrid'";
 
@@ -187,7 +198,9 @@ class CandidateRetriever
 
             // Owner-level suppression: repeatedly dismissing one member's
             // listings (>= threshold in 90 days) hides ALL of that member's
-            // listings from this searcher.
+            // listings from this searcher. "Too far" and "already done" are
+            // not counted: three listings that were too far away used to hide
+            // everything that member ever posted.
             $dismissalThreshold = max(1, (int) ($gates['owner_dismissal_threshold'] ?? 3));
             $sql .= "
                   AND l.user_id NOT IN (
@@ -195,6 +208,7 @@ class CandidateRetriever
                       JOIN listings l2 ON md.listing_id = l2.id AND l2.tenant_id = md.tenant_id
                       WHERE md.tenant_id = ? AND md.user_id = ?
                         AND md.created_at >= DATE_SUB(NOW(), INTERVAL 90 DAY)
+                        AND " . self::DISMISSAL_IS_A_JUDGEMENT . "
                       GROUP BY l2.user_id
                       HAVING COUNT(*) >= {$dismissalThreshold})";
             array_push($params, $tenantId, $excludeUserId);

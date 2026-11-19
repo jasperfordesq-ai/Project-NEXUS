@@ -112,7 +112,7 @@ export function RecommendedGroups() {
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-theme-primary truncate">{group.title}</p>
                   <Chip size="sm" variant="flat" className="h-4 text-[10px]" startContent={<Users className="w-2.5 h-2.5" aria-hidden="true" />}>
-                    {t('recommended.score_chip', { score: group.match_score })}
+                    {t('recommended.score_chip', { score: Math.round(group.match_score) })}
                   </Chip>
                 </div>
               </div>

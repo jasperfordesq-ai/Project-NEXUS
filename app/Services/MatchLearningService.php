@@ -35,6 +35,9 @@ class MatchLearningService
         'dismiss' => -4.0,
     ];
 
+    /** Weighted interactions in one category that count as a settled preference. */
+    private const AFFINITY_FULL_STRENGTH = 10.0;
+
     /** How fast old interactions decay (half-life in days) */
     private const DECAY_HALF_LIFE_DAYS = 30;
 
@@ -305,7 +308,11 @@ class MatchLearningService
                 return [];
             }
 
-            $maxAbs = max(1.0, max(array_map('abs', $categoryScores)));
+            // The floor is the weight of several interactions, not of one.
+            // At 1.0 a single dismissal (weight 4) was already the full
+            // -1.0: one click took five points off every listing in the
+            // category. A settled like or dislike still reaches +/-1.
+            $maxAbs = max(self::AFFINITY_FULL_STRENGTH, max(array_map('abs', $categoryScores)));
             $normalized = [];
             foreach ($categoryScores as $catId => $score) {
                 $normalized[$catId] = round($score / $maxAbs, 3);

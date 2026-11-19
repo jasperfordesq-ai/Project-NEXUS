@@ -211,7 +211,7 @@ describe('MatchesPage', () => {
     mockApiGet.mockResolvedValue(emptyResponse);
     render(<MatchesPage />);
     await waitFor(() => expect(mockApiGet).toHaveBeenCalled());
-    expect(mockApiGet).toHaveBeenCalledWith('/v2/matches/all');
+    expect(mockApiGet).toHaveBeenCalledWith('/v2/matches/all?limit=50');
   });
 
   it('says matching is switched off instead of asking for a listing', async () => {

@@ -54,14 +54,20 @@ class MatchNotificationService
     /** Match computations per community per run (each is one page-load of work). */
     private const COMPUTATIONS_PER_RUN = 150;
 
-    /** Members sent a digest per community per run. */
-    private const DIGESTS_PER_RUN = 200;
+    /** Members read per query while working through a community's digest. */
+    private const DIGEST_BATCH = 200;
+
+    /** Longest one community's digest may take, in seconds. */
+    private const DIGEST_TIME_BUDGET_SECONDS = 600;
 
     /** How far back each digest looks for newly posted listings, in hours. */
     private const DIGEST_LOOKBACK_HOURS = [
         'daily' => 24,
         'fortnightly' => 336,
-        'monthly' => 720,
+        // 31 days. At 30, the first day after the previous digest fell
+        // outside the window after every 31-day month. Nothing is repeated:
+        // a listing a member has been told about is left out.
+        'monthly' => 744,
     ];
 
     public function __construct(
@@ -152,12 +158,50 @@ class MatchNotificationService
             return 0;
         }
 
+        $since = now()->subHours($lookbackHours);
+        $sent = 0;
+        $startedAt = microtime(true);
+        $afterId = 0;
+
+        // Every eligible member, a batch at a time. This used to be ONE
+        // query ending in "ORDER BY u.id LIMIT 200" with nothing to carry on
+        // from: in a community with more than 200 eligible members, the same
+        // 200 longest-standing ones were considered on every run and nobody
+        // else was ever sent a digest.
+        while (true) {
+            $members = $this->digestMembersAfter($tenantId, $frequency, $afterId);
+            if ($members === []) {
+                break;
+            }
+            if ((microtime(true) - $startedAt) > self::DIGEST_TIME_BUDGET_SECONDS) {
+                // Not silent: these members get no digest this time.
+                Log::error('[MatchNotificationService] digest ran out of time; members left without one', [
+                    'tenant_id' => $tenantId,
+                    'frequency' => $frequency,
+                    'stopped_after_user_id' => $afterId,
+                ]);
+                break;
+            }
+            $afterId = (int) end($members)->id;
+            $sent += $this->sendDigestsTo($tenantId, $frequency, $members, $since);
+        }
+
+        return $sent;
+    }
+
+    /**
+     * The next batch of members due this digest, by member number.
+     *
+     * @return array<int, object>
+     */
+    private function digestMembersAfter(int $tenantId, string $frequency, int $afterId): array
+    {
         // 'weekly' is a retired choice that now means monthly.
-        $members = DB::select(
+        return DB::select(
             "SELECT u.id
              FROM users u
              LEFT JOIN match_preferences mp ON mp.user_id = u.id AND mp.tenant_id = u.tenant_id
-             WHERE u.tenant_id = ? AND u.status = 'active'
+             WHERE u.tenant_id = ? AND u.status = 'active' AND u.id > ?
                AND COALESCE(mp.matching_paused, 0) = 0
                AND (
                    EXISTS (SELECT 1 FROM listings l
@@ -171,11 +215,17 @@ class MatchNotificationService
                    OR (? = 'monthly' AND (mp.notification_frequency IS NULL OR mp.notification_frequency = 'weekly'))
                )
              ORDER BY u.id
-             LIMIT " . self::DIGESTS_PER_RUN,
-            [$tenantId, $frequency, $frequency]
+             LIMIT " . self::DIGEST_BATCH,
+            [$tenantId, $afterId, $frequency, $frequency]
         );
+    }
 
-        $since = now()->subHours($lookbackHours);
+    /**
+     * @param array<int, object> $members
+     * @return int digests sent
+     */
+    private function sendDigestsTo(int $tenantId, string $frequency, array $members, \DateTimeInterface $since): int
+    {
         $sent = 0;
 
         foreach ($members as $member) {

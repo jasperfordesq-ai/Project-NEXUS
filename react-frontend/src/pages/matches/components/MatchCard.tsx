@@ -68,7 +68,7 @@ function eventStartText(value?: string | null): string | null {
 
 export function MatchCard({ match, index, highlightId, onDismissed }: MatchCardProps) {
   const { t } = useTranslation('matches');
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasFeature, hasModule } = useTenant();
   const toast = useToast();
 
   const [isDismissing, setIsDismissing] = useState(false);
@@ -100,7 +100,10 @@ export function MatchCard({ match, index, highlightId, onDismissed }: MatchCardP
   const organisationName = match.module === 'volunteering' ? match.organization_name?.trim() || null : null;
   const placeName = match.module === 'event' || match.module === 'volunteering' ? match.location?.trim() || null : null;
   const hasDetails = Boolean(eventStart || attendeeCount > 0 || organisationName || placeName);
-  const showMessage = match.module === 'listing' && match.user_id != null && detailId !== undefined;
+  // The same rule as the listing page: without it the button led to a
+  // redirect in a community with messages or direct messaging switched off.
+  const canMessage = hasModule('messages') && hasFeature('direct_messaging');
+  const showMessage = canMessage && match.module === 'listing' && match.user_id != null && detailId !== undefined;
   const showGroupActions = match.module === 'group' && detailPath !== null;
   const showSave = match.module === 'listing' && detailId !== undefined;
   const hasActions = showMessage || showGroupActions || showSave || canDismiss;

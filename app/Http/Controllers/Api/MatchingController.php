@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use App\Services\CrossModuleMatchingService;
 use App\Services\GroupMatchingService;
+use App\Services\Matching\CandidateRetriever;
 use App\Services\MatchLearningService;
 
 /**
@@ -201,7 +202,12 @@ class MatchingController extends BaseApiController
             [$tenantId, $userId, $listingId]
         );
 
-        // Record negative signal in MatchLearningService
-        $this->matchLearningService->recordInteraction($userId, $listingId, 'dismissed', []);
+        // A negative signal for the learning loop, unless the reason says
+        // nothing about the listing itself. "Too far" and "already done"
+        // used to count against the member who posted it and against the
+        // whole category, exactly like "not relevant".
+        if (!in_array($reason, CandidateRetriever::NEUTRAL_DISMISSAL_REASONS, true)) {
+            $this->matchLearningService->recordInteraction($userId, $listingId, 'dismissed', []);
+        }
     }
 }

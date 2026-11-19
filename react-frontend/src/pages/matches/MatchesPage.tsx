@@ -73,6 +73,14 @@ const TAB_CONFIG: Record<Exclude<TabFilter, 'all'>, { icon: typeof ListChecks; l
   events: { icon: Calendar, labelKey: 'source_event' },
 };
 
+/**
+ * How many matches the page asks for. The server's own default is 20, shared
+ * between all four kinds, while match alerts are worked out from a member's
+ * top 50: an alert for a match ranked 21st or lower opened this page without
+ * that match on it. 50 keeps the two in step.
+ */
+const MATCHES_SHOWN = 50;
+
 const DEFAULT_META: MatchesMeta = {
   total: 0,
   modules: [],
@@ -120,7 +128,7 @@ export function MatchesPage() {
       // No `min_score` on purpose: left out, the server applies the minimum the
       // member saved in their match preferences (else the community's own).
       // Sending one here would override what they chose.
-      const res = await api.get<{ matches?: Match[]; meta?: Partial<MatchesMeta> }>('/v2/matches/all');
+      const res = await api.get<{ matches?: Match[]; meta?: Partial<MatchesMeta> }>(`/v2/matches/all?limit=${MATCHES_SHOWN}`);
       // api.get resolves { success:false } on a 4xx WITHOUT throwing — without
       // the else branch a failure envelope rendered the "no matches yet" empty
       // state as if the user genuinely had no matches.

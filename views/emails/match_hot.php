@@ -221,7 +221,7 @@ if ($distance !== null) {
                                                 <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid <?= $borderColor ?>;">
                                                     <p style="margin: 0 0 10px; font-size: 13px; color: <?= $textMuted ?>; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;"><?= __('emails.match_hot.why_matches') ?></p>
                                                     <p style="margin: 0; font-size: 15px; color: <?= $textColor ?>; line-height: 1.6;">
-                                                        <?= htmlspecialchars(implode(' &bull; ', array_slice($reasons, 0, 3))) ?>
+                                                        <?= implode(' &bull; ', array_map('htmlspecialchars', array_slice($reasons, 0, 3))) ?>
                                                     </p>
                                                 </div>
                                                 <?php endif; ?>
