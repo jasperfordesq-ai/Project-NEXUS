@@ -382,17 +382,29 @@ class GroupMatchingService
     private static function reasonForReader(string $stored): string
     {
         foreach (self::REASON_KEYS as $key) {
-            if ($stored === __($key, [], 'en')) {
+            if ($stored === self::inEnglish($key)) {
                 return (string) __($key);
             }
         }
 
-        $many = preg_quote((string) __('api.group_recommendation_connection_many', ['count' => '@@'], 'en'), '/');
+        $many = preg_quote(self::inEnglish('api.group_recommendation_connection_many', ['count' => '@@']), '/');
         if (preg_match('/^' . str_replace('@@', '(\\d+)', $many) . '$/u', $stored, $m) === 1) {
             return (string) __('api.group_recommendation_connection_many', ['count' => (int) $m[1]]);
         }
 
         return $stored;
+    }
+
+    /**
+     * A phrase as the background job stored it: in English, whatever the
+     * reader's language. (The project's __() helper has no language
+     * argument; a third argument to it is silently ignored.)
+     *
+     * @param array<string, mixed> $params
+     */
+    private static function inEnglish(string $key, array $params = []): string
+    {
+        return (string) app('translator')->get($key, $params, 'en');
     }
 
     private function cacheTableExists(): bool
