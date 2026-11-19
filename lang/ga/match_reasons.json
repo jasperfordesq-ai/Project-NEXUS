@@ -24,5 +24,10 @@
   "recommended_for_you": "Molta duitse",
   "similar_interests": "Spéiseanna cosúla",
   "mutual_connections": "Naisc chomónta",
-  "interest_in_category": "Oireann sé do do spéis i {{category}}"
+  "interest_in_category": "Oireann sé do do spéis i {{category}}",
+  "for_request": "Do d'iarratas: {{title}}",
+  "for_offer": "Do do thairiscint: {{title}}",
+  "for_skill": "Do do scil: {{title}}",
+  "for_wanted_skill": "Do rud ar mhaith leat cabhair leis: {{title}}",
+  "two_way": "Malartú frithpháirteach: tairgeann tusa “{{you}}” agus tairgeann siadsan “{{they}}”"
 }

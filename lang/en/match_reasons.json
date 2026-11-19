@@ -24,5 +24,10 @@
   "recommended_for_you": "Recommended for you",
   "similar_interests": "Similar interests",
   "mutual_connections": "Mutual connections",
-  "interest_in_category": "Matches your interest in {{category}}"
+  "interest_in_category": "Matches your interest in {{category}}",
+  "for_request": "For your request: {{title}}",
+  "for_offer": "For your offer: {{title}}",
+  "for_skill": "For your skill: {{title}}",
+  "for_wanted_skill": "For something you would like help with: {{title}}",
+  "two_way": "Two-way match: you offer “{{you}}” and they offer “{{they}}”"
 }

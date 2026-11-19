@@ -291,6 +291,45 @@ class MatchScorerTest extends TestCase
         }
     }
 
+    public function test_no_category_is_left_out_not_counted_as_a_different_one(): void
+    {
+        // A skill on a member's profile has no category, and nor does a
+        // listing posted without one. That used to count as 0.10, the same
+        // as two unrelated categories.
+        $pair = $this->baselinePair();
+        $pair['searcherListing']['category_id'] = null;
+
+        $unknown = $this->score($pair);
+
+        $pair['searcherListing']['category_id'] = 9; // a different category
+        $different = $this->score($pair, [], [3 => ['name' => 'Gardening', 'parent_id' => null], 9 => ['name' => 'Plumbing', 'parent_id' => null]]);
+
+        $this->assertNull($unknown->signals['relevance']['category']);
+        $this->assertNotContains('Same category: Gardening', $unknown->reasons);
+        $this->assertGreaterThan($different->pillars['relevance'], $unknown->pillars['relevance']);
+    }
+
+    public function test_the_same_kind_of_help_under_two_categories_is_not_scored_as_unrelated(): void
+    {
+        $categories = [3 => ['name' => 'Home', 'parent_id' => null], 9 => ['name' => 'Odd jobs', 'parent_id' => null]];
+        $pair = $this->baselinePair();
+        $pair['searcherListing']['keywords'] = ['lawn', 'mow', '~gardening'];
+        $pair['candidate']['keywords'] = ['grass', 'cut', '~gardening'];
+        $pair['candidate']['category_id'] = 9;
+
+        $sameKind = $this->score($pair, [], $categories);
+
+        // Different categories and nothing saying they are the same kind.
+        $pair['searcherListing']['keywords'] = ['lawn', 'mow'];
+        $pair['candidate']['keywords'] = ['grass', 'cut'];
+        $unknownKind = $this->score($pair, [], $categories);
+
+        $this->assertSame(0.6, $sameKind->signals['relevance']['category']);
+        $this->assertSame(0.10, $unknownKind->signals['relevance']['category']);
+        // The categories themselves are not related, so that is not claimed.
+        $this->assertNotContains('Related category: Gardening', $sameKind->reasons);
+    }
+
     public function test_conflicting_stated_availability_is_penalised(): void
     {
         $pair = $this->baselinePair();

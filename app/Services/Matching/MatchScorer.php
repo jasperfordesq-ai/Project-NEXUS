@@ -35,12 +35,14 @@ namespace App\Services\Matching;
  * candidate with NO skill/category/quality data score ~55 and clear the
  * visibility threshold on unknowns alone).
  *
- * Two signals are LEFT OUT of their pillar when nothing is known, instead of
- * being given a middling value: availability (no page lets a member state
- * it) and trust level (0 for every member of a community that does not use
- * trust levels). Counted as 0.60 and 0.0 they held every score in every
- * community about 9% under what the rest of the evidence said, which put the
- * "strong match" alert (80) out of reach of a new member's listing.
+ * Three signals are LEFT OUT of their pillar when nothing is known, instead
+ * of being given a middling or a bad value: availability (no page sets the
+ * fields it reads), trust level (0 for every member of a community that
+ * does not use trust levels) and category (a profile skill has none, nor
+ * does a listing posted without). Counted as 0.60 and 0.0, the first two
+ * held every score in every community about 9% under what the rest of the
+ * evidence said, which put the "strong match" alert (80) out of reach of a
+ * new member's listing; a missing category counted as an unrelated one.
  *
  * KINDS OF HELP. Two listings that are each recognisably about a specific
  * kind of help (MatchConcepts), with no kind in common and none related, are
@@ -71,6 +73,15 @@ final class MatchScorer
      * trusted owner and the newest listing (MatchQualityBenchmarkTest).
      */
     private const KIND_CONFLICT_CAP = 0.10;
+
+    /**
+     * Least the category signal counts for when two listings in different
+     * categories are the same kind of help. Members rarely pick the same
+     * category for the same thing ("Hem two pairs of trousers" under Odd
+     * Jobs, "Sewing and clothes alterations" under Arts): at 0.10 such a pair
+     * scored about 15 points under the same two listings filed together.
+     */
+    private const SAME_KIND_CATEGORY_FLOOR = 0.6;
 
     /** Credit for sharing only HOW / WHO-FOR (a generic concept), not WHAT. */
     private const GENERIC_ONLY_STRENGTH = 0.5;
@@ -134,10 +145,16 @@ final class MatchScorer
             $searcherListing['category_id'] ?? null,
             $candidate['category_id'] ?? null
         );
-        if ($category >= 0.99) {
+        if ($category !== null && $category >= 0.99) {
             $reasons[] = 'Same category: ' . ($candidate['category_name'] ?? 'General');
-        } elseif ($category >= 0.6) {
+        } elseif ($category !== null && $category >= 0.6) {
             $reasons[] = 'Related category: ' . ($candidate['category_name'] ?? 'General');
+        }
+        // The same kind of help filed under two different categories: the
+        // members' filing disagrees, what they wrote does not. No reason is
+        // claimed for it (the categories are not related, the listings are).
+        if ($category !== null && $kinds['same'] && !$kindConflict) {
+            $category = max($category, self::SAME_KIND_CATEGORY_FLOOR);
         }
 
         [$skill, $forward, $backward] = $this->skillScore($searcher, $searcherListing, $candidate, $owner);
@@ -311,16 +328,26 @@ final class MatchScorer
     // RELEVANCE
     // ═════════════════════════════════════════════════════════════════════
 
-    private function categoryScore(mixed $searcherCatId, mixed $candidateCatId): float
+    /**
+     * How far the two categories agree, or null when one side has none.
+     *
+     * No category is unknown, not a disagreement: a skill on a member's
+     * profile never has one, and nor does a listing posted without. It is
+     * left out of the relevance pillar. It used to count as 0.10, the same as
+     * two unrelated categories, so a member matched by their skills could
+     * not score above about 71 for a perfect fit posted that hour next door,
+     * and was never sent the "strong match" alert (80).
+     */
+    private function categoryScore(mixed $searcherCatId, mixed $candidateCatId): ?float
     {
         $a = $searcherCatId !== null ? (int) $searcherCatId : null;
         $b = $candidateCatId !== null ? (int) $candidateCatId : null;
 
-        if ($a !== null && $a === $b) {
-            return 1.0;
-        }
         if ($a === null || $b === null || $a === 0 || $b === 0) {
-            return self::DEFAULT_CATEGORY;
+            return null;
+        }
+        if ($a === $b) {
+            return 1.0;
         }
 
         $catA = $this->categories[$a] ?? null;
@@ -628,10 +655,16 @@ final class MatchScorer
      * Overlap between the searcher's preferred availability and the listing's
      * stated availability. Unknown on either side is null: the signal is
      * left out of the feasibility pillar. It used to count as 0.60, and as
-     * no page lets a member state their availability that was every match
-     * there has ever been: 20% of the pillar fixed at 0.60, so feasibility
-     * could not pass 0.92 for a listing next door owned by a member active
-     * that day.
+     * no page sets either of the two fields read here (the member's match
+     * preferences and the listing) that was every match there has ever been:
+     * 20% of the pillar fixed at 0.60, so feasibility could not pass 0.92 for
+     * a listing next door owned by a member active that day.
+     *
+     * Members CAN state when they are free, on Settings > Availability, but
+     * that is kept in `member_availability` (weekly time slots), which
+     * matching does not read. Not wired in on 19 Nov 2026 because almost
+     * nobody has filled it in; if that changes, it is the real source for
+     * this signal.
      */
     private function availabilityScore(mixed $searcherAvailability, mixed $candidateAvailability): ?float
     {

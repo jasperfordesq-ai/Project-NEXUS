@@ -24,5 +24,10 @@
   "recommended_for_you": "Polecane dla Ciebie",
   "similar_interests": "Podobne zainteresowania",
   "mutual_connections": "Wspólne kontakty",
-  "interest_in_category": "Pasuje do Twojego zainteresowania: {{category}}"
+  "interest_in_category": "Pasuje do Twojego zainteresowania: {{category}}",
+  "for_request": "Do Twojej prośby: {{title}}",
+  "for_offer": "Do Twojej oferty: {{title}}",
+  "for_skill": "Do Twojej umiejętności: {{title}}",
+  "for_wanted_skill": "Do czegoś, w czym chcesz uzyskać pomoc: {{title}}",
+  "two_way": "Wzajemna wymiana: Ty oferujesz „{{you}}”, a druga osoba oferuje „{{they}}”"
 }

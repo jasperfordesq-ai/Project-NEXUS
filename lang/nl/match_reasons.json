@@ -24,5 +24,10 @@
   "recommended_for_you": "Aanbevolen voor jou",
   "similar_interests": "Vergelijkbare interesses",
   "mutual_connections": "Gemeenschappelijke contacten",
-  "interest_in_category": "Past bij je interesse in {{category}}"
+  "interest_in_category": "Past bij je interesse in {{category}}",
+  "for_request": "Voor je verzoek: {{title}}",
+  "for_offer": "Voor je aanbod: {{title}}",
+  "for_skill": "Voor je vaardigheid: {{title}}",
+  "for_wanted_skill": "Voor iets waarbij je hulp wilt: {{title}}",
+  "two_way": "Wederzijdse ruil: jij biedt “{{you}}” aan en de ander biedt “{{they}}” aan"
 }

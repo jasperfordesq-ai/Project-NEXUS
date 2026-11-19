@@ -73,6 +73,12 @@ class SmartMatchingEngine
     // AI similarity lookups per match run: one per listing, up to this many
     private const SEMANTIC_LISTINGS_PER_RUN = 5;
 
+    // Profile skills matched per member, in each direction (can do / would like)
+    private const SKILL_STAND_INS_PER_DIRECTION = 12;
+
+    // Longest listing title or skill name quoted inside a match reason
+    private const REASON_TITLE_LENGTH = 60;
+
     // In-process caches
     private array $userDataCache = [];
     private ?array $configCache = null;
@@ -575,16 +581,20 @@ class SmartMatchingEngine
         ];
 
         $userListings = $this->getUserListings($userId);
+
+        // The skills on a member's profile are matched too, one at a time,
+        // beside whatever they have posted. Most members never post a
+        // listing (tenant 2: 274 active members, 56 live listings on 18 Nov
+        // 2026). Until 19 Nov 2026 skills counted only for a member with no
+        // listing at all: one request posted, and a member who had said they
+        // can garden, cook and drive was never again shown a request for any
+        // of those.
+        $skillStandIns = $this->skillListings($userId, $userData);
         if (empty($userListings)) {
             $meta['has_active_listings'] = false;
-
-            // No listing, but skills on their profile: match those. Most
-            // members never post a listing (tenant 2: 274 active members,
-            // 56 live listings on 18 Nov 2026), and until then they were only
-            // shown "recently posted" browsing suggestions, never a match.
-            $userListings = $this->skillListings($userId, $userData);
-            $meta['matched_from_skills'] = $userListings !== [];
+            $meta['matched_from_skills'] = $skillStandIns !== [];
         }
+        $userListings = array_merge($userListings, $skillStandIns);
         if (empty($userListings)) {
             $coldStart = $this->getColdStartMatches($userId, $userLat, $userLon, $locationApproximate, $gates, $maxDistance, $limit);
             // Cold-start items are browsing suggestions, not real matches, so
@@ -731,21 +741,26 @@ class SmartMatchingEngine
 
         $listingKeywordCache = [];
         $extractListingKeywords = function (array $listing) use (&$listingKeywordCache, $readings): array {
-            $key = (int) ($listing['id'] ?? 0);
-            if ($key > 0 && isset($listingKeywordCache[$key])) {
+            $id = (int) ($listing['id'] ?? 0);
+            // A profile skill standing in for a listing has no id; it is
+            // scored against every candidate, so its words are kept too.
+            $key = $id > 0 ? $id : 's:' . ($listing['type'] ?? '') . ':' . ($listing['title'] ?? '');
+            if (isset($listingKeywordCache[$key])) {
                 return $listingKeywordCache[$key];
             }
             $keywords = KeywordExtractor::extract(
                 ($listing['title'] ?? '') . ' ' . ($listing['description'] ?? '')
             );
-            if ($key > 0 && isset($readings[$key])) {
-                $keywords = array_values(array_unique(array_merge($keywords, $readings[$key])));
+            if ($id > 0 && isset($readings[$id])) {
+                $keywords = array_values(array_unique(array_merge($keywords, $readings[$id])));
             }
-            if ($key > 0) {
-                $listingKeywordCache[$key] = $keywords;
-            }
+            $listingKeywordCache[$key] = $keywords;
+
             return $keywords;
         };
+
+        // More than one thing of the member's could be what a match answers.
+        $severalToMatchOn = count($userListings) > 1;
 
         // Each candidate is scored against every listing of the member it
         // could answer, and keeps its best pairing. Before, a candidate was
@@ -805,10 +820,13 @@ class SmartMatchingEngine
                         $candidate['score_breakdown'] = $bestBreakdown;
                     }
                     $candidate['match_score'] = $best['score'];
-                    $candidate['match_reasons'] = $best['reasons'];
+                    $candidate['match_reasons'] = $this->reasonsNamingWhatIsAnswered(
+                        (array) $best['reasons'], $bestListing, $best['exchange'] ?? null, $severalToMatchOn
+                    );
                     $candidate['match_breakdown'] = $best['breakdown'];
                     $candidate['distance_km'] = $best['distance'];
                     $candidate['matched_listing'] = $bestListing['title'];
+                    $candidate['matched_from_skill'] = !empty($bestListing['from_profile_skills']);
                     $candidate['match_type'] = $best['type'];
                     if (!empty($best['exchange'])) {
                         // The two listings that make this a two-way match.
@@ -1514,6 +1532,7 @@ class SmartMatchingEngine
                  LEFT JOIN categories c ON l.category_id = c.id
                  WHERE l.user_id = ? AND l.tenant_id = ? AND l.status = 'active'
                    AND (l.moderation_status IS NULL OR l.moderation_status = 'approved')
+                   AND (l.expires_at IS NULL OR l.expires_at > NOW())
                  ORDER BY l.created_at DESC LIMIT 10",
                 [$userId, $tenantId]
             )
@@ -1521,9 +1540,9 @@ class SmartMatchingEngine
     }
 
     /**
-     * Stand-in listings for a member who has posted none, built from the
-     * skills on their profile: what they can do becomes an offer, what they
-     * would like help with a request. They carry id 0 and are never stored.
+     * Stand-in listings built from the skills on a member's profile, one per
+     * skill: what they can do becomes an offer, what they would like help
+     * with a request. They carry id 0 and are never stored.
      *
      * @return array<int, array<string, mixed>>
      */
@@ -1564,28 +1583,93 @@ class SmartMatchingEngine
             $give = CrossModuleMatchingService::skillNames((string) ($userData['skills'] ?? ''));
         }
 
+        // One stand-in per skill. They used to be merged into a single
+        // listing ("Gardening, Cooking, Computers, Driving, ..."), and every
+        // skill added made each of the others count for less: measured 19 Nov
+        // 2026, a request for garden help scored 70.6 for a member whose only
+        // skill was gardening and 63.2 for one who also had seven others.
         $listings = [];
         foreach (['offer' => $give, 'request' => $want] as $type => $names) {
-            $names = array_values(array_unique($names));
-            if ($names === []) {
-                continue;
+            $seen = [];
+            foreach ($names as $name) {
+                $key = mb_strtolower($name);
+                if (isset($seen[$key])) {
+                    continue;
+                }
+                $seen[$key] = true;
+                if (count($seen) > self::SKILL_STAND_INS_PER_DIRECTION) {
+                    break;
+                }
+                $listings[] = [
+                    'id' => 0,
+                    'user_id' => $userId,
+                    'tenant_id' => $tenantId,
+                    'type' => $type,
+                    'title' => mb_substr($name, 0, 200),
+                    'description' => '',
+                    'category_id' => null,
+                    'category_name' => null,
+                    'service_type' => 'physical_only',
+                    'created_at' => null,
+                    'from_profile_skills' => true,
+                ];
             }
-            $listings[] = [
-                'id' => 0,
-                'user_id' => $userId,
-                'tenant_id' => $tenantId,
-                'type' => $type,
-                'title' => mb_substr(implode(', ', $names), 0, 200),
-                'description' => '',
-                'category_id' => null,
-                'category_name' => null,
-                'service_type' => 'physical_only',
-                'created_at' => null,
-                'from_profile_skills' => true,
-            ];
         }
 
         return $listings;
+    }
+
+    /**
+     * Put first the reason that says WHICH of the member's listings or skills
+     * a match is for, and name both listings of a two-way match.
+     *
+     * A member with three listings and five skills was shown "Skills match
+     * your expertise" and left to work out which. The phrases are stored in
+     * English and translated when read (MatchReasonText).
+     *
+     * @param string[] $reasons
+     * @param array<string, mixed> $myListing the member's listing, or the skill standing in for one
+     * @param array{you_offer?: string, they_offer?: string}|null $exchange
+     * @return string[]
+     */
+    private function reasonsNamingWhatIsAnswered(array $reasons, array $myListing, ?array $exchange, bool $severalToMatchOn): array
+    {
+        $short = static function (string $title): string {
+            $title = trim((string) preg_replace('/\s+/u', ' ', $title));
+
+            return mb_strlen($title) > self::REASON_TITLE_LENGTH
+                ? rtrim(mb_substr($title, 0, self::REASON_TITLE_LENGTH - 1)) . '…'
+                : $title;
+        };
+
+        if (is_array($exchange) && !empty($exchange['you_offer']) && !empty($exchange['they_offer'])
+            && in_array('Mutual exchange possible!', $reasons, true)) {
+            $twoWay = sprintf(
+                'Two-way match: you offer "%s" and they offer "%s"',
+                $short((string) $exchange['you_offer']),
+                $short((string) $exchange['they_offer'])
+            );
+            $reasons = array_values(array_filter($reasons, fn ($r) => $r !== 'Mutual exchange possible!'));
+            array_unshift($reasons, $twoWay);
+
+            return $reasons;
+        }
+
+        $title = $short((string) ($myListing['title'] ?? ''));
+        $fromSkill = !empty($myListing['from_profile_skills']);
+        if ($title === '' || (!$fromSkill && !$severalToMatchOn)) {
+            return array_values($reasons);
+        }
+
+        $isOffer = ($myListing['type'] ?? '') === 'offer';
+        if ($fromSkill) {
+            $lead = $isOffer ? 'For your skill: ' : 'For something you would like help with: ';
+        } else {
+            $lead = $isOffer ? 'For your offer: ' : 'For your request: ';
+        }
+        array_unshift($reasons, $lead . $title);
+
+        return array_values($reasons);
     }
 
     private function getUserPreferences(int $userId): array

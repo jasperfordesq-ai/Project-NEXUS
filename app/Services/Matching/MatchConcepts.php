@@ -37,6 +37,8 @@ final class MatchConcepts
         'gardening' => [
             'garden', 'gardens', 'gardening', 'gardener', 'lawn', 'lawns', 'mow', 'mowing', 'mower', 'lawnmower',
             'grass', 'hedge', 'hedges', 'weeding', 'weeds', 'pruning', 'prune', 'allotment', 'planting', 'plants',
+            'patio', 'paving', 'decking', 'fencing', 'landscaping', 'compost', 'composting', 'tree', 'trees',
+            'shrubs', 'greenhouse', 'strimming', 'strimmer',
             'jardín', 'jardines', 'jardinería', 'césped', 'jardinage', 'jardiner', 'pelouse', 'tondre', 'garten',
             'gartenarbeit', 'rasen', 'rasenmähen', 'giardino', 'giardinaggio', 'jardim', 'jardinagem', 'relva',
             'tuin', 'tuinieren', 'tuinman', 'maaien', 'ogród', 'ogrodzie', 'ogrodnictwo', 'trawa', 'trawy',
@@ -53,14 +55,17 @@ final class MatchConcepts
         // well, so "someone to look after my kids" still meets "babysitter".
         'children' => [
             'kids', 'children', 'child', 'toddler', 'toddlers', 'niños', 'enfants', 'bambini', 'crianças',
-            'kinderen', 'dzieci', 'páistí', 'leanaí',
+            'kinderen', 'dzieci', 'páistí', 'leanaí', 'schoolrun',
             'childcare', 'babysit', 'babysitter', 'babysitting', 'nanny', 'childminder', 'childminding', 'creche',
             'niñera', 'canguro', 'guardería', 'nounou', 'kinderbetreuung', 'babysitten', 'babá', 'oppas',
             'oppassen', 'kinderopvang', 'opiekunka', 'niania',
         ],
+        // "chat" is left out ("call me for a chat" ends many listings of every
+        // kind), and so is "carer": trimmed, it is the word "car".
         'older_people' => [
             'elderly', 'older', 'senior', 'seniors', 'pensioner', 'pensioners', 'companionship', 'companion',
-            'befriending', 'befriend', 'lonely', 'loneliness', 'mayores', 'ancianos', 'acompañamiento', 'compañía',
+            'befriending', 'befriend', 'lonely', 'loneliness', 'listeningear', 'respite', 'dementia',
+            'alzheimers', 'housebound', 'isolated', 'mayores', 'ancianos', 'acompañamiento', 'compañía',
             'âgées', 'compagnie', 'accompagnement', 'senioren', 'begleitung', 'anziani', 'compagnia', 'idosos',
             'companhia', 'ouderen', 'gezelschap', 'seniorzy', 'starsi', 'towarzystwo', 'seanóirí', 'comhluadar',
         ],
@@ -68,9 +73,11 @@ final class MatchConcepts
             'dog', 'dogs', 'puppy', 'cat', 'cats', 'kitten', 'pet', 'pets', 'dogwalking', 'petsitting', 'perro',
             'perros', 'mascota', 'mascotas', 'gato', 'gatos', 'chien', 'chiens', 'hund', 'hunde', 'katze',
             'haustier', 'gatto', 'animali', 'cão', 'cachorro', 'hond', 'honden', 'huisdier', 'kot', 'koty', 'madra',
+            'hamster', 'rabbit', 'rabbits', 'guineapig', 'budgie',
         ],
         'transport' => [
             'lift', 'lifts', 'driving', 'drive', 'driver', 'ride', 'rides', 'transport', 'taxi', 'carpool',
+            'schoolrun',
             'conducir', 'transporte', 'conduire', 'covoiturage', 'chauffeur', 'fahren', 'fahrdienst', 'mitfahrt',
             'mitnehmen', 'passaggio', 'guidare', 'trasporto', 'boleia', 'carona', 'conduzir', 'rijden', 'vervoer',
             'podwózka', 'podwiezienie', 'kierowca', 'síob', 'tiomáint',
@@ -88,29 +95,32 @@ final class MatchConcepts
         ],
         'diy' => [
             'diy', 'handyman', 'shelf', 'shelves', 'shelving', 'drill', 'drilling', 'flatpack', 'assembly',
+            'woodwork', 'woodworking', 'carpentry', 'carpenter',
             'assemble', 'furniture', 'ikea', 'bricolage', 'montaje', 'muebles', 'bricoler', 'meubles', 'heimwerken',
             'möbel', 'aufbauen', 'montaggio', 'mobili', 'montagem', 'móveis', 'klusjes', 'klussen', 'meubels',
             'montaż', 'meble', 'troscán',
         ],
         'plumbing' => [
             'plumber', 'plumbing', 'leak', 'leaking', 'leaky', 'tap', 'taps', 'sink', 'toilet', 'pipe', 'pipes',
-            'drain', 'fontanero', 'fontanería', 'grifo', 'plombier', 'plomberie', 'fuite', 'robinet', 'klempner',
+            'drain', 'radiator', 'radiators', 'fontanero', 'fontanería', 'grifo', 'plombier', 'plomberie', 'fuite', 'robinet', 'klempner',
             'wasserhahn', 'idraulico', 'rubinetto', 'canalizador', 'torneira', 'loodgieter', 'kraan', 'lekkage',
             'hydraulik', 'pluiméir', 'sconna',
         ],
         // "light" and "lights" are left out: "light housework" is not electrical.
         'electrical' => [
             'electrician', 'electrical', 'electric', 'wiring', 'socket', 'sockets', 'fuse', 'lamp', 'lamps',
-            'bulb', 'bulbs', 'lightbulb', 'lightfitting', 'lightswitch', 'electricista',
+            'bulb', 'bulbs', 'lightbulb', 'lightfitting', 'lightswitch', 'rewire', 'rewiring', 'electricista',
             'électricien', 'elektriker', 'elettricista', 'eletricista', 'elektricien', 'elektryk', 'leictreoir',
         ],
         'decorating' => [
-            'painting', 'paint', 'painter', 'decorating', 'decorator', 'wallpaper', 'wallpapering', 'pintar',
+            'painting', 'paint', 'painter', 'decorating', 'decorator', 'wallpaper', 'wallpapering', 'tiling',
+            'tiler', 'tiles', 'grouting', 'plastering', 'plasterer', 'pintar',
             'pintura', 'peindre', 'peinture', 'streichen', 'maler', 'tapezieren', 'imbiancare', 'schilderen',
             'schilder', 'behangen', 'behanger', 'malowanie', 'malarz', 'péinteáil',
         ],
         'moving' => [
-            'moving', 'removal', 'removals', 'packing', 'unpacking', 'mudanza', 'déménagement', 'déménager', 'umzug',
+            'moving', 'removal', 'removals', 'packing', 'unpacking', 'rubbish', 'dump', 'recycling', 'van',
+            'mudanza', 'déménagement', 'déménager', 'umzug',
             'umziehen', 'trasloco', 'mudança', 'verhuizen', 'verhuizing', 'przeprowadzka',
         ],
         'computers' => [
@@ -120,7 +130,9 @@ final class MatchConcepts
             'computador', 'komputer', 'laptopa', 'ríomhaire', 'ríomhaireacht',
             // "mobile" is left out: a "mobile hairdresser" is not tech help.
             'phone', 'phones', 'whatsapp', 'zoom', 'facebook', 'website', 'websites', 'app', 'apps', 'password',
-            'passwords', 'broadband', 'digital', 'digitale', 'teléfono', 'téléphone', 'telefon', 'telefono',
+            'passwords', 'broadband', 'digital', 'digitale', 'socialmedia', 'instagram', 'youtube',
+            'spreadsheet', 'spreadsheets', 'excel', 'powerpoint', 'gmail', 'skype', 'coding', 'programming',
+            'onlinebanking', 'teléfono', 'téléphone', 'telefon', 'telefono',
             'telefone', 'telefoon',
         ],
         // Language help in general (see GENERIC): it does not say WHICH
@@ -137,6 +149,7 @@ final class MatchConcepts
             'german', 'alemán', 'allemand', 'deutsch', 'tedesco', 'alemão', 'duits', 'niemiecki', 'gearmáinis',
             'italian', 'italiano', 'italien', 'italienisch', 'italiaans', 'włoski', 'iodáilis',
             'irish', 'gaelic', 'gaeilge', 'irlandés', 'irlandais', 'irisch', 'irlandese', 'iers', 'irlandzki',
+            'signlanguage', 'isl', 'bsl',
         ],
         'lang_english' => ['english', 'inglés', 'anglais', 'englisch', 'inglese', 'inglês', 'engels', 'angielski', 'béarla'],
         'lang_french' => ['french', 'francés', 'français', 'französisch', 'francese', 'francês', 'frans', 'francuski', 'fraincis'],
@@ -144,6 +157,7 @@ final class MatchConcepts
         'lang_german' => ['german', 'alemán', 'allemand', 'deutsch', 'tedesco', 'alemão', 'duits', 'niemiecki', 'gearmáinis'],
         'lang_italian' => ['italian', 'italiano', 'italien', 'italienisch', 'italiaans', 'włoski', 'iodáilis'],
         'lang_irish' => ['irish', 'gaelic', 'gaeilge', 'irlandés', 'irlandais', 'irisch', 'irlandese', 'iers', 'irlandzki'],
+        'lang_sign' => ['signlanguage', 'isl', 'bsl'],
         // HOW help is given (see GENERIC): a lesson can be in anything, so
         // "guitar lessons" and "French lessons" are not the same kind of help.
         'teaching' => [
@@ -157,7 +171,9 @@ final class MatchConcepts
         // School subjects and school work: a kind of help in its own right.
         // The words for private school tuition are here and in 'teaching'.
         'schoolwork' => [
-            'homework', 'exam', 'exams', 'maths', 'math', 'mathematics', 'grinds', 'deberes', 'matemáticas',
+            'homework', 'exam', 'exams', 'maths', 'math', 'mathematics', 'grinds', 'literacy', 'spelling',
+            'phonics', 'science', 'physics', 'chemistry', 'biology', 'algebra', 'revision', 'gcse', 'leavingcert',
+            'juniorcert', 'deberes', 'matemáticas',
             'devoirs', 'nachhilfe', 'hausaufgaben', 'mathe', 'ripetizioni', 'compiti', 'explicações', 'bijles',
             'huiswerk', 'korepetycje',
         ],
@@ -169,13 +185,15 @@ final class MatchConcepts
         ],
         'arts' => [
             'art', 'arts', 'craft', 'crafts', 'crafting', 'drawing', 'sketching', 'watercolour', 'pottery',
+            'graphic', 'graphics', 'graphicdesign', 'logo', 'logos', 'illustration',
             'manualidades', 'dibujo', 'artisanat', 'dessin', 'basteln', 'zeichnen', 'kunst', 'disegno',
             'artigianato', 'artesanato', 'desenho', 'knutselen', 'tekenen', 'rękodzieło', 'rysunek', 'ealaín',
             'ceardaíocht',
         ],
         'sewing' => [
             'sewing', 'sew', 'alterations', 'mending', 'mend', 'hemming', 'knitting', 'knit', 'crochet',
-            'embroidery', 'quilting', 'costura', 'coser', 'arreglos', 'tejer', 'couture', 'coudre', 'retouches',
+            'embroidery', 'quilting', 'dressmaking', 'dressmaker', 'curtainmaking', 'tailoring', 'tailor',
+            'seamstress', 'upholstery', 'upholsterer', 'darning', 'costura', 'coser', 'arreglos', 'tejer', 'couture', 'coudre', 'retouches',
             'tricot', 'tricoter', 'nähen', 'stricken', 'häkeln', 'cucito', 'cucire', 'uncinetto', 'tricô', 'crochê',
             'naaien', 'breien', 'szycie', 'szydełkowanie', 'fuáil', 'cniotáil',
         ],
@@ -187,18 +205,21 @@ final class MatchConcepts
         ],
         'fitness' => [
             'fitness', 'exercise', 'exercises', 'gym', 'jogging', 'hiking', 'swimming', 'sport', 'sports',
-            'pilates', 'dance', 'dancing', 'ejercicio', 'deporte', 'gimnasio', 'baile', 'exercice', 'danse',
+            'pilates', 'dance', 'dancing', 'rambling', 'hillwalking', 'aerobics', 'zumba', 'keepfit', 'badminton',
+            'tennis', 'golf', 'football', 'ejercicio', 'deporte', 'gimnasio', 'baile', 'exercice', 'danse',
             'tanzen', 'esercizio', 'ginnastica', 'palestra', 'danza', 'exercício', 'ginásio', 'dança', 'sporten',
             'dansen', 'ćwiczenia', 'taniec', 'aclaíocht', 'damhsa', 'spórt',
         ],
         'wellbeing' => [
-            'yoga', 'meditation', 'mindfulness', 'massage', 'reiki', 'relaxation', 'meditación', 'masaje',
+            'yoga', 'meditation', 'mindfulness', 'massage', 'reiki', 'relaxation', 'reflexology', 'taichi',
+            'aromatherapy', 'qigong', 'meditación', 'masaje',
             'méditation', 'entspannung', 'meditazione', 'massaggio', 'meditação', 'massagem', 'meditatie',
             'ontspanning', 'medytacja', 'masaż',
         ],
         'cooking' => [
             'cooking', 'cook', 'meal', 'meals', 'baking', 'bake', 'cake', 'cakes', 'bread', 'dinner', 'dinners',
-            'lunch', 'recipe', 'recipes', 'chef', 'cocinar', 'comida', 'hornear', 'repostería', 'recetas',
+            'lunch', 'recipe', 'recipes', 'chef', 'chutney', 'marmalade', 'soup', 'catering', 'scones', 'cookery',
+            'cocinar', 'comida', 'hornear', 'repostería', 'recetas',
             'cuisiner', 'repas', 'pâtisserie', 'recette', 'kochen', 'backen', 'rezept', 'cucinare', 'pasti',
             'ricette', 'cozinhar', 'bolos', 'refeição', 'receitas', 'koken', 'bakken', 'maaltijd', 'gotowanie',
             'pieczenie', 'posiłki', 'cócaireacht', 'bácáil', 'béile',
@@ -206,13 +227,15 @@ final class MatchConcepts
         'cleaning' => [
             'cleaning', 'clean', 'cleaner', 'hoovering', 'hoover', 'vacuum', 'vacuuming', 'dusting', 'housework',
             'tidy', 'tidying', 'declutter', 'decluttering', 'laundry', 'ironing', 'iron', 'clearing', 'clearance',
-            'gutter', 'gutters', 'limpieza', 'limpiar', 'planchar',
+            'gutter', 'gutters', 'valet', 'valeting', 'carwash', 'powerwash', 'powerwashing', 'jetwash',
+            'limpieza', 'limpiar', 'planchar',
             'colada', 'ménage', 'nettoyage', 'nettoyer', 'repassage', 'putzen', 'reinigung', 'bügeln', 'wäsche',
             'aufräumen', 'pulizia', 'pulire', 'stirare', 'bucato', 'limpeza', 'limpar', 'schoonmaken', 'poetsen',
             'strijken', 'sprzątanie', 'prasowanie', 'pranie', 'glanadh', 'iarnáil',
         ],
         'paperwork' => [
-            'paperwork', 'letters', 'admin', 'administration', 'bills', 'typing', 'filing', 'papeleo',
+            'paperwork', 'letters', 'admin', 'administration', 'bills', 'typing', 'filing', 'formfilling',
+            'applications', 'welfare', 'pension', 'passport', 'visa', 'papeleo',
             'formularios', 'trámites', 'formulaires', 'démarches', 'formulare', 'papierkram', 'behörden', 'moduli',
             'pratiche', 'burocrazia', 'papelada', 'formulários', 'papierwerk', 'formulieren', 'administratie',
             'formularze', 'foirmeacha', 'páipéarachas',
@@ -232,7 +255,7 @@ final class MatchConcepts
             'buiséad', 'cáin',
         ],
         'photography' => [
-            'photography', 'photo', 'photos', 'photographer', 'camera', 'fotografía', 'fotos', 'photographie',
+            'photography', 'photo', 'photos', 'photographer', 'camera', 'filming', 'videography', 'fotografía', 'fotos', 'photographie',
             'fotografie', 'fotografia', 'zdjęcia', 'grianghrafadóireacht',
         ],
         'writing' => [
@@ -250,9 +273,21 @@ final class MatchConcepts
             'bicicletta', 'fiets', 'rower', 'rothar',
         ],
         'car_repair' => [
-            'mechanic', 'vehicle', 'tyre', 'tyres', 'tire', 'tires', 'mecánico', 'mécanicien', 'werkstatt',
+            'mechanic', 'vehicle', 'tyre', 'tyres', 'tire', 'tires', 'jumpstart', 'jumpleads', 'engine', 'brakes',
+            'carrepair', 'carrepairs', 'carservice', 'mecánico', 'mécanicien', 'werkstatt',
             'meccanico', 'mecânico', 'monteur', 'samochód', 'mechanik', 'gluaisteán',
         ],
+        'housesitting' => ['housesitting', 'housesit', 'housesitter'],
+        'games' => [
+            'chess', 'boardgames', 'boardgame', 'bridge', 'scrabble', 'bingo', 'quiz', 'jigsaw', 'jigsaws',
+            'draughts', 'dominoes',
+        ],
+        // Help running a group or an event.
+        'organising' => [
+            'fundraising', 'fundraiser', 'leaflet', 'leaflets', 'leafleting', 'stewarding', 'steward',
+            'marshalling', 'minutetaking', 'raffle',
+        ],
+        'first_aid' => ['firstaid', 'cpr', 'defibrillator'],
     ];
 
     /**
@@ -277,6 +312,7 @@ final class MatchConcepts
         ['fitness', 'wellbeing'],
         ['arts', 'sewing'],
         ['bikes', 'car_repair'],
+        ['pets', 'housesitting'],
         ['paperwork', 'money'],
         ['paperwork', 'writing'],
         ['writing', 'translation'],

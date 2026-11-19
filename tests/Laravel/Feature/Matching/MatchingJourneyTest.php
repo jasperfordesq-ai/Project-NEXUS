@@ -369,7 +369,103 @@ class MatchingJourneyTest extends TestCase
 
         $this->assertNotNull($match);
         $this->assertSame('mutual', $match['match_type'], 'Found in what the four listings say, though no two share a category');
-        $this->assertContains('Mutual exchange possible!', $match['match_reasons']);
+        $this->assertSame(
+            'Two-way match: you offer “French conversation” and they offer “Lawn mowing”',
+            $match['match_reasons'][0],
+            'The member is told which two listings make it two-way, not only that one is possible'
+        );
+    }
+
+    public function test_a_match_says_which_of_the_members_listings_it_is_for(): void
+    {
+        $me = $this->member();
+        $this->listingFor($me, 'offer', $this->category('Home and garden')->id, [
+            'title' => 'Lawn mowing', 'description' => 'I have my own mower.',
+        ]);
+        $this->listingFor($me, 'offer', $this->category('Music')->id, [
+            'title' => 'Guitar lessons', 'description' => 'Beginners welcome, acoustic or electric.',
+        ]);
+        $wanted = $this->listingFor($this->member(), 'request', $this->category('Learning')->id, [
+            'title' => 'Guitar teacher wanted', 'description' => 'I would like to learn to play the guitar.',
+        ]);
+
+        $data = $this->matchesFor($me, 'modules=listings');
+        $match = collect($data['matches'])->firstWhere('listing_id', $wanted->id);
+
+        $this->assertNotNull($match);
+        $this->assertSame('For your offer: Guitar lessons', $match['match_reasons'][0]);
+    }
+
+    public function test_a_member_with_a_listing_is_still_matched_by_the_skills_on_their_profile(): void
+    {
+        // One request posted, and the skills on the profile stopped counting:
+        // they were only read for a member with no listing at all.
+        $me = $this->member();
+        $this->listingFor($me, 'request', $this->category('Technology')->id, [
+            'title' => 'Help setting up my new phone', 'description' => 'I cannot get my email working on it.',
+        ]);
+        DB::table('user_skills')->insert([
+            'user_id' => $me->id, 'tenant_id' => $this->testTenantId, 'skill_name' => 'Gardening',
+            'proficiency' => 'advanced', 'is_offering' => 1, 'is_requesting' => 0,
+        ]);
+        $needsGardener = $this->listingFor($this->member(), 'request', $this->category('Home and garden')->id, [
+            'title' => 'Help with my garden', 'description' => 'Weeding and mowing once a fortnight.',
+        ]);
+
+        $data = $this->matchesFor($me, 'modules=listings');
+        $match = collect($data['matches'])->firstWhere('listing_id', $needsGardener->id);
+
+        $this->assertNotNull($match, 'A request for something the member says they can do');
+        $this->assertSame('For your skill: Gardening', $match['match_reasons'][0]);
+        $this->assertTrue($data['meta']['has_active_listings']);
+    }
+
+    public function test_having_more_skills_does_not_lower_the_match_for_one_of_them(): void
+    {
+        // The skills used to be merged into one stand-in listing, so each
+        // skill a member added made every other one count for less.
+        $request = $this->listingFor($this->member(), 'request', $this->category('Home and garden')->id, [
+            'title' => 'Help with my garden', 'description' => 'Weeding and mowing once a fortnight.',
+        ]);
+        $skill = fn (User $member, string $name) => DB::table('user_skills')->insert([
+            'user_id' => $member->id, 'tenant_id' => $this->testTenantId, 'skill_name' => $name,
+            'proficiency' => 'intermediate', 'is_offering' => 1, 'is_requesting' => 0,
+        ]);
+        $oneSkill = $this->member();
+        $skill($oneSkill, 'Gardening');
+        $manySkills = $this->member();
+        foreach (['Gardening', 'Cooking', 'Computers', 'Driving', 'Sewing', 'Dog walking', 'Befriending', 'Painting'] as $name) {
+            $skill($manySkills, $name);
+        }
+
+        $scoreFor = function (User $member) use ($request): float {
+            $match = collect($this->matchesFor($member, 'modules=listings&min_score=0')['matches'])
+                ->firstWhere('listing_id', $request->id);
+            $this->assertNotNull($match);
+
+            return (float) $match['match_score'];
+        };
+
+        $one = $scoreFor($oneSkill);
+        $many = $scoreFor($manySkills);
+
+        $this->assertSame($one, $many);
+        $this->assertGreaterThanOrEqual(75.0, $one, 'A skill has no category; that is unknown, not a different category');
+    }
+
+    public function test_the_members_own_expired_listing_is_not_matched_on(): void
+    {
+        $category = $this->category();
+        $me = $this->member();
+        $this->listingFor($me, 'offer', $category->id, ['expires_at' => now()->subDay()]);
+        $this->listingFor($this->member(), 'request', $category->id);
+
+        $data = $this->matchesFor($me, 'modules=listings&min_score=0');
+
+        $this->assertFalse($data['meta']['has_active_listings'], 'The expiry job runs on a timer; until it does, the listing still reads "active"');
+        foreach ($data['matches'] as $match) {
+            $this->assertSame('cold_start', $match['match_type'], 'Only browsing suggestions: nothing of theirs is live to match on');
+        }
     }
 
     public function test_sharing_categories_does_not_make_a_two_way_match(): void
@@ -789,6 +885,78 @@ class MatchingJourneyTest extends TestCase
         $match = collect($data['matches'])->firstWhere('opportunity_id', $fits);
         $this->assertSame($orgId, $match['organization_id']);
         $this->assertGreaterThanOrEqual(40, $match['match_score']);
+    }
+
+    public function test_a_volunteering_opportunity_is_matched_through_an_offer_the_member_posted(): void
+    {
+        // What a member can do was read from their profile skills only: one
+        // with a listing and an empty skills list was matched with nothing.
+        $this->setFeatures(['volunteering' => true]);
+        $me = $this->member(['skills' => '', 'bio' => '']);
+        $this->listingFor($me, 'offer', $this->category('Music')->id, [
+            'title' => 'Guitar lessons', 'description' => 'I enjoy meeting local people.',
+        ]);
+        $orgId = DB::table('vol_organizations')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'user_id' => $this->member()->id, 'name' => 'Day Centre ' . uniqid(),
+            'description' => 'A day centre.', 'status' => 'approved', 'created_at' => now(),
+        ]);
+        $opportunity = fn (array $attrs) => DB::table('vol_opportunities')->insertGetId(array_merge([
+            'tenant_id' => $this->testTenantId, 'organization_id' => $orgId,
+            'is_active' => 1, 'status' => 'open', 'created_at' => now(), 'skills_needed' => '',
+        ], $attrs));
+        $music = $opportunity(['title' => 'Sing-along leader', 'description' => 'Play the guitar for our residents on Fridays.']);
+        $oneWord = $opportunity(['title' => 'Kitchen helper', 'description' => 'Serve lunch to local families.']);
+
+        $data = $this->matchesFor($me, 'modules=volunteering&min_score=0');
+        $ids = array_column(array_filter($data['matches'], fn ($m) => $m['module'] === 'volunteering'), 'opportunity_id');
+
+        $this->assertContains($music, $ids, 'The same kind of help as something the member offers');
+        $this->assertNotContains($oneWord, $ids, 'One ordinary word in common ("local") is not a fit');
+    }
+
+    public function test_an_event_is_offered_for_what_the_member_does_not_for_a_word_in_their_profile(): void
+    {
+        $this->setFeatures(['events' => true]);
+        // Events have their own categories, separate from the listing ones.
+        $eventCategory = Category::factory()->create([
+            'tenant_id' => $this->testTenantId, 'type' => 'event', 'name' => 'Social ' . random_int(10000000, 99999999),
+        ]);
+        $base = [
+            'user_id' => $this->member()->id,
+            'category_id' => $eventCategory->id,
+            'status' => 'active',
+            'publication_status' => 'published',
+            'operational_status' => 'scheduled',
+            'start_time' => now()->addDays(3),
+            'start_date' => now()->addDays(3),
+            'end_time' => now()->addDays(3)->addHours(2),
+            'max_attendees' => null,
+        ];
+        $gardening = Event::factory()->forTenant($this->testTenantId)->create(array_merge($base, [
+            'title' => 'Seed swap', 'description' => 'Bring seeds and cuttings, and meet other gardeners.',
+        ]));
+        $coffee = Event::factory()->forTenant($this->testTenantId)->create(array_merge($base, [
+            'title' => 'Coffee morning', 'description' => 'Meet local people from your community.',
+        ]));
+
+        $eventIds = function (User $member): array {
+            $data = $this->matchesFor($member, 'modules=events&min_score=0');
+
+            return array_column(array_filter($data['matches'], fn ($m) => $m['module'] === 'event'), 'event_id');
+        };
+
+        // A member who offers gardening, in a listing; no profile skills.
+        $gardener = $this->member(['skills' => '', 'bio' => '']);
+        $this->listingFor($gardener, 'offer', $this->category('Home and garden')->id, [
+            'title' => 'Lawn mowing', 'description' => 'I have my own mower.',
+        ]);
+        $forGardener = $eventIds($gardener);
+        $this->assertContains($gardening->id, $forGardener, 'The same kind of help as a listing of theirs');
+        $this->assertNotContains($coffee->id, $forGardener);
+
+        // A member whose profile text merely uses the same everyday words.
+        $chatty = $this->member(['skills' => '', 'bio' => 'I love to meet local people in my community.']);
+        $this->assertSame([], $eventIds($chatty), 'Ordinary words in a profile are not interests');
     }
 
     public function test_a_dismissed_group_stays_dismissed_even_when_nothing_was_cached(): void

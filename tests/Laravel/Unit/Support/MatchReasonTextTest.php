@@ -56,6 +56,34 @@ class MatchReasonTextTest extends TestCase
         $this->assertSame(['Verwandte Kategorie: Gartenarbeit', 'Passt zu Ihrem Interesse an Gartenarbeit'], $mapped);
     }
 
+    public function test_the_readers_own_listing_or_skill_is_named_in_their_language(): void
+    {
+        $out = LocaleContext::withLocale('de', fn () => MatchReasonText::localize([
+            'For your request: Help with my garden: weeding',
+            'For your offer: Guitar lessons',
+            'For your skill: Gardening',
+            'For something you would like help with: Sewing',
+        ]));
+
+        $this->assertSame([
+            'Zu Ihrem Gesuch: Help with my garden: weeding',
+            'Zu Ihrem Angebot: Guitar lessons',
+            'Zu Ihrer Fähigkeit: Gardening',
+            'Zu etwas, wobei Sie sich Hilfe wünschen: Sewing',
+        ], $out);
+    }
+
+    public function test_a_two_way_match_names_both_listings(): void
+    {
+        $stored = ['Two-way match: you offer "Lawn mowing" and they offer "Guitar lessons"'];
+
+        $english = LocaleContext::withLocale('en', fn () => MatchReasonText::localize($stored));
+        $german = LocaleContext::withLocale('de', fn () => MatchReasonText::localize($stored));
+
+        $this->assertSame(['Two-way match: you offer “Lawn mowing” and they offer “Guitar lessons”'], $english);
+        $this->assertSame(['Gegenseitige Hilfe: Sie bieten „Lawn mowing“, die andere Person bietet „Guitar lessons“'], $german);
+    }
+
     public function test_a_distance_uses_the_readers_decimal_separator(): void
     {
         $out = LocaleContext::withLocale('de', fn () => MatchReasonText::localize(['Very close: 0.8 km away']));

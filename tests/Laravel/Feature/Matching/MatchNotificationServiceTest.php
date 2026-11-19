@@ -160,6 +160,31 @@ class MatchNotificationServiceTest extends TestCase
             ->where('matched_user_id', $gardener->id)->exists());
     }
 
+    public function test_a_member_with_a_listing_is_alerted_through_a_skill_too(): void
+    {
+        // They have posted a request of their own, so they were only ever
+        // considered for offers answering it. Their profile says they garden.
+        $this->setMatchingConfig(['hot_match_threshold' => 75]);
+        $gardener = $this->member();
+        $this->listingFor($gardener, 'request', $this->category('Technology'), [
+            'title' => 'Help setting up my new phone', 'description' => 'I cannot get my email working on it.',
+            'created_at' => now()->subDays(10),
+        ]);
+        DB::table('user_skills')->insert([
+            'user_id' => $gardener->id, 'tenant_id' => $this->testTenantId, 'skill_name' => 'Gardening',
+            'proficiency' => 'advanced', 'is_offering' => 1, 'is_requesting' => 0,
+        ]);
+        $posted = $this->listingFor($this->member(), 'request', $this->category('Home and garden'), [
+            'title' => 'Help with my garden', 'description' => 'Weeding and mowing once a fortnight.',
+        ]);
+
+        $this->service()->notifyForNewListings();
+
+        $this->assertCount(1, $this->notices($gardener, 'hot_match'));
+        $this->assertTrue(DB::table('match_notification_sent')->where('listing_id', $posted->id)
+            ->where('matched_user_id', $gardener->id)->exists());
+    }
+
     public function test_no_alert_when_the_member_turned_them_off_paused_matching_or_asked_for_no_notifications(): void
     {
         $category = $this->category();

@@ -51,6 +51,14 @@ final class MatchReasonText
         'Mutual connections' => 'mutual_connections',
     ];
 
+    /** "<lead>: <the reader's listing title or skill>" => translation key. */
+    private const NAMED = [
+        'For your request' => 'for_request',
+        'For your offer' => 'for_offer',
+        'For your skill' => 'for_skill',
+        'For something you would like help with' => 'for_wanted_skill',
+    ];
+
     /**
      * @param mixed $reasons The stored list (array, JSON string or null).
      * @param array<string, string> $categoryNames Stored category name => name to show,
@@ -90,6 +98,17 @@ final class MatchReasonText
             $key = $m[1] === 'Same' ? 'same_category' : 'related_category';
 
             return self::text($key, ['category' => $category], $reason);
+        }
+
+        // Which of the reader's own listings or profile skills the match is
+        // for (SmartMatchingEngine::reasonsNamingWhatIsAnswered). The title
+        // is the member's own words and is carried across as written.
+        if (preg_match('/^(' . implode('|', array_map('preg_quote', array_keys(self::NAMED))) . '): (.+)$/us', $reason, $m) === 1) {
+            return self::text(self::NAMED[$m[1]], ['title' => $m[2]], $reason);
+        }
+
+        if (preg_match('/^Two-way match: you offer "(.+)" and they offer "(.+)"$/us', $reason, $m) === 1) {
+            return self::text('two_way', ['you' => $m[1], 'they' => $m[2]], $reason);
         }
 
         if (preg_match('/^Matches your interest in (.+)$/u', $reason, $m) === 1) {

@@ -24,5 +24,10 @@
   "recommended_for_you": "Recommandé pour vous",
   "similar_interests": "Centres d’intérêt communs",
   "mutual_connections": "Contacts en commun",
-  "interest_in_category": "Correspond à votre intérêt pour {{category}}"
+  "interest_in_category": "Correspond à votre intérêt pour {{category}}",
+  "for_request": "Pour votre demande : {{title}}",
+  "for_offer": "Pour votre offre : {{title}}",
+  "for_skill": "Pour votre compétence : {{title}}",
+  "for_wanted_skill": "Pour une aide que vous aimeriez recevoir : {{title}}",
+  "two_way": "Échange réciproque : vous proposez « {{you}} » et l'autre personne propose « {{they}} »"
 }

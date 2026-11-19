@@ -266,9 +266,11 @@ class MatchNotificationService
      *  - one with a live listing of the opposite kind, in the same category
      *    first and then in any category (the engine now matches across
      *    categories, so a category filter here would hide real matches);
-     *  - one with no listing at all whose profile skills point the right way
-     *    (a new request needs someone who can do it; a new offer someone who
-     *    wants it). The engine matches such members by their skills.
+     *  - one whose profile skills point the right way (a new request needs
+     *    someone who can do it; a new offer someone who wants it), whether
+     *    or not they have posted anything. The engine matches every member
+     *    by their skills as well as their listings. Until 19 Nov 2026 only a
+     *    member with no listing at all was considered through their skills.
      *
      * @return int[]
      */
@@ -301,12 +303,8 @@ class MatchNotificationService
                    EXISTS (SELECT 1 FROM listings l2
                            WHERE l2.user_id = u.id AND l2.tenant_id = u.tenant_id
                              AND l2.status = 'active' AND l2.type = ?)
-                   OR (
-                       NOT EXISTS (SELECT 1 FROM listings l5
-                                   WHERE l5.user_id = u.id AND l5.tenant_id = u.tenant_id AND l5.status = 'active')
-                       AND (EXISTS (SELECT 1 FROM user_skills us
-                                    WHERE us.tenant_id = u.tenant_id AND us.user_id = u.id AND {$skillDirection}){$profileText})
-                   )
+                   OR EXISTS (SELECT 1 FROM user_skills us
+                              WHERE us.tenant_id = u.tenant_id AND us.user_id = u.id AND {$skillDirection}){$profileText}
                )
                AND NOT EXISTS (
                    SELECT 1 FROM match_notification_sent s

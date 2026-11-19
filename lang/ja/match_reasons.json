@@ -24,5 +24,10 @@
   "recommended_for_you": "あなたへのおすすめ",
   "similar_interests": "似た興味",
   "mutual_connections": "共通のつながり",
-  "interest_in_category": "{{category}}への興味に合っています"
+  "interest_in_category": "{{category}}への興味に合っています",
+  "for_request": "あなたの依頼: {{title}}",
+  "for_offer": "あなたの提供: {{title}}",
+  "for_skill": "あなたのスキル: {{title}}",
+  "for_wanted_skill": "手伝ってほしいこと: {{title}}",
+  "two_way": "お互いに助け合えます: あなたは「{{you}}」を、相手は「{{they}}」を提供"
 }

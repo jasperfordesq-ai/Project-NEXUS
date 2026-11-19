@@ -50,6 +50,17 @@ class MatchQualityBenchmarkTest extends TestCase
     public static function genuinePairs(): array
     {
         return [
+            'dirty car / valeting' => ['My car needs a good clean inside', 13, 'Car valeting', 13],
+            'radiators / plumber (other category)' => ['Bleed my radiators', 1, 'Plumber: taps, sinks and toilets', 10],
+            'tiling / tiler (other category)' => ['Tiling a small bathroom', 1, 'Tiler available', 10],
+            'dressmaker / alterations' => ['Dressmaker needed for a wedding outfit', 7, 'Sewing and clothes alterations', 7],
+            'spreadsheet / computer lessons (other category)' => ['Help with an Excel spreadsheet', 6, 'Computer lessons for beginners', 3],
+            'chess / board games' => ['Chess partner wanted', 11, 'Board games afternoon', 11],
+            'school run / lifts (other category)' => ['Help with the school run', 2, 'I can drive you: lifts and errands', 4],
+            'dementia / befriending' => ['Sit with my mother who has dementia', 11, 'Befriending visits', 11],
+            'rubbish run / man with a van (other category)' => ['Rubbish run to the dump', 10, 'Man with a van, removals', 4],
+            'sign language / ISL classes' => ['Learn sign language', 5, 'ISL classes for beginners', 5],
+            'science revision / tutor' => ['Help with science revision', 5, 'Maths and science tutor', 5],
             'lawn / garden help' => ['Need someone to mow my lawn', 1, 'Garden help: mowing, weeding and hedge trimming', 1],
             'babysitter / childcare' => ['Babysitter needed on Friday evenings', 2, 'Childcare - I can mind your kids', 2],
             'kids after school / babysitter (other category)' => ['Someone to look after my kids after school', 2, 'Experienced babysitter', 11],
@@ -106,6 +117,11 @@ class MatchQualityBenchmarkTest extends TestCase
     public static function differentKindsOfHelp(): array
     {
         return [
+            'puncture / car valeting' => ['Fix a puncture on my bike', 13, 'Car valeting', 13],
+            'chess / fundraising' => ['Chess partner wanted', 11, 'Fundraising help for our club', 11],
+            'sign language / French' => ['Learn sign language', 5, 'French lessons for beginners', 5],
+            'tiling / tree pruning' => ['Tiling a small bathroom', 1, 'Tree pruning and hedge cutting', 1],
+            'first aid / yoga' => ['First aid training', 8, 'Yoga for beginners', 8],
             'leaking tap / garden help' => ['Leaking tap in the kitchen', 1, 'Garden help: mowing, weeding and hedge trimming', 1],
             'shelves / ironing' => ['Help putting up shelves', 1, 'Ironing and laundry help', 1],
             'babysitter / maths tutor' => ['Babysitter needed on Friday evenings', 2, 'Maths tutor for teenagers', 2],

@@ -24,5 +24,10 @@
   "recommended_for_you": "موصى به لك",
   "similar_interests": "اهتمامات مشابهة",
   "mutual_connections": "معارف مشتركون",
-  "interest_in_category": "يتوافق مع اهتمامك بـ {{category}}"
+  "interest_in_category": "يتوافق مع اهتمامك بـ {{category}}",
+  "for_request": "لطلبك: {{title}}",
+  "for_offer": "لعرضك: {{title}}",
+  "for_skill": "لمهارتك: {{title}}",
+  "for_wanted_skill": "لشيء تودّ الحصول على مساعدة فيه: {{title}}",
+  "two_way": "تبادل متبادل: أنت تعرض «{{you}}» والطرف الآخر يعرض «{{they}}»"
 }

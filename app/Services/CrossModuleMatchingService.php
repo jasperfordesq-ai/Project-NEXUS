@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use App\Support\UserDisplayName;
 use App\Support\Matching\MatchReasonText;
 use App\Services\Matching\KeywordExtractor;
+use App\Services\Matching\MatchConcepts;
 use App\Services\Translation\TaxonomyNameLocalizer;
 
 /**
@@ -273,6 +274,13 @@ class CrossModuleMatchingService
      * visibility rule as the volunteering pages
      * (VolunteerMatchingService::suggestOpportunities), and offers one only
      * when there is real overlap.
+     *
+     * "Real" means a skill the opportunity asks for, the same kind of help
+     * (MatchConcepts), or two words in common. One shared word of any sort
+     * used to be enough ("local", "people", "group"). And what the member
+     * can do is read from the offers
+     * they have posted as well as their profile: a member with a listing
+     * "Guitar lessons" and an empty skills list was matched with nothing.
      */
     private function getVolunteeringMatches(int $userId, int $tenantId, int $minScore, int $limit): array
     {
@@ -325,15 +333,19 @@ class CrossModuleMatchingService
                     ? count(array_intersect($needed, $memberKeywords)) / count($needed)
                     : 0.0;
                 $wording = KeywordExtractor::extract(($opp->title ?? '') . ' ' . ($opp->description ?? ''));
-                $wordingOverlap = count(array_intersect($wording, $memberKeywords));
+                [$kindsShared, $wordsShared] = self::overlap($wording, $memberKeywords);
 
-                if ($skillShare <= 0.0 && $wordingOverlap === 0) {
+                if ($skillShare <= 0.0 && $kindsShared === 0 && $wordsShared < 2) {
                     continue;
                 }
 
-                $score = $skillShare > 0.0
-                    ? 55.0 + 40.0 * $skillShare
-                    : min(60.0, 40.0 + 5.0 * $wordingOverlap);
+                if ($skillShare > 0.0) {
+                    $score = 55.0 + 40.0 * $skillShare;
+                } elseif ($kindsShared > 0) {
+                    $score = min(70.0, 50.0 + 5.0 * $wordsShared);
+                } else {
+                    $score = min(55.0, 40.0 + 5.0 * $wordsShared);
+                }
                 $score = round(min(95.0, $score), 1);
 
                 if ($score < $minScore) {
@@ -378,7 +390,15 @@ class CrossModuleMatchingService
 
     /**
      * Event matches: upcoming events the member may see and has not answered,
-     * that share a category with their listings or wording with their skills.
+     * that are about something the member does or wants: the same category
+     * as one of their listings, the same kind of help (MatchConcepts) as a
+     * skill or listing of theirs, or two words in common with them.
+     *
+     * Until 19 Nov 2026 one word shared between the event and the member's
+     * skills or profile text was enough ("community", "people", "local"),
+     * and the member's own listings were not read at all. The category test
+     * rarely helps: events have their own categories, separate from the
+     * listing ones.
      *
      * The previous query selected `events.event_date` and joined
      * `event_attendees`. Neither exists (the column is `start_time`, the
@@ -415,7 +435,7 @@ class CrossModuleMatchingService
             }
 
             $userCategoryIds = $this->getUserCategoryIds($userId, $tenantId);
-            $userSkills = $this->getUserSkillKeywords($userId, $tenantId);
+            $interests = $this->getMemberInterestKeywords($userId, $tenantId);
 
             $matches = [];
             foreach ($events as $event) {
@@ -431,18 +451,19 @@ class CrossModuleMatchingService
 
                 $categoryHit = !empty($event['category_id'])
                     && in_array((int) $event['category_id'], $userCategoryIds, true);
-                $textScore = $this->scoreTextRelevance(
-                    $userSkills,
-                    ($event['title'] ?? '') . ' ' . ($event['description'] ?? '')
+                [$kindsShared, $wordsShared] = self::overlap(
+                    KeywordExtractor::extract(($event['title'] ?? '') . ' ' . ($event['description'] ?? '')),
+                    $interests
                 );
 
                 // A match needs a reason. Every upcoming event used to get a
                 // base score and the words "matches your interests".
-                if (!$categoryHit && $textScore <= 0) {
+                if (!$categoryHit && $kindsShared === 0 && $wordsShared < 2) {
                     continue;
                 }
 
-                $score = ($categoryHit ? 60.0 : 40.0) + $textScore * 0.3;
+                $score = ($categoryHit ? 60.0 : ($kindsShared > 0 ? 55.0 : 42.0))
+                    + min(15.0, 5.0 * $kindsShared + 3.0 * $wordsShared);
 
                 $startsAt = $event['start_time'] ?? null;
                 $startsAtTs = $startsAt ? strtotime((string) $startsAt) : false;
@@ -496,9 +517,15 @@ class CrossModuleMatchingService
     // =========================================================================
 
     /**
-     * Get the user's skill keywords extracted from their profile.
+     * What the member does and wants, as keywords: their profile skills in
+     * both directions, and every listing they have live. From their profile
+     * text only the KINDS of help it mentions are kept ("retired nurse, keen
+     * gardener" gives health and gardening): its ordinary words are prose
+     * about a person, and matched as keywords they met almost any event.
+     *
+     * @return string[]
      */
-    private function getUserSkillKeywords(int $userId, int $tenantId): array
+    private function getMemberInterestKeywords(int $userId, int $tenantId): array
     {
         try {
             $user = DB::table('users')
@@ -506,25 +533,98 @@ class CrossModuleMatchingService
                 ->where('tenant_id', $tenantId)
                 ->select('skills', 'bio')
                 ->first();
-
             if (!$user) {
                 return [];
             }
 
-            return $this->smartMatchingEngine->extractKeywords(
-                ($user->skills ?? '') . ' ' . ($user->bio ?? '')
+            $skillNames = DB::table('user_skills')
+                ->where('tenant_id', $tenantId)
+                ->where('user_id', $userId)
+                ->pluck('skill_name')
+                ->all();
+
+            $keywords = KeywordExtractor::extract(
+                implode(' ', $skillNames) . ' ' . ($user->skills ?? '') . ' ' . $this->liveListingText($userId, $tenantId, null)
             );
+            foreach (KeywordExtractor::extract((string) ($user->bio ?? '')) as $keyword) {
+                if (KeywordExtractor::isConcept($keyword)) {
+                    $keywords[] = $keyword;
+                }
+            }
+
+            return array_values(array_unique($keywords));
         } catch (\Throwable $e) {
-            Log::debug('[CrossModuleMatching] getUserSkillKeywords failed: ' . $e->getMessage());
+            Log::error('[CrossModuleMatching] member interests unavailable', [
+                'user_id' => $userId,
+                'exception' => $e::class,
+                'error' => $e->getMessage(),
+            ]);
             return [];
         }
     }
 
     /**
+     * Titles and descriptions of the member's live listings (approved, not
+     * past their expiry date), optionally of one type.
+     */
+    private function liveListingText(int $userId, int $tenantId, ?string $type): string
+    {
+        $query = DB::table('listings')
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $userId)
+            ->where('status', 'active')
+            ->where(function ($q) {
+                $q->whereNull('moderation_status')->orWhere('moderation_status', 'approved');
+            })
+            ->where(function ($q) {
+                $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            });
+        if ($type !== null) {
+            $query->where('type', $type);
+        }
+
+        $text = '';
+        foreach ($query->orderByDesc('created_at')->limit(10)->get(['title', 'description']) as $row) {
+            $text .= ' ' . ($row->title ?? '') . ' ' . ($row->description ?? '');
+        }
+
+        return $text;
+    }
+
+    /**
+     * What two sets of keywords have in common: how many specific kinds of
+     * help, and how many plain words. A kind that only says HOW or WHO FOR
+     * ("teaching", "children") is not counted: on its own it is no reason to
+     * suggest anything.
+     *
+     * @param string[] $a
+     * @param string[] $b
+     * @return array{0: int, 1: int} [kinds shared, words shared]
+     */
+    private static function overlap(array $a, array $b): array
+    {
+        $kinds = 0;
+        $words = 0;
+        foreach (array_intersect(array_unique($a), $b) as $keyword) {
+            if (!is_string($keyword) || $keyword === '') {
+                continue;
+            }
+            if (!KeywordExtractor::isConcept($keyword)) {
+                $words++;
+            } elseif (!MatchConcepts::isGeneric($keyword)) {
+                $kinds++;
+            }
+        }
+
+        return [$kinds, $words];
+    }
+
+    /**
      * Stemmed keywords for what the member says they can DO: the skills they
-     * offer (user_skills) plus the free-text skills on their profile. Their
-     * bio is left out on purpose: it is prose about the person, and matching
-     * its ordinary words against an opportunity produced accidental "fits".
+     * offer (user_skills), the free-text skills on their profile, and the
+     * offers they have posted. Their bio is left out on purpose: it is prose
+     * about the person, and matching its ordinary words against an
+     * opportunity produced accidental "fits".
      *
      * @return string[]
      */
@@ -542,7 +642,9 @@ class CrossModuleMatchingService
             ->where('tenant_id', $tenantId)
             ->value('skills') ?? '');
 
-        return KeywordExtractor::extract(implode(' ', $names) . ' ' . $profileSkills);
+        return KeywordExtractor::extract(
+            implode(' ', $names) . ' ' . $profileSkills . ' ' . $this->liveListingText($userId, $tenantId, 'offer')
+        );
     }
 
     /**
@@ -588,36 +690,6 @@ class CrossModuleMatchingService
             Log::debug('[CrossModuleMatching] getUserCategoryIds failed: ' . $e->getMessage());
             return [];
         }
-    }
-
-    /**
-     * Score text relevance by keyword overlap between user skills and target text.
-     *
-     * @return float Score 0-100
-     */
-    private function scoreTextRelevance(array $userKeywords, string $targetText): float
-    {
-        if (empty($userKeywords) || empty(trim($targetText))) {
-            return 0;
-        }
-
-        $targetKeywords = $this->smartMatchingEngine->extractKeywords($targetText);
-
-        if (empty($targetKeywords)) {
-            return 0;
-        }
-
-        $overlap = count(array_intersect($userKeywords, $targetKeywords));
-        $union = count(array_unique(array_merge($userKeywords, $targetKeywords)));
-
-        if ($union === 0) {
-            return 0;
-        }
-
-        $jaccard = $overlap / $union;
-
-        // Scale: 0.0 → 0, 0.1 → 40, 0.2 → 60, 0.4+ → 80+
-        return min(100, round($jaccard * 400, 1));
     }
 
     /**
