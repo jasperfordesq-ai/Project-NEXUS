@@ -330,8 +330,13 @@ export async function getMatches(): Promise<MatchesResponse> {
   return { data: raw.map(normalizeMatch), meta: normalizeMeta(meta) };
 }
 
-export function dismissMatch(listingId: number): Promise<unknown> {
-  return api.post(`${API_V2}/matches/${listingId}/dismiss`, { reason: 'not_relevant' });
+/**
+ * Hide a match of any kind. The phone could only hide offers and requests:
+ * it called the listing-only address, though the server has taken groups for
+ * a long time and volunteering and events since 19 Nov 2026.
+ */
+export function dismissMatch(sourceId: number, sourceType: MatchSourceType): Promise<unknown> {
+  return api.post(`${API_V2}/matches/${sourceType}/${encodeURIComponent(sourceId)}/dismiss`, { reason: 'not_relevant' });
 }
 
 export async function getMatchPreferences(): Promise<MatchPreferences> {

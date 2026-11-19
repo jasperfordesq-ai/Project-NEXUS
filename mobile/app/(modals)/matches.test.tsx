@@ -455,7 +455,17 @@ describe('MatchesScreen', () => {
     expect(mockPush).toHaveBeenCalledWith({ pathname: '/(modals)/exchange-detail', params: { id: '10' } });
 
     fireEvent.press(getByLabelText('Dismiss Garden help'));
-    await waitFor(() => expect(mockDismissMatch).toHaveBeenCalledWith(10));
+    await waitFor(() => expect(mockDismissMatch).toHaveBeenCalledWith(10, 'listing'));
     await waitFor(() => expect(queryByText('Garden help')).toBeNull());
+  });
+
+  it('lets a member dismiss an event match too', async () => {
+    showing([{ ...eventMatch, title: 'Repair cafe' }]);
+    const { getByLabelText, queryByText } = render(<MatchesScreen />);
+
+    fireEvent.press(getByLabelText('Dismiss Repair cafe'));
+
+    await waitFor(() => expect(mockDismissMatch).toHaveBeenCalledWith(eventMatch.source_id, 'event'));
+    await waitFor(() => expect(queryByText('Repair cafe')).toBeNull());
   });
 });

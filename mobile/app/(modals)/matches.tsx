@@ -204,11 +204,11 @@ function MatchesScreen() {
       ];
 
   async function handleDismiss(match: MatchItem) {
-    if (match.source_type !== 'listing' || match.source_id === null || dismissingKey !== null) return;
+    if (match.source_id === null || dismissingKey !== null) return;
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setDismissingKey(match.key);
     try {
-      await dismissMatch(match.source_id);
+      await dismissMatch(match.source_id, match.source_type);
       setDismissedKeys((current) => new Set(current).add(match.key));
     } catch (err) {
       // Without this the rejection was unhandled: the spinner stopped and the card stayed.
@@ -435,7 +435,8 @@ function MatchCard({
   const score = displayScore(item.match_score);
   const scoreTone = score >= 80 ? theme.success : score >= 60 ? theme.warning : config.tone;
   const canOpen = item.source_id !== null;
-  const canDismiss = item.source_type === 'listing' && canOpen;
+  // Every kind of match can be hidden (the server records all four).
+  const canDismiss = item.source_id !== null;
   const eventStart = item.source_type === 'event' ? eventStartText(item.metadata?.event_date) : null;
   const organisation = item.source_type === 'volunteering' ? item.metadata?.organization_name ?? null : null;
   const place = item.source_type === 'event' || item.source_type === 'volunteering' ? item.metadata?.location ?? null : null;

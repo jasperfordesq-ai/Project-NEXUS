@@ -245,9 +245,22 @@ describe('matches API', () => {
   it('dismisses a listing match with the same not-relevant reason used by web', async () => {
     (api.post as jest.Mock).mockResolvedValue({});
 
-    await dismissMatch(10);
+    await dismissMatch(10, 'listing');
 
-    expect(api.post).toHaveBeenCalledWith('/api/v2/matches/10/dismiss', { reason: 'not_relevant' });
+    expect(api.post).toHaveBeenCalledWith('/api/v2/matches/listing/10/dismiss', { reason: 'not_relevant' });
+  });
+
+  it('dismisses a group, event or volunteering match by its own kind', async () => {
+    // The phone could only hide offers and requests; the server takes all four.
+    (api.post as jest.Mock).mockResolvedValue({});
+
+    await dismissMatch(8, 'group');
+    await dismissMatch(44, 'event');
+    await dismissMatch(31, 'volunteering');
+
+    expect(api.post).toHaveBeenCalledWith('/api/v2/matches/group/8/dismiss', { reason: 'not_relevant' });
+    expect(api.post).toHaveBeenCalledWith('/api/v2/matches/event/44/dismiss', { reason: 'not_relevant' });
+    expect(api.post).toHaveBeenCalledWith('/api/v2/matches/volunteering/31/dismiss', { reason: 'not_relevant' });
   });
 
   it('loads match preferences with safe defaults for fields omitted by the server', async () => {
