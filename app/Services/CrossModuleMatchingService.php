@@ -148,11 +148,8 @@ class CrossModuleMatchingService
         // INSIDE SmartMatchingEngine (batched, and included in the warmed
         // cache) — applying them again here would double-count.
 
-        // Sort by score descending
-        usort($allMatches, fn($a, $b) => ($b['match_score'] ?? 0) <=> ($a['match_score'] ?? 0));
-
-        // Apply final limit
-        $allMatches = array_values(array_slice($allMatches, 0, $limit));
+        // Best first, with a place kept for every kind (see sharedOut()).
+        $allMatches = array_values(self::sharedOut($allMatches, (int) $limit));
 
         // Strip debug data if not requested
         if (!$debug) {
@@ -176,8 +173,57 @@ class CrossModuleMatchingService
                 'has_active_listings' => $engineMeta['has_active_listings'] ?? null,
                 'paused' => (bool) ($engineMeta['paused'] ?? false),
                 'disabled' => false,
+                // The engine knew both and they were dropped here, so no
+                // client could say "matched from the skills on your profile"
+                // or "distances are from the community's centre".
+                'matched_from_skills' => (bool) ($engineMeta['matched_from_skills'] ?? false),
+                'location_approximate' => (bool) ($engineMeta['location_approximate'] ?? false),
+                // The community's own "strong match" score, which decides the
+                // alert. Every client hard-coded 80.
+                'hot_threshold' => (int) ($this->smartMatchingEngine->getConfig()['hot_match_threshold'] ?? 80),
             ],
         ];
+    }
+
+    /** Places kept for each kind of match on a full page. */
+    private const PLACES_PER_KIND = 3;
+
+    /**
+     * The page of matches: every kind keeps up to PLACES_PER_KIND of its best,
+     * and the rest of the page goes to the highest scores.
+     *
+     * The four kinds are scored four different ways (a volunteering match
+     * can reach 95, a strong offer or request rarely passes 85), and were
+     * sorted as one list and cut to the limit: a member with enough offers
+     * and requests never saw a group or an event, and that tab disappeared.
+     *
+     * @param array<int, array<string, mixed>> $matches
+     * @return array<int, array<string, mixed>>
+     */
+    private static function sharedOut(array $matches, int $limit): array
+    {
+        $byScore = fn ($a, $b) => ($b['match_score'] ?? 0) <=> ($a['match_score'] ?? 0);
+        usort($matches, $byScore);
+        if (count($matches) <= $limit) {
+            return $matches;
+        }
+
+        $kept = [];
+        $rest = [];
+        $perKind = [];
+        foreach ($matches as $match) {
+            $kind = (string) ($match['module'] ?? '');
+            if (($perKind[$kind] ?? 0) < self::PLACES_PER_KIND && count($kept) < $limit) {
+                $perKind[$kind] = ($perKind[$kind] ?? 0) + 1;
+                $kept[] = $match;
+            } else {
+                $rest[] = $match;
+            }
+        }
+        $kept = array_merge($kept, array_slice($rest, 0, max(0, $limit - count($kept))));
+        usort($kept, $byScore);
+
+        return $kept;
     }
 
     /**

@@ -154,6 +154,8 @@ class MatchApprovalWorkflowServiceTest extends TestCase
     {
         DB::shouldReceive('table')->andReturnSelf();
         DB::shouldReceive('where')->andReturnSelf();
+        // The listing is still live and both members still active
+        DB::shouldReceive('selectOne')->andReturn((object) ['ok' => 1]);
         // Row lookup before update
         DB::shouldReceive('first')->andReturn((object) [
             'id' => 1, 'user_id' => 20, 'listing_owner_id' => 30, 'listing_id' => 5, 'match_score' => 80,
@@ -198,6 +200,8 @@ class MatchApprovalWorkflowServiceTest extends TestCase
     {
         DB::shouldReceive('table')->with('match_approvals')->andReturnSelf();
         DB::shouldReceive('where')->andReturnSelf();
+        // The listing is still live and both members still active
+        DB::shouldReceive('selectOne')->andReturn((object) ['ok' => 1]);
         DB::shouldReceive('first')->andReturn((object) [
             'id' => 1, 'user_id' => 20, 'listing_owner_id' => 30, 'listing_id' => 5, 'match_score' => 80,
             'status' => 'rejected',
@@ -219,6 +223,8 @@ class MatchApprovalWorkflowServiceTest extends TestCase
         $this->bindPolicy(SafeguardingInteractionDecision::DENY);
         DB::shouldReceive('table')->andReturnSelf();
         DB::shouldReceive('where')->andReturnSelf();
+        // The listing is still live and both members still active
+        DB::shouldReceive('selectOne')->andReturn((object) ['ok' => 1]);
         DB::shouldReceive('first')->andReturn((object) [
             'id' => 1, 'user_id' => 20, 'listing_owner_id' => 30, 'listing_id' => 5, 'match_score' => 80,
             'status' => 'pending',
@@ -236,6 +242,8 @@ class MatchApprovalWorkflowServiceTest extends TestCase
     {
         DB::shouldReceive('table')->andReturnSelf();
         DB::shouldReceive('where')->andReturnSelf();
+        // The listing is still live and both members still active
+        DB::shouldReceive('selectOne')->andReturn((object) ['ok' => 1]);
         DB::shouldReceive('first')->andReturn((object) [
             'id' => 1, 'user_id' => 20, 'listing_owner_id' => 30, 'listing_id' => 5, 'match_score' => 80,
             'status' => 'pending',
@@ -254,6 +262,8 @@ class MatchApprovalWorkflowServiceTest extends TestCase
         $this->bindPolicy(SafeguardingInteractionDecision::UNAVAILABLE);
         DB::shouldReceive('table')->andReturnSelf();
         DB::shouldReceive('where')->andReturnSelf();
+        // The listing is still live and both members still active
+        DB::shouldReceive('selectOne')->andReturn((object) ['ok' => 1]);
         DB::shouldReceive('first')->andReturn((object) [
             'id' => 1,
             'user_id' => 20,
@@ -272,6 +282,8 @@ class MatchApprovalWorkflowServiceTest extends TestCase
     {
         DB::shouldReceive('table')->andReturnSelf();
         DB::shouldReceive('where')->andReturnSelf();
+        // The listing is still live and both members still active
+        DB::shouldReceive('selectOne')->andReturn((object) ['ok' => 1]);
         DB::shouldReceive('first')->andReturn((object) [
             'id' => 1, 'user_id' => 20, 'listing_id' => 5, 'match_score' => 80,
             'status' => 'pending',

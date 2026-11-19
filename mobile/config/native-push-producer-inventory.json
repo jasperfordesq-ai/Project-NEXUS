@@ -2396,9 +2396,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/MatchApprovalWorkflowService.php:249:NotificationDispatcher::dispatchMatchApproved",
+            "id": "app/Services/MatchApprovalWorkflowService.php:269:NotificationDispatcher::dispatchMatchApproved",
             "file": "app/Services/MatchApprovalWorkflowService.php",
-            "line": 249,
+            "line": 269,
             "transport": "NotificationDispatcher::dispatchMatchApproved",
             "role": "producer",
             "recipient_expression": "(int) $approval->user_id",
@@ -2409,9 +2409,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/MatchApprovalWorkflowService.php:422:NotificationDispatcher::dispatchMatchApproved",
+            "id": "app/Services/MatchApprovalWorkflowService.php:442:NotificationDispatcher::dispatchMatchApproved",
             "file": "app/Services/MatchApprovalWorkflowService.php",
-            "line": 422,
+            "line": 442,
             "transport": "NotificationDispatcher::dispatchMatchApproved",
             "role": "producer",
             "recipient_expression": "(int) $row->user_id",
@@ -2422,9 +2422,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/Matching/MatchNotificationService.php:259:NotificationDispatcher::dispatchMatchDigest",
+            "id": "app/Services/Matching/MatchNotificationService.php:262:NotificationDispatcher::dispatchMatchDigest",
             "file": "app/Services/Matching/MatchNotificationService.php",
-            "line": 259,
+            "line": 262,
             "transport": "NotificationDispatcher::dispatchMatchDigest",
             "role": "producer",
             "recipient_expression": "$memberId",
@@ -2435,9 +2435,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/Matching/MatchNotificationService.php:409:NotificationDispatcher::dispatchHotMatch",
+            "id": "app/Services/Matching/MatchNotificationService.php:472:NotificationDispatcher::dispatchHotMatch",
             "file": "app/Services/Matching/MatchNotificationService.php",
-            "line": 409,
+            "line": 472,
             "transport": "NotificationDispatcher::dispatchHotMatch",
             "role": "producer",
             "recipient_expression": "$memberId",
@@ -2448,9 +2448,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/Matching/MatchNotificationService.php:412:NotificationDispatcher::dispatchMutualMatch",
+            "id": "app/Services/Matching/MatchNotificationService.php:475:NotificationDispatcher::dispatchMutualMatch",
             "file": "app/Services/Matching/MatchNotificationService.php",
-            "line": 412,
+            "line": 475,
             "transport": "NotificationDispatcher::dispatchMutualMatch",
             "role": "producer",
             "recipient_expression": "$memberId",

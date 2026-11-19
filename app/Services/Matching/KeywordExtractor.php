@@ -138,6 +138,7 @@ final class KeywordExtractor
         // joined ("flat pack" → "flatpack", "baby sitting" → "babysit").
         $index = self::conceptIndex();
         $concepts = [];
+        $ruledOut = [];
         foreach ($stems as $i => $stem) {
             if ($stem !== null) {
                 foreach ($index[$stem] ?? [] as $concept) {
@@ -149,8 +150,13 @@ final class KeywordExtractor
                 foreach ($index[$joined] ?? [] as $concept) {
                     $concepts[$concept] = true;
                 }
+                foreach (self::ruledOutIndex()[$joined] ?? [] as $concept) {
+                    $ruledOut[$concept] = true;
+                }
             }
         }
+        // "family tree" is not gardening, "driving lessons" are not a lift.
+        $concepts = array_diff_key($concepts, $ruledOut);
 
         $out = array_keys($keywords);
         foreach (array_keys($concepts) as $concept) {
@@ -263,6 +269,23 @@ final class KeywordExtractor
         }
 
         return self::$stopSet;
+    }
+
+    /** @var array<string, string[]>|null joined stem => concepts it rules out */
+    private static ?array $ruledOutIndex = null;
+
+    /** @return array<string, string[]> */
+    private static function ruledOutIndex(): array
+    {
+        if (self::$ruledOutIndex === null) {
+            $index = [];
+            foreach (MatchConcepts::NOT as $phrase => $concepts) {
+                $index[self::stem(implode('', self::tokens($phrase)))] = $concepts;
+            }
+            self::$ruledOutIndex = $index;
+        }
+
+        return self::$ruledOutIndex;
     }
 
     /** @return array<string, string[]> */

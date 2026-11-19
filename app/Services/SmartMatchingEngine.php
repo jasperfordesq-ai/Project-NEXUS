@@ -634,6 +634,21 @@ class SmartMatchingEngine
         $preferredCategoryIds = is_array($categoryFilter)
             ? array_values(array_unique(array_filter(array_map('intval', $categoryFilter))))
             : [];
+        if ($preferredCategoryIds !== []) {
+            // Only categories the member can still see and untick. One that
+            // was later switched off or deleted has no checkbox on any page,
+            // and went on hiding every match outside it.
+            try {
+                $preferredCategoryIds = array_map('intval', DB::table('categories')
+                    ->where('tenant_id', $tenantId)
+                    ->where('is_active', 1)
+                    ->whereIn('id', $preferredCategoryIds)
+                    ->pluck('id')
+                    ->all());
+            } catch (\Throwable $e) {
+                Log::warning('[SmartMatchingEngine] category choices could not be checked', ['user_id' => $userId, 'error' => $e->getMessage()]);
+            }
+        }
 
         $candidatesByTargetType = ['offer' => [], 'request' => []];
         foreach ($myListingsByTarget as $targetType => $mine) {

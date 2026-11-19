@@ -2838,19 +2838,44 @@ class CronJobRunner
     {
         // This used to end in MatchingService::notifyNewMatches(), a stub
         // returning 0: no alert was ever sent. See MatchNotificationService.
-        try {
-            $totalNotified = 0;
-            $this->forEachTenant(function ($tenantId, $slug) use (&$totalNotified) {
+        $totalNotified = 0;
+        $failures = [];
+        $this->forEachTenant(function ($tenantId, $slug) use (&$totalNotified, &$failures) {
+            try {
                 $sent = app(\App\Services\Matching\MatchNotificationService::class)->notifyForNewListings();
-                $totalNotified += $sent;
-                if ($sent > 0) {
-                    echo "   [{$slug}] {$sent} match alert(s).\n";
-                }
-            });
-            echo "   Sent $totalNotified match alerts.\n";
-        } catch (\Throwable $e) {
-            echo "   Error: " . $e->getMessage() . "\n";
+            } catch (\Throwable $e) {
+                $failures[] = "[{$slug}] " . $e->getMessage();
+                return;
+            }
+            $totalNotified += $sent;
+            if ($sent > 0) {
+                echo "   [{$slug}] {$sent} match alert(s).\n";
+            }
+        });
+        echo "   Sent $totalNotified match alerts.\n";
+        self::failIfAnyCommunityFailed('Match alerts', $failures);
+    }
+
+    /**
+     * A run that failed for a community is a failed run.
+     *
+     * The match jobs used to print the error and carry on, so the job log
+     * recorded "success" with "Sent 0" and nothing ever counted towards the
+     * repeated-failure alarm. Every community is still attempted first.
+     *
+     * @param string[] $failures
+     */
+    private static function failIfAnyCommunityFailed(string $job, array $failures): void
+    {
+        if ($failures === []) {
+            return;
         }
+        foreach ($failures as $failure) {
+            echo "   Error: {$failure}\n";
+            Log::error("[CronJobRunner] {$job} failed for a community", ['failure' => $failure]);
+        }
+
+        throw new \RuntimeException($job . ' failed for ' . count($failures) . ' community(ies): ' . implode('; ', $failures));
     }
 
     /**
@@ -3154,19 +3179,22 @@ class CronJobRunner
         // This used to email RANDOM members as "matches", and in fact sent
         // nothing because it crashed on every member behind a bare catch.
         // See MatchNotificationService.
-        try {
-            $totalSent = 0;
-            $this->forEachTenant(function ($tenantId, $slug) use ($frequency, &$totalSent) {
+        $totalSent = 0;
+        $failures = [];
+        $this->forEachTenant(function ($tenantId, $slug) use ($frequency, &$totalSent, &$failures) {
+            try {
                 $sent = app(\App\Services\Matching\MatchNotificationService::class)->sendDigests($frequency);
-                $totalSent += $sent;
-                if ($sent > 0) {
-                    echo "   [{$slug}] {$sent} digest(s).\n";
-                }
-            });
-            echo "   Sent $frequency match digest to $totalSent users.\n";
-        } catch (\Throwable $e) {
-            echo "   Error: " . $e->getMessage() . "\n";
-        }
+            } catch (\Throwable $e) {
+                $failures[] = "[{$slug}] " . $e->getMessage();
+                return;
+            }
+            $totalSent += $sent;
+            if ($sent > 0) {
+                echo "   [{$slug}] {$sent} digest(s).\n";
+            }
+        });
+        echo "   Sent $frequency match digest to $totalSent users.\n";
+        self::failIfAnyCommunityFailed("Match digest ({$frequency})", $failures);
     }
 
     /**

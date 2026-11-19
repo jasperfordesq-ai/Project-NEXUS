@@ -29,6 +29,8 @@ class CrossModuleMatchingServiceTest extends TestCase
         // Default: matching is switched on, and the member's floor is 40.
         $this->mockSmartMatching->shouldReceive('isEnabled')->andReturn(true)->byDefault();
         $this->mockSmartMatching->shouldReceive('effectiveMinScore')->andReturn(40.0)->byDefault();
+        // The page is told the community's own "strong match" score.
+        $this->mockSmartMatching->shouldReceive('getConfig')->andReturn(['hot_match_threshold' => 80])->byDefault();
         $this->service = new CrossModuleMatchingService(
             $this->mockSmartMatching,
             $this->mockGroupMatching

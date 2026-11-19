@@ -170,6 +170,9 @@ class MatchApprovalWorkflowService
     /** The write itself failed (logged at error). */
     public const OUTCOME_FAILED = 'failed';
 
+    /** The listing was closed, expired or removed, or a member is no longer active. */
+    public const OUTCOME_LISTING_GONE = 'listing_gone';
+
     /**
      * Approve a pending match approval request.
      *
@@ -210,6 +213,23 @@ class MatchApprovalWorkflowService
 
             if ((string) $approval->status !== 'pending') {
                 return self::OUTCOME_ALREADY_REVIEWED;
+            }
+
+            // The request can be days old. Approving used to tell both
+            // members "you've been matched" about a listing that had since
+            // been closed, or with a member who had since left.
+            $stillThere = DB::selectOne(
+                "SELECT 1 AS ok
+                 FROM listings l
+                 JOIN users o ON o.id = l.user_id AND o.tenant_id = l.tenant_id AND o.status = 'active'
+                 JOIN users m ON m.id = ? AND m.tenant_id = l.tenant_id AND m.status = 'active'
+                 WHERE l.id = ? AND l.tenant_id = ? AND l.status = 'active'
+                   AND (l.moderation_status IS NULL OR l.moderation_status = 'approved')
+                   AND (l.expires_at IS NULL OR l.expires_at > NOW())",
+                [(int) $approval->user_id, (int) $approval->listing_id, $tenantId]
+            ) !== null;
+            if (! $stillThere) {
+                return self::OUTCOME_LISTING_GONE;
             }
 
             if (! self::contactPolicyAllowsBoth(

@@ -335,7 +335,10 @@ class GroupMatchingService
                 ? json_decode($row['match_reasons'], true)
                 : $row['match_reasons'];
             if (is_array($decoded)) {
-                $reasons = array_values(array_filter($decoded, 'is_string'));
+                $reasons = array_values(array_map(
+                    [self::class, 'reasonForReader'],
+                    array_filter($decoded, 'is_string')
+                ));
             }
         }
 
@@ -356,6 +359,40 @@ class GroupMatchingService
             'is_mutual' => false,
             'created_at' => $row['matched_at'] ?? null,
         ];
+    }
+
+    /** The fixed reasons GroupRecommendationEngine gives, by translation key. */
+    private const REASON_KEYS = [
+        'api.group_recommendation_connection_one',
+        'api.group_recommendation_popular',
+        'api.group_recommendation_interests',
+        'api.group_recommendation_similar_members',
+        'api.group_recommendation_area',
+        'api.group_recommendation_interest',
+    ];
+
+    /**
+     * A stored reason, in the reader's language.
+     *
+     * The reasons are worked out and stored by the background job, in the
+     * job's language (English), so every member read them in English. Each
+     * known English phrase is recognised and rendered again for the reader;
+     * anything else is returned as stored.
+     */
+    private static function reasonForReader(string $stored): string
+    {
+        foreach (self::REASON_KEYS as $key) {
+            if ($stored === __($key, [], 'en')) {
+                return (string) __($key);
+            }
+        }
+
+        $many = preg_quote((string) __('api.group_recommendation_connection_many', ['count' => '@@'], 'en'), '/');
+        if (preg_match('/^' . str_replace('@@', '(\\d+)', $many) . '$/u', $stored, $m) === 1) {
+            return (string) __('api.group_recommendation_connection_many', ['count' => (int) $m[1]]);
+        }
+
+        return $stored;
     }
 
     private function cacheTableExists(): bool

@@ -48,8 +48,11 @@ class MatchNotificationService
     /** A listing is considered "new" for alerts for this long after posting. */
     private const NEW_LISTING_WINDOW_HOURS = 24;
 
-    /** Members considered per new listing, most recently active first. */
+    /** Members the engine is asked about per new listing. */
     private const RECIPIENTS_PER_LISTING = 40;
+
+    /** Members the shortlist is chosen from, most recently active first. */
+    private const RECIPIENT_POOL = 300;
 
     /** Match computations per community per run (each is one page-load of work). */
     private const COMPUTATIONS_PER_RUN = 150;
@@ -91,7 +94,7 @@ class MatchNotificationService
         $hotThreshold = (float) ($this->engine->getConfig()['hot_match_threshold'] ?? 80);
 
         $listings = DB::select(
-            "SELECT l.id, l.user_id, l.type, l.category_id, l.title
+            "SELECT l.id, l.user_id, l.type, l.category_id, l.title, l.description
              FROM listings l
              WHERE l.tenant_id = ? AND l.status = 'active'
                AND (l.moderation_status IS NULL OR l.moderation_status = 'approved')
@@ -360,7 +363,7 @@ class MatchNotificationService
                    SELECT 1 FROM match_notification_sent s
                    WHERE s.tenant_id = ? AND s.listing_id = ? AND s.matched_user_id = u.id)
              ORDER BY closeness DESC, u.last_active_at DESC
-             LIMIT " . self::RECIPIENTS_PER_LISTING,
+             LIMIT " . self::RECIPIENT_POOL,
             [
                 $oppositeType, $categoryId, $oppositeType,
                 $tenantId, (int) $listing->user_id, $oppositeType,
@@ -368,7 +371,67 @@ class MatchNotificationService
             ]
         );
 
-        return array_map(fn ($row) => (int) $row->id, $rows);
+        $ids = array_map(fn ($row) => (int) $row->id, $rows);
+        if (count($ids) <= self::RECIPIENTS_PER_LISTING) {
+            return $ids;
+        }
+
+        return $this->bestFitting($tenantId, $listing, $ids, $oppositeType);
+    }
+
+    /**
+     * The members of a pool whose own listings and skills have most in common
+     * with a new listing.
+     *
+     * The shortlist used to be simply the 40 most recently active members
+     * with any listing or skill pointing the right way, so in a community
+     * with more than 40 such members the one gardener who signed in last
+     * month was never asked about a new gardening request. The pool keeps
+     * its order (same category first, then most recently active) between
+     * members who fit equally.
+     *
+     * @param int[] $pool
+     * @return int[]
+     */
+    private function bestFitting(int $tenantId, object $listing, array $pool, string $oppositeType): array
+    {
+        $wanted = KeywordExtractor::extract(
+            (string) ($listing->title ?? '') . ' ' . strip_tags((string) ($listing->description ?? ''))
+        );
+        if ($wanted === []) {
+            return array_slice($pool, 0, self::RECIPIENTS_PER_LISTING);
+        }
+
+        $text = array_fill_keys($pool, '');
+        $add = function (iterable $rows, string $column) use (&$text): void {
+            foreach ($rows as $row) {
+                $memberId = (int) $row->user_id;
+                if (isset($text[$memberId])) {
+                    $text[$memberId] .= ' ' . (string) ($row->{$column} ?? '');
+                }
+            }
+        };
+        $add(DB::table('listings')->where('tenant_id', $tenantId)->where('status', 'active')
+            ->where('type', $oppositeType)->whereIn('user_id', $pool)
+            ->selectRaw("user_id, CONCAT(title, ' ', COALESCE(description, '')) AS words")->get(), 'words');
+        $add(DB::table('user_skills')->where('tenant_id', $tenantId)->whereIn('user_id', $pool)
+            ->get(['user_id', 'skill_name']), 'skill_name');
+        $add(DB::table('users')->where('tenant_id', $tenantId)->whereIn('id', $pool)
+            ->selectRaw('id AS user_id, skills')->get(), 'skills');
+
+        $fit = [];
+        foreach ($pool as $position => $memberId) {
+            $shared = array_intersect(KeywordExtractor::extract(strip_tags($text[$memberId])), $wanted);
+            $score = 0;
+            foreach ($shared as $keyword) {
+                // The same kind of help counts for more than a word in common.
+                $score += KeywordExtractor::isConcept((string) $keyword) ? 3 : 1;
+            }
+            $fit[] = [$memberId, $score, $position];
+        }
+        usort($fit, fn ($a, $b) => [$b[1], $a[2]] <=> [$a[1], $b[2]]);
+
+        return array_map(fn ($row) => $row[0], array_slice($fit, 0, self::RECIPIENTS_PER_LISTING));
     }
 
     /**

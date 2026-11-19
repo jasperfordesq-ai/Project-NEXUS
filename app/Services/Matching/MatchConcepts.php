@@ -284,6 +284,8 @@ final class MatchConcepts
             'meccanico', 'mecânico', 'monteur', 'samochód', 'mechanik', 'gluaisteán',
         ],
         'housesitting' => ['housesitting', 'housesit', 'housesitter'],
+        // Learning to drive: tuition, not a lift (see NOT, which takes ~transport away).
+        'driving_tuition' => ['drivinglessons', 'drivinglesson', 'drivinginstructor', 'drivingtest', 'drivingtheory'],
         'games' => [
             'chess', 'boardgames', 'boardgame', 'scrabble', 'bingo', 'quiz', 'jigsaw', 'jigsaws',
             'draughts', 'dominoes',
@@ -296,6 +298,28 @@ final class MatchConcepts
             'marshalling', 'minutetaking', 'raffle',
         ],
         'first_aid' => ['firstaid', 'cpr', 'defibrillator'],
+    ];
+
+    /**
+     * Two neighbouring words, joined, that rule a kind of help OUT. A word
+     * in a group above sometimes means something else beside a particular
+     * neighbour: a family tree is not gardening, iron railings are not
+     * ironing, driving lessons are tuition and not a lift.
+     *
+     * @var array<string, string[]> joined phrase => groups it is not
+     */
+    public const NOT = [
+        'familytree' => ['gardening'],
+        'ironrailings' => ['cleaning'],
+        'irongate' => ['cleaning'],
+        'irongates' => ['cleaning'],
+        'ironwork' => ['cleaning'],
+        'drivinglessons' => ['transport'],
+        'drivinglesson' => ['transport'],
+        'drivinginstructor' => ['transport'],
+        'drivingtest' => ['transport'],
+        'drivingtheory' => ['transport'],
+        'drivinglicence' => ['transport'],
     ];
 
     /**

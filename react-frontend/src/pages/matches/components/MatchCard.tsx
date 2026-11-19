@@ -33,12 +33,14 @@ import { DistanceChip } from './DistanceChip';
 import { ScoreBreakdown } from './ScoreBreakdown';
 import { DismissReasonPopover } from './DismissReasonPopover';
 import type { DismissReason, Match, MatchModule } from '../types';
-import { displayScore, isSuggestion, matchDetailId, matchElementId } from '../types';
+import { DEFAULT_HOT_THRESHOLD, displayScore, isSuggestion, matchDetailId, matchElementId } from '../types';
 
 export interface MatchCardProps {
   match: Match;
   index: number;
   highlightId?: string | null;
+  /** The community's "strong match" score; the page passes the server's. */
+  hotThreshold?: number;
   onDismissed: (match: Match) => void;
 }
 
@@ -66,7 +68,7 @@ function eventStartText(value?: string | null): string | null {
   return formatDateTime(parsed, { dateStyle: 'medium', timeStyle: 'short' });
 }
 
-export function MatchCard({ match, index, highlightId, onDismissed }: MatchCardProps) {
+export function MatchCard({ match, index, highlightId, hotThreshold = DEFAULT_HOT_THRESHOLD, onDismissed }: MatchCardProps) {
   const { t } = useTranslation('matches');
   const { tenantPath, hasFeature, hasModule } = useTenant();
   const toast = useToast();
@@ -263,7 +265,7 @@ export function MatchCard({ match, index, highlightId, onDismissed }: MatchCardP
           <Progress
             value={score}
             size="sm"
-            color={score >= 80 ? 'success' : score >= 60 ? 'warning' : 'default'}
+            color={score >= hotThreshold ? 'success' : score >= 60 ? 'warning' : 'default'}
             className="max-w-[120px]"
             aria-label={t('score_label', { score })}
           />
@@ -296,7 +298,7 @@ export function MatchCard({ match, index, highlightId, onDismissed }: MatchCardP
             {!suggestion && (
               <div
                 className={`absolute -top-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                  score >= 80
+                  score >= hotThreshold
                     ? 'bg-emerald-700 text-white'
                     : score >= 60
                     ? 'bg-amber-700 text-white'

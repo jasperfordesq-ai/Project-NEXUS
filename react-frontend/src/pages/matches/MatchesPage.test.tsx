@@ -121,6 +121,23 @@ describe('MatchesPage', () => {
     expect(screen.getByText('Mutual Matches')).toBeInTheDocument();
   });
 
+  it("counts strong matches by the community's own score, not a fixed 80", async () => {
+    mockApiGet.mockResolvedValue({
+      success: true,
+      data: {
+        matches: [
+          { module: 'listing', listing_id: 1, title: 'Hedge trimming', match_score: 72, match_reasons: [] },
+          { module: 'listing', listing_id: 2, title: 'Lawn mowing', match_score: 60, match_reasons: [] },
+        ],
+        meta: { total: 2, modules: ['listings'], min_score: 40, hot_threshold: 70 },
+      },
+    });
+    render(<MatchesPage />);
+
+    const label = await screen.findByText('Hot Matches');
+    await waitFor(() => expect(label.previousElementSibling).toHaveTextContent('1'));
+  });
+
   it('renders match items when API returns data', async () => {
     mockApiGet.mockResolvedValue({
       success: true,

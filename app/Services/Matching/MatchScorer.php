@@ -60,7 +60,6 @@ final class MatchScorer
     private const DEFAULT_CATEGORY = 0.10;
     private const DEFAULT_SKILL = 0.20;
     private const DEFAULT_SEMANTIC = 0.20;
-    private const DEFAULT_ACTIVITY = 0.30;
     private const REVIEW_PRIOR = 0.72;       // ≈ 3.6★ neutral prior
     private const REVIEW_PRIOR_WEIGHT = 3;   // pseudo-review count
 
@@ -702,10 +701,17 @@ final class MatchScorer
         return 0.3 + 0.7 * $ratio;
     }
 
-    private function activityScore(?float $lastActiveDays): float
+    /**
+     * Unknown is null: the signal is left out of the feasibility pillar, as
+     * availability is. It used to count as 0.30, below a member last seen
+     * 45 days ago (0.40), although `last_active_at` is simply empty on older
+     * accounts and the candidate query already lets such owners through as
+     * "unknown, not dormant".
+     */
+    private function activityScore(?float $lastActiveDays): ?float
     {
         if ($lastActiveDays === null) {
-            return self::DEFAULT_ACTIVITY;
+            return null;
         }
         if ($lastActiveDays <= 7) return 1.0;
         if ($lastActiveDays <= 30) return 0.7;

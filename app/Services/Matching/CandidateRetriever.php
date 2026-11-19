@@ -141,7 +141,8 @@ class CandidateRetriever
         $params = [];
 
         $sql = "SELECT l.*,
-                       u.first_name, u.last_name, u.avatar_url, u.location as author_location,
+                       u.first_name, u.last_name, u.profile_type, u.organization_name,
+                       u.avatar_url, u.location as author_location,
                        u.latitude as author_latitude, u.longitude as author_longitude,
                        u.is_verified as author_verified,
                        " . \App\Support\UserDisplayName::sql('u', 'user_name') . ",

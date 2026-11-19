@@ -46,7 +46,7 @@ import { useTranslation } from 'react-i18next';
 import { MatchCard } from './components/MatchCard';
 import { MatchesEmptyState } from './components/MatchesEmptyState';
 import type { Match, MatchesMeta, MatchModule } from './types';
-import { displayScore, isSuggestion, matchElementId } from './types';
+import { DEFAULT_HOT_THRESHOLD, displayScore, isSuggestion, matchElementId } from './types';
 
 import { LoadError } from '@/components/feedback/LoadError';
 // ─────────────────────────────────────────────────────────────────────────────
@@ -194,7 +194,13 @@ export function MatchesPage() {
   const avgScore = scoredMatches.length > 0
     ? Math.round(scoredMatches.reduce((sum, m) => sum + displayScore(m.match_score), 0) / scoredMatches.length)
     : 0;
-  const hotCount = scoredMatches.filter((m) => displayScore(m.match_score) >= 80).length;
+  // The community's own "strong match" score (the one its alerts use), sent
+  // by the server. A fixed 80 here disagreed with any community that had
+  // set a different figure.
+  const hotThreshold = typeof meta.hot_threshold === 'number' && meta.hot_threshold > 0
+    ? meta.hot_threshold
+    : DEFAULT_HOT_THRESHOLD;
+  const hotCount = scoredMatches.filter((m) => displayScore(m.match_score) >= hotThreshold).length;
   const mutualCount = useMemo(() => matches.filter((m) => m.is_mutual).length, [matches]);
   const moduleCounts = matches.reduce<Record<string, number>>((acc, m) => {
     acc[m.module] = (acc[m.module] || 0) + 1;
@@ -412,6 +418,7 @@ export function MatchesPage() {
                 match={match}
                 index={index}
                 highlightId={highlightId}
+                hotThreshold={hotThreshold}
                 onDismissed={handleDismissed}
               />
             ))}

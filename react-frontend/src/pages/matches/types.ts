@@ -116,7 +116,16 @@ export interface MatchesMeta {
   paused: boolean;
   /** The community has switched matching off; `matches` is empty. */
   disabled: boolean;
+  /** The community's own "strong match" score, which decides the alert. */
+  hot_threshold?: number;
+  /** The member has no listing and was matched by the skills on their profile. */
+  matched_from_skills?: boolean;
+  /** The member gave no location: distances are from the community's centre. */
+  location_approximate?: boolean;
 }
+
+/** The "strong match" score used when the server sends none. */
+export const DEFAULT_HOT_THRESHOLD = 80;
 
 export interface MatchesResponse {
   matches: Match[];

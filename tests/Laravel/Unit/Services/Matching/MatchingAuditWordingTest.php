@@ -134,4 +134,37 @@ class MatchingAuditWordingTest extends TestCase
 
         $this->assertGreaterThan($without['score'], $with['score']);
     }
+
+    // ---------------------------------------------------------------------
+    // Second pass
+    // ---------------------------------------------------------------------
+
+    public function test_a_word_beside_it_can_rule_a_kind_of_help_out(): void
+    {
+        $this->assertNotContains('~gardening', $this->kinds('Family tree research'));
+        $this->assertContains('~gardening', $this->kinds('Tree surgeon'));
+
+        $this->assertNotContains('~cleaning', $this->kinds('Iron railings need painting'));
+        $this->assertContains('~cleaning', $this->kinds('Ironing and laundry'));
+
+        $this->assertNotContains('~transport', $this->kinds('Driving lessons'));
+        $this->assertContains('~teaching', $this->kinds('Driving lessons'));
+        $this->assertContains('~transport', $this->kinds('Driving you to the shops'));
+    }
+
+    public function test_a_member_whose_last_visit_is_unknown_is_not_scored_below_one_who_has_been_away(): void
+    {
+        $scorer = new MatchScorer([], []);
+        $mine = $this->listing('request', 'Help with my tax return', null);
+        $theirs = $this->listing('offer', 'Tax returns and bookkeeping', null);
+        $unknown = $this->member('', '');
+        $unknown['last_active_days'] = null;
+        $away = $this->member('', '');
+        $away['last_active_days'] = 45.0;
+
+        $scoreUnknown = $scorer->score($this->member('', ''), $mine, $theirs, $unknown)->toLegacyArray()['score'];
+        $scoreAway = $scorer->score($this->member('', ''), $mine, $theirs, $away)->toLegacyArray()['score'];
+
+        $this->assertGreaterThanOrEqual($scoreAway, $scoreUnknown);
+    }
 }

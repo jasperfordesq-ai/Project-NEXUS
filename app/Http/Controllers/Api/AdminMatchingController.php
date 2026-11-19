@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use App\Core\TenantContext;
 use App\Services\MatchApprovalWorkflowService;
 use App\Services\Matching\MatchApprovalGate;
+use App\Support\Matching\MatchReasonText;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -81,6 +82,17 @@ class AdminMatchingController extends BaseApiController
             $params[] = $status;
         }
 
+        // A broker never sees a match they are one of the two members of.
+        // They were already stopped from deciding it; they could still open
+        // it and read a colleague's reason for rejecting it, which the
+        // service keeps from both members because it can carry safeguarding
+        // detail. Admins are exempt, as they are from the deciding guard.
+        if (!$this->callerIsAdminTier()) {
+            $callerId = (int) $this->getUserId();
+            $conditions[] = 'ma.user_id != ? AND ma.listing_owner_id != ?';
+            array_push($params, $callerId, $callerId);
+        }
+
         $where = implode(' AND ', $conditions);
 
         $total = (int) DB::selectOne("SELECT COUNT(*) as cnt FROM match_approvals ma WHERE {$where}", $params)->cnt;
@@ -101,14 +113,17 @@ class AdminMatchingController extends BaseApiController
              LEFT JOIN listings l ON ma.listing_id = l.id
              LEFT JOIN users r ON ma.reviewed_by = r.id
              WHERE {$where}
-             ORDER BY CASE WHEN ma.status = 'pending' THEN 0 ELSE 1 END, ma.submitted_at DESC
+             ORDER BY CASE WHEN ma.status = 'pending' THEN 0 ELSE 1 END,
+                      -- waiting matches: longest wait first; decided ones: newest first
+                      CASE WHEN ma.status = 'pending' THEN ma.submitted_at END ASC,
+                      ma.submitted_at DESC
              LIMIT ? OFFSET ?",
             array_merge($params, [$limit, $offset])
         );
 
         $formatted = array_map(function ($row) {
-            $reasons = $row->match_reasons ?? null;
-            if (is_string($reasons)) $reasons = json_decode($reasons, true) ?: [];
+            // In the reader's language, as members see them.
+            $reasons = MatchReasonText::localize($row->match_reasons ?? null);
             return [
                 'id' => (int) $row->id,
                 'user_1_id' => (int) $row->user_id, 'user_1_name' => trim($row->user_1_name ?? ''),
@@ -142,8 +157,13 @@ class AdminMatchingController extends BaseApiController
     /** GET /api/v2/admin/matching/{id} */
     public function show(int $id): JsonResponse
     {
-        $this->requireBrokerOrAdmin();
+        $callerId = (int) $this->requireBrokerOrAdmin();
         $tenantId = $this->getTenantId();
+
+        // See index(): not readable by a broker who is one of the two members.
+        if ($guard = $this->guardBrokerNotParty($id, $callerId)) {
+            return $guard;
+        }
 
         $rowObj = DB::selectOne(
             "SELECT ma.*,
@@ -169,8 +189,7 @@ class AdminMatchingController extends BaseApiController
             return $this->respondWithError('NOT_FOUND', __('api.not_found', ['model' => 'Match approval']), null, 404);
         }
 
-        $reasons = $row['match_reasons'] ?? null;
-        if (is_string($reasons)) { $reasons = json_decode($reasons, true) ?: []; }
+        $reasons = MatchReasonText::localize($row['match_reasons'] ?? null);
 
         return $this->respondWithData([
             'id' => (int) $row['id'],
@@ -232,6 +251,9 @@ class AdminMatchingController extends BaseApiController
             // (a vetting record arrives, a restriction is lifted).
             MatchApprovalWorkflowService::OUTCOME_CONTACT_BLOCKED => $this->respondWithError(
                 'MATCH_CONTACT_NOT_ALLOWED', __('api.match_approval_contact_blocked'), null, 409
+            ),
+            MatchApprovalWorkflowService::OUTCOME_LISTING_GONE => $this->respondWithError(
+                'LISTING_NO_LONGER_AVAILABLE', __('api.listing_not_found'), null, 409
             ),
             default => $this->respondWithError('SERVER_ERROR', __('api.server_error'), null, 500),
         };
