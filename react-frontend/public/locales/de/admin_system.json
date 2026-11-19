@@ -803,7 +803,7 @@
       "level_none_desc": "Keine Identitätsprüfung erforderlich",
       "level_reusable": "Wasserwaage wiederverwendbar",
       "level_reusable_desc": "Verwenden Sie für die Neuregistrierung eine bestehende verifizierte Identität",
-      "max_uses_desc": "Maximale Häufigkeit, mit der jeder Einladungscode verwendet werden kann (leer lassen für unbegrenzt)",
+      "max_uses_desc": "Wie viele Personen sich mit jedem Code registrieren können, von 1 bis 1.000.",
       "mode_gov_id": "Modus-Regierungs-ID",
       "mode_gov_id_desc": "Für die Registrierung ist eine Überprüfung des amtlichen Personalausweises erforderlich",
       "mode_invite": "Modus „Einladen“.",

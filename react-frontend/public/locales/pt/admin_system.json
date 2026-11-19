@@ -807,7 +807,7 @@
       "level_none_desc": "Não é necessária verificação de identidade",
       "level_reusable": "Nível reutilizável",
       "level_reusable_desc": "Use uma identidade verificada existente para novo registro",
-      "max_uses_desc": "Número máximo de vezes que cada código de convite pode ser usado (deixe em branco para ilimitado)",
+      "max_uses_desc": "Quantas pessoas se podem registar com cada código, de 1 a 1000.",
       "mode_gov_id": "ID do governo do modo",
       "mode_gov_id_desc": "Exigir verificação de identidade governamental para se registrar",
       "mode_invite": "Modo Convidar",

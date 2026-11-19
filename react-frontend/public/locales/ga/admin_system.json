@@ -809,7 +809,7 @@
       "level_none_desc": "Níl fíorú aitheantais ag teastáil",
       "level_reusable": "Leibhéal Ath-inúsáidte",
       "level_reusable_desc": "Úsáid aitheantas fíoraithe atá ann cheana le haghaidh athchlárú",
-      "max_uses_desc": "Uasmhéid uaireanta is féidir gach cód cuireadh a úsáid (fág bán gan teorainn)",
+      "max_uses_desc": "Líon na ndaoine ar féidir leo clárú le gach cód, ó 1 go 1,000.",
       "mode_gov_id": "Mód Gov ID",
       "mode_gov_id_desc": "Teastaíonn fíorú aitheantais rialtais chun clárú",
       "mode_invite": "Mód Tabhair cuireadh",

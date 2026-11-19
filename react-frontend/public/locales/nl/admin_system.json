@@ -806,7 +806,7 @@
       "level_none_desc": "Geen identiteitsverificatie vereist",
       "level_reusable": "Niveau Herbruikbaar",
       "level_reusable_desc": "Gebruik een bestaande geverifieerde identiteit voor herregistratie",
-      "max_uses_desc": "Maximaal aantal keren dat elke uitnodigingscode kan worden gebruikt (laat leeg voor onbeperkt)",
+      "max_uses_desc": "Hoeveel mensen zich met elke code kunnen registreren, van 1 tot 1.000.",
       "mode_gov_id": "Modus Regerings-ID",
       "mode_gov_id_desc": "Verificatie van identiteitsbewijs door de overheid vereist om te registreren",
       "mode_invite": "Modus Uitnodigen",

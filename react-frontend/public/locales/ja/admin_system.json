@@ -804,7 +804,7 @@
       "level_none_desc": "本人確認は必要ありません",
       "level_reusable": "レベル再利用可能",
       "level_reusable_desc": "再登録には既存の検証済み ID を使用します",
-      "max_uses_desc": "各招待コードを使用できる最大回数 (無制限の場合は空白のままにします)",
+      "max_uses_desc": "各コードで登録できる人数（1〜1,000人）。",
       "mode_gov_id": "モード政府ID",
       "mode_gov_id_desc": "登録するには政府機関の ID 認証が必要です",
       "mode_invite": "モード招待",

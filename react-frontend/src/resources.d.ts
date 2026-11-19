@@ -31328,7 +31328,7 @@ export default interface Resources {
         "level_none_desc": "No identity verification required",
         "level_reusable": "Level Reusable",
         "level_reusable_desc": "Use an existing verified identity for re-registration",
-        "max_uses_desc": "Maximum number of times each invite code can be used (leave blank for unlimited)",
+        "max_uses_desc": "How many people can sign up with each code, from 1 to 1,000.",
         "mode_gov_id": "Mode Gov ID",
         "mode_gov_id_desc": "Require government ID verification to register",
         "mode_invite": "Mode Invite",

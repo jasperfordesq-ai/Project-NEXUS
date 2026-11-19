@@ -810,7 +810,7 @@
       "level_none_desc": "Aucune vérification d'identité requise",
       "level_reusable": "Niveau réutilisable",
       "level_reusable_desc": "Utiliser une identité vérifiée existante pour la réinscription",
-      "max_uses_desc": "Nombre maximum de fois où chaque code d'invitation peut être utilisé (laissez vide pour un nombre illimité)",
+      "max_uses_desc": "Nombre de personnes pouvant s'inscrire avec chaque code, de 1 à 1000.",
       "mode_gov_id": "Mode ID du gouvernement",
       "mode_gov_id_desc": "Exiger une vérification d'identité gouvernementale pour vous inscrire",
       "mode_invite": "Mode Inviter",

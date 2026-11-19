@@ -807,7 +807,7 @@
       "level_none_desc": "Non è richiesta alcuna verifica dell'identità",
       "level_reusable": "Livello riutilizzabile",
       "level_reusable_desc": "Utilizza un'identità verificata esistente per la nuova registrazione",
-      "max_uses_desc": "Numero massimo di volte in cui è possibile utilizzare ciascun codice di invito (lascia vuoto per illimitato)",
+      "max_uses_desc": "Quante persone possono registrarsi con ciascun codice, da 1 a 1000.",
       "mode_gov_id": "ID governatore modalità",
       "mode_gov_id_desc": "Richiedi la verifica dell'ID governativo per registrarti",
       "mode_invite": "Modalità Invito",

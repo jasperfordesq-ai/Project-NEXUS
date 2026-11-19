@@ -810,7 +810,7 @@
       "level_none_desc": "Nie jest wymagana weryfikacja tożsamości",
       "level_reusable": "Poziom wielokrotnego użytku",
       "level_reusable_desc": "Użyj istniejącej zweryfikowanej tożsamości do ponownej rejestracji",
-      "max_uses_desc": "Maksymalna liczba zastosowań każdego kodu zaproszenia (pozostaw puste, aby uzyskać nieograniczoną liczbę)",
+      "max_uses_desc": "Ile osób może zarejestrować się przy użyciu każdego kodu, od 1 do 1000.",
       "mode_gov_id": "Identyfikator gubernatora trybu",
       "mode_gov_id_desc": "Aby się zarejestrować, wymagaj weryfikacji tożsamości rządowej",
       "mode_invite": "Zaproszenie do trybu",
