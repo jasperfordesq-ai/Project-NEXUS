@@ -244,13 +244,16 @@ describe.each([
     expect(res.text).toContain('5 December 2026 - Town Hall');
   });
 
-  it('offers to hide listing and group matches only', async () => {
+  it('offers to hide every kind of match', async () => {
+    // Volunteering and event matches could not be hidden until 19 Nov 2026.
     respond(allKinds);
     const res = await get(page);
 
     expect(res.text).toContain(`action="${PREFIX}/matches${page}/7/dismiss"`);
     expect(res.text).toContain(`action="${PREFIX}/matches${page}/group/12/dismiss"`);
-    expect(res.text.split('/dismiss"').length - 1).toBe(2);
+    expect(res.text).toContain(`action="${PREFIX}/matches${page}/volunteering/31/dismiss"`);
+    expect(res.text).toContain(`action="${PREFIX}/matches${page}/event/44/dismiss"`);
+    expect(res.text.split('/dismiss"').length - 1).toBe(4);
   });
 
   it('labels a cold-start match as a suggestion, not as a percentage', async () => {

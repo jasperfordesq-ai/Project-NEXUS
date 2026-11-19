@@ -518,4 +518,35 @@ router.post('/board/group/:groupId(\\d+)/dismiss', requireAuth, asyncRoute(async
   return redirectTo(res, `/matches/board?source=${sourceFrom(req.body)}&status=${status}#matches-top`);
 }, { redirectOn401: '/login?status=auth-required' }));
 
+// Volunteering and event matches: POST /v2/matches/{volunteering|event}/{id}/dismiss.
+async function dismissOtherMatch(token, kind, id, reason) {
+  // Two fixed paths, never the route parameter itself in the address.
+  const path = kind === 'event'
+    ? `/event/${encodeURIComponent(id)}/dismiss`
+    : `/volunteering/${encodeURIComponent(id)}/dismiss`;
+  return callMatchesApi(token, 'POST', path, { reason });
+}
+
+router.post('/:kind(event|volunteering)/:sourceId(\\d+)/dismiss', requireAuth, asyncRoute(async (req, res) => {
+  let status = 'match-dismissed';
+  try {
+    await dismissOtherMatch(req.token, req.params.kind, Number(req.params.sourceId), reasonFrom(req.body));
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+    status = 'match-dismiss-failed';
+  }
+  return redirectTo(res, `/matches?status=${status}`);
+}, { redirectOn401: '/login?status=auth-required' }));
+
+router.post('/board/:kind(event|volunteering)/:sourceId(\\d+)/dismiss', requireAuth, asyncRoute(async (req, res) => {
+  let status = 'match-dismissed';
+  try {
+    await dismissOtherMatch(req.token, req.params.kind, Number(req.params.sourceId), reasonFrom(req.body));
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+    status = 'match-dismiss-failed';
+  }
+  return redirectTo(res, `/matches/board?source=${sourceFrom(req.body)}&status=${status}#matches-top`);
+}, { redirectOn401: '/login?status=auth-required' }));
+
 module.exports = router;

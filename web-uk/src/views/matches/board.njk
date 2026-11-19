@@ -118,9 +118,9 @@
             </ul>
           {% endif %}
 
-          {# Only listing and group matches can be hidden: the API has no dismiss for
-             a volunteering opportunity or an event. #}
-          {% if match.module == 'listing' and match.listingId %}{% set dismissPath = '/matches/board/' + (match.listingId | string) + '/dismiss' %}{% set dismissKey = match.listingId %}{% elif match.module == 'group' and match.groupId %}{% set dismissPath = '/matches/board/group/' + (match.groupId | string) + '/dismiss' %}{% set dismissKey = 'group-' + (match.groupId | string) %}{% else %}{% set dismissPath = '' %}{% endif %}
+          {# Every kind of match can be hidden. Volunteering and event matches could
+             not until 19 Nov 2026. #}
+          {% if match.module == 'listing' and match.listingId %}{% set dismissPath = '/matches/board/' + (match.listingId | string) + '/dismiss' %}{% set dismissKey = match.listingId %}{% elif match.module == 'group' and match.groupId %}{% set dismissPath = '/matches/board/group/' + (match.groupId | string) + '/dismiss' %}{% set dismissKey = 'group-' + (match.groupId | string) %}{% elif (match.module == 'event' or match.module == 'volunteering') and match.entityId %}{% set dismissPath = '/matches/board/' + match.module + '/' + (match.entityId | string) + '/dismiss' %}{% set dismissKey = match.module + '-' + (match.entityId | string) %}{% else %}{% set dismissPath = '' %}{% endif %}
           {% if dismissPath %}
             <div class="govuk-warning-text govuk-!-margin-top-2 govuk-!-margin-bottom-2">
               <span class="govuk-warning-text__icon" aria-hidden="true">!</span>

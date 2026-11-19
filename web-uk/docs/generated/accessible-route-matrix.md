@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-11-18T01:58:00.945Z
-Laravel commit SHA: `413831fe98e5c2f29fa2a1a1e7002915fb7116e3`
-Web UK repository commit SHA: `413831fe98e5c2f29fa2a1a1e7002915fb7116e3`
+Generated: 2026-11-19T22:20:04.755Z
+Laravel commit SHA: `7297b9ea77413011dd173f1802412b01d0b35c19`
+Web UK repository commit SHA: `7297b9ea77413011dd173f1802412b01d0b35c19`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 1097 |
+| web-uk routes | 1099 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 387 |
+| Extra web-uk routes | 389 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -71,7 +71,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | login | 7 | 0 | 4 | 0 |
 | logout | 1 | 0 | 0 | 0 |
 | marketplace | 50 | 0 | 41 | 0 |
-| matches | 4 | 0 | 4 | 0 |
+| matches | 4 | 0 | 6 | 0 |
 | me | 6 | 0 | 4 | 0 |
 | members | 11 | 0 | 4 | 0 |
 | messages | 18 | 0 | 7 | 0 |
@@ -347,6 +347,8 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/marketplace/shipping` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
 | POST | `/marketplace/shipping/{param}/delete` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
 | POST | `/marketplace/shipping/{param}/update` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
+| POST | `/matches/{param}/{param}/dismiss` | matches |  | web-uk/src/routes/matches.js |
+| POST | `/matches/board/{param}/{param}/dismiss` | matches |  | web-uk/src/routes/matches.js |
 | POST | `/matches/board/group/{param}/dismiss` | matches |  | web-uk/src/routes/matches.js |
 | POST | `/matches/group/{param}/dismiss` | matches |  | web-uk/src/routes/matches.js |
 | POST | `/matches/group/{param}/join` | matches |  | web-uk/src/routes/matches.js |

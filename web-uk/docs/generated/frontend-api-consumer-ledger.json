@@ -1,14 +1,14 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-11-18T01:58:01.697Z",
+  "generatedAt": "2026-11-19T22:20:05.642Z",
   "provenance": {
-    "generatedAt": "2026-11-18T01:58:01.697Z",
+    "generatedAt": "2026-11-19T22:20:05.642Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "413831fe98e5c2f29fa2a1a1e7002915fb7116e3",
+    "laravelCommitSha": "7297b9ea77413011dd173f1802412b01d0b35c19",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "413831fe98e5c2f29fa2a1a1e7002915fb7116e3",
+    "webUkRepositoryCommitSha": "7297b9ea77413011dd173f1802412b01d0b35c19",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
@@ -23,16 +23,16 @@
       "routes/api-volunteering-qualifications.php",
       "routes/api-marketplace-admin.php"
     ],
-    "laravelApiRoutesSha256": "615e5f14d7f7a2c039065929ab6efe3a4b4724d81c95cf690a6ab4c7ab2285c9"
+    "laravelApiRoutesSha256": "f97a03578b17258394ddbef7d71843c493bac50b4e4e6a145ed79db59a4109c1"
   },
   "summary": {
-    "contracts": 983,
+    "contracts": 984,
     "matchedOpenApi": 529,
-    "missingOpenApi": 453,
+    "missingOpenApi": 454,
     "routeDeclaredOpenApiOmissions": 451,
-    "withoutLaravelRouteDeclaration": 2,
+    "withoutLaravelRouteDeclaration": 3,
     "dynamicUnresolved": 1,
-    "stateChanging": 546,
+    "stateChanging": 547,
     "withoutTests": 0,
     "withoutDirectApiHelperAssertions": 1,
     "uniqueHelpersWithoutDirectApiAssertions": 1,
@@ -27142,6 +27142,43 @@
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
     },
     {
+      "id": "POST /api/v2/matches/{param} [callMatchesApi]",
+      "method": "POST",
+      "path": "/api/v2/matches/{param}",
+      "apiHelper": "callMatchesApi",
+      "source": "src/routes/matches.js:533",
+      "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
+      "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
+      "requestShape": "JSON object: reason",
+      "responseShape": "JSON/text response via ApiError-aware request",
+      "statusCodes": [],
+      "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
+      "redirects": "consumer-controlled: src/routes/matches.js",
+      "sideEffects": "state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work",
+      "cleanup": "assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal",
+      "laravel": {
+        "status": "missing-openapi-match",
+        "path": "",
+        "operationId": "",
+        "controllerAction": "",
+        "tags": []
+      },
+      "frontendConsumers": [
+        "src/routes/matches.js"
+      ],
+      "tests": [
+        "tests/api.test.js",
+        "tests/groups-react-parity-oct27.test.js",
+        "tests/image-descriptions-lists-nov07.test.js",
+        "tests/matches-group-dismiss.test.js",
+        "tests/matches-safeguarding-degraded.test.js",
+        "tests/matches-states-and-cards.test.js",
+        "tests/shared-accessible-shell.test.js"
+      ],
+      "directApiHelperAssertion": true,
+      "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
+    },
+    {
       "id": "POST /api/v2/matches/{param}/dismiss [dismissMatch]",
       "method": "POST",
       "path": "/api/v2/matches/{param}/dismiss",
@@ -27227,7 +27264,7 @@
       "method": "POST",
       "path": "/api/v2/matches/group/{param}/dismiss",
       "apiHelper": "callMatchesApi",
-      "source": "src/routes/matches.js:498",
+      "source": "src/routes/matches.js:502",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON object: reason",

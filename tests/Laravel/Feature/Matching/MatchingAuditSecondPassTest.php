@@ -299,4 +299,61 @@ class MatchingAuditSecondPassTest extends TestCase
         $this->assertSame('pending', DB::table('match_approvals')->where('id', $id)->value('status'));
         $this->assertSame(0, DB::table('notifications')->where('type', 'match_approved')->where('link', "/listings/{$listing->id}")->count());
     }
+
+    // ---------------------------------------------------------------------
+    // Hiding a volunteering or event match
+    // ---------------------------------------------------------------------
+
+    public function test_a_member_can_hide_an_event_match_and_it_stays_hidden(): void
+    {
+        $me = $this->member();
+        DB::table('user_skills')->insert([
+            'user_id' => $me->id, 'tenant_id' => $this->testTenantId, 'skill_name' => 'Gardening',
+            'proficiency' => 'intermediate', 'is_offering' => 1, 'is_requesting' => 0,
+        ]);
+        $event = \App\Models\Event::factory()->forTenant($this->testTenantId)->create([
+            'title' => 'Community gardening day',
+            'description' => 'Weeding, planting and mowing the lawn in the community garden.',
+            'start_time' => now()->addDays(10), 'start_date' => now()->addDays(10), 'end_time' => now()->addDays(10)->addHours(3),
+            'status' => 'active',
+        ]);
+        $service = app(CrossModuleMatchingService::class);
+        $eventIds = fn () => array_column(array_filter(
+            $service->getAllMatches($me->id, ['modules' => ['events'], 'min_score' => 0, 'limit' => 50])['matches'],
+            fn ($m) => $m['module'] === 'event'
+        ), 'event_id');
+        if (!in_array($event->id, $eventIds(), true)) {
+            $this->markTestSkipped('Events are switched off for the test community, or the fixture is not offered as a match');
+        }
+        Sanctum::actingAs($me, ['*']);
+
+        $this->apiPost("/v2/matches/event/{$event->id}/dismiss", ['reason' => 'not_interested'])->assertStatus(200);
+
+        $this->assertNotContains($event->id, $eventIds(), 'A member had no way to hide an event suggested on the Matches page');
+        $this->assertTrue(DB::table('match_source_dismissals')->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $me->id)->where('source_type', 'event')->where('source_id', $event->id)->exists());
+    }
+
+    public function test_hiding_a_match_that_is_not_in_this_community_is_refused(): void
+    {
+        Sanctum::actingAs($this->member(), ['*']);
+
+        $this->apiPost('/v2/matches/event/99999999/dismiss')->assertStatus(404);
+        $this->apiPost('/v2/matches/volunteering/99999999/dismiss')->assertStatus(404);
+        $this->assertSame(0, DB::table('match_source_dismissals')->where('source_id', 99999999)->count());
+    }
+
+    public function test_a_hidden_volunteering_opportunity_is_recorded_for_the_member(): void
+    {
+        $me = $this->member();
+        $opportunity = \App\Models\VolOpportunity::factory()->create(['tenant_id' => $this->testTenantId]);
+        Sanctum::actingAs($me, ['*']);
+
+        $this->apiPost("/v2/matches/volunteering/{$opportunity->id}/dismiss", ['reason' => 'too_far'])->assertStatus(200);
+
+        $row = DB::table('match_source_dismissals')->where('user_id', $me->id)->where('source_type', 'volunteering')->first();
+        $this->assertNotNull($row);
+        $this->assertSame((int) $opportunity->id, (int) $row->source_id);
+        $this->assertSame('too_far', $row->reason);
+    }
 }

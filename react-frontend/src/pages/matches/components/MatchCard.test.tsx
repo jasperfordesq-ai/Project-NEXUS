@@ -134,8 +134,8 @@ describe('MatchCard', () => {
       expect(screen.getByText('Going: 7')).toBeInTheDocument();
       // The start time is shown in the reader's format; the year is always in it.
       expect(screen.getByText(/2026/)).toBeInTheDocument();
-      // Events cannot be hidden server-side, so no button offers to.
-      expect(screen.queryByRole('button', { name: 'Not interested' })).not.toBeInTheDocument();
+      // Events can be hidden (since 19 Nov 2026), so the button is offered.
+      expect(screen.getByRole('button', { name: 'Not interested' })).toBeInTheDocument();
     });
 
     it('keeps the "+N more" button out of the card link', () => {
@@ -316,6 +316,27 @@ describe('MatchCard', () => {
 
       await waitFor(() => expect(mockApiPost).toHaveBeenCalledWith('/v2/matches/group/8/dismiss', { reason: 'too_far' }));
       await waitFor(() => expect(onDismissed).toHaveBeenCalled());
+    });
+
+    it('hides an event match and a volunteering match, which had no way to be hidden', async () => {
+      mockApiPost.mockResolvedValue({ success: true });
+      const onEventDismissed = renderCard({ module: 'event', event_id: 12, title: 'Gardening day', match_score: 60 });
+
+      fireEvent.click(screen.getByRole('button', { name: 'Not interested' }));
+      fireEvent.click(await screen.findByRole('button', { name: 'Too far away' }));
+
+      await waitFor(() => expect(mockApiPost).toHaveBeenCalledWith('/v2/matches/event/12/dismiss', { reason: 'too_far' }));
+      await waitFor(() => expect(onEventDismissed).toHaveBeenCalled());
+    });
+
+    it('hides a volunteering match by its opportunity id', async () => {
+      mockApiPost.mockResolvedValue({ success: true });
+      renderCard({ module: 'volunteering', opportunity_id: 31, organization_id: 4, title: 'Befriending', match_score: 70 });
+
+      fireEvent.click(screen.getByRole('button', { name: 'Not interested' }));
+      fireEvent.click(await screen.findByRole('button', { name: 'Too far away' }));
+
+      await waitFor(() => expect(mockApiPost).toHaveBeenCalledWith('/v2/matches/volunteering/31/dismiss', { reason: 'too_far' }));
     });
 
     it('explains a failed hide in its own words, not as a page that did not load', async () => {

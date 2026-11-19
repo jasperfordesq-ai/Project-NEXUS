@@ -54,10 +54,13 @@ const MODULE_CONFIG: Record<MatchModule, { icon: typeof ListChecks; labelKey: st
 
 type JoinState = 'none' | 'joined' | 'requested';
 
-function matchSourceType(match: Match): 'listing' | 'group' | null {
-  if (match.module === 'listing') return 'listing';
-  if (match.module === 'group') return 'group';
-  return null;
+/**
+ * The name the dismiss endpoint knows each kind of match by. All four can be
+ * hidden: volunteering and events could not until 19 Nov 2026, when the
+ * server gained somewhere to record it.
+ */
+function matchSourceType(match: Match): MatchModule {
+  return match.module;
 }
 
 /** When an event starts, in the reader's own date format; null when the server sent nothing usable. */

@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-11-18T01:58:00.945Z",
+  "generatedAt": "2026-11-19T22:20:04.755Z",
   "provenance": {
-    "generatedAt": "2026-11-18T01:58:00.945Z",
+    "generatedAt": "2026-11-19T22:20:04.755Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "413831fe98e5c2f29fa2a1a1e7002915fb7116e3",
+    "laravelCommitSha": "7297b9ea77413011dd173f1802412b01d0b35c19",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "413831fe98e5c2f29fa2a1a1e7002915fb7116e3",
+    "webUkRepositoryCommitSha": "7297b9ea77413011dd173f1802412b01d0b35c19",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-11-18T01:58:00.945Z",
+    "generatedAt": "2026-11-19T22:20:04.755Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
-    "webUkRoutes": 1097,
+    "webUkRoutes": 1099,
     "matchedRoutes": 707,
     "missingRoutes": 0,
-    "extraWebUkRoutes": 387,
+    "extraWebUkRoutes": 389,
     "ignoredInfrastructureRoutes": 4,
     "familyCounts": {
       "account-deletion": {
@@ -205,7 +205,7 @@
       "matches": {
         "matched": 4,
         "missing": 0,
-        "extraWebUk": 4,
+        "extraWebUk": 6,
         "ignoredInfrastructure": 0
       },
       "me": {
@@ -5207,6 +5207,48 @@
       "webUkPath": "/marketplace/shipping/{param}/update",
       "webUkView": "",
       "webUkFile": "web-uk/src/routes/marketplace-member-tools.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/matches/{param}/{param}/dismiss",
+      "family": "matches",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/matches/{param}/{param}/dismiss",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/matches.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/matches/board/{param}/{param}/dismiss",
+      "family": "matches",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/matches/board/{param}/{param}/dismiss",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/matches.js",
       "webUkRouteKind": ""
     },
     {

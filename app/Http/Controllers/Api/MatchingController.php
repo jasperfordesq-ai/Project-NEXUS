@@ -145,6 +145,8 @@ class MatchingController extends BaseApiController
      * - listing: same behaviour as the legacy /matches/{id}/dismiss
      * - group: marks the group_match_cache row dismissed (suppressed on
      *   read and on re-warm)
+     * - volunteering, event: recorded in match_source_dismissals and left
+     *   out of the member's matches from then on
      */
     public function dismissTyped(string $sourceType, int $sourceId): JsonResponse
     {
@@ -168,6 +170,27 @@ class MatchingController extends BaseApiController
                 if (!$this->groupMatchingService->dismiss($userId, $sourceId)) {
                     return $this->respondWithError('NOT_FOUND', __('api.not_found', ['model' => 'Group']), 'sourceId', 404);
                 }
+                break;
+
+            // A volunteering opportunity or an event suggested on the Matches
+            // page. Until 19 Nov 2026 neither could be hidden: this endpoint
+            // refused them and there was nowhere to record it.
+            case 'volunteering':
+            case 'event':
+                $table = $sourceType === 'event' ? 'events' : 'vol_opportunities';
+                if (!DB::table($table)->where('id', $sourceId)->where('tenant_id', $tenantId)->exists()) {
+                    return $this->respondWithError(
+                        'NOT_FOUND',
+                        __('api.not_found', ['model' => $sourceType === 'event' ? 'Event' : 'Opportunity']),
+                        'sourceId',
+                        404
+                    );
+                }
+                DB::statement(
+                    "INSERT IGNORE INTO match_source_dismissals (tenant_id, user_id, source_type, source_id, reason, created_at)
+                     VALUES (?, ?, ?, ?, ?, NOW())",
+                    [$tenantId, $userId, $sourceType, $sourceId, $reason]
+                );
                 break;
 
             default:

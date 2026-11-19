@@ -5,19 +5,19 @@ Status: **Generated snapshot — static consumer inventory, not certification**
 Generated from `src/lib/api.js`, routed Web UK consumers, tests, and Laravel `openapi.json`.
 This is static evidence: an OpenAPI match or test reference does not prove runtime behavior, role policy, side effects, cleanup, or frontend parity.
 
-- Generated: 2026-11-18T01:58:01.697Z
-- Laravel commit SHA: `413831fe98e5c2f29fa2a1a1e7002915fb7116e3`
-- Web UK repository commit SHA: `413831fe98e5c2f29fa2a1a1e7002915fb7116e3`
+- Generated: 2026-11-19T22:20:05.642Z
+- Laravel commit SHA: `7297b9ea77413011dd173f1802412b01d0b35c19`
+- Web UK repository commit SHA: `7297b9ea77413011dd173f1802412b01d0b35c19`
 - Laravel working tree dirty: yes
 - Web UK repository working tree dirty: yes
 - Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
-- Contracts: 983
+- Contracts: 984
 - Laravel OpenAPI matches: 529
-- Missing OpenAPI matches: 453
+- Missing OpenAPI matches: 454
 - Direct Laravel route declarations omitted from OpenAPI: 451
-- Without a direct Laravel route declaration: 2
+- Without a direct Laravel route declaration: 3
 - Dynamic unresolved contracts: 1
-- State-changing contracts: 546
+- State-changing contracts: 547
 - Rows without detected tests: 0
 - Rows without direct API-helper assertions: 1
 - Unique helpers without direct API-helper assertions: 1
@@ -25,7 +25,7 @@ This is static evidence: an OpenAPI match or test reference does not prove runti
 - Unique OpenAPI-omitted helpers without direct API-client assertions: 1
 - API source SHA-256: `4fecd575f320092538bcc25e1861d335c00f4375970849702e68eedf3e08a33b`
 - Laravel OpenAPI SHA-256: `d46b704fefa1d1d3cd11944fbdc32cf2695306df0d77c22e495a42a43dd551d6`
-- Laravel API routes SHA-256: `615e5f14d7f7a2c039065929ab6efe3a4b4724d81c95cf690a6ab4c7ab2285c9`
+- Laravel API routes SHA-256: `f97a03578b17258394ddbef7d71843c493bac50b4e4e6a145ed79db59a4109c1`
 
 The JSON companion contains the full request/response, status/error, redirect, side-effect, cleanup, Laravel implementation, consumer, and test fields.
 
@@ -664,6 +664,7 @@ Rows below have test references but no test that directly names and exercises th
 | GET | `/api/v2/marketplace/sellers/{param}` | `callMarketplaceApi` | route-declared-openapi-omission | read-only by HTTP method<br>not applicable | src/routes/marketplace.js | tests/api.test.js<br>tests/form-field-error-targeting-more.test.js<br>tests/form-field-error-targeting.test.js<br>tests/marketplace-lend-listing.test.js<br>tests/marketplace-lists-nearby-payouts.test.js<br>tests/marketplace-member-tools.test.js<br>tests/marketplace-my-listings-paging.test.js<br>tests/marketplace-parity-stage3-oct27.test.js<br>tests/marketplace-payment-contract.test.js<br>tests/marketplace-photo-alt.test.js<br>tests/marketplace-react-parity-oct27.test.js<br>tests/marketplace-seller-onboarding.test.js<br>tests/marketplace-status-localization.test.js<br>tests/marketplace-title-localization.test.js<br>tests/runtime/marketplace-mutation.spec.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/v2/marketplace/sellers/{param}/listings?per_page=50{param}` | `callMarketplaceApi` | route-declared-openapi-omission | read-only by HTTP method<br>not applicable | src/routes/marketplace.js | tests/api.test.js<br>tests/form-field-error-targeting-more.test.js<br>tests/form-field-error-targeting.test.js<br>tests/marketplace-lend-listing.test.js<br>tests/marketplace-lists-nearby-payouts.test.js<br>tests/marketplace-member-tools.test.js<br>tests/marketplace-my-listings-paging.test.js<br>tests/marketplace-parity-stage3-oct27.test.js<br>tests/marketplace-payment-contract.test.js<br>tests/marketplace-photo-alt.test.js<br>tests/marketplace-react-parity-oct27.test.js<br>tests/marketplace-seller-onboarding.test.js<br>tests/marketplace-status-localization.test.js<br>tests/marketplace-title-localization.test.js<br>tests/runtime/marketplace-mutation.spec.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/v2/marketplace/sellers/{param}/shipping-options` | `callMarketplaceApi` | route-declared-openapi-omission | read-only by HTTP method<br>not applicable | src/routes/marketplace-actions.js<br>src/routes/marketplace.js | tests/api.test.js<br>tests/form-field-error-targeting-more.test.js<br>tests/form-field-error-targeting.test.js<br>tests/marketplace-lend-listing.test.js<br>tests/marketplace-lists-nearby-payouts.test.js<br>tests/marketplace-member-tools.test.js<br>tests/marketplace-my-listings-paging.test.js<br>tests/marketplace-parity-stage3-oct27.test.js<br>tests/marketplace-payment-contract.test.js<br>tests/marketplace-photo-alt.test.js<br>tests/marketplace-react-parity-oct27.test.js<br>tests/marketplace-seller-onboarding.test.js<br>tests/marketplace-status-localization.test.js<br>tests/marketplace-title-localization.test.js<br>tests/runtime/marketplace-mutation.spec.js<br>tests/shared-accessible-shell.test.js |
+| POST | `/api/v2/matches/{param}` | `callMatchesApi` | missing-openapi-match | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/matches.js | tests/api.test.js<br>tests/groups-react-parity-oct27.test.js<br>tests/image-descriptions-lists-nov07.test.js<br>tests/matches-group-dismiss.test.js<br>tests/matches-safeguarding-degraded.test.js<br>tests/matches-states-and-cards.test.js<br>tests/shared-accessible-shell.test.js |
 | POST | `/api/v2/matches/{param}/dismiss` | `dismissMatch` | documented | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/matches.js | tests/api.test.js<br>tests/matches-group-dismiss.test.js<br>tests/matches-safeguarding-degraded.test.js<br>tests/matches-states-and-cards.test.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/v2/matches/all?modules=groups&limit=3&min_score=50` | `callMatchesApi` | documented | read-only by HTTP method<br>not applicable | src/routes/groups.js<br>src/routes/matches.js | tests/api.test.js<br>tests/groups-react-parity-oct27.test.js<br>tests/image-descriptions-lists-nov07.test.js<br>tests/matches-group-dismiss.test.js<br>tests/matches-safeguarding-degraded.test.js<br>tests/matches-states-and-cards.test.js<br>tests/shared-accessible-shell.test.js |
 | POST | `/api/v2/matches/group/{param}/dismiss` | `callMatchesApi` | missing-openapi-match | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/matches.js | tests/api.test.js<br>tests/groups-react-parity-oct27.test.js<br>tests/image-descriptions-lists-nov07.test.js<br>tests/matches-group-dismiss.test.js<br>tests/matches-safeguarding-degraded.test.js<br>tests/matches-states-and-cards.test.js<br>tests/shared-accessible-shell.test.js |

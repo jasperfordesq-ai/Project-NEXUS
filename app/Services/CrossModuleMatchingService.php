@@ -389,6 +389,10 @@ class CrossModuleMatchingService
             if (!empty($appliedIds)) {
                 $query->whereNotIn('opp.id', $appliedIds);
             }
+            $hidden = self::hiddenSourceIds($userId, $tenantId, 'volunteering');
+            if ($hidden !== []) {
+                $query->whereNotIn('opp.id', $hidden);
+            }
 
             $opportunities = $query->orderByDesc('opp.id')->limit(200)->get();
 
@@ -500,6 +504,10 @@ class CrossModuleMatchingService
                 }
             }
 
+            foreach (self::hiddenSourceIds($userId, $tenantId, 'event') as $hiddenId) {
+                $answered[$hiddenId] = true; // hidden by the member: treated as answered
+            }
+
             $userCategoryIds = $this->getUserCategoryIds($userId, $tenantId);
             $interests = $this->getMemberInterestKeywords($userId, $tenantId);
 
@@ -581,6 +589,30 @@ class CrossModuleMatchingService
     // =========================================================================
     // HELPERS
     // =========================================================================
+
+    /**
+     * Volunteering opportunities or events this member has hidden from
+     * their matches (MatchingController::dismissTyped).
+     *
+     * @return int[]
+     */
+    private static function hiddenSourceIds(int $userId, int $tenantId, string $sourceType): array
+    {
+        try {
+            return array_map('intval', DB::table('match_source_dismissals')
+                ->where('tenant_id', $tenantId)
+                ->where('user_id', $userId)
+                ->where('source_type', $sourceType)
+                ->pluck('source_id')
+                ->all());
+        } catch (\Throwable $e) {
+            // Reported, not hidden: without this list a hidden match comes back.
+            Log::error('[CrossModuleMatching] hidden matches unavailable', [
+                'user_id' => $userId, 'source_type' => $sourceType, 'exception' => $e::class, 'error' => $e->getMessage(),
+            ]);
+            return [];
+        }
+    }
 
     /**
      * What the member does and wants, as keywords: their profile skills in
