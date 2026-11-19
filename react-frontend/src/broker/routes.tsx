@@ -64,6 +64,18 @@ function BrokerModerationIndexRedirect() {
  * item is hidden too — see BrokerSidebar). A broker on a tenant without the
  * feature who deep-links here is bounced back to the broker dashboard.
  */
+/**
+ * Match approvals depend on offers and requests (the `listings` module),
+ * which is what matching itself runs on, not on the exchange workflow.
+ */
+function MatchApprovalsRoute({ children }: { children: React.ReactNode }) {
+  const { tenantPath, hasModule } = useTenant();
+  if (!hasModule('listings')) {
+    return <Navigate to={tenantPath('/broker')} replace />;
+  }
+  return <>{children}</>;
+}
+
 function ExchangeFeatureRoute({ children }: { children: React.ReactNode }) {
   const { tenantPath, hasFeature } = useTenant();
   if (!hasFeature('exchange_workflow')) {
@@ -167,10 +179,9 @@ export function BrokerRoutes() {
       <Route path="exchanges" element={<ExchangeFeatureRoute><Lazy><ExchangesPage /></Lazy></ExchangeFeatureRoute>} />
       <Route path="exchanges/:id" element={<ExchangeFeatureRoute><Lazy><ExchangeDetailPage /></Lazy></ExchangeFeatureRoute>} />
 
-      {/* Match approvals — same feature gate as Exchanges (smart matching
-          feeds the exchange workflow; the admin sidebar gates it the same way). */}
-      <Route path="match-approvals" element={<ExchangeFeatureRoute><Lazy><MatchApprovalsPage /></Lazy></ExchangeFeatureRoute>} />
-      <Route path="match-approvals/:id" element={<ExchangeFeatureRoute><Lazy><MatchApprovalDetailPage /></Lazy></ExchangeFeatureRoute>} />
+      {/* Match approvals — wherever the community has offers and requests. */}
+      <Route path="match-approvals" element={<MatchApprovalsRoute><Lazy><MatchApprovalsPage /></Lazy></MatchApprovalsRoute>} />
+      <Route path="match-approvals/:id" element={<MatchApprovalsRoute><Lazy><MatchApprovalDetailPage /></Lazy></MatchApprovalsRoute>} />
 
       {/* Messages */}
       <Route path="messages" element={<Lazy><MessageReviewPage /></Lazy>} />

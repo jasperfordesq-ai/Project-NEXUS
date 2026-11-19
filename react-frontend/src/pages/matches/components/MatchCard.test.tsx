@@ -199,6 +199,22 @@ describe('MatchCard', () => {
     });
   });
 
+  describe('what kind of listing it is', () => {
+    it('says whether a listing is an offer or a request, and its category', () => {
+      renderCard({ ...listing, type: 'request', category_name: 'Home and garden' });
+
+      expect(screen.getByText('Request')).toBeInTheDocument();
+      expect(screen.getByText('Home and garden')).toBeInTheDocument();
+      expect(screen.queryByText('Offer or request')).not.toBeInTheDocument();
+    });
+
+    it('falls back to the general label when the kind is not known', () => {
+      renderCard(listing);
+
+      expect(screen.getByText('Offer or request')).toBeInTheDocument();
+    });
+  });
+
   describe('messaging the member who posted', () => {
     afterEach(() => {
       stableTenant.hasFeature.mockImplementation(() => true);

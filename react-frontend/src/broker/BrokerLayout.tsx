@@ -75,8 +75,9 @@ const EMPTY_BADGES: BrokerBadgeCounts = {
 
 export function BrokerLayout() {
   const { t } = useTranslation('broker');
-  const { hasFeature, tenant, tenantPath } = useTenant();
-  const showMatches = hasFeature('exchange_workflow');
+  const { hasModule, tenant, tenantPath } = useTenant();
+  // Wherever the community has offers and requests (see BrokerSidebar).
+  const showMatches = hasModule('listings');
   // Remembered per browser: a broker who works with the sidebar tucked away
   // should not have to tuck it away again after every reload.
   const [sidebarCollapsed, setSidebarCollapsed] = useState(readSidebarCollapsed);

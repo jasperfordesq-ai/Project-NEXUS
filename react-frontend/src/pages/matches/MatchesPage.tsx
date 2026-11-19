@@ -210,9 +210,15 @@ export function MatchesPage() {
   // ─── Empty state variant ───
   // A community that has switched matching off comes first: nothing the
   // member does (adding a location, posting an offer) would change it.
+  // "We need your location" only when having none really is what holds the
+  // member back (`degraded`), and only where location matters: it used to
+  // win over every other reason on every tab, Groups and Events included,
+  // and where the community's centre already stands in for the member's.
+  const locationIsWhy = meta.degraded && meta.degraded_reason === 'no_coordinates'
+    && (tab === 'all' || tab === 'listings');
   const emptyVariant = meta.disabled
     ? 'disabled'
-    : meta.degraded_reason === 'no_coordinates'
+    : locationIsWhy
     ? 'no_coordinates'
     : meta.degraded_reason === 'safeguarding_policy_unavailable'
       ? 'safeguarding_unavailable'
@@ -260,8 +266,10 @@ export function MatchesPage() {
         }
       />
 
-      {/* Degraded (no coordinates) banner */}
-      {meta.degraded_reason === 'no_coordinates' && (
+      {/* No-location banner. Left out when the empty state below already
+          says so with the same button. */}
+      {meta.degraded_reason === 'no_coordinates' && !meta.disabled
+        && !(locationIsWhy && !loading && !loadError && filteredMatches.length === 0) && (
         <Alert
           color="warning"
           icon={<MapPin className="w-5 h-5" aria-hidden="true" />}
@@ -320,7 +328,9 @@ export function MatchesPage() {
         />
       )}
 
-      {/* Stats row */}
+      {/* Stats row. Not where the community has matching switched off:
+          four zeroes there say nothing. */}
+      {!meta.disabled && (
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <GlassCard className="p-4 text-center">
           <Target className="w-5 h-5 text-accent mx-auto mb-1" aria-hidden="true" />
@@ -343,6 +353,7 @@ export function MatchesPage() {
           <p className="text-xs text-theme-subtle">{t('stats_mutual_matches')}</p>
         </GlassCard>
       </div>
+      )}
 
       {/* Mutual-only toggle chip (shown once we know there are mutual matches) */}
       {mutualCount > 0 && (

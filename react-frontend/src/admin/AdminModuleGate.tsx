@@ -40,7 +40,10 @@ export const ADMIN_MODULE_REQUIREMENTS: ReadonlyArray<{
   { path: 'partner-venues', feature: 'partner_venues' },
   { path: 'gamification', feature: 'gamification' },
   { path: 'custom-badges', feature: 'gamification' },
-  { path: 'smart-matching', feature: 'exchange_workflow' },
+  // Offers and requests, which is what matching runs on. It was the exchange
+  // workflow: with that off, matching still ran and no admin could reach its
+  // settings to switch it off.
+  { path: 'smart-matching', module: 'listings' },
   { path: 'marketplace', feature: 'marketplace' },
   { path: 'newsletters', feature: 'newsletter' },
   { path: 'advertising', feature: 'local_advertising' },

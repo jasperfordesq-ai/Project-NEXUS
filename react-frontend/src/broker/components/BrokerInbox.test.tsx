@@ -70,10 +70,10 @@ describe('BrokerInbox ("Waiting for you")', () => {
     api.get.mockImplementation((url: string) => Promise.resolve(url.includes('member-preferences') ? ok([]) : ok([])));
   });
 
-  const renderInbox = (showExchanges = true) =>
+  const renderInbox = (showExchanges = true, showMatchApprovals = true) =>
     render(
       <ConfirmDialogProvider>
-        <BrokerInbox showExchanges={showExchanges} />
+        <BrokerInbox showExchanges={showExchanges} showMatchApprovals={showMatchApprovals} />
       </ConfirmDialogProvider>,
     );
 
@@ -153,7 +153,7 @@ describe('BrokerInbox ("Waiting for you")', () => {
       .toHaveAttribute('href', '/test/broker/vetting?status=review_requested');
   });
 
-  it('lists proposed matches waiting for approval, each opening its own page, only on exchange-workflow communities', async () => {
+  it('lists proposed matches waiting for approval, each opening its own page, wherever the community has offers and requests', async () => {
     api.getApprovals.mockResolvedValue(ok([
       { id: 5, user_1_name: 'Úna', user_2_name: 'Víctor', listing_title: 'Garden help', match_score: 82.4, status: 'pending', created_at: '2026-09-30' },
     ]));
@@ -166,10 +166,17 @@ describe('BrokerInbox ("Waiting for you")', () => {
 
     vi.clearAllMocks();
     api.getApprovals.mockResolvedValue(ok([]));
-    renderInbox(false);
+    // Exchange workflow off: no exchanges, but matches are still held for
+    // a coordinator and must still be listed.
+    renderInbox(false, true);
+    await waitFor(() => expect(api.getApprovals).toHaveBeenCalledWith({ status: 'pending' }));
+    expect(api.getExchanges).not.toHaveBeenCalled();
+
+    // No offers and requests at all: nothing to approve.
+    vi.clearAllMocks();
+    renderInbox(false, false);
     await waitFor(() => expect(api.getMessages).toHaveBeenCalled());
     expect(api.getApprovals).not.toHaveBeenCalled();
-    expect(api.getExchanges).not.toHaveBeenCalled();
   });
 
   it('renders nothing when every queue is empty, and says so', async () => {
@@ -178,7 +185,7 @@ describe('BrokerInbox ("Waiting for you")', () => {
     const onVisibilityChange = vi.fn();
     const { container } = render(
       <ConfirmDialogProvider>
-        <BrokerInbox showExchanges onVisibilityChange={onVisibilityChange} />
+        <BrokerInbox showExchanges showMatchApprovals onVisibilityChange={onVisibilityChange} />
       </ConfirmDialogProvider>,
     );
     await waitFor(() => expect(api.get).toHaveBeenCalled());

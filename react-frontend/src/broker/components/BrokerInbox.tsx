@@ -73,11 +73,13 @@ function matchRows(res: { success?: boolean; data?: unknown; meta?: unknown } | 
 
 interface BrokerInboxProps {
   showExchanges: boolean;
+  /** Match approvals: wherever the community has offers and requests. */
+  showMatchApprovals: boolean;
   /** Told whether anything is waiting, so the dashboard can lay the panel beside it out. */
   onVisibilityChange?: (visible: boolean) => void;
 }
 
-export function BrokerInbox({ showExchanges, onVisibilityChange }: BrokerInboxProps) {
+export function BrokerInbox({ showExchanges, showMatchApprovals, onVisibilityChange }: BrokerInboxProps) {
   const { t } = useTranslation('broker');
   const { tenantPath } = useTenant();
   const toast = useToast();
@@ -102,7 +104,7 @@ export function BrokerInbox({ showExchanges, onVisibilityChange }: BrokerInboxPr
       // default; the same list, the same rule (needs_review), here.
       api.get<MemberSupportNeed[]>('/v2/admin/safeguarding/member-preferences').catch(() => null),
       adminVetting.list({ status: 'review_requested', per_page: SHOW }).catch(() => null),
-      showExchanges ? adminMatching.getApprovals({ status: 'pending' }).catch(() => null) : Promise.resolve(null),
+      showMatchApprovals ? adminMatching.getApprovals({ status: 'pending' }).catch(() => null) : Promise.resolve(null),
     ]);
     if (m?.success && Array.isArray(m.data)) setMembers({ items: m.data.slice(0, SHOW), total: totalOf(m, m.data) });
     if (msg?.success && Array.isArray(msg.data)) setMessages({ items: msg.data.slice(0, SHOW), total: totalOf(msg, msg.data) });
@@ -119,7 +121,7 @@ export function BrokerInbox({ showExchanges, onVisibilityChange }: BrokerInboxPr
     }
     const matchSection = matchRows(match);
     if (matchSection) setMatches(matchSection);
-  }, [showExchanges]);
+  }, [showExchanges, showMatchApprovals]);
 
   useEffect(() => {
     void load();

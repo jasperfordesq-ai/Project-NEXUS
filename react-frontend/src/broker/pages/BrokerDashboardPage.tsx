@@ -195,7 +195,7 @@ function MyWeekCard({ week, failed, avgReviewHours, wide }: MyWeekCardProps) {
 export function BrokerDashboard() {
   const { t } = useTranslation('broker');
   usePageTitle(t('dashboard.title'));
-  const { tenantPath, hasFeature } = useTenant();
+  const { tenantPath, hasFeature, hasModule } = useTenant();
   const { user } = useAuth();
   const toast = useToast();
 
@@ -206,6 +206,8 @@ export function BrokerDashboard() {
   const [loadError, setLoadError] = useState(false);
 
   const showExchanges = hasFeature('exchange_workflow');
+  // Match approvals follow offers and requests (see BrokerSidebar).
+  const showMatchApprovals = hasModule('listings');
 
   // Stash the latest `t` and `toast` in refs so loadDashboard's identity
   // doesn't churn on every language switch (which would otherwise refetch
@@ -227,7 +229,7 @@ export function BrokerDashboard() {
         adminBroker.getDashboard(),
         // The match review time comes from the matching module's own stats;
         // it is a nicety, so its failure never fails the dashboard.
-        showExchanges ? adminMatching.getApprovalStats(7).catch(() => null) : Promise.resolve(null),
+        showMatchApprovals ? adminMatching.getApprovalStats(7).catch(() => null) : Promise.resolve(null),
       ]);
       if (res.success && res.data) {
         setStats(res.data);
@@ -255,7 +257,7 @@ export function BrokerDashboard() {
     } finally {
       if (!quiet) setLoading(false);
     }
-  }, [showExchanges]);
+  }, [showMatchApprovals]);
 
   useEffect(() => {
     void loadDashboard();
@@ -494,12 +496,12 @@ export function BrokerDashboard() {
               decisions) beside My week ────────────────────────────────────── */}
           <div className={`mb-8 grid grid-cols-1 gap-4 ${inboxVisible ? 'xl:grid-cols-[2fr_1fr]' : ''}`}>
             <div className={inboxVisible ? 'min-w-0' : 'hidden'}>
-              <BrokerInbox showExchanges={showExchanges} onVisibilityChange={setInboxVisible} />
+              <BrokerInbox showExchanges={showExchanges} showMatchApprovals={showMatchApprovals} onVisibilityChange={setInboxVisible} />
             </div>
             <MyWeekCard
               week={stats?.my_week}
               failed={failed('my_week')}
-              avgReviewHours={showExchanges ? avgReviewHours : null}
+              avgReviewHours={showMatchApprovals ? avgReviewHours : null}
               wide={!inboxVisible}
             />
           </div>

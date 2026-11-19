@@ -231,13 +231,31 @@ describe('BrokerSidebar', () => {
     expect(screen.getByText('7')).toBeInTheDocument();
   });
 
-  it('hides the Match Approvals nav item when exchange_workflow is disabled', () => {
+  it('keeps the Match Approvals nav item when exchange_workflow is disabled', () => {
+    // Matching runs wherever offers and requests do, and holds matches for
+    // a coordinator whatever the exchange workflow switch says. Hidden with
+    // that switch, held matches could never be approved by anyone.
     mockUseAuth.mockReturnValue({ user: { id: 1, role: 'broker' } });
     mockUseTenant.mockReturnValue({
       tenant: { id: 2, slug: 'test-tenant', name: 'Test Tenant' },
       tenantPath: (path: string) => path,
       hasFeature: (f: string) => f !== 'exchange_workflow',
       hasModule: () => true,
+    });
+
+    render(<BrokerSidebar collapsed={false} onToggle={vi.fn()} badges={EMPTY_BADGES} />);
+
+    expect(screen.getByText('Match Approvals')).toBeInTheDocument();
+    expect(screen.queryByText('Exchanges')).not.toBeInTheDocument();
+  });
+
+  it('hides the Match Approvals nav item where the community has no offers and requests', () => {
+    mockUseAuth.mockReturnValue({ user: { id: 1, role: 'broker' } });
+    mockUseTenant.mockReturnValue({
+      tenant: { id: 2, slug: 'test-tenant', name: 'Test Tenant' },
+      tenantPath: (path: string) => path,
+      hasFeature: () => true,
+      hasModule: (m: string) => m !== 'listings',
     });
 
     render(<BrokerSidebar collapsed={false} onToggle={vi.fn()} badges={EMPTY_BADGES} />);

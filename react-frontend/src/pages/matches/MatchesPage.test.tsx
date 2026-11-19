@@ -138,6 +138,43 @@ describe('MatchesPage', () => {
     await waitFor(() => expect(label.previousElementSibling).toHaveTextContent('1'));
   });
 
+  it('does not ask for a location when the member is not held back by having none', async () => {
+    // The community's centre stands in for a missing location: matching is
+    // not restricted (degraded false), though the reason is still reported.
+    mockApiGet.mockResolvedValue({
+      success: true,
+      data: { matches: [], meta: { ...emptyResponse.data.meta, needs_location: true, degraded: false, degraded_reason: 'no_coordinates' } },
+    });
+    render(<MatchesPage />);
+
+    await waitFor(() => expect(mockApiGet).toHaveBeenCalled());
+    await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
+    expect(screen.queryByText('We need your location to find matches')).not.toBeInTheDocument();
+  });
+
+  it('asks for a location once, not twice, when that is why the list is empty', async () => {
+    mockApiGet.mockResolvedValue({
+      success: true,
+      data: { matches: [], meta: { ...emptyResponse.data.meta, needs_location: true, degraded: true, degraded_reason: 'no_coordinates' } },
+    });
+    render(<MatchesPage />);
+
+    await waitFor(() => expect(screen.getByText('We need your location to find matches')).toBeInTheDocument());
+    expect(screen.queryByText('Add your location to see nearby matches')).not.toBeInTheDocument();
+  });
+
+  it('shows no row of zeroes where the community has matching switched off', async () => {
+    mockApiGet.mockResolvedValue({
+      success: true,
+      data: { matches: [], meta: { ...emptyResponse.data.meta, disabled: true } },
+    });
+    render(<MatchesPage />);
+
+    await waitFor(() => expect(mockApiGet).toHaveBeenCalled());
+    await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
+    expect(screen.queryByText('Total Matches')).not.toBeInTheDocument();
+  });
+
   it('renders match items when API returns data', async () => {
     mockApiGet.mockResolvedValue({
       success: true,
@@ -169,12 +206,14 @@ describe('MatchesPage', () => {
     expect(screen.getByRole('navigation', { name: /breadcrumb/i })).toBeInTheDocument();
   });
 
-  it('shows the no-coordinates degraded banner when the backend reports it', async () => {
+  it('shows the no-coordinates degraded banner above the matches when the backend reports it', async () => {
+    // With matches to show, the banner carries the message. With none, the
+    // empty state does (tested below), so it is not said twice.
     mockApiGet.mockResolvedValue({
       success: true,
       data: {
-        matches: [],
-        meta: { total: 0, modules: [], min_score: 0, needs_location: true, degraded: true, degraded_reason: 'no_coordinates', has_active_listings: null, paused: false },
+        matches: [{ module: 'listing', listing_id: 1, title: 'Remote proofreading', match_score: 70, match_reasons: [] }],
+        meta: { total: 1, modules: [], min_score: 0, needs_location: true, degraded: true, degraded_reason: 'no_coordinates', has_active_listings: null, paused: false },
       },
     });
     render(<MatchesPage />);

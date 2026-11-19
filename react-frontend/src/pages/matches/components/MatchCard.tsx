@@ -70,6 +70,8 @@ function eventStartText(value?: string | null): string | null {
 
 export function MatchCard({ match, index, highlightId, hotThreshold = DEFAULT_HOT_THRESHOLD, onDismissed }: MatchCardProps) {
   const { t } = useTranslation('matches');
+  // "Offer" and "Request" as the listings pages word them.
+  const { t: tListings } = useTranslation('listings');
   const { tenantPath, hasFeature, hasModule } = useTenant();
   const toast = useToast();
 
@@ -199,8 +201,17 @@ export function MatchCard({ match, index, highlightId, hotThreshold = DEFAULT_HO
           {match.title}
         </h3>
         <Chip size="sm" variant="flat" className={config.color}>
-          {t(config.labelKey)}
+          {/* Every listing card used to carry the same words, "Offer or
+              request", though the server says which it is. */}
+          {match.module === 'listing' && (match.type === 'offer' || match.type === 'request')
+            ? tListings(match.type)
+            : t(config.labelKey)}
         </Chip>
+        {match.module === 'listing' && match.category_name ? (
+          <Chip size="sm" variant="flat" className="bg-theme-elevated text-theme-secondary">
+            {match.category_name}
+          </Chip>
+        ) : null}
         {suggestion && (
           <Chip size="sm" variant="flat" startContent={<Sparkles className="w-3 h-3" aria-hidden="true" />}>
             {t('card.suggested')}

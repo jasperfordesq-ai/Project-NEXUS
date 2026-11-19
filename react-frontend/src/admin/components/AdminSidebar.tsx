@@ -578,7 +578,7 @@ function useAdminNav(): NavSection[] {
           // regression test asserting exactly that for newsletters.
           ...(hasFeature('groups') ? [{ label: t('groups'), href: '/admin/groups/analytics', icon: Users }] : []),
           ...(hasFeature('newsletter') ? [{ label: t('newsletters'), href: '/admin/newsletters/analytics', icon: Mail }] : []),
-          ...(hasFeature('exchange_workflow') ? [{ label: t('smart_matching'), href: '/admin/smart-matching/analytics', icon: Zap }] : []),
+          ...(hasModule('listings') ? [{ label: t('smart_matching'), href: '/admin/smart-matching/analytics', icon: Zap }] : []),
           { label: t('nexus_score'), href: '/admin/nexus-score/analytics', icon: Activity },
         ],
       },

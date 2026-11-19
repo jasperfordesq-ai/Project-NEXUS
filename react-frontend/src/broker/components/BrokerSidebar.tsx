@@ -146,6 +146,10 @@ export function BrokerSidebar({ collapsed, onToggle, badges }: BrokerSidebarProp
   // feature; the rest of the panel (compliance, members, monitoring) is always
   // available to brokers. Hide the nav item on tenants without the feature.
   const showExchanges = hasFeature('exchange_workflow');
+  // Match approvals follow offers and requests, which is what matching runs
+  // on. They were tied to the exchange workflow: with that switched off the
+  // server still held matches for a coordinator, and no page could show them.
+  const showMatchApprovals = hasModule('listings');
   const showFeedModeration = hasModule('feed');
   const showReviewsModeration = hasFeature('reviews');
   const showVolunteering = hasFeature('volunteering');
@@ -170,6 +174,10 @@ export function BrokerSidebar({ collapsed, onToggle, badges }: BrokerSidebarProp
         ...(showExchanges
           ? ([
               { key: 'exchanges', label: t('nav.exchanges'), icon: ArrowLeftRight, path: '/broker/exchanges', badgeKey: 'pending_exchanges' },
+            ] as NavItem[])
+          : []),
+        ...(showMatchApprovals
+          ? ([
               { key: 'match-approvals', label: t('nav.match_approvals'), icon: UserCheck, path: '/broker/match-approvals', badgeKey: 'pending_matches' },
             ] as NavItem[])
           : []),
