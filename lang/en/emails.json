@@ -366,7 +366,7 @@
     "greeting": "Hi {{name}},",
     "intro": "Here's a summary of your new matches from the past {{period}}. Don't miss out on these opportunities!",
     "hot_matches": "Hot Match(es)",
-    "hot_compatibility": "85%+ compatibility",
+    "hot_compatibility": "{{score}}%+ compatibility",
     "mutual_matches": "Mutual Match(es)",
     "win_win": "Win-win opportunities",
     "top_matches": "Top Matches",

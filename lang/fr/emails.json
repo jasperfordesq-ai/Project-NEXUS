@@ -356,7 +356,7 @@
     "greeting": "Bonjour {{name}},",
     "intro": "Voici un résumé de vos nouvelles correspondances des derniers {{period}}. Ne manquez pas ces opportunités !",
     "hot_matches": "Correspondance(s) très pertinente(s)",
-    "hot_compatibility": "Compatibilité 85%+",
+    "hot_compatibility": "Compatibilité {{score}}%+",
     "mutual_matches": "Correspondance(s) mutuelle(s)",
     "win_win": "Opportunités gagnant-gagnant",
     "top_matches": "Meilleures correspondances",

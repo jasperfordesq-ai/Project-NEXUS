@@ -356,7 +356,7 @@
     "greeting": "{{name}} 様、",
     "intro": "過去{{period}}の新しいマッチのサマリーです。このチャンスをお見逃しなく！",
     "hot_matches": "ホットマッチ",
-    "hot_compatibility": "85%以上の適合性",
+    "hot_compatibility": "{{score}}%以上の適合性",
     "mutual_matches": "相互マッチ",
     "win_win": "双方にメリットがあるチャンス",
     "top_matches": "トップマッチ",

@@ -356,7 +356,7 @@
     "greeting": "Dia duit {{name}},",
     "intro": "Seo achoimre ar do mheaitseálacha nua ón {{period}} seo caite. Ná caill na deiseanna seo!",
     "hot_matches": "Meaitseáil(eanna) Te",
-    "hot_compatibility": "Comhoiriúnacht 85%+",
+    "hot_compatibility": "Comhoiriúnacht {{score}}%+",
     "mutual_matches": "Meaitseáil(eanna) Frithpháirteach",
     "win_win": "Deiseanna buaiteacha do gach duine",
     "top_matches": "Meaitseálacha is Fearr",

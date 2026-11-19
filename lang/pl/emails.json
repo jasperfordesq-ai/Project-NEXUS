@@ -356,7 +356,7 @@
     "greeting": "Witaj {{name}},",
     "intro": "Oto podsumowanie Twoich nowych dopasowań z ostatniego {{period}}. Nie przegap tych możliwości!",
     "hot_matches": "Gorące dopasowania",
-    "hot_compatibility": "85%+ zgodności",
+    "hot_compatibility": "{{score}}%+ zgodności",
     "mutual_matches": "Wzajemne dopasowania",
     "win_win": "Możliwości korzystne dla obu stron",
     "top_matches": "Najlepsze dopasowania",

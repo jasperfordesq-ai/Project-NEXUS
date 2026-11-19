@@ -927,7 +927,8 @@ class NotificationDispatcher
 
         LocaleContext::withLocale($recipient, function () use ($userId, $matches, $period) {
             $count = count($matches);
-            $hotCount = count(array_filter($matches, fn($m) => ($m['match_score'] ?? 0) >= 85));
+            $hotThreshold = self::hotMatchThreshold();
+            $hotCount = count(array_filter($matches, fn($m) => ($m['match_score'] ?? 0) >= $hotThreshold));
             $mutualCount = count(array_filter($matches, fn($m) => ($m['match_type'] ?? '') === 'mutual'));
 
             $periodLabel = in_array($period, ['daily', 'weekly', 'fortnightly', 'monthly'], true)
@@ -2132,8 +2133,24 @@ HTML;
 HTML;
     }
 
+    /**
+     * The community's own "strong match" score (Admin > Smart Matching), the
+     * one the instant alert uses. The digest counted, coloured and labelled
+     * strong matches at a fixed 85 whatever the community had set.
+     */
+    private static function hotMatchThreshold(): int
+    {
+        try {
+            return (int) (app(\App\Services\SmartMatchingEngine::class)->getConfig()['hot_match_threshold'] ?? 80);
+        } catch (\Throwable $e) {
+            return 80;
+        }
+    }
+
     private static function buildMatchDigestEmail($matches, $period, $hotCount, $mutualCount, int $recipientUserId = 0): string
     {
+        // Read by views/emails/match_digest.php, which is included below.
+        $hotThreshold = self::hotMatchThreshold();
         $tenant = TenantContext::get();
         $tenantName = $tenant['name'] ?? __('emails.common.fallback_tenant_name');
 
@@ -2170,7 +2187,7 @@ HTML;
             $score = (int) ($match['match_score'] ?? 0);
             $matchUserName = !empty($match['user_name']) ? $match['user_name'] : UserDisplayName::resolve($match);
             $posterName = htmlspecialchars($matchUserName ?: __('emails.common.fallback_member_name'));
-            $scoreColor = $score >= 85 ? '#ef4444' : ($score >= 70 ? '#6366f1' : '#64748b');
+            $scoreColor = $score >= self::hotMatchThreshold() ? '#ef4444' : ($score >= 70 ? '#6366f1' : '#64748b');
             $byPosterText = __('emails_notifications.match_digest.by_poster', ['name' => $posterName]);
             $matchListHtml .= <<<HTML
 <div style="background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; margin-bottom: 10px;">

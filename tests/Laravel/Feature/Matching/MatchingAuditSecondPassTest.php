@@ -356,4 +356,22 @@ class MatchingAuditSecondPassTest extends TestCase
         $this->assertSame((int) $opportunity->id, (int) $row->source_id);
         $this->assertSame('too_far', $row->reason);
     }
+
+    public function test_the_digest_email_uses_the_communitys_own_strong_match_score(): void
+    {
+        // The alert used the community's figure; the digest counted and
+        // labelled "strong" matches at a fixed 85.
+        $this->setMatchingConfig(['hot_match_threshold' => 60]);
+        $category = $this->category();
+        $me = $this->member();
+        $this->listingFor($me, 'offer', $category, ['created_at' => now()->subDays(40)]);
+        $this->listingFor($this->member(), 'request', $category, ['title' => 'Hedge needs trimming', 'created_at' => now()->subDays(2)]);
+
+        app(MatchNotificationService::class)->sendDigests('monthly');
+
+        $email = DB::table('notification_queue')->where('user_id', $me->id)->where('activity_type', 'match_digest')->first();
+        $this->assertNotNull($email);
+        $this->assertStringContainsString('60%+', (string) $email->email_body);
+        $this->assertStringNotContainsString('85%+', (string) $email->email_body);
+    }
 }

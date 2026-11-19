@@ -356,7 +356,7 @@
     "greeting": "Hola {{name}},",
     "intro": "Aquí hay un resumen de sus nuevas coincidencias del último {{period}}. ¡No se pierda estas oportunidades!",
     "hot_matches": "Coincidencia(s) destacada(s)",
-    "hot_compatibility": "Compatibilidad 85%+",
+    "hot_compatibility": "Compatibilidad {{score}}%+",
     "mutual_matches": "Coincidencia(s) mutua(s)",
     "win_win": "Oportunidades beneficiosas para todos",
     "top_matches": "Mejores coincidencias",

@@ -356,7 +356,7 @@
     "greeting": "Hallo {{name}},",
     "intro": "Hier ist eine Zusammenfassung Ihrer neuen Übereinstimmungen aus dem vergangenen {{period}}. Verpassen Sie diese Gelegenheiten nicht!",
     "hot_matches": "Heiße Übereinstimmung(en)",
-    "hot_compatibility": "85%+ Kompatibilität",
+    "hot_compatibility": "{{score}}%+ Kompatibilität",
     "mutual_matches": "Gegenseitige Übereinstimmung(en)",
     "win_win": "Win-Win-Gelegenheiten",
     "top_matches": "Top-Übereinstimmungen",

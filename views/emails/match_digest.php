@@ -53,7 +53,8 @@ $knownPeriods = ['daily' => 'day', 'weekly' => 'week', 'fortnightly' => 'fortnig
 $periodTitle = isset($knownPeriods[$period]) ? __('emails.match_digest.period_title_' . $period) : ucfirst($period);
 $periodLabel = isset($knownPeriods[$period]) ? __('emails.match_digest.period_' . $knownPeriods[$period]) : $period;
 $totalCount = count($matches);
-$hotCount = $stats['hotCount'] ?? count(array_filter($matches, fn($m) => ($m['match_score'] ?? 0) >= 85));
+$hotThreshold = isset($hotThreshold) ? (int) $hotThreshold : 80;
+$hotCount = $stats['hotCount'] ?? count(array_filter($matches, fn($m) => ($m['match_score'] ?? 0) >= $hotThreshold));
 $mutualCount = $stats['mutualCount'] ?? count(array_filter($matches, fn($m) => ($m['match_type'] ?? '') === 'mutual'));
 
 // Limit displayed matches
@@ -177,7 +178,7 @@ $remainingCount = max(0, $totalCount - 5);
                                                             &#128293; <?= $hotCount ?>
                                                         </div>
                                                         <div style="font-size: 14px; color: #c2410c; margin-top: 8px; font-weight: 600;"><?= __('emails.match_digest.hot_matches') ?></div>
-                                                        <div style="font-size: 12px; color: <?= $textMuted ?>; margin-top: 4px;"><?= __('emails.match_digest.hot_compatibility') ?></div>
+                                                        <div style="font-size: 12px; color: <?= $textMuted ?>; margin-top: 4px;"><?= __('emails.match_digest.hot_compatibility', ['score' => $hotThreshold]) ?></div>
                                                     </div>
                                                 </td>
                                                 <?php endif; ?>
@@ -209,7 +210,7 @@ $remainingCount = max(0, $totalCount - 5);
 
                                         <?php foreach ($displayMatches as $index => $match):
                                             $score = (int)($match['match_score'] ?? 0);
-                                            $isHot = $score >= 85;
+                                            $isHot = $score >= $hotThreshold;
                                             $isMutual = ($match['match_type'] ?? '') === 'mutual';
                                             $scoreColor = $isHot ? $hotColor : ($isMutual ? $mutualColor : ($score >= 70 ? $primaryColor : $textMuted));
                                             $scoreBg = $isHot ? '#fff7ed' : ($isMutual ? '#ecfdf5' : ($score >= 70 ? $bgColor : '#f8fafc'));

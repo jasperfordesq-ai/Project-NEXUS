@@ -356,7 +356,7 @@
     "greeting": "Hallo {{name}},",
     "intro": "Hier is een samenvatting van uw nieuwe matches van de afgelopen {{period}}. Mis deze kansen niet!",
     "hot_matches": "Populaire match(es)",
-    "hot_compatibility": "85%+ compatibiliteit",
+    "hot_compatibility": "{{score}}%+ compatibiliteit",
     "mutual_matches": "Wederzijdse match(es)",
     "win_win": "Win-win kansen",
     "top_matches": "Beste matches",
