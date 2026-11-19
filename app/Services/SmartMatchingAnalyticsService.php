@@ -31,6 +31,14 @@ class SmartMatchingAnalyticsService
     private const LIVE = 'expires_at > NOW()';
 
     /**
+     * Stored matches that are still matches: live, and not hidden by the
+     * member. The totals, averages and breakdowns used LIVE alone, so a
+     * match a member had hidden went on being counted as one of theirs.
+     * (The funnel's own "dismissed" figure still reads LIVE.)
+     */
+    private const SHOWN = "expires_at > NOW() AND (status IS NULL OR status <> 'dismissed')";
+
+    /**
      * Score buckets as half-open ranges [min, max): every score from 0 to 100
      * lands in exactly one. Until November 2026 the bounds were whole numbers
      * compared with >= and <= ("0-20", "21-40", …) against a DECIMAL(5,2)
@@ -94,14 +102,14 @@ class SmartMatchingAnalyticsService
                         COALESCE(SUM(match_score >= ?), 0) AS hot_cnt,
                         COALESCE(SUM(match_type = 'mutual'), 0) AS mutual_cnt
                  FROM match_cache
-                 WHERE tenant_id = ? AND " . self::LIVE,
+                 WHERE tenant_id = ? AND " . self::SHOWN,
                 [$hotThreshold, $tenantId]
             );
 
             // Match type breakdown
             $typeBreakdown = DB::select(
                 "SELECT match_type, COUNT(*) as cnt FROM match_cache
-                 WHERE tenant_id = ? AND " . self::LIVE . " GROUP BY match_type",
+                 WHERE tenant_id = ? AND " . self::SHOWN . " GROUP BY match_type",
                 [$tenantId]
             );
             $types = [];
@@ -146,7 +154,7 @@ class SmartMatchingAnalyticsService
                         COALESCE(SUM(match_score >= 60 AND match_score < 80), 0) AS b3,
                         COALESCE(SUM(match_score >= 80), 0) AS b4
                  FROM match_cache
-                 WHERE tenant_id = ? AND " . self::LIVE,
+                 WHERE tenant_id = ? AND " . self::SHOWN,
                 [$tenantId]
             );
 
@@ -185,7 +193,7 @@ class SmartMatchingAnalyticsService
                         COALESCE(SUM(distance_km >= 50), 0) AS b4,
                         COALESCE(SUM(distance_km IS NULL), 0) AS b5
                  FROM match_cache
-                 WHERE tenant_id = ? AND " . self::LIVE,
+                 WHERE tenant_id = ? AND " . self::SHOWN,
                 [$tenantId]
             );
 
@@ -277,7 +285,7 @@ class SmartMatchingAnalyticsService
         try {
             $versions = DB::select(
                 "SELECT algorithm_version, COUNT(*) as cnt FROM match_cache
-                 WHERE tenant_id = ? AND " . self::LIVE . " GROUP BY algorithm_version",
+                 WHERE tenant_id = ? AND " . self::SHOWN . " GROUP BY algorithm_version",
                 [$tenantId]
             );
             foreach ($versions as $row) {
@@ -304,7 +312,7 @@ class SmartMatchingAnalyticsService
         try {
             $rows = DB::select(
                 "SELECT score_breakdown FROM match_cache
-                 WHERE tenant_id = ? AND " . self::LIVE . " AND score_breakdown IS NOT NULL
+                 WHERE tenant_id = ? AND " . self::SHOWN . " AND score_breakdown IS NOT NULL
                  ORDER BY created_at DESC LIMIT 2000",
                 [$tenantId]
             );
@@ -458,7 +466,7 @@ class SmartMatchingAnalyticsService
 
         $cache = DB::selectOne(
             "SELECT COUNT(*) AS cnt, MAX(match_score) AS best
-             FROM match_cache WHERE user_id = ? AND tenant_id = ? AND " . self::LIVE,
+             FROM match_cache WHERE user_id = ? AND tenant_id = ? AND " . self::SHOWN,
             [$userId, $tenantId]
         );
 
@@ -542,7 +550,7 @@ class SmartMatchingAnalyticsService
 
         $cache = DB::selectOne(
             "SELECT COUNT(DISTINCT user_id) AS cnt, MAX(match_score) AS best
-             FROM match_cache WHERE listing_id = ? AND tenant_id = ? AND " . self::LIVE,
+             FROM match_cache WHERE listing_id = ? AND tenant_id = ? AND " . self::SHOWN,
             [$listingId, $tenantId]
         );
 

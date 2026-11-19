@@ -279,6 +279,21 @@ class AdminMatchingScreensTest extends TestCase
         $this->assertContains('listing_not_active', $data['findings'], 'The engine never offers a listing past its expiry date');
     }
 
+    public function test_the_admin_figures_leave_out_matches_the_member_has_hidden(): void
+    {
+        $searcher = $this->member();
+        $owner = $this->member();
+        $this->cacheRow($searcher, $this->listing($owner), 90.00, ['match_type' => 'mutual']);
+        $this->cacheRow($searcher, $this->listing($owner), 95.00, ['match_type' => 'mutual', 'status' => 'dismissed']);
+        Sanctum::actingAs($this->admin());
+
+        $overview = $this->apiGet('/v2/admin/matching/stats')->assertStatus(200)->json('data.overview');
+
+        $this->assertSame(1, $overview['total_cached_matches'], 'A match the member hid was still counted as a match');
+        $this->assertSame(1, $overview['mutual_matches_count']);
+        $this->assertEqualsWithDelta(90.0, (float) $overview['average_score'], 0.01);
+    }
+
     public function test_update_config_keeps_the_gate_and_ai_settings_the_page_has_no_control_for(): void
     {
         // Both are read by the engine and neither has a control on the page.
