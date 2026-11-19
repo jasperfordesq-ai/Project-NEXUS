@@ -234,8 +234,9 @@ class SmartMatchingEngine
      * logs) and the cache permanently unpopulated. Restored here as an instance
      * method on the DI service.
      *
-     * For up to $limit active users (who have at least one active listing and no
-     * fresh cache entry) it computes matches via findMatchesForUser() and upserts
+     * For up to $limit active users (who have at least one active listing, or
+     * no listing but skills on their profile, and no fresh cache entry) it
+     * computes matches via findMatchesForUser() and upserts
      * them into match_cache with a 7-day TTL. Tenant-scoped via TenantContext.
      * Expired rows are deleted first, and nothing runs when the community has
      * Smart Matching switched off.
@@ -285,6 +286,12 @@ class SmartMatchingEngine
         // ever reached. Members whose last run cached nothing are now skipped
         // for a day (see WARM_EMPTY_RETRY_HOURS), so the queue moves on.
         //
+        // Members with no listing but skills on their profile are included:
+        // findMatchesForUser() matches them by those skills (skillListings),
+        // and so do the Matches page, the alerts and the digest. Left out
+        // here, none of their matches reached match_cache, so the admin
+        // figures did not count them and the AI never explained one to them.
+        //
         // $limit is an internal int (never user input), inlined because PDO
         // cannot reliably bind a LIMIT placeholder under emulated prepares.
         $limit = max(1, (int) $limit);
@@ -293,9 +300,15 @@ class SmartMatchingEngine
              FROM users u
              WHERE u.tenant_id = ?
                AND u.status = 'active'
-               AND EXISTS (
-                   SELECT 1 FROM listings l
-                   WHERE l.user_id = u.id AND l.tenant_id = u.tenant_id AND l.status = 'active')
+               AND (
+                   EXISTS (
+                       SELECT 1 FROM listings l
+                       WHERE l.user_id = u.id AND l.tenant_id = u.tenant_id AND l.status = 'active')
+                   OR EXISTS (
+                       SELECT 1 FROM user_skills us
+                       WHERE us.tenant_id = u.tenant_id AND us.user_id = u.id)
+                   OR TRIM(COALESCE(u.skills, '')) <> ''
+               )
                AND NOT EXISTS (
                    SELECT 1 FROM match_cache mc
                    WHERE mc.user_id = u.id AND mc.tenant_id = u.tenant_id AND mc.expires_at > NOW())
@@ -797,6 +810,10 @@ class SmartMatchingEngine
                     $candidate['distance_km'] = $best['distance'];
                     $candidate['matched_listing'] = $bestListing['title'];
                     $candidate['match_type'] = $best['type'];
+                    if (!empty($best['exchange'])) {
+                        // The two listings that make this a two-way match.
+                        $candidate['mutual_exchange'] = $best['exchange'];
+                    }
                     $candidate['algorithm_version'] = $scorer !== null ? 'v2' : 'v1';
 
                     $matches[] = $candidate;

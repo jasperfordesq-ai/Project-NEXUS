@@ -148,6 +148,97 @@ class MatchScorerTest extends TestCase
         $this->assertArrayNotHasKey('mutual', $result->adjustments);
     }
 
+    public function test_a_shared_category_alone_is_not_a_two_way_match(): void
+    {
+        // Both members have an offer and a request in category 3, and the
+        // four listings have nothing to do with one another. This used to be
+        // a "mutual" match, with its bonus and its alert.
+        $extract = fn (string $text) => \App\Services\Matching\KeywordExtractor::extract($text);
+        $result = $this->scorer()->score(
+            [
+                'give_keywords' => [], 'want_keywords' => [],
+                'offer_category_ids' => [3], 'request_category_ids' => [3], 'availability' => null,
+                'offers' => [['title' => 'Ironing', 'keywords' => $extract('Ironing')]],
+                'requests' => [['title' => 'Help with the garden shed', 'keywords' => $extract('Help with the garden shed')]],
+            ],
+            ['type' => 'request', 'category_id' => 3, 'title' => 'Help with the garden shed', 'keywords' => $extract('Help with the garden shed')],
+            ['type' => 'offer', 'category_id' => 3, 'title' => 'Hedge trimming', 'keywords' => $extract('Hedge trimming'),
+             'service_type' => 'physical_only', 'distance_km' => 2.0, 'created_at' => null],
+            [
+                'give_keywords' => [], 'want_keywords' => [],
+                'offer_category_ids' => [3], 'request_category_ids' => [3],
+                'offers' => [['title' => 'Hedge trimming', 'keywords' => $extract('Hedge trimming')]],
+                'requests' => [['title' => 'Leaking tap', 'keywords' => $extract('Leaking tap')]],
+                'last_active_days' => 2.0, 'rating_count' => 0, 'trust_tier' => 0, 'completed_tx' => 0,
+            ]
+        );
+
+        $this->assertNotSame('mutual', $result->matchType);
+        $this->assertArrayNotHasKey('mutual', $result->adjustments);
+        $this->assertNotContains('Mutual exchange possible!', $result->reasons);
+        $this->assertNull($result->exchange);
+    }
+
+    public function test_two_members_whose_listings_answer_each_other_are_a_two_way_match(): void
+    {
+        // I ask for garden help and offer French; they offer garden help and
+        // ask for French, filed in a different category from mine.
+        $extract = fn (string $text) => \App\Services\Matching\KeywordExtractor::extract($text);
+        $result = $this->scorer()->score(
+            [
+                'give_keywords' => [], 'want_keywords' => [],
+                'offer_category_ids' => [5], 'request_category_ids' => [3], 'availability' => null,
+                'offers' => [['title' => 'French conversation', 'keywords' => $extract('French conversation')]],
+                'requests' => [['title' => 'Need someone to mow my lawn', 'keywords' => $extract('Need someone to mow my lawn')]],
+            ],
+            ['type' => 'request', 'category_id' => 3, 'title' => 'Need someone to mow my lawn', 'keywords' => $extract('Need someone to mow my lawn')],
+            ['type' => 'offer', 'category_id' => 3, 'title' => 'Garden help', 'keywords' => $extract('Garden help: mowing and weeding'),
+             'service_type' => 'physical_only', 'distance_km' => 2.0, 'created_at' => null],
+            [
+                'give_keywords' => [], 'want_keywords' => [],
+                'offer_category_ids' => [3], 'request_category_ids' => [8],
+                'offers' => [['title' => 'Garden help', 'keywords' => $extract('Garden help: mowing and weeding')]],
+                'requests' => [['title' => 'French lessons wanted', 'keywords' => $extract('French lessons wanted')]],
+                'last_active_days' => 2.0, 'rating_count' => 0, 'trust_tier' => 0, 'completed_tx' => 0,
+            ]
+        );
+
+        $this->assertSame('mutual', $result->matchType);
+        $this->assertContains('Mutual exchange possible!', $result->reasons);
+        $this->assertSame(
+            ['you_offer' => 'French conversation', 'they_offer' => 'Garden help'],
+            $result->exchange,
+            'the alert names the two listings that answer each other'
+        );
+    }
+
+    public function test_different_kinds_of_help_cap_relevance_and_are_flagged(): void
+    {
+        $extract = fn (string $text) => \App\Services\Matching\KeywordExtractor::extract($text);
+        $pair = $this->baselinePair();
+        $pair['searcher']['give_keywords'] = [];
+        $pair['searcher']['want_keywords'] = [];
+        $pair['owner']['give_keywords'] = [];
+        $pair['owner']['want_keywords'] = [];
+        $pair['searcherListing'] = ['type' => 'request', 'category_id' => 3, 'keywords' => $extract('Guitar lessons wanted')];
+        $pair['candidate']['type'] = 'offer';
+        $pair['candidate']['keywords'] = $extract('French lessons for beginners');
+
+        $result = $this->score($pair);
+
+        $this->assertLessThanOrEqual(0.10, $result->pillars['relevance']);
+        $this->assertLessThan(40, $result->score);
+        $this->assertSame([], array_values(array_filter(
+            $result->reasons,
+            fn ($r) => str_starts_with($r, 'Same category') || str_starts_with($r, 'Very similar')
+        )), 'no reason is given for introducing them');
+        $this->assertSame(['different_kinds_of_help'], $result->toBreakdownArray()['flags']);
+
+        // A strong AI reading of the two listings overrules the word lists.
+        $withAi = $this->score($pair, semantic: 0.85);
+        $this->assertGreaterThan(0.10, $withAi->pillars['relevance']);
+    }
+
     // ── Unknown-signal defaults (deflated) ──
 
     public function test_unknown_everything_scores_below_visibility_threshold(): void
@@ -163,14 +254,41 @@ class MatchScorerTest extends TestCase
         $this->assertLessThan(40, $result->score);
     }
 
-    public function test_unknown_availability_is_neutral_not_punitive(): void
+    public function test_unknown_availability_is_left_out_not_counted_against_the_match(): void
     {
+        // No page lets a member state when they are free, so this is every
+        // real match. Counted as 0.60 it held feasibility at 0.92 at best.
         $pair = $this->baselinePair();
         $pair['candidate']['availability'] = null;
 
         $result = $this->score($pair);
 
-        $this->assertEqualsWithDelta(0.60, $result->signals['feasibility']['availability'], 0.001);
+        $this->assertNull($result->signals['feasibility']['availability']);
+        $this->assertEqualsWithDelta(1.0, $result->pillars['feasibility'], 0.001, 'next door, owner active this week');
+        $this->assertNull($result->toBreakdownArray()['signals']['feasibility']['availability'], 'stored as unknown, not as 0');
+    }
+
+    public function test_no_trust_level_is_left_out_not_counted_as_the_lowest(): void
+    {
+        // Level 0 is what every member has where trust levels are not used.
+        $pair = $this->baselinePair();
+        $pair['owner']['trust_tier'] = 0;
+        $none = $this->score($pair);
+        $pair['owner']['trust_tier'] = null;
+        $unknown = $this->score($pair);
+
+        $this->assertNull($none->signals['trust']['trust_tier']);
+        $this->assertSame($unknown->score, $none->score);
+
+        // Where levels are used, a higher one never scores below a lower one,
+        // and holding the first level never scores below holding none.
+        $previous = $none->score;
+        foreach ([1, 2, 3, 4] as $level) {
+            $pair['owner']['trust_tier'] = $level;
+            $score = $this->score($pair)->score;
+            $this->assertGreaterThanOrEqual($previous, $score, "level {$level}");
+            $previous = $score;
+        }
     }
 
     public function test_conflicting_stated_availability_is_penalised(): void
@@ -275,7 +393,7 @@ class MatchScorerTest extends TestCase
         // two MEMBERS' profile similarity (no figure for the new listing yet).
         $pair = $this->baselinePair();
         $pair['searcherListing']['keywords'] = \App\Services\Matching\KeywordExtractor::extract('Babysitter needed on Friday evenings');
-        $pair['candidate']['keywords'] = \App\Services\Matching\KeywordExtractor::extract('I can mind your kids');
+        $pair['candidate']['keywords'] = \App\Services\Matching\KeywordExtractor::extract('Childcare: I can mind your kids');
 
         $withoutAi = $this->score($pair)->signals['relevance']['semantic'];
         $withLowAi = $this->score($pair, semantic: 0.10)->signals['relevance']['semantic'];

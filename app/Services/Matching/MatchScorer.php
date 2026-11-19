@@ -35,6 +35,20 @@ namespace App\Services\Matching;
  * candidate with NO skill/category/quality data score ~55 and clear the
  * visibility threshold on unknowns alone).
  *
+ * Two signals are LEFT OUT of their pillar when nothing is known, instead of
+ * being given a middling value: availability (no page lets a member state
+ * it) and trust level (0 for every member of a community that does not use
+ * trust levels). Counted as 0.60 and 0.0 they held every score in every
+ * community about 9% under what the rest of the evidence said, which put the
+ * "strong match" alert (80) out of reach of a new member's listing.
+ *
+ * KINDS OF HELP. Two listings that are each recognisably about a specific
+ * kind of help (MatchConcepts), with no kind in common and none related, are
+ * different kinds of help: relevance is then capped at KIND_CONFLICT_CAP
+ * whatever category they share and whatever word they happen to share
+ * ("guitar lessons" / "French lessons", "leaking tap" / "garden help" in
+ * Home & Garden). See kinds().
+ *
  * All inputs are plain arrays assembled by the engine/TenantMatchingContext;
  * this class is deterministic and fully unit-testable in isolation.
  */
@@ -44,13 +58,28 @@ final class MatchScorer
     private const DEFAULT_CATEGORY = 0.10;
     private const DEFAULT_SKILL = 0.20;
     private const DEFAULT_SEMANTIC = 0.20;
-    private const DEFAULT_AVAILABILITY = 0.60;
     private const DEFAULT_ACTIVITY = 0.30;
     private const REVIEW_PRIOR = 0.72;       // ≈ 3.6★ neutral prior
     private const REVIEW_PRIOR_WEIGHT = 3;   // pseudo-review count
 
     private const PILLAR_FLOOR = 0.05;
     private const ADJUSTMENT_CAP = 20.0;
+
+    /**
+     * Highest relevance two listings about DIFFERENT kinds of help can have.
+     * 0.10 keeps the pair under the default minimum of 40 for the most
+     * trusted owner and the newest listing (MatchQualityBenchmarkTest).
+     */
+    private const KIND_CONFLICT_CAP = 0.10;
+
+    /** Credit for sharing only HOW / WHO-FOR (a generic concept), not WHAT. */
+    private const GENERIC_ONLY_STRENGTH = 0.5;
+
+    /** An AI similarity this high (mapped 0-1) overrules a kind conflict. */
+    private const AI_OVERRULES_CONFLICT = 0.75;
+
+    /** Trust level => trust signal. Level 0 is "no level": left out. */
+    private const TRUST_TIER_SCORES = [1 => 0.55, 2 => 0.80];
 
     /** Highest nearness credited when a location had to be approximated. */
     private const APPROXIMATE_PROXIMITY_CAP = 0.6;
@@ -90,6 +119,16 @@ final class MatchScorer
     ): MatchScoreResult {
         $reasons = [];
 
+        $kinds = $this->kinds(
+            (array) ($searcherListing['keywords'] ?? []),
+            (array) ($candidate['keywords'] ?? [])
+        );
+        $aiMapped = $semanticSimilarity !== null ? $this->mapCosine($semanticSimilarity) : null;
+        // The AI figure is sometimes the two MEMBERS' similarity rather than
+        // the two listings' (see semanticScore), so only a strong one
+        // overrules what the wording says.
+        $kindConflict = $kinds['conflict'] && !($aiMapped !== null && $aiMapped >= self::AI_OVERRULES_CONFLICT);
+
         // ── Relevance signals ──────────────────────────────────────────────
         $category = $this->categoryScore(
             $searcherListing['category_id'] ?? null,
@@ -111,11 +150,17 @@ final class MatchScorer
             $reasons[] = 'Skills match your expertise';
         }
 
-        $semantic = $this->semanticScore($searcherListing, $candidate, $semanticSimilarity);
+        $semantic = $this->semanticScore($searcherListing, $candidate, $semanticSimilarity, $kinds);
         if ($semanticSimilarity !== null && $semantic >= 0.6) {
             $reasons[] = 'Very similar to what you are looking for';
-        } elseif ($semanticSimilarity === null && $semantic >= 0.6 && $this->sameKindOfHelp($searcherListing, $candidate)) {
+        } elseif ($semanticSimilarity === null && $semantic >= 0.6 && $kinds['same']) {
             $reasons[] = 'Very similar to what you are looking for';
+        }
+
+        if ($kindConflict) {
+            // Nothing above is a reason to introduce two members whose
+            // listings are about different things.
+            $reasons = [];
         }
 
         // ── Feasibility signals ────────────────────────────────────────────
@@ -176,6 +221,9 @@ final class MatchScorer
             'skill' => [$skill, $signalWeights['relevance']['skill']],
             'semantic' => [$semantic, $signalWeights['relevance']['semantic']],
         ]);
+        if ($kindConflict) {
+            $relevance = min($relevance, self::KIND_CONFLICT_CAP);
+        }
         // Hybrid listings keep a viable remote half even when the physical
         // distance is hopeless — proximity never drops below the remote floor.
         if ($serviceType === 'hybrid') {
@@ -215,7 +263,9 @@ final class MatchScorer
         // ── Bounded additive adjustments ───────────────────────────────────
         $adjustments = [];
 
-        [$matchType, $mutualBonus] = $this->reciprocity($searcher, $owner, $forward, $backward);
+        [$matchType, $mutualBonus, $exchange] = $this->reciprocity(
+            $searcher, $searcherListing, $candidate, $owner, $forward, $backward, $kinds, $kindConflict
+        );
         if ($mutualBonus > 0) {
             $adjustments['mutual'] = $mutualBonus;
             $reasons[] = 'Mutual exchange possible!';
@@ -252,6 +302,8 @@ final class MatchScorer
             matchType: $matchType,
             distanceKm: $distance !== null ? round($distance, 1) : null,
             serviceType: $serviceType,
+            flags: $kindConflict ? ['different_kinds_of_help'] : [],
+            exchange: $exchange,
         );
     }
 
@@ -365,26 +417,37 @@ final class MatchScorer
         return [min(1.0, $combined), $forward, $backward];
     }
 
-    private function semanticScore(array $searcherListing, array $candidate, ?float $cosine): float
+    /** @param array{same: bool, conflict: bool, strength: float} $kinds */
+    private function semanticScore(array $searcherListing, array $candidate, ?float $cosine, array $kinds): float
     {
-        $wording = $this->wordingScore($searcherListing, $candidate);
+        $wording = $this->wordingScore($searcherListing, $candidate, $kinds);
         if ($cosine !== null) {
-            $mapped = ($cosine - self::SEMANTIC_COSINE_MIN)
-                / (self::SEMANTIC_COSINE_MAX - self::SEMANTIC_COSINE_MIN);
-
             // The AI figure can only add to what the wording already shows.
             // It is often not about these two listings at all: a listing
             // posted since the last AI run has no figure, and the engine
             // then passes the two MEMBERS' profile similarity instead, which
             // used to replace clear evidence like "~childcare" on both sides.
-            return max(max(0.0, min(1.0, $mapped)), $wording);
+            return max($this->mapCosine($cosine), $wording);
         }
 
         return $wording;
     }
 
-    /** What the two listing texts share, without an AI model. */
-    private function wordingScore(array $searcherListing, array $candidate): float
+    /** An embedding cosine on the 0–1 scale the semantic signal uses. */
+    private function mapCosine(float $cosine): float
+    {
+        $mapped = ($cosine - self::SEMANTIC_COSINE_MIN)
+            / (self::SEMANTIC_COSINE_MAX - self::SEMANTIC_COSINE_MIN);
+
+        return max(0.0, min(1.0, $mapped));
+    }
+
+    /**
+     * What the two listing texts share, without an AI model.
+     *
+     * @param array{same: bool, conflict: bool, strength: float} $kinds
+     */
+    private function wordingScore(array $searcherListing, array $candidate, array $kinds): float
     {
         $a = array_values((array) ($searcherListing['keywords'] ?? []));
         $b = array_values((array) ($candidate['keywords'] ?? []));
@@ -396,30 +459,131 @@ final class MatchScorer
         $union = count(array_unique(array_merge($a, $b)));
         $jaccard = $union > 0 ? $intersect / $union : 0.0;
 
+        // Different kinds of help: a word in common ("lessons", "walk",
+        // "piano") is a coincidence, not evidence.
+        if ($kinds['conflict']) {
+            return min(1.0, $jaccard * 0.75);
+        }
+
         // Same kind of help ("~childcare" on both sides) is strong evidence
         // even when the wording differs completely: "babysitter needed" and
         // "I can mind your kids" share no word, so word overlap alone scores
-        // them as unrelated. Measured against the listing with fewer
-        // concepts, so a listing covering two kinds of help still fully
-        // answers a request for one of them.
-        $conceptsA = array_values(array_filter($a, fn ($k) => is_string($k) && KeywordExtractor::isConcept($k)));
-        $conceptsB = array_values(array_filter($b, fn ($k) => is_string($k) && KeywordExtractor::isConcept($k)));
-        $conceptOverlap = 0.0;
-        if ($conceptsA !== [] && $conceptsB !== []) {
-            $conceptOverlap = count(array_intersect($conceptsA, $conceptsB))
-                / min(count($conceptsA), count($conceptsB));
-        }
-
-        return min(1.0, max($jaccard * 1.5, $conceptOverlap));
+        // them as unrelated.
+        return min(1.0, max($jaccard * 1.5, $kinds['strength']));
     }
 
-    /** Whether the two listings describe the same kind of help (AI-off evidence). */
-    private function sameKindOfHelp(array $searcherListing, array $candidate): bool
+    /**
+     * Whether two listings are about the same kind of help, different kinds,
+     * or cannot be told (MatchConcepts).
+     *
+     *  - same:     they share a specific kind ("~gardening"). strength is the
+     *              share of the kinds of the listing with fewer of them, so a
+     *              listing covering two kinds still fully answers a request
+     *              for one.
+     *  - conflict: each names at least one specific kind, none is shared and
+     *              none is related to one on the other side.
+     *  - neither:  one side names no specific kind (strength is then
+     *              GENERIC_ONLY_STRENGTH if they share HOW or WHO-FOR, such as
+     *              "~teaching", else 0), or their kinds are related trades.
+     *
+     * @param array<int, mixed> $a keywords of one listing
+     * @param array<int, mixed> $b keywords of the other
+     * @return array{same: bool, conflict: bool, strength: float}
+     */
+    private function kinds(array $a, array $b): array
     {
-        $a = array_filter((array) ($searcherListing['keywords'] ?? []), fn ($k) => is_string($k) && KeywordExtractor::isConcept($k));
-        $b = array_filter((array) ($candidate['keywords'] ?? []), fn ($k) => is_string($k) && KeywordExtractor::isConcept($k));
+        [$specificA, $genericA] = $this->splitConcepts($a);
+        [$specificB, $genericB] = $this->splitConcepts($b);
 
-        return $a !== [] && array_intersect($a, $b) !== [];
+        if ($specificA !== [] && $specificB !== []) {
+            $shared = array_intersect($specificA, $specificB);
+            if ($shared !== []) {
+                return [
+                    'same' => true,
+                    'conflict' => false,
+                    'strength' => count($shared) / min(count($specificA), count($specificB)),
+                ];
+            }
+            foreach ($specificA as $one) {
+                foreach ($specificB as $other) {
+                    if (MatchConcepts::related($one, $other)) {
+                        return ['same' => false, 'conflict' => false, 'strength' => 0.0];
+                    }
+                }
+            }
+
+            return ['same' => false, 'conflict' => true, 'strength' => 0.0];
+        }
+
+        $sharedGeneric = array_intersect($genericA, $genericB) !== [];
+
+        return [
+            'same' => false,
+            'conflict' => false,
+            'strength' => $sharedGeneric ? self::GENERIC_ONLY_STRENGTH : 0.0,
+        ];
+    }
+
+    /**
+     * @param array<int, mixed> $keywords
+     * @return array{0: string[], 1: string[]} [specific concepts, generic concepts]
+     */
+    private function splitConcepts(array $keywords): array
+    {
+        $specific = [];
+        $generic = [];
+        foreach ($keywords as $keyword) {
+            if (!is_string($keyword) || !KeywordExtractor::isConcept($keyword)) {
+                continue;
+            }
+            if (MatchConcepts::isGeneric($keyword)) {
+                $generic[$keyword] = true;
+            } else {
+                $specific[$keyword] = true;
+            }
+        }
+
+        return [array_keys($specific), array_keys($generic)];
+    }
+
+    /**
+     * Whether two listings (one an offer, one a request) are a real pairing:
+     * the same kind of help, or enough plain words in common. Used to decide
+     * whether two members can help EACH OTHER.
+     *
+     * @param array<int, mixed> $a
+     * @param array<int, mixed> $b
+     */
+    private function listingsPair(array $a, array $b): bool
+    {
+        if ($a === [] || $b === []) {
+            return false;
+        }
+        $kinds = $this->kinds($a, $b);
+        if ($kinds['conflict']) {
+            return false;
+        }
+        if ($kinds['same']) {
+            return true;
+        }
+
+        $words = fn (array $keywords) => array_values(array_unique(array_filter(
+            $keywords,
+            fn ($k) => is_string($k) && $k !== '' && !KeywordExtractor::isConcept($k)
+        )));
+        $wordsA = $words($a);
+        $wordsB = $words($b);
+        if ($wordsA === [] || $wordsB === []) {
+            return false;
+        }
+        $shared = count(array_intersect($wordsA, $wordsB));
+        if ($kinds['strength'] > 0.0) {
+            // They share HOW or WHO-FOR; one word in common settles it
+            // ("Maths tutor" / "Tutor wanted").
+            return $shared >= 1;
+        }
+
+        return $shared >= 2 && $shared / min(count($wordsA), count($wordsB)) >= 0.5;
     }
 
     // ═════════════════════════════════════════════════════════════════════
@@ -462,16 +626,20 @@ final class MatchScorer
 
     /**
      * Overlap between the searcher's preferred availability and the listing's
-     * stated availability. Unknown on either side is NEUTRAL-positive (0.60):
-     * sparse availability data must not punish otherwise-good matches.
+     * stated availability. Unknown on either side is null: the signal is
+     * left out of the feasibility pillar. It used to count as 0.60, and as
+     * no page lets a member state their availability that was every match
+     * there has ever been: 20% of the pillar fixed at 0.60, so feasibility
+     * could not pass 0.92 for a listing next door owned by a member active
+     * that day.
      */
-    private function availabilityScore(mixed $searcherAvailability, mixed $candidateAvailability): float
+    private function availabilityScore(mixed $searcherAvailability, mixed $candidateAvailability): ?float
     {
         $a = $this->normaliseAvailability($searcherAvailability);
         $b = $this->normaliseAvailability($candidateAvailability);
 
         if (empty($a) || empty($b)) {
-            return self::DEFAULT_AVAILABILITY;
+            return null;
         }
 
         $overlap = count(array_intersect($a, $b));
@@ -510,12 +678,21 @@ final class MatchScorer
             / (self::REVIEW_PRIOR_WEIGHT + $ratingCount);
     }
 
-    private function trustTierScore(?float $trustTier): float
+    /**
+     * A member's trust level, where their community uses them. Level 0 is
+     * what every member has in a community that does not (the column
+     * defaults to 0 and only the trust-level feature ever raises it), so it
+     * means "no level", not "least trusted": the signal is left out. It used
+     * to count as 0.0, a quarter of the trust pillar lost by every member of
+     * every community.
+     */
+    private function trustTierScore(?float $trustTier): ?float
     {
-        if ($trustTier === null) {
-            return 0.5;
+        if ($trustTier === null || $trustTier < 1) {
+            return null;
         }
-        return max(0.0, min(1.0, $trustTier / 3.0));
+
+        return self::TRUST_TIER_SCORES[(int) $trustTier] ?? 1.0;
     }
 
     /**
@@ -540,31 +717,79 @@ final class MatchScorer
     // ═════════════════════════════════════════════════════════════════════
 
     /**
-     * Reciprocity via listing category sets (v1 semantics) with a directional
-     * skill fallback: strong two-way skill fit counts as mutual interest even
-     * before both parties have posted complementary listings.
+     * Whether the two members can help EACH OTHER, judged on what their
+     * listings and profile skills say.
      *
-     * @return array{0: string, 1: float} [matchType, mutualBonus]
+     * One direction is the pair being scored. The other is looked for among
+     * the two members' OTHER listings (my offers against their requests when
+     * I am the one asking, and the reverse), or in their profile skills.
+     *
+     * Until 19 Nov 2026 either direction also counted when the two members
+     * merely had listings in the same CATEGORY: a member with an offer and a
+     * request in "Home & Garden" was told of a "mutual exchange" with every
+     * other member who had one of each there, whatever the four listings
+     * said, and was sent the two-way match alert for it. A shared category
+     * now makes a match "potential" at most.
+     *
+     * @param array{same: bool, conflict: bool, strength: float} $kinds
+     * @return array{0: string, 1: float, 2: array{you_offer?: string, they_offer?: string}|null}
+     *         [matchType, mutualBonus, what each side gives in a two-way match]
      */
-    private function reciprocity(array $searcher, array $owner, float $forward, float $backward): array
-    {
+    private function reciprocity(
+        array $searcher,
+        array $searcherListing,
+        array $candidate,
+        array $owner,
+        float $forward,
+        float $backward,
+        array $kinds,
+        bool $kindConflict
+    ): array {
+        $iAmAsking = ($searcherListing['type'] ?? '') !== 'offer';
+
+        // The pair being scored: I want what they give ($backward), or they
+        // want what I give ($forward).
+        $direct = !$kindConflict && ($kinds['same'] || ($iAmAsking ? $backward : $forward) >= 0.3);
+
+        // The other way round, from the members' other listings.
+        $mine = (array) ($searcher[$iAmAsking ? 'offers' : 'requests'] ?? []);
+        $theirs = (array) ($owner[$iAmAsking ? 'requests' : 'offers'] ?? []);
+        $reversePair = null;
+        foreach ($mine as $myOther) {
+            foreach ($theirs as $theirOther) {
+                if ($this->listingsPair((array) ($myOther['keywords'] ?? []), (array) ($theirOther['keywords'] ?? []))) {
+                    $reversePair = [$myOther, $theirOther];
+                    break 2;
+                }
+            }
+        }
+        // ... or from their profile skills.
+        $reverse = $reversePair !== null || ($iAmAsking ? $forward : $backward) >= 0.3;
+
+        if ($direct && $reverse) {
+            $exchange = null;
+            if ($reversePair !== null) {
+                $exchange = array_filter([
+                    'you_offer' => (string) ($iAmAsking ? ($reversePair[0]['title'] ?? '') : ($searcherListing['title'] ?? '')),
+                    'they_offer' => (string) ($iAmAsking ? ($candidate['title'] ?? '') : ($reversePair[1]['title'] ?? '')),
+                ], fn ($title) => $title !== '');
+            }
+
+            return ['mutual', (float) ($this->config['adjustments']['mutual_bonus'] ?? 8), $exchange ?: null];
+        }
+
         $searcherOffers = array_map('intval', (array) ($searcher['offer_category_ids'] ?? []));
         $searcherRequests = array_map('intval', (array) ($searcher['request_category_ids'] ?? []));
         $ownerOffers = array_map('intval', (array) ($owner['offer_category_ids'] ?? []));
         $ownerRequests = array_map('intval', (array) ($owner['request_category_ids'] ?? []));
+        $sharedCategory = !empty(array_intersect($searcherOffers, $ownerRequests))
+            || !empty(array_intersect($ownerOffers, $searcherRequests));
 
-        $theyNeedMe = !empty(array_intersect($searcherOffers, $ownerRequests)) || $forward >= 0.3;
-        $iNeedThem = !empty(array_intersect($ownerOffers, $searcherRequests)) || $backward >= 0.3;
-
-        $mutualBonus = (float) ($this->config['adjustments']['mutual_bonus'] ?? 8);
-
-        if ($theyNeedMe && $iNeedThem) {
-            return ['mutual', $mutualBonus];
+        if ($direct || $reverse || $sharedCategory) {
+            return ['potential', 0.0, null];
         }
-        if ($theyNeedMe || $iNeedThem) {
-            return ['potential', 0.0];
-        }
-        return ['one_way', 0.0];
+
+        return ['one_way', 0.0, null];
     }
 
     /** +max→0 over the first 72h, −3 beyond 60 days (replaces the 10% weight). */
@@ -644,12 +869,20 @@ final class MatchScorer
         return $defaults;
     }
 
-    /** @param array<string, array{0: float, 1: float}> $entries value/weight pairs */
+    /**
+     * A null value is an unknown signal: it is left out and the others
+     * share its weight.
+     *
+     * @param array<string, array{0: float|null, 1: float}> $entries value/weight pairs
+     */
     private function weightedAverage(array $entries): float
     {
         $sum = 0.0;
         $weightSum = 0.0;
         foreach ($entries as [$value, $weight]) {
+            if ($value === null) {
+                continue;
+            }
             $sum += $value * $weight;
             $weightSum += $weight;
         }

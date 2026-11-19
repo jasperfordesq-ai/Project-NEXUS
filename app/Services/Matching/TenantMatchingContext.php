@@ -19,13 +19,17 @@ use Illuminate\Support\Facades\Log;
  *
  *   categories map · directional user_skills · owner meta (activity/trust/
  *   fallback skills) · review aggregates · completed-transaction counts ·
- *   active listings per owner (for reciprocity category sets)
+ *   live listings per owner (their categories, and their words: whether two
+ *   members can help EACH OTHER is judged on what their listings say)
  *
  * Every query degrades to an empty map on failure — the scorer's deflated
  * unknown-signal defaults handle missing data.
  */
 final class TenantMatchingContext
 {
+    /** Listings read per member and kind for the two-way check, newest first. */
+    private const LISTINGS_PER_MEMBER = 8;
+
     /** Proficiency multipliers for directional skill weights. */
     private const PROFICIENCY_WEIGHTS = [
         'beginner' => 0.7,
@@ -64,7 +68,7 @@ final class TenantMatchingContext
         $ownerMeta = self::loadOwnerMeta($tenantId, $ownerIds);
         $reviewAgg = self::loadReviewAggregates($tenantId, $ownerIds);
         $txCounts = self::loadCompletedTxCounts($tenantId, $ownerIds);
-        $listingsByOwner = self::loadOwnerListingCategories($tenantId, $ownerIds);
+        $listingsByOwner = self::loadOwnerListings($tenantId, $ownerIds);
 
         // ── Searcher profile ──
         $searcherSkills = $skillsByUser[$searcherId] ?? ['give' => [], 'want' => []];
@@ -77,6 +81,8 @@ final class TenantMatchingContext
             'want_keywords' => $searcherSkills['want'],
             'offer_category_ids' => self::categoryIdsOfType($searcherListings, 'offer'),
             'request_category_ids' => self::categoryIdsOfType($searcherListings, 'request'),
+            'offers' => self::listingWords($searcherListings, 'offer'),
+            'requests' => self::listingWords($searcherListings, 'request'),
             'availability' => $preferences['availability'] ?? null,
         ];
 
@@ -105,7 +111,9 @@ final class TenantMatchingContext
                 'want_keywords' => $skills['want'],
                 'offer_category_ids' => $ownerListings['offer'] ?? [],
                 'request_category_ids' => $ownerListings['request'] ?? [],
-                'has_active_listings' => !empty($ownerListings['offer']) || !empty($ownerListings['request']),
+                'offers' => $ownerListings['offers'] ?? [],
+                'requests' => $ownerListings['requests'] ?? [],
+                'has_active_listings' => !empty($ownerListings['offers']) || !empty($ownerListings['requests']),
                 'last_active_days' => $lastActiveDays,
                 'trust_tier' => isset($meta['trust_tier']) && is_numeric($meta['trust_tier'])
                     ? (float) $meta['trust_tier'] : null,
@@ -124,6 +132,7 @@ final class TenantMatchingContext
         return $this->owners[$ownerId] ?? [
             'give_keywords' => [], 'want_keywords' => [],
             'offer_category_ids' => [], 'request_category_ids' => [],
+            'offers' => [], 'requests' => [],
             'has_active_listings' => false,
             'last_active_days' => null, 'trust_tier' => null,
             'rating_avg' => null, 'rating_count' => 0, 'completed_tx' => 0,
@@ -308,8 +317,15 @@ final class TenantMatchingContext
         }
     }
 
-    /** @return array<int, array{offer: int[], request: int[]}> */
-    private static function loadOwnerListingCategories(int $tenantId, array $ownerIds): array
+    /**
+     * Each owner's live listings: the category ids per kind ('offer' /
+     * 'request'), and the title and words of the newest few per kind
+     * ('offers' / 'requests'). Only listings a member could be shown count:
+     * approved and not past their expiry, the same rule as CandidateRetriever.
+     *
+     * @return array<int, array{offer: int[], request: int[], offers: array<int, array{title: string, keywords: string[]}>, requests: array<int, array{title: string, keywords: string[]}>}>
+     */
+    private static function loadOwnerListings(int $tenantId, array $ownerIds): array
     {
         if (empty($ownerIds)) {
             return [];
@@ -318,8 +334,11 @@ final class TenantMatchingContext
         try {
             $placeholders = implode(',', array_fill(0, count($ownerIds), '?'));
             $rows = DB::select(
-                "SELECT user_id, type, category_id FROM listings
-                 WHERE tenant_id = ? AND status = 'active' AND user_id IN ($placeholders)",
+                "SELECT user_id, type, category_id, title, description FROM listings
+                 WHERE tenant_id = ? AND status = 'active' AND user_id IN ($placeholders)
+                   AND (moderation_status IS NULL OR moderation_status = 'approved')
+                   AND (expires_at IS NULL OR expires_at > NOW())
+                 ORDER BY created_at DESC",
                 array_merge([$tenantId], $ownerIds)
             );
 
@@ -327,16 +346,50 @@ final class TenantMatchingContext
             foreach ($rows as $row) {
                 $ownerId = (int) $row->user_id;
                 $type = ((string) $row->type) === 'offer' ? 'offer' : 'request';
-                $map[$ownerId] ??= ['offer' => [], 'request' => []];
+                $map[$ownerId] ??= ['offer' => [], 'request' => [], 'offers' => [], 'requests' => []];
                 if (!empty($row->category_id)) {
                     $map[$ownerId][$type][] = (int) $row->category_id;
+                }
+                if (count($map[$ownerId][$type . 's']) < self::LISTINGS_PER_MEMBER) {
+                    $map[$ownerId][$type . 's'][] = self::words((string) ($row->title ?? ''), (string) ($row->description ?? ''));
                 }
             }
             return $map;
         } catch (\Throwable $e) {
-            Log::debug('[TenantMatchingContext] owner listings load failed: ' . $e->getMessage());
+            // Without it no two-way match can be found from listings, which
+            // is worth knowing about, so this one is not logged at debug.
+            Log::warning('[TenantMatchingContext] owner listings load failed: ' . $e->getMessage());
             return [];
         }
+    }
+
+    /**
+     * The searcher's own listings of one kind, in the same shape.
+     *
+     * @return array<int, array{title: string, keywords: string[]}>
+     */
+    private static function listingWords(array $listings, string $type): array
+    {
+        $out = [];
+        foreach ($listings as $listing) {
+            if (($listing['type'] ?? '') !== $type) {
+                continue;
+            }
+            $out[] = self::words((string) ($listing['title'] ?? ''), (string) ($listing['description'] ?? ''));
+            if (count($out) >= self::LISTINGS_PER_MEMBER) {
+                break;
+            }
+        }
+        return $out;
+    }
+
+    /** @return array{title: string, keywords: string[]} */
+    private static function words(string $title, string $description): array
+    {
+        return [
+            'title' => $title,
+            'keywords' => KeywordExtractor::extract($title . ' ' . strip_tags($description)),
+        ];
     }
 
     // ═════════════════════════════════════════════════════════════════════

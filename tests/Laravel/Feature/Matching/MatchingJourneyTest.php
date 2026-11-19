@@ -302,6 +302,96 @@ class MatchingJourneyTest extends TestCase
         $this->assertContains('Skills match your expertise', $match['match_reasons']);
     }
 
+    public function test_different_kinds_of_help_in_one_category_are_not_matched(): void
+    {
+        // Until 19 Nov 2026 sharing a category was enough on its own: every
+        // request in "Home and garden" was matched with every offer in it.
+        $home = $this->category('Home and garden');
+        $me = $this->member();
+        $this->listingFor($me, 'request', $home->id, [
+            'title' => 'Leaking tap in the kitchen',
+            'description' => 'The cold tap under the sink drips all day.',
+        ]);
+        $gardener = $this->listingFor($this->member(), 'offer', $home->id, [
+            'title' => 'Garden help',
+            'description' => 'Mowing, weeding and hedge trimming.',
+        ]);
+        $plumber = $this->listingFor($this->member(), 'offer', $home->id, [
+            'title' => 'Plumber',
+            'description' => 'Taps, sinks and toilets fixed.',
+        ]);
+
+        $ids = $this->listingIds($this->matchesFor($me, 'modules=listings'));
+
+        $this->assertContains($plumber->id, $ids);
+        $this->assertNotContains($gardener->id, $ids, 'A leaking tap is not a gardening job, whatever category both are in');
+    }
+
+    public function test_two_listings_that_only_share_the_word_lessons_are_not_matched(): void
+    {
+        $learning = $this->category('Learning');
+        $me = $this->member();
+        $this->listingFor($me, 'request', $learning->id, [
+            'title' => 'Guitar lessons wanted', 'description' => 'A beginner who would like to learn the guitar.',
+        ]);
+        $french = $this->listingFor($this->member(), 'offer', $learning->id, [
+            'title' => 'French lessons for beginners', 'description' => 'Conversation and grammar in French.',
+        ]);
+        $guitar = $this->listingFor($this->member(), 'offer', $learning->id, [
+            'title' => 'Guitar teacher', 'description' => 'Acoustic guitar for any age.',
+        ]);
+
+        $ids = $this->listingIds($this->matchesFor($me, 'modules=listings'));
+
+        $this->assertContains($guitar->id, $ids);
+        $this->assertNotContains($french->id, $ids);
+    }
+
+    public function test_members_whose_listings_answer_each_other_are_a_two_way_match(): void
+    {
+        $me = $this->member();
+        $this->listingFor($me, 'request', $this->category('Home and garden')->id, [
+            'title' => 'Need someone to mow my lawn', 'description' => 'The grass is getting long.',
+        ]);
+        $this->listingFor($me, 'offer', $this->category('Languages')->id, [
+            'title' => 'French conversation', 'description' => 'Practise speaking French over coffee.',
+        ]);
+        $neighbour = $this->member();
+        $theirOffer = $this->listingFor($neighbour, 'offer', $this->category('Odd jobs')->id, [
+            'title' => 'Lawn mowing', 'description' => 'I have my own mower.',
+        ]);
+        $this->listingFor($neighbour, 'request', $this->category('Education')->id, [
+            'title' => 'French lessons wanted', 'description' => 'I would like to learn French before a holiday.',
+        ]);
+
+        $data = $this->matchesFor($me, 'modules=listings&min_score=0');
+        $match = collect($data['matches'])->firstWhere('listing_id', $theirOffer->id);
+
+        $this->assertNotNull($match);
+        $this->assertSame('mutual', $match['match_type'], 'Found in what the four listings say, though no two share a category');
+        $this->assertContains('Mutual exchange possible!', $match['match_reasons']);
+    }
+
+    public function test_sharing_categories_does_not_make_a_two_way_match(): void
+    {
+        // Both members have an offer and a request in one category; none of
+        // the four has anything to do with another.
+        $general = $this->category('General');
+        $me = $this->member();
+        $this->listingFor($me, 'request', $general->id, ['title' => 'Chess partner wanted', 'description' => 'A game of chess now and then.']);
+        $this->listingFor($me, 'offer', $general->id, ['title' => 'Telescope evenings', 'description' => 'Star gazing on clear nights.']);
+        $neighbour = $this->member();
+        $theirOffer = $this->listingFor($neighbour, 'offer', $general->id, ['title' => 'Origami workshop', 'description' => 'Paper folding for all ages.']);
+        $this->listingFor($neighbour, 'request', $general->id, ['title' => 'Beekeeping advice', 'description' => 'Thinking of keeping a hive.']);
+
+        $data = $this->matchesFor($me, 'modules=listings&min_score=0');
+        $match = collect($data['matches'])->firstWhere('listing_id', $theirOffer->id);
+
+        $this->assertNotNull($match);
+        $this->assertNotSame('mutual', $match['match_type']);
+        $this->assertNotContains('Mutual exchange possible!', $match['match_reasons']);
+    }
+
     public function test_a_listing_that_was_not_approved_is_never_offered_as_a_match(): void
     {
         $category = $this->category();
@@ -777,6 +867,29 @@ class MatchingJourneyTest extends TestCase
         $this->assertSame(0, DB::table('match_cache')->where('user_id', $lonely->id)->count());
         // Everyone reachable has been handled: nothing left to redo this run.
         $this->assertLessThanOrEqual(1, $third['processed']);
+    }
+
+    public function test_the_warm_up_reaches_a_member_matched_by_their_profile_skills(): void
+    {
+        DB::table('listings')->where('tenant_id', $this->testTenantId)->update(['status' => 'inactive']);
+        DB::table('match_cache')->where('tenant_id', $this->testTenantId)->delete();
+
+        // No listing of their own, only a skill on their profile.
+        $gardener = $this->member(['last_login_at' => now()]);
+        DB::table('user_skills')->insert([
+            'user_id' => $gardener->id, 'tenant_id' => $this->testTenantId, 'skill_name' => 'Lawn mowing',
+            'proficiency' => 'expert', 'is_offering' => 1, 'is_requesting' => 0,
+        ]);
+        $request = $this->listingFor($this->member(['last_login_at' => now()->subDays(3)]), 'request', $this->category()->id, [
+            'title' => 'Grass needs cutting', 'description' => 'My lawn is overgrown and needs mowing.',
+        ]);
+
+        app(SmartMatchingEngine::class)->warmUpCache(1);
+
+        $this->assertTrue(
+            DB::table('match_cache')->where('user_id', $gardener->id)->where('listing_id', $request->id)->exists(),
+            'Only members with a listing of their own were ever pre-computed'
+        );
     }
 
     // ---------------------------------------------------------------------

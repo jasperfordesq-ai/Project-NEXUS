@@ -392,6 +392,17 @@ class MatchNotificationService
      */
     private function exchange(int $tenantId, int $memberId, array $match): array
     {
+        // The engine names the two listings when it found the match in the
+        // members' listings. Below is the fallback for a two-way match found
+        // in their profile skills: it picks by category, which says less.
+        $paired = is_array($match['mutual_exchange'] ?? null) ? $match['mutual_exchange'] : [];
+        if (!empty($paired['they_offer']) && !empty($paired['you_offer'])) {
+            return [
+                'they_offer' => (string) $paired['they_offer'],
+                'you_offer' => (string) $paired['you_offer'],
+            ];
+        }
+
         $ownerId = (int) ($match['user_id'] ?? 0);
         $rows = DB::select(
             "SELECT user_id, type, title, category_id FROM listings

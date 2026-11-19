@@ -42,11 +42,21 @@ final class MatchConcepts
             'tuin', 'tuinieren', 'tuinman', 'maaien', 'ogród', 'ogrodzie', 'ogrodnictwo', 'trawa', 'trawy',
             'koszenie', 'gairdín', 'garraíodóireacht', 'féar',
         ],
+        // Minding children. The words for children themselves are in
+        // 'children' below: "swimming lessons for my kids" is not childcare.
         'childcare' => [
-            'childcare', 'babysit', 'babysitter', 'babysitting', 'nanny', 'childminder', 'childminding', 'kids',
-            'children', 'child', 'toddler', 'toddlers', 'creche', 'niñera', 'canguro', 'niños', 'guardería', 'nounou',
-            'enfants', 'kinderbetreuung', 'babysitten', 'bambini', 'babá', 'crianças', 'oppas', 'oppassen',
-            'kinderopvang', 'kinderen', 'opiekunka', 'niania', 'dzieci', 'páistí', 'leanaí',
+            'childcare', 'babysit', 'babysitter', 'babysitting', 'nanny', 'childminder', 'childminding', 'creche',
+            'niñera', 'canguro', 'guardería', 'nounou', 'kinderbetreuung', 'babysitten', 'babá', 'oppas',
+            'oppassen', 'kinderopvang', 'opiekunka', 'niania',
+        ],
+        // Who the help is for (see GENERIC). The childcare words are here as
+        // well, so "someone to look after my kids" still meets "babysitter".
+        'children' => [
+            'kids', 'children', 'child', 'toddler', 'toddlers', 'niños', 'enfants', 'bambini', 'crianças',
+            'kinderen', 'dzieci', 'páistí', 'leanaí',
+            'childcare', 'babysit', 'babysitter', 'babysitting', 'nanny', 'childminder', 'childminding', 'creche',
+            'niñera', 'canguro', 'guardería', 'nounou', 'kinderbetreuung', 'babysitten', 'babá', 'oppas',
+            'oppassen', 'kinderopvang', 'opiekunka', 'niania',
         ],
         'older_people' => [
             'elderly', 'older', 'senior', 'seniors', 'pensioner', 'pensioners', 'companionship', 'companion',
@@ -88,8 +98,10 @@ final class MatchConcepts
             'wasserhahn', 'idraulico', 'rubinetto', 'canalizador', 'torneira', 'loodgieter', 'kraan', 'lekkage',
             'hydraulik', 'pluiméir', 'sconna',
         ],
+        // "light" and "lights" are left out: "light housework" is not electrical.
         'electrical' => [
-            'electrician', 'electrical', 'electric', 'wiring', 'socket', 'sockets', 'fuse', 'electricista',
+            'electrician', 'electrical', 'electric', 'wiring', 'socket', 'sockets', 'fuse', 'lamp', 'lamps',
+            'bulb', 'bulbs', 'lightbulb', 'lightfitting', 'lightswitch', 'electricista',
             'électricien', 'elektriker', 'elettricista', 'eletricista', 'elektricien', 'elektryk', 'leictreoir',
         ],
         'decorating' => [
@@ -106,11 +118,25 @@ final class MatchConcepts
             'email', 'emails', 'internet', 'wifi', 'printer', 'software', 'tech', 'technology', 'ordenador',
             'portátil', 'computadora', 'informática', 'ordinateur', 'informatique', 'rechner', 'informatica',
             'computador', 'komputer', 'laptopa', 'ríomhaire', 'ríomhaireacht',
+            // "mobile" is left out: a "mobile hairdresser" is not tech help.
+            'phone', 'phones', 'whatsapp', 'zoom', 'facebook', 'website', 'websites', 'app', 'apps', 'password',
+            'passwords', 'broadband', 'digital', 'digitale', 'teléfono', 'téléphone', 'telefon', 'telefono',
+            'telefone', 'telefoon',
         ],
+        // Language help in general (see GENERIC): it does not say WHICH
+        // language. Every language name below is here too, so "language
+        // exchange" still meets "French lessons", while "French conversation"
+        // and "Spanish lessons" each name a different language and do not.
         'languages' => [
             'language', 'languages', 'conversation', 'idioma', 'idiomas', 'conversación', 'langue', 'langues',
             'sprache', 'sprachen', 'konversation', 'lingua', 'lingue', 'conversazione', 'língua', 'conversação',
             'taal', 'talen', 'język', 'teanga',
+            'english', 'inglés', 'anglais', 'englisch', 'inglese', 'inglês', 'engels', 'angielski', 'béarla',
+            'french', 'francés', 'français', 'französisch', 'francese', 'francês', 'frans', 'francuski', 'fraincis',
+            'spanish', 'español', 'espagnol', 'spanisch', 'spagnolo', 'espanhol', 'spaans', 'hiszpański', 'spáinnis',
+            'german', 'alemán', 'allemand', 'deutsch', 'tedesco', 'alemão', 'duits', 'niemiecki', 'gearmáinis',
+            'italian', 'italiano', 'italien', 'italienisch', 'italiaans', 'włoski', 'iodáilis',
+            'irish', 'gaelic', 'gaeilge', 'irlandés', 'irlandais', 'irisch', 'irlandese', 'iers', 'irlandzki',
         ],
         'lang_english' => ['english', 'inglés', 'anglais', 'englisch', 'inglese', 'inglês', 'engels', 'angielski', 'béarla'],
         'lang_french' => ['french', 'francés', 'français', 'französisch', 'francese', 'francês', 'frans', 'francuski', 'fraincis'],
@@ -118,13 +144,22 @@ final class MatchConcepts
         'lang_german' => ['german', 'alemán', 'allemand', 'deutsch', 'tedesco', 'alemão', 'duits', 'niemiecki', 'gearmáinis'],
         'lang_italian' => ['italian', 'italiano', 'italien', 'italienisch', 'italiaans', 'włoski', 'iodáilis'],
         'lang_irish' => ['irish', 'gaelic', 'gaeilge', 'irlandés', 'irlandais', 'irisch', 'irlandese', 'iers', 'irlandzki'],
+        // HOW help is given (see GENERIC): a lesson can be in anything, so
+        // "guitar lessons" and "French lessons" are not the same kind of help.
         'teaching' => [
-            'tutor', 'tutoring', 'tuition', 'homework', 'lesson', 'lessons', 'teach', 'teaching', 'teacher',
-            'class', 'classes', 'course', 'cours', 'exam', 'exams', 'maths', 'math', 'mathematics', 'clase', 'clases',
-            'profesor', 'enseñar', 'deberes', 'matemáticas', 'leçon', 'leçons', 'professeur', 'devoirs',
-            'nachhilfe', 'unterricht', 'lehrer', 'hausaufgaben', 'mathe', 'lezione', 'lezioni', 'ripetizioni',
-            'insegnante', 'compiti', 'aulas', 'explicações', 'professor', 'bijles', 'huiswerk', 'korepetycje',
-            'lekcja', 'lekcje', 'nauczyciel', 'ceacht', 'ceachtanna', 'múinteoir',
+            'tutor', 'tutoring', 'tuition', 'lesson', 'lessons', 'teach', 'teaching', 'teacher',
+            'class', 'classes', 'course', 'cours', 'clase', 'clases',
+            'profesor', 'enseñar', 'leçon', 'leçons', 'professeur',
+            'nachhilfe', 'unterricht', 'lehrer', 'lezione', 'lezioni', 'ripetizioni',
+            'insegnante', 'aulas', 'explicações', 'professor', 'bijles', 'korepetycje',
+            'lekcja', 'lekcje', 'nauczyciel', 'ceacht', 'ceachtanna', 'múinteoir', 'grinds',
+        ],
+        // School subjects and school work: a kind of help in its own right.
+        // The words for private school tuition are here and in 'teaching'.
+        'schoolwork' => [
+            'homework', 'exam', 'exams', 'maths', 'math', 'mathematics', 'grinds', 'deberes', 'matemáticas',
+            'devoirs', 'nachhilfe', 'hausaufgaben', 'mathe', 'ripetizioni', 'compiti', 'explicações', 'bijles',
+            'huiswerk', 'korepetycje',
         ],
         'music' => [
             'music', 'musical', 'guitar', 'violin', 'drums', 'singing', 'choir', 'ukulele', 'flute', 'música',
@@ -170,7 +205,8 @@ final class MatchConcepts
         ],
         'cleaning' => [
             'cleaning', 'clean', 'cleaner', 'hoovering', 'hoover', 'vacuum', 'vacuuming', 'dusting', 'housework',
-            'tidy', 'tidying', 'declutter', 'decluttering', 'laundry', 'ironing', 'limpieza', 'limpiar', 'planchar',
+            'tidy', 'tidying', 'declutter', 'decluttering', 'laundry', 'ironing', 'iron', 'clearing', 'clearance',
+            'gutter', 'gutters', 'limpieza', 'limpiar', 'planchar',
             'colada', 'ménage', 'nettoyage', 'nettoyer', 'repassage', 'putzen', 'reinigung', 'bügeln', 'wäsche',
             'aufräumen', 'pulizia', 'pulire', 'stirare', 'bucato', 'limpeza', 'limpar', 'schoonmaken', 'poetsen',
             'strijken', 'sprzątanie', 'prasowanie', 'pranie', 'glanadh', 'iarnáil',
@@ -181,8 +217,9 @@ final class MatchConcepts
             'pratiche', 'burocrazia', 'papelada', 'formulários', 'papierwerk', 'formulieren', 'administratie',
             'formularze', 'foirmeacha', 'páipéarachas',
         ],
+        // "job" and "jobs" are left out: "odd jobs" is not help finding work.
         'jobs' => [
-            'cv', 'resume', 'curriculum', 'job', 'jobs', 'interview', 'interviews', 'career', 'careers',
+            'cv', 'resume', 'curriculum', 'interview', 'interviews', 'career', 'careers',
             'employment', 'currículum', 'empleo', 'entrevista', 'emploi', 'entretien', 'candidature',
             'lebenslauf', 'bewerbung', 'vorstellungsgespräch', 'colloquio', 'candidatura', 'currículo', 'emprego',
             'sollicitatie', 'sollicitatiegesprek', 'życiorys', 'agallamh',
@@ -217,4 +254,63 @@ final class MatchConcepts
             'meccanico', 'mecânico', 'monteur', 'samochód', 'mechanik', 'gluaisteán',
         ],
     ];
+
+    /**
+     * Groups that say HOW help is given, WHO it is for or WHERE it happens,
+     * not WHAT it is. Sharing one of these is weak evidence on its own, and
+     * it never makes two listings "the same kind of help" when each also
+     * names a different kind: "guitar lessons" and "French lessons" share
+     * ~teaching and nothing else that matters.
+     */
+    public const GENERIC = ['teaching', 'children', 'health', 'languages'];
+
+    /**
+     * Kinds of help that one person often does both of. Two listings whose
+     * kinds are related are not treated as different kinds of help (a
+     * handyman may well fix a tap), and get no credit for being the same.
+     * Every group in a row is related to every other group in that row.
+     *
+     * @var array<int, string[]>
+     */
+    public const RELATED = [
+        ['diy', 'plumbing', 'electrical', 'decorating'],
+        ['fitness', 'wellbeing'],
+        ['arts', 'sewing'],
+        ['bikes', 'car_repair'],
+        ['paperwork', 'money'],
+        ['paperwork', 'writing'],
+        ['writing', 'translation'],
+    ];
+
+    /** @var array<string, array<string, true>>|null */
+    private static ?array $relatedIndex = null;
+
+    /** Whether a concept (with or without its "~") is a generic one. */
+    public static function isGeneric(string $concept): bool
+    {
+        return in_array(ltrim($concept, KeywordExtractor::CONCEPT_PREFIX), self::GENERIC, true);
+    }
+
+    /** Whether two different concepts (with or without their "~") are related kinds of help. */
+    public static function related(string $a, string $b): bool
+    {
+        if (self::$relatedIndex === null) {
+            $index = [];
+            foreach (self::RELATED as $row) {
+                foreach ($row as $one) {
+                    foreach ($row as $other) {
+                        if ($one !== $other) {
+                            $index[$one][$other] = true;
+                        }
+                    }
+                }
+            }
+            self::$relatedIndex = $index;
+        }
+
+        $a = ltrim($a, KeywordExtractor::CONCEPT_PREFIX);
+        $b = ltrim($b, KeywordExtractor::CONCEPT_PREFIX);
+
+        return isset(self::$relatedIndex[$a][$b]);
+    }
 }

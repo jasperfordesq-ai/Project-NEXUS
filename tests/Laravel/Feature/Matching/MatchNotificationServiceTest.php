@@ -218,6 +218,60 @@ class MatchNotificationServiceTest extends TestCase
         $this->assertStringContainsString('/matches?type=mutual&highlight=listing-', (string) $mutual[0]->link);
     }
 
+    public function test_the_two_way_alert_names_the_two_listings_that_answer_each_other(): void
+    {
+        $this->setMatchingConfig(['hot_match_threshold' => 100]);
+        // No two of the four listings share a category, and each member has
+        // an older, unrelated offer as well: picking "their first offer" by
+        // category, as the alert used to, would name the wrong one.
+        $me = $this->member();
+        $this->listingFor($me, 'offer', $this->category('Languages'), [
+            'title' => 'French conversation practice', 'description' => 'Speaking French over coffee.',
+            'created_at' => now()->subDays(5),
+        ]);
+        $this->listingFor($me, 'offer', $this->category('Stars'), [
+            'title' => 'Telescope evenings', 'description' => 'Star gazing on clear nights.',
+            'created_at' => now()->subDays(2),
+        ]);
+        $this->listingFor($me, 'request', $this->category('Home'), [
+            'title' => 'Lawn needs mowing', 'description' => 'The grass is long.',
+            'created_at' => now()->subDays(5),
+        ]);
+        $neighbour = $this->member();
+        $this->listingFor($neighbour, 'request', $this->category('Education'), [
+            'title' => 'French lessons wanted', 'description' => 'Learning French before a holiday.',
+            'created_at' => now()->subDays(5),
+        ]);
+        $this->listingFor($neighbour, 'offer', $this->category('Odd jobs'), [
+            'title' => 'I can mow lawns', 'description' => 'I have my own mower.',
+        ]);
+
+        $this->service()->notifyForNewListings();
+
+        $mutual = $this->notices($me, 'mutual_match');
+        $this->assertCount(1, $mutual);
+        $this->assertStringContainsString('I can mow lawns', (string) $mutual[0]->message);
+        $this->assertStringContainsString('French conversation practice', (string) $mutual[0]->message);
+        $this->assertStringNotContainsString('Telescope', (string) $mutual[0]->message);
+    }
+
+    public function test_no_two_way_alert_for_members_who_only_share_categories(): void
+    {
+        $this->setMatchingConfig(['hot_match_threshold' => 100]);
+        $general = $this->category('General');
+        $me = $this->member();
+        $this->listingFor($me, 'request', $general, ['title' => 'Chess partner wanted', 'description' => 'A game of chess now and then.']);
+        $this->listingFor($me, 'offer', $general, ['title' => 'Telescope evenings', 'description' => 'Star gazing on clear nights.']);
+        $neighbour = $this->member();
+        $this->listingFor($neighbour, 'offer', $general, ['title' => 'Origami workshop', 'description' => 'Paper folding for all ages.']);
+        $this->listingFor($neighbour, 'request', $general, ['title' => 'Beekeeping advice', 'description' => 'Thinking of keeping a hive.']);
+
+        $this->service()->notifyForNewListings();
+
+        $this->assertCount(0, $this->notices($me, 'mutual_match'), 'An offer and a request each in the same category used to be announced as a two-way match');
+        $this->assertCount(0, $this->notices($neighbour, 'mutual_match'));
+    }
+
     // ---------------------------------------------------------------------
     // Safeguarding: a notification can never go further than the page
     // ---------------------------------------------------------------------
