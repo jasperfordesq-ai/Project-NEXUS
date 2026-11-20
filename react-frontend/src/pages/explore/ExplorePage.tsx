@@ -1283,26 +1283,23 @@ export default function ExplorePage() {
               .filter((l) => !dismissedIds.has(l.id))
               .slice(0, 6)
               .map((listing) => (
-              <div key={listing.id} className="relative group">
+              <div key={listing.id} className="relative group h-full">
                 <Link
                   to={tenantPath(`/listings/${listing.id}`)}
                   onClick={() => trackInteraction('listing', listing.id, 'click')}
+                  className="block h-full"
                 >
                   <Card className="h-full border border-[var(--card-border)] bg-[var(--card-bg)] hover:bg-[var(--card-hover-bg)] transition-colors">
-                    <CardBody className="p-4 gap-3">
-                      <div className="flex items-center gap-2">
-                        {listing.match_reason && (
-                          <Chip size="sm" variant="soft" color="secondary" className="text-xs">
-                            <TrendingUp className="w-3 h-3" aria-hidden="true" />
-                            {listing.match_reason}
-                          </Chip>
-                        )}
-                        {listing.match_score != null && listing.match_score > 0 && (
-                          <Chip size="sm" variant="solid" color="primary" className="text-xs ml-auto">
+                    <CardBody className="flex h-full flex-col gap-3 p-4">
+                      {/* The score sits at the start of the card: the 44px
+                          "Not interested" button covers the far top corner. */}
+                      {listing.match_score != null && listing.match_score > 0 && (
+                        <div className="flex pe-8">
+                          <Chip size="sm" variant="solid" color="primary" className="text-xs">
                             {t('match_score', { score: Math.round(listing.match_score) })}
                           </Chip>
-                        )}
-                      </div>
+                        </div>
+                      )}
                       <div className="flex items-start gap-3">
                         <Avatar
                           src={resolveAvatarUrl(listing.author_avatar)}
@@ -1310,21 +1307,21 @@ export default function ExplorePage() {
                           size="sm"
                           className="shrink-0 mt-0.5"
                         />
-                        <div className="min-w-0">
-                          <h3 className="text-sm font-semibold text-[var(--text-primary)] line-clamp-2">
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-sm font-semibold text-[var(--text-primary)] line-clamp-2 break-words">
                             {listing.title}
                           </h3>
-                          <p className="text-xs text-[var(--text-muted)]">
+                          <p className="text-xs text-[var(--text-muted)] truncate">
                             {t('recommended.by_author', { name: listing.author_name })}
                           </p>
-                          <div className="flex items-center gap-2 mt-1">
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1">
                             {listing.category_name && (
                               <Chip size="sm" variant="soft" className="text-[10px]">
                                 {listing.category_name}
                               </Chip>
                             )}
                             {listing.distance_km != null && (
-                              <span className="text-[10px] text-[var(--text-muted)] flex items-center gap-0.5">
+                              <span className="text-[10px] text-[var(--text-muted)] flex items-center gap-0.5 whitespace-nowrap">
                                 <Navigation className="w-2.5 h-2.5" aria-hidden="true" />
                                 {t('near_you.distance', { distance: listing.distance_km })}
                               </span>
@@ -1332,6 +1329,18 @@ export default function ExplorePage() {
                           </div>
                         </div>
                       </div>
+                      {/* The reason is a whole sentence ("Two-way match: you
+                          offer … and they offer …"), so it is text that
+                          wraps. A Chip never wraps or shrinks, and the Card
+                          does not clip, so in a chip it ran over the cards
+                          beside it. `mt-auto` lines the reasons up along the
+                          foot of each row of cards. */}
+                      {listing.match_reason && (
+                        <p className="mt-auto flex items-start gap-1.5 border-t border-[var(--card-border)] pt-3 text-xs text-[var(--text-secondary)]">
+                          <TrendingUp className="mt-0.5 size-3.5 shrink-0 text-[var(--text-muted)]" aria-hidden="true" />
+                          <span className="min-w-0 break-words line-clamp-4">{listing.match_reason}</span>
+                        </p>
+                      )}
                     </CardBody>
                   </Card>
                 </Link>

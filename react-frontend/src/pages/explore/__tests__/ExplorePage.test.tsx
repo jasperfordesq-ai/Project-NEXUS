@@ -371,6 +371,34 @@ describe('ExplorePage', () => {
     expect(screen.getByText('Skills match your expertise')).toBeInTheDocument();
   });
 
+  // The reason is a whole sentence since the matching work of 19 Nov 2026
+  // ("Two-way match: you offer … and they offer …"). A HeroUI Chip is
+  // `inline-flex shrink-0` and never wraps, and the Card is `overflow-visible`,
+  // so inside a chip the sentence ran out of its card and over the next two.
+  it('shows a long match reason as wrapping text, never inside a chip', () => {
+    const longReason =
+      'Two-way match: you offer “Emergency Credit Grant (Community Pot)” and they offer “Sick of Windows? You may not need to keep it.”';
+    mockState.useApiReturn = {
+      data: {
+        ...mockExploreData,
+        recommended_listings: [
+          { ...mockExploreData.recommended_listings[0], match_reason: longReason },
+        ],
+      },
+      isLoading: false,
+      error: null,
+      execute: mockExecute,
+    };
+    render(<ExplorePage />);
+
+    const reason = screen.getByText(longReason);
+    expect(reason.closest('.chip')).toBeNull();
+    expect(reason.className).toContain('break-words');
+    expect(reason.className).toContain('min-w-0');
+    // The score stays a chip: it is three words and cannot outgrow the card.
+    expect(screen.getByText('match_score').closest('.chip')).not.toBeNull();
+  });
+
   it('renders near you listings section for authenticated users', () => {
     render(<ExplorePage />);
     expect(screen.getByText('near_you.title')).toBeInTheDocument();
