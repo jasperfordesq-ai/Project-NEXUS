@@ -1150,7 +1150,8 @@
     "title": "Społeczność {{community}} jest wstrzymana",
     "body": "Ta społeczność jest obecnie niedostępna. Skontaktuj się z jej organizatorami.",
     "organiser_sign_in": "Logowanie dla organizatorów",
-    "go_to_admin": "Przejdź do panelu administracyjnego"
+    "go_to_admin": "Przejdź do panelu administracyjnego",
+    "sign_out": "Wyloguj się"
   },
   "kb": {
     "title": "Baza wiedzy",

@@ -1142,7 +1142,8 @@
     "title": "{{community}} ist pausiert",
     "body": "Diese Community ist derzeit nicht verfügbar. Bitte wenden Sie sich an die Organisatorinnen und Organisatoren.",
     "organiser_sign_in": "Anmeldung für Organisatoren",
-    "go_to_admin": "Zum Adminbereich"
+    "go_to_admin": "Zum Adminbereich",
+    "sign_out": "Abmelden"
   },
   "kb": {
     "title": "Wissensdatenbank",

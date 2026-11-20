@@ -1142,7 +1142,8 @@
     "title": "{{community}} is paused",
     "body": "This community is not available at the moment. Please contact its organisers.",
     "organiser_sign_in": "Organiser sign-in",
-    "go_to_admin": "Go to the admin panel"
+    "go_to_admin": "Go to the admin panel",
+    "sign_out": "Sign out"
   },
   "kb": {
     "title": "Knowledge Base",

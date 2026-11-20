@@ -1142,7 +1142,8 @@
     "title": "{{community}} is gepauzeerd",
     "body": "Deze gemeenschap is op dit moment niet beschikbaar. Neem contact op met de organisatoren.",
     "organiser_sign_in": "Aanmelden voor organisatoren",
-    "go_to_admin": "Naar het beheerpaneel"
+    "go_to_admin": "Naar het beheerpaneel",
+    "sign_out": "Afmelden"
   },
   "kb": {
     "title": "Kennisbank",

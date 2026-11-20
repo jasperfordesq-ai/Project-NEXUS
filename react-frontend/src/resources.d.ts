@@ -59452,6 +59452,7 @@ export default interface Resources {
       "body": "This community is not available at the moment. Please contact its organisers.",
       "go_to_admin": "Go to the admin panel",
       "organiser_sign_in": "Organiser sign-in",
+      "sign_out": "Sign out",
       "title": "{{community}} is paused"
     },
     "contact": {

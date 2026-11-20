@@ -11,7 +11,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@/test/test-utils';
+import { fireEvent, render, screen } from '@/test/test-utils';
 
 const mockUseAuth = vi.fn();
 
@@ -71,6 +71,32 @@ describe('CommunityPausedPage', () => {
 
     expect(screen.queryByRole('link', { name: 'Go to the admin panel' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Organiser sign-in' })).not.toBeInTheDocument();
+  });
+
+  // The page is shown without the site's header, so it has to offer the way
+  // out itself: a member on a shared computer must be able to sign out.
+  it('lets a signed-in member sign out', async () => {
+    const logout = vi.fn().mockResolvedValue(undefined);
+    mockUseAuth.mockReturnValue({ user: { id: 8, role: 'member' }, isAuthenticated: true, logout });
+    render(<CommunityPausedPage />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Sign out' }));
+
+    expect(logout).toHaveBeenCalledTimes(1);
+  });
+
+  it('lets a signed-in admin sign out as well as go to the admin panel', () => {
+    mockUseAuth.mockReturnValue({ user: { id: 7, role: 'admin' }, isAuthenticated: true, logout: vi.fn() });
+    render(<CommunityPausedPage />);
+
+    expect(screen.getByRole('link', { name: 'Go to the admin panel' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Sign out' })).toBeInTheDocument();
+  });
+
+  it('offers no sign-out to a signed-out visitor', () => {
+    render(<CommunityPausedPage />);
+
+    expect(screen.queryByRole('button', { name: 'Sign out' })).not.toBeInTheDocument();
   });
 
   it('offers a broker neither link: the broker panel is closed too', () => {

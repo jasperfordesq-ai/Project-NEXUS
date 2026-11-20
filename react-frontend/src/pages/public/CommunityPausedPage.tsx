@@ -20,6 +20,7 @@
 
 import CirclePause from 'lucide-react/icons/circle-pause';
 import LogIn from 'lucide-react/icons/log-in';
+import LogOut from 'lucide-react/icons/log-out';
 import Settings from 'lucide-react/icons/settings';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
@@ -34,7 +35,7 @@ import { hasAdminPanelAccess } from '@/lib/access';
 export function CommunityPausedPage() {
   const { t } = useTranslation('public');
   const { tenant, tenantPath } = useTenant();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   const community = tenant?.name || 'Project NEXUS';
   const title = t('community_paused.title', { community });
@@ -88,7 +89,21 @@ export function CommunityPausedPage() {
                 {t('community_paused.organiser_sign_in')}
               </Button>
             </div>
-          ) : null}
+          ) : (
+            // This page is shown without the site's header, so the way out
+            // has to be here: a member on a shared computer must be able to
+            // sign out. Sign-out stays open for a paused community.
+            <div className={isAdmin ? '' : 'pt-4 border-t border-divider'}>
+              <Button
+                variant="tertiary"
+                size="sm"
+                startContent={<LogOut size={18} aria-hidden="true" />}
+                onPress={() => void logout()}
+              >
+                {t('community_paused.sign_out')}
+              </Button>
+            </div>
+          )}
         </Card.Content>
       </Card>
     </div>

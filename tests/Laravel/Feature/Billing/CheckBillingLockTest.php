@@ -188,6 +188,29 @@ final class CheckBillingLockTest extends TestCase
         $response->assertJsonPath('code', CheckBillingLock::CODE);
     }
 
+    /**
+     * The Platform team panel and the super admin panel are how a paused
+     * community gets restored. Their own API (not only /v2/admin/) must stay
+     * reachable from a paused community's address: every route under these
+     * two prefixes carries its own platform-team or super-admin gate.
+     * (Found by the Stage 1 review, 20 Nov 2026.)
+     */
+    public function test_the_platform_team_and_super_admin_apis_stay_open(): void
+    {
+        BillingStandingService::suspend($this->child, null, 'manual');
+        $this->signInTo($this->child, ['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
+
+        foreach (['/v2/super-admin/provisioning-requests', '/v2/platform-team/does-not-exist'] as $uri) {
+            $response = $this->apiGet($uri);
+
+            $this->assertNotSame(
+                CheckBillingLock::CODE,
+                $response->json('code'),
+                "GET {$uri} must not be answered by the payment lock"
+            );
+        }
+    }
+
     public function test_who_am_i_write_is_closed(): void
     {
         BillingStandingService::suspend($this->child, null, 'manual');

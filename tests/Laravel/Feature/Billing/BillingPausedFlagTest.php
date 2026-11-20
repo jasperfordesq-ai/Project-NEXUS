@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Services\BillingStandingService;
 use App\Support\Billing\BillingLock;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
 use Tests\Laravel\TestCase;
@@ -113,6 +114,53 @@ final class BillingPausedFlagTest extends TestCase
         BillingStandingService::suspend($this->parent, null, 'auto');
 
         $this->assertTrue($this->bootstrapFor($this->child)->json('data.billing_paused'));
+    }
+
+    /**
+     * Every page of every community's website starts with the bootstrap. If
+     * the payment-standing check cannot run, the bootstrap must still answer
+     * (as "not paused", with the failure logged) — an outage of this check
+     * must not take every community's website down.
+     * (Found by the Stage 1 review, 20 Nov 2026.)
+     */
+    public function test_bootstrap_still_answers_when_the_standing_check_cannot_run(): void
+    {
+        // Make the check itself throw, without touching the schema (a DDL
+        // statement would commit this test's transaction): the cached list of
+        // suspended communities is replaced by one that fails when it is read.
+        $unreadable = new class implements \ArrayAccess {
+            public function offsetExists(mixed $offset): bool
+            {
+                throw new \RuntimeException('standing list unreadable');
+            }
+
+            public function offsetGet(mixed $offset): mixed
+            {
+                throw new \RuntimeException('standing list unreadable');
+            }
+
+            public function offsetSet(mixed $offset, mixed $value): void
+            {
+            }
+
+            public function offsetUnset(mixed $offset): void
+            {
+            }
+        };
+        Cache::put(BillingLock::CACHE_KEY, ['suspended' => $unreadable, 'exempt' => []], 60);
+
+        // The precondition this test rests on: asked directly, the check throws.
+        try {
+            BillingLock::isLocked($this->child);
+            $this->fail('The check was expected to throw for this test to mean anything.');
+        } catch (\RuntimeException $e) {
+            $this->assertSame('standing list unreadable', $e->getMessage());
+        }
+
+        $response = $this->bootstrapFor($this->child);
+
+        $response->assertStatus(200);
+        $this->assertFalse($response->json('data.billing_paused'));
     }
 
     public function test_admin_standing_is_quiet_for_an_open_community(): void

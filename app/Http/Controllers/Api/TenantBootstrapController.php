@@ -416,7 +416,10 @@ class TenantBootstrapController extends BaseApiController
      */
     private function withBillingFlag(array $data, int $tenantId): array
     {
-        $data['billing_paused'] = BillingLock::isLocked($tenantId);
+        // Fail open, and say so in the log: every page of every community's
+        // website starts here, so a payment check that cannot run must not be
+        // able to take them all down. The API lock decides for itself.
+        $data['billing_paused'] = BillingLock::isLockedFailOpen($tenantId, 'TenantBootstrapController');
 
         return $data;
     }

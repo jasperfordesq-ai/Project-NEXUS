@@ -1154,7 +1154,8 @@
     "title": "Tá {{community}} curtha ar sos",
     "body": "Níl an pobal seo ar fáil faoi láthair. Déan teagmháil lena eagraithe.",
     "organiser_sign_in": "Síniú isteach d’eagraithe",
-    "go_to_admin": "Téigh go dtí an painéal riaracháin"
+    "go_to_admin": "Téigh go dtí an painéal riaracháin",
+    "sign_out": "Sínigh amach"
   },
   "kb": {
     "title": "Bonn Eolais",

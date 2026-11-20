@@ -185,6 +185,34 @@ class F270SsoProvisionRegistrationPolicyTest extends TestCase
      * CONTROL — an open community still provisions a live member and signs
      * them in, so the refusals above are not a blanket refusal.
      */
+    /**
+     * A community paused for non-payment takes no new members (20 Nov 2026).
+     * The API lock closes the register address, but single sign-on creates
+     * the account here, from the provider's own record of the community, so
+     * the rule has to hold here too. Refused exactly like a closed community.
+     */
+    public function test_paused_community_creates_no_account_even_when_registration_is_open(): void
+    {
+        $this->seedRegistrationMode('open');
+        $this->assertSame('open', $this->effectiveMode());
+
+        \App\Support\Billing\BillingLock::flush();
+        \App\Services\BillingStandingService::suspend($this->testTenantId, null, 'manual');
+
+        try {
+            $email = 'f270-paused-' . bin2hex(random_bytes(4)) . '@example.test';
+            $query = $this->runCallback($email);
+
+            $this->assertArrayNotHasKey('code', $query, 'a paused community must not issue a sign-in code to a new account');
+            $this->assertSame('sso_link_required', $query['error'] ?? null);
+            $this->assertDatabaseMissing('users', ['tenant_id' => $this->testTenantId, 'email' => $email]);
+        } finally {
+            // The row rolls back with the transaction; the cached list must not
+            // outlive it, or the shared test community stays "paused".
+            \App\Support\Billing\BillingLock::flush();
+        }
+    }
+
     public function test_control_open_community_provisions_and_signs_in(): void
     {
         $this->seedRegistrationMode('open');

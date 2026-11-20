@@ -11,6 +11,7 @@ namespace App\Services\Auth;
 use App\Models\User;
 use App\Services\Identity\RegistrationOrchestrationService;
 use App\Services\Identity\RegistrationPolicyService;
+use App\Support\Billing\BillingLock;
 use App\Support\OutboundUrlGuard;
 use Firebase\JWT\JWK;
 use Firebase\JWT\JWT;
@@ -982,6 +983,11 @@ class SsoOidcService
         // community is not an account-existence oracle for the token's author.
         $registrationPolicy = RegistrationPolicyService::getEffectivePolicy($tenantId);
         $registrationMode = (string) ($registrationPolicy['registration_mode'] ?? 'closed');
+        // A community paused for non-payment takes no new members: treated
+        // exactly like a closed one, and so refused the same way below.
+        if (BillingLock::isLocked($tenantId)) {
+            $registrationMode = 'closed';
+        }
         if (in_array($registrationMode, ['closed', 'invite_only'], true)) {
             Log::info('[SSO] refused to provision: community registration policy does not allow it', [
                 'tenant_id' => $tenantId,

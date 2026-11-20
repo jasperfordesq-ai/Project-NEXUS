@@ -1146,7 +1146,8 @@
     "title": "{{community}} est en pause",
     "body": "Cette communauté n’est pas disponible pour le moment. Veuillez contacter ses organisateurs.",
     "organiser_sign_in": "Connexion des organisateurs",
-    "go_to_admin": "Aller au panneau d’administration"
+    "go_to_admin": "Aller au panneau d’administration",
+    "sign_out": "Se déconnecter"
   },
   "kb": {
     "title": "Base de connaissances",

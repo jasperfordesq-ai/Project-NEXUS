@@ -11,6 +11,7 @@ namespace App\Services\Auth;
 use App\Models\User;
 use App\Services\Identity\RegistrationOrchestrationService;
 use App\Services\Identity\RegistrationPolicyService;
+use App\Support\Billing\BillingLock;
 use App\Services\TenantSettingsService;
 use App\Services\TokenService;
 use App\Services\TotpService;
@@ -366,6 +367,18 @@ class SocialAuthService
         }
 
         // 3. Create new user.
+
+        // A community paused for non-payment takes no new members. The API
+        // lock closes POST /v2/auth/register by its address, but this path
+        // arrives through the provider's callback, which is under the open
+        // sign-in prefix and carries the community in signed state. Existing
+        // members are not affected: they returned above.
+        if (BillingLock::isLocked($tenantId)) {
+            throw new ProviderSignInRefused(
+                ProviderSignInRefused::REGISTRATION_CLOSED,
+                'OAuth registration is not available while the community is paused.'
+            );
+        }
 
         $registrationPolicy = RegistrationPolicyService::getEffectivePolicy($tenantId);
         $registrationMode = (string) ($registrationPolicy['registration_mode'] ?? 'closed');

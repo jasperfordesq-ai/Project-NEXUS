@@ -40,9 +40,13 @@ class CheckBillingLock
 
     /** Open whatever the method. Matched as a prefix of the request path. */
     private const OPEN_PREFIXES = [
+        // The three panels' own APIs. The Platform team panel and the super
+        // admin panel are how a paused community gets restored, so they must
+        // work from its address; every route under these prefixes carries its
+        // own admin, super-admin or platform-team gate.
         '/api/v2/admin/',
-        '/admin/',
-        '/super-admin/',
+        '/api/v2/platform-team/',
+        '/api/v2/super-admin/',
         // Signing in. The sign-in page asks for a CSRF token and the
         // community's sign-in options before anything is typed, and a second
         // step or a passkey may follow; all of it has to work, or the
