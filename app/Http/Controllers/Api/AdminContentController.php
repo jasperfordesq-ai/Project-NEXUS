@@ -706,6 +706,8 @@ class AdminContentController extends BaseApiController
                     pp.max_menus, pp.max_menu_items, pp.max_users, pp.price_monthly, pp.price_yearly,
                     pp.is_active, pp.stripe_product_id, pp.stripe_price_id_monthly, pp.stripe_price_id_yearly,
                     pp.created_at, pp.updated_at,
+                    pp.is_standard, pp.price_monthly_gbp, pp.price_yearly_gbp, pp.setup_fee, pp.setup_fee_gbp,
+                    pp.max_communities, pp.storage_gb, pp.emails_per_month,
                     (SELECT COUNT(*) FROM tenant_plan_assignments tpa WHERE tpa.pay_plan_id = pp.id AND tpa.status IN ('active','trialing','trial')) AS tenant_count
              FROM pay_plans pp ORDER BY pp.tier_level ASC, pp.name ASC"
         ));
@@ -714,6 +716,10 @@ class AdminContentController extends BaseApiController
             if (isset($plan['features'])) { $plan['features'] = json_decode($plan['features'], true) ?: []; }
             $plan['stripe_synced'] = !empty($plan['stripe_product_id']);
             $plan['tenant_count'] = (int) $plan['tenant_count'];
+            $plan['is_standard'] = (bool) $plan['is_standard'];
+            foreach (['max_communities', 'storage_gb', 'emails_per_month'] as $allowance) {
+                $plan[$allowance] = $plan[$allowance] !== null ? (int) $plan[$allowance] : null;
+            }
         }
         unset($plan);
 

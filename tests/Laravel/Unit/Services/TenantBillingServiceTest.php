@@ -808,10 +808,11 @@ class TenantBillingServiceTest extends TestCase
      * it via getEffectivePrice indirectly, but we can verify the threshold
      * constants by examining the match arms directly through the snapshot result.
      *
-     * Here we verify via the snapshot that any tenant with subtree_user_count <= 50
-     * gets 'seed' as suggested_plan.
+     * Here we verify via the snapshot that a tenant with no active members is
+     * offered the smallest standard package. Until 20 Nov 2026 this was 'seed',
+     * a slug from the placeholder plans that no longer existed by then.
      */
-    public function test_suggested_plan_is_seed_when_subtree_count_is_zero(): void
+    public function test_suggested_plan_is_the_smallest_standard_package_when_subtree_count_is_zero(): void
     {
         // Create an empty tenant (no users) so subtree_count will be 0.
         $tempTenantId = 98020;
@@ -834,6 +835,6 @@ class TenantBillingServiceTest extends TestCase
         $row = array_values($row);
 
         $this->assertCount(1, $row);
-        $this->assertSame('seed', $row[0]['suggested_plan']);
+        $this->assertSame('spark', $row[0]['suggested_plan']);
     }
 }

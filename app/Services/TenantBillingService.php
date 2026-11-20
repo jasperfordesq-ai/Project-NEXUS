@@ -13,6 +13,7 @@ use App\Core\EmailTemplateBuilder;
 use App\Core\Mailer;
 use App\Core\TenantContext;
 use App\I18n\LocaleContext;
+use App\Support\Billing\StandardPlans;
 
 /**
  * TenantBillingService — Billing snapshot, plan assignment, pricing, and revenue
@@ -96,6 +97,111 @@ class TenantBillingService
         return (int) ($result->cnt ?? 0);
     }
 
+    /**
+     * Count ACTIVE members of a tenant and everything below it: an active
+     * account that signed in within the last $days days. This is the number
+     * the standard packages are sized by (the pricing page: "someone who signs
+     * in at least once in a typical 90 days"), and the number a member limit
+     * is checked against. A parent's count includes its whole branch because a
+     * parent pays for its branch.
+     *
+     * The empty-path guard is the same as getSubtreeUserCount()'s and for the
+     * same reason: an empty prefix would bill this community for the whole
+     * platform. Without a path, only its own members are counted.
+     */
+    public static function getSubtreeActiveMemberCount(int $tenantId, int $days = StandardPlans::ACTIVE_WINDOW_DAYS): int
+    {
+        $row = DB::selectOne('SELECT path FROM tenants WHERE id = ?', [$tenantId]);
+        if (!$row) {
+            return 0;
+        }
+
+        $path = trim((string) ($row->path ?? ''));
+        $since = now()->subDays($days);
+
+        if ($path === '') {
+            Log::error('TenantBillingService: tenant has no materialised path; counting own active members only', [
+                'tenant_id' => $tenantId,
+                'impact'    => 'subtree members excluded from the active member count for this tenant',
+            ]);
+
+            $ownOnly = DB::selectOne(
+                'SELECT COUNT(*) AS cnt FROM users
+                 WHERE tenant_id = ? AND status = ? AND last_login_at >= ?',
+                [$tenantId, 'active', $since]
+            );
+
+            return (int) ($ownOnly->cnt ?? 0);
+        }
+
+        $result = DB::selectOne(
+            'SELECT COUNT(*) AS cnt
+             FROM users u
+             INNER JOIN tenants t ON u.tenant_id = t.id
+             WHERE (t.id = ? OR t.path LIKE ?)
+               AND u.status = ?
+               AND u.last_login_at >= ?',
+            [$tenantId, $path . '%', 'active', $since]
+        );
+
+        return (int) ($result->cnt ?? 0);
+    }
+
+    /**
+     * Active member counts for many tenants in two queries, each the same
+     * figure getSubtreeActiveMemberCount() returns, for the snapshot, which
+     * must not add a query per row.
+     *
+     * Descendants are found by the same path-prefix rule as the SQL LIKE.
+     * Paths are digits and slashes only, so a plain prefix comparison agrees
+     * with LIKE. A tenant with an empty path gets its own members only.
+     *
+     * @param  list<int> $tenantIds
+     * @return array<int, int> tenant id => active members in its branch
+     */
+    private static function activeMemberCountsForBranches(array $tenantIds, int $days = StandardPlans::ACTIVE_WINDOW_DAYS): array
+    {
+        if ($tenantIds === []) {
+            return [];
+        }
+
+        $since = now()->subDays($days);
+
+        $perTenant = [];
+        foreach (DB::select(
+            "SELECT tenant_id, COUNT(*) AS cnt
+             FROM users
+             WHERE status = 'active' AND last_login_at >= ?
+             GROUP BY tenant_id",
+            [$since]
+        ) as $row) {
+            $perTenant[(int) $row->tenant_id] = (int) $row->cnt;
+        }
+
+        $paths = [];
+        foreach (DB::select('SELECT id, path FROM tenants') as $row) {
+            $paths[(int) $row->id] = trim((string) ($row->path ?? ''));
+        }
+
+        $counts = [];
+        foreach ($tenantIds as $tenantId) {
+            $path = $paths[$tenantId] ?? '';
+            $total = $perTenant[$tenantId] ?? 0;
+
+            if ($path !== '') {
+                foreach ($paths as $otherId => $otherPath) {
+                    if ($otherId !== $tenantId && $otherPath !== '' && str_starts_with($otherPath, $path)) {
+                        $total += $perTenant[$otherId] ?? 0;
+                    }
+                }
+            }
+
+            $counts[$tenantId] = $total;
+        }
+
+        return $counts;
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     // Effective Price
     // ─────────────────────────────────────────────────────────────────────────
@@ -163,6 +269,10 @@ class TenantBillingService
      * Each row includes own_user_count, subtree_user_count, current_plan,
      * suggested_plan, over_limit flag, effective_price, grace period info, etc.
      *
+     * `active_member_count` (signed in within 90 days, whole branch) is what
+     * `over_limit`, `usage_percent` and `suggested_plan` are measured on;
+     * `subtree_user_count` (every active account) is still reported beside it.
+     *
      * @return array<int, array<string, mixed>>
      */
     public static function getBillingSnapshot(): array
@@ -202,7 +312,8 @@ class TenantBillingService
                     tpa.grace_period_ends_at, tpa.is_paused, tpa.nonprofit_verified,
                     tpa.expires_at,
                     pp.id AS plan_id, pp.name AS plan_name, pp.slug AS plan_slug,
-                    pp.max_users, pp.price_monthly, pp.price_yearly
+                    pp.max_users, pp.price_monthly, pp.price_yearly,
+                    pp.max_communities, pp.is_standard
              FROM tenant_plan_assignments tpa
              INNER JOIN pay_plans pp ON pp.id = tpa.pay_plan_id
              WHERE tpa.tenant_id IN ({$placeholders})
@@ -218,6 +329,8 @@ class TenantBillingService
                 'name'                  => $row->plan_name,
                 'slug'                  => $row->plan_slug,
                 'max_users'             => $row->max_users !== null ? (int) $row->max_users : null,
+                'max_communities'       => $row->max_communities !== null ? (int) $row->max_communities : null,
+                'is_standard'           => (bool) $row->is_standard,
                 'price_monthly'         => (float) $row->price_monthly,
                 'price_yearly'          => (float) $row->price_yearly,
                 'custom_price_monthly'  => $row->custom_price_monthly !== null ? (float) $row->custom_price_monthly : null,
@@ -233,23 +346,27 @@ class TenantBillingService
             $planMap[(int) $row->tenant_id] = $assignmentArr;
         }
 
+        $activeCountMap = self::activeMemberCountsForBranches($tenantIds);
+
         $snapshot = [];
         foreach ($tenants as $tenant) {
             $id           = (int) $tenant->id;
             $ownCount     = $ownCountMap[$id] ?? 0;
             $subtreeCount = self::getSubtreeUserCount($id);
+            $activeCount  = $activeCountMap[$id] ?? 0;
             $currentPlan  = $planMap[$id] ?? null;
 
-            $suggested = match (true) {
-                $subtreeCount <= 50   => 'seed',
-                $subtreeCount <= 250  => 'community',
-                $subtreeCount <= 1000 => 'regional',
-                default               => 'network',
-            };
+            // Packages are sized by ACTIVE members (DESIGN §11). Null above the
+            // largest package: that is a bespoke quote, not a package.
+            $suggested = StandardPlans::slugForMemberCount($activeCount);
 
-            $overLimit = false;
+            $overLimit    = false;
+            $usagePercent = null;
             if ($currentPlan !== null && $currentPlan['max_users'] !== null) {
-                $overLimit = $subtreeCount > $currentPlan['max_users'];
+                $overLimit = $activeCount > $currentPlan['max_users'];
+                $usagePercent = $currentPlan['max_users'] > 0
+                    ? (int) floor($activeCount * 100 / $currentPlan['max_users'])
+                    : null;
             }
 
             // Grace period status.
@@ -273,6 +390,8 @@ class TenantBillingService
                 'allows_subtenants'   => (bool) $tenant->allows_subtenants,
                 'own_user_count'      => $ownCount,
                 'subtree_user_count'  => $subtreeCount,
+                'active_member_count' => $activeCount,
+                'usage_percent'       => $usagePercent,
                 'current_plan'        => $currentPlan,
                 'suggested_plan'      => $suggested,
                 'over_limit'          => $overLimit,

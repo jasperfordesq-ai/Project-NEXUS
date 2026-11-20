@@ -41,12 +41,15 @@ final class BillingSnapshotContractTest extends TestCase
     private const REQUIRED_ROW_KEYS = [
         'id', 'name', 'depth', 'own_user_count', 'subtree_user_count',
         'current_plan', 'over_limit', 'is_in_grace_period', 'standing',
+        // Sized by active members (DESIGN §11), not registered ones.
+        'active_member_count', 'usage_percent', 'suggested_plan',
     ];
 
     /** Read off `current_plan` when a community has one. */
     private const REQUIRED_PLAN_KEYS = [
         'id', 'name', 'custom_price_monthly', 'custom_price_yearly',
         'discount_percentage', 'discount_reason', 'nonprofit_verified', 'effective_price',
+        'max_users', 'max_communities', 'is_standard',
     ];
 
     /** Read off `current_plan.effective_price`. */
@@ -56,7 +59,11 @@ final class BillingSnapshotContractTest extends TestCase
     private const REQUIRED_STANDING_KEYS = ['payer', 'suspended_at', 'exempt', 'locked', 'locked_by_tenant_id'];
 
     /** Read off each row of GET /v2/admin/plans. */
-    private const REQUIRED_PLAN_LIST_KEYS = ['id', 'name', 'slug', 'price_monthly'];
+    private const REQUIRED_PLAN_LIST_KEYS = [
+        'id', 'name', 'slug', 'price_monthly', 'max_users', 'is_active',
+        'is_standard', 'price_monthly_gbp', 'price_yearly_gbp', 'setup_fee', 'setup_fee_gbp',
+        'max_communities', 'storage_gb', 'emails_per_month',
+    ];
 
     private int $withPlan;
     private int $withoutPlan;
@@ -171,5 +178,10 @@ final class BillingSnapshotContractTest extends TestCase
         foreach (self::REQUIRED_PLAN_LIST_KEYS as $key) {
             $this->assertArrayHasKey($key, $plan, "plan.{$key}");
         }
+
+        $spark = collect($response->json('data'))->firstWhere('slug', 'spark');
+        $this->assertNotNull($spark, 'the standard packages are listed');
+        $this->assertTrue($spark['is_standard']);
+        $this->assertSame(1, $spark['max_communities']);
     }
 }
