@@ -985,5 +985,15 @@
     "body_intro": "Go raibh maith agat as a bheith páirteach i <strong>{{community}}</strong>. Nuair a sheolann duine teachtaireacht chugat, nuair a thairgeann sé cabhair nó nuair a iarrann sé í, cuirfimid in iúl duit ar ríomhphost é, díreach mar seo.",
     "body_more": "Is féidir leat a roghnú am ar bith cé na ríomhphoist a fhaigheann tú, leis an nasc ag bun an ríomhphoist seo.",
     "button": "Tabhair cuairt ar {{community}}"
+  },
+  "billing_standing": {
+    "paused_subject": "Cuireadh {{community}} ar sos",
+    "paused_title": "Tá do phobal ar sos",
+    "paused_body_parent": "Ní féidir le baill <strong>{{community}}</strong> é a úsáid go dtí go mbeidh an íocaíocht le <strong>{{payee}}</strong> cothrom le dáta. Is féidir leat síniú isteach sa phainéal riaracháin fós. Níor scriosadh aon rud.",
+    "paused_body_platform": "Ní féidir le baill <strong>{{community}}</strong> é a úsáid go dtí go mbeidh an íocaíocht le foireann an ardáin cothrom le dáta. Is féidir leat síniú isteach sa phainéal riaracháin fós. Níor scriosadh aon rud.",
+    "restored_subject": "Tá {{community}} oscailte arís",
+    "restored_title": "Tá do phobal oscailte arís",
+    "restored_body": "Is féidir le baill <strong>{{community}}</strong> é a úsáid arís. Tá gach rud mar a bhí.",
+    "cta": "Oscail an painéal riaracháin"
   }
 }

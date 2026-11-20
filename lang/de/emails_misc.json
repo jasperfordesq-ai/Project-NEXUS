@@ -985,5 +985,15 @@
     "body_intro": "Schön, dass Sie Teil von <strong>{{community}}</strong> sind. Wenn Ihnen jemand eine Nachricht schickt, Hilfe anbietet oder um Hilfe bittet, sagen wir Ihnen per E-Mail Bescheid – genau wie hier.",
     "body_more": "Über den Link unten in dieser E-Mail können Sie jederzeit wählen, welche E-Mails Sie erhalten.",
     "button": "{{community}} besuchen"
+  },
+  "billing_standing": {
+    "paused_subject": "{{community}} wurde pausiert",
+    "paused_title": "Ihre Community ist pausiert",
+    "paused_body_parent": "Mitglieder von <strong>{{community}}</strong> können sie erst wieder nutzen, wenn die Zahlung an <strong>{{payee}}</strong> auf dem aktuellen Stand ist. Sie können sich weiterhin im Adminbereich anmelden. Es wurde nichts gelöscht.",
+    "paused_body_platform": "Mitglieder von <strong>{{community}}</strong> können sie erst wieder nutzen, wenn die Zahlung an das Plattform-Team auf dem aktuellen Stand ist. Sie können sich weiterhin im Adminbereich anmelden. Es wurde nichts gelöscht.",
+    "restored_subject": "{{community}} ist wieder geöffnet",
+    "restored_title": "Ihre Community ist wieder geöffnet",
+    "restored_body": "Mitglieder von <strong>{{community}}</strong> können sie wieder nutzen. Alles ist wie zuvor.",
+    "cta": "Adminbereich öffnen"
   }
 }

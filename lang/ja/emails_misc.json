@@ -985,5 +985,15 @@
     "body_intro": "<strong>{{community}}</strong>にご参加いただきありがとうございます。誰かからメッセージが届いたときや、手助けの申し出・依頼があったときは、このようにメールでお知らせします。",
     "body_more": "受け取るメールの種類は、このメールの下にあるリンクからいつでも選べます。",
     "button": "{{community}}を見る"
+  },
+  "billing_standing": {
+    "paused_subject": "{{community}}が一時停止されました",
+    "paused_title": "コミュニティは一時停止中です",
+    "paused_body_parent": "<strong>{{payee}}</strong>へのお支払いが最新の状態になるまで、<strong>{{community}}</strong>のメンバーは利用できません。管理パネルには引き続きサインインできます。何も削除されていません。",
+    "paused_body_platform": "プラットフォームチームへのお支払いが最新の状態になるまで、<strong>{{community}}</strong>のメンバーは利用できません。管理パネルには引き続きサインインできます。何も削除されていません。",
+    "restored_subject": "{{community}}が再開されました",
+    "restored_title": "コミュニティが再開されました",
+    "restored_body": "<strong>{{community}}</strong>のメンバーは再び利用できます。すべて元のままです。",
+    "cta": "管理パネルを開く"
   }
 }

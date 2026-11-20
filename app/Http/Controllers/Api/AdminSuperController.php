@@ -17,6 +17,7 @@ use App\Models\User;
 use App\Services\FederationAuditService;
 use App\Services\FederationFeatureService;
 use App\Services\FederationPartnershipService;
+use App\Services\BillingStandingNotifier;
 use App\Services\BillingStandingService;
 use App\Support\Billing\BranchPayments;
 use App\Services\SuperAdminAuditService;
@@ -3017,11 +3018,14 @@ class AdminSuperController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', __('api.tenant_id_is_required'), 'tenant_id', 422);
         }
 
+        $wasSuspended = $this->communityIsSuspended($tenantId);
         try {
             BillingStandingService::suspend($tenantId, $userId, 'manual', $this->standingNote($input['note'] ?? null));
         } catch (\DomainException $e) {
             return $this->standingRefusal($e);
         }
+
+        $this->tellAdminsIfStandingChanged($tenantId, $wasSuspended);
 
         return $this->respondWithData(['standing' => BillingStandingService::get($tenantId)]);
     }
@@ -3036,11 +3040,14 @@ class AdminSuperController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', __('api.tenant_id_is_required'), 'tenant_id', 422);
         }
 
+        $wasSuspended = $this->communityIsSuspended($tenantId);
         try {
             BillingStandingService::restore($tenantId, $userId, $this->standingNote($input['note'] ?? null));
         } catch (\DomainException $e) {
             return $this->standingRefusal($e);
         }
+
+        $this->tellAdminsIfStandingChanged($tenantId, $wasSuspended);
 
         return $this->respondWithData(['standing' => BillingStandingService::get($tenantId)]);
     }
@@ -3057,11 +3064,14 @@ class AdminSuperController extends BaseApiController
 
         $exempt = filter_var($input['exempt'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
+        $wasSuspended = $this->communityIsSuspended($tenantId);
         try {
             BillingStandingService::setExempt($tenantId, $exempt, $userId, $this->standingNote($input['reason'] ?? null));
         } catch (\DomainException $e) {
             return $this->standingRefusal($e);
         }
+
+        $this->tellAdminsIfStandingChanged($tenantId, $wasSuspended);
 
         return $this->respondWithData(['standing' => BillingStandingService::get($tenantId)]);
     }
@@ -3097,11 +3107,14 @@ class AdminSuperController extends BaseApiController
             return $this->respondWithError('PAID_UNTIL_INVALID', __('api.billing_standing_paid_until_invalid'), 'paid_until', 422);
         }
 
+        $wasSuspended = $this->communityIsSuspended($id);
         try {
             BillingStandingService::setPaidUntil($id, $date, $userId, $this->standingNote($input['note'] ?? null));
         } catch (\DomainException $e) {
             return $this->standingRefusal($e);
         }
+
+        $this->tellAdminsIfStandingChanged($id, $wasSuspended);
 
         return $this->respondWithData(['standing' => BillingStandingService::get($id)]);
     }
@@ -3114,11 +3127,14 @@ class AdminSuperController extends BaseApiController
             return $refused;
         }
 
+        $wasSuspended = $this->communityIsSuspended($id);
         try {
             BillingStandingService::suspend($id, $userId, 'manual', $this->standingNote($this->getAllInput()['note'] ?? null));
         } catch (\DomainException $e) {
             return $this->standingRefusal($e);
         }
+
+        $this->tellAdminsIfStandingChanged($id, $wasSuspended);
 
         return $this->respondWithData(['standing' => BillingStandingService::get($id)]);
     }
@@ -3139,11 +3155,14 @@ class AdminSuperController extends BaseApiController
             return $this->respondWithError('PAUSED_FROM_ABOVE', __('api.branch_payments_paused_from_above'), null, 422);
         }
 
+        $wasSuspended = $this->communityIsSuspended($id);
         try {
             BillingStandingService::restore($id, $userId, $this->standingNote($this->getAllInput()['note'] ?? null));
         } catch (\DomainException $e) {
             return $this->standingRefusal($e);
         }
+
+        $this->tellAdminsIfStandingChanged($id, $wasSuspended);
 
         return $this->respondWithData(['standing' => BillingStandingService::get($id)]);
     }
@@ -3158,6 +3177,41 @@ class AdminSuperController extends BaseApiController
             // Out of reach, and "does not exist", answer the same way.
             default => $this->respondWithError(ApiErrorCodes::SUPER_PANEL_ACCESS_DENIED, __('api.super_no_access_tenant'), null, 403),
         };
+    }
+
+    private function communityIsSuspended(int $tenantId): bool
+    {
+        try {
+            return BillingStandingService::get($tenantId)['suspended_at'] !== null;
+        } catch (\DomainException) {
+            // An unknown community: the action itself refuses it next.
+            return false;
+        }
+    }
+
+    /**
+     * Mail the community's own admins when it has just been paused or just
+     * been restored — and only then: pausing what is already paused tells
+     * nobody again. Mail failing must never fail or undo the action, so a
+     * failure here is logged and goes no further.
+     */
+    private function tellAdminsIfStandingChanged(int $tenantId, bool $wasSuspended): void
+    {
+        try {
+            $isSuspended = $this->communityIsSuspended($tenantId);
+            if ($isSuspended === $wasSuspended) {
+                return;
+            }
+
+            $isSuspended
+                ? BillingStandingNotifier::paused($tenantId)
+                : BillingStandingNotifier::restored($tenantId);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('[billing] could not tell a community' . chr(39) . 's admins about its standing', [
+                'tenant_id' => $tenantId,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     private function standingNote(mixed $value): ?string

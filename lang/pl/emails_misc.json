@@ -985,5 +985,15 @@
     "body_intro": "Dziękujemy, że należysz do <strong>{{community}}</strong>. Gdy ktoś wyśle Ci wiadomość, zaoferuje pomoc albo o nią poprosi, damy Ci znać e-mailem, tak jak teraz.",
     "body_more": "W każdej chwili możesz wybrać, jakie e-maile chcesz dostawać, za pomocą linku na dole tej wiadomości.",
     "button": "Odwiedź {{community}}"
+  },
+  "billing_standing": {
+    "paused_subject": "Społeczność {{community}} została wstrzymana",
+    "paused_title": "Twoja społeczność jest wstrzymana",
+    "paused_body_parent": "Członkowie społeczności <strong>{{community}}</strong> nie mogą z niej korzystać, dopóki płatność na rzecz <strong>{{payee}}</strong> nie zostanie uregulowana. Nadal możesz zalogować się do panelu administracyjnego. Nic nie zostało usunięte.",
+    "paused_body_platform": "Członkowie społeczności <strong>{{community}}</strong> nie mogą z niej korzystać, dopóki płatność na rzecz zespołu platformy nie zostanie uregulowana. Nadal możesz zalogować się do panelu administracyjnego. Nic nie zostało usunięte.",
+    "restored_subject": "Społeczność {{community}} jest znowu otwarta",
+    "restored_title": "Twoja społeczność jest znowu otwarta",
+    "restored_body": "Członkowie społeczności <strong>{{community}}</strong> mogą znowu z niej korzystać. Wszystko jest tak, jak było.",
+    "cta": "Otwórz panel administracyjny"
   }
 }

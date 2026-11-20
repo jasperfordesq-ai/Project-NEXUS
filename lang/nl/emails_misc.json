@@ -985,5 +985,15 @@
     "body_intro": "Fijn dat je bij <strong>{{community}}</strong> hoort. Als iemand je een bericht stuurt, hulp aanbiedt of om hulp vraagt, laten we het je per e-mail weten, net als nu.",
     "body_more": "Met de link onderaan deze e-mail kies je op elk moment welke e-mails je krijgt.",
     "button": "Naar {{community}}"
+  },
+  "billing_standing": {
+    "paused_subject": "{{community}} is gepauzeerd",
+    "paused_title": "Je gemeenschap is gepauzeerd",
+    "paused_body_parent": "Leden van <strong>{{community}}</strong> kunnen haar pas weer gebruiken als de betaling aan <strong>{{payee}}</strong> is bijgewerkt. Je kunt nog steeds inloggen op het beheerpaneel. Er is niets verwijderd.",
+    "paused_body_platform": "Leden van <strong>{{community}}</strong> kunnen haar pas weer gebruiken als de betaling aan het platformteam is bijgewerkt. Je kunt nog steeds inloggen op het beheerpaneel. Er is niets verwijderd.",
+    "restored_subject": "{{community}} is weer open",
+    "restored_title": "Je gemeenschap is weer open",
+    "restored_body": "Leden van <strong>{{community}}</strong> kunnen haar weer gebruiken. Alles is zoals het was.",
+    "cta": "Beheerpaneel openen"
   }
 }

@@ -985,5 +985,15 @@
     "body_intro": "Grazie di far parte di <strong>{{community}}</strong>. Quando qualcuno ti scrive, offre aiuto o lo chiede, te lo diremo via email, proprio come adesso.",
     "body_more": "Puoi scegliere in qualsiasi momento quali email ricevere, con il link in fondo a questa email.",
     "button": "Visita {{community}}"
+  },
+  "billing_standing": {
+    "paused_subject": "{{community}} è stata messa in pausa",
+    "paused_title": "La tua comunità è in pausa",
+    "paused_body_parent": "I membri di <strong>{{community}}</strong> non potranno usarla finché il pagamento a <strong>{{payee}}</strong> non sarà in regola. Puoi ancora accedere al pannello di amministrazione. Non è stato eliminato nulla.",
+    "paused_body_platform": "I membri di <strong>{{community}}</strong> non potranno usarla finché il pagamento al team della piattaforma non sarà in regola. Puoi ancora accedere al pannello di amministrazione. Non è stato eliminato nulla.",
+    "restored_subject": "{{community}} è di nuovo aperta",
+    "restored_title": "La tua comunità è di nuovo aperta",
+    "restored_body": "I membri di <strong>{{community}}</strong> possono usarla di nuovo. Tutto è come prima.",
+    "cta": "Apri il pannello di amministrazione"
   }
 }

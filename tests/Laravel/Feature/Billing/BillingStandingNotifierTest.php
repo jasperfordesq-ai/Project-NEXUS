@@ -1,0 +1,178 @@
+<?php
+// Copyright © 2024–2026 Jasper Ford
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Author: Jasper Ford
+// See NOTICE file for attribution and acknowledgements.
+
+declare(strict_types=1);
+
+namespace Tests\Laravel\Feature\Billing;
+
+use App\Core\SuperPanelAccess;
+use App\Core\TenantContext;
+use App\Models\User;
+use App\Services\BillingStandingNotifier;
+use App\Services\BillingStandingService;
+use App\Support\Billing\BillingLock;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\DB;
+use Laravel\Sanctum\Sanctum;
+use Tests\Laravel\TestCase;
+
+/**
+ * A paused community's admins are told by email, and told when it is restored.
+ *
+ * "Reached the mailer" is observed as elsewhere in this folder: Mailer writes
+ * an email_log row for every attempt, sent or failed.
+ */
+final class BillingStandingNotifierTest extends TestCase
+{
+    use DatabaseTransactions;
+
+    private int $hub;
+    private int $child;
+    private int $other;
+    private string $hubName;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        putenv('MAILER_PER_RECIPIENT_HOURLY_LIMIT=0');
+
+        $this->hubName = 'Notice hub ' . bin2hex(random_bytes(3));
+        $this->hub = $this->makeCommunity($this->hubName, 1, '/1/', true);
+        $this->child = $this->makeCommunity('Notice child', $this->hub, "/1/{$this->hub}/");
+        $this->other = $this->makeCommunity('Notice other', $this->hub, "/1/{$this->hub}/");
+
+        BillingLock::flush();
+    }
+
+    protected function tearDown(): void
+    {
+        putenv('MAILER_PER_RECIPIENT_HOURLY_LIMIT=30');
+
+        // parent::tearDown() rolls the transaction back; it must always run.
+        try {
+            BillingLock::flush();
+            SuperPanelAccess::reset();
+        } finally {
+            parent::tearDown();
+        }
+    }
+
+    private function makeCommunity(string $name, int $parentId, string $parentPath, bool $hub = false): int
+    {
+        $id = (int) DB::table('tenants')->insertGetId([
+            'name' => $name,
+            'slug' => 'notice-' . bin2hex(random_bytes(5)),
+            'is_active' => 1,
+            'parent_id' => $parentId,
+            'allows_subtenants' => $hub ? 1 : 0,
+            'depth' => substr_count($parentPath, '/') - 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('tenants')->where('id', $id)->update(['path' => "{$parentPath}{$id}/"]);
+
+        return $id;
+    }
+
+    /** @param array<string, mixed> $attributes */
+    private function person(int $tenantId, array $attributes): string
+    {
+        $email = 'notice.' . bin2hex(random_bytes(6)) . '@example.com';
+        User::factory()->forTenant($tenantId)->create(array_merge([
+            'email' => $email,
+            'status' => 'active',
+            'is_approved' => true,
+            'preferred_language' => 'en',
+        ], $attributes));
+
+        return $email;
+    }
+
+    /** @return list<object> */
+    private function mailTo(string $email): array
+    {
+        return DB::table('email_log')->where('recipient_email', $email)->orderBy('id')->get()->all();
+    }
+
+    public function test_every_admin_of_a_paused_community_is_told_and_nobody_else(): void
+    {
+        $admin = $this->person($this->child, ['role' => 'admin']);
+        $flagOnly = $this->person($this->child, ['role' => 'member', 'is_tenant_super_admin' => true]);
+        $member = $this->person($this->child, ['role' => 'member']);
+        $broker = $this->person($this->child, ['role' => 'broker']);
+        $inactiveAdmin = $this->person($this->child, ['role' => 'admin', 'status' => 'suspended']);
+        $elsewhere = $this->person($this->other, ['role' => 'admin']);
+
+        BillingStandingService::suspend($this->child, null, 'manual');
+        $sent = BillingStandingNotifier::paused($this->child);
+
+        $this->assertSame(2, $sent);
+        $this->assertCount(1, $this->mailTo($admin));
+        $this->assertCount(1, $this->mailTo($flagOnly));
+        foreach ([$member, $broker, $inactiveAdmin, $elsewhere] as $notTold) {
+            $this->assertCount(0, $this->mailTo($notTold));
+        }
+
+        $row = $this->mailTo($admin)[0];
+        $this->assertSame('billing', $row->category);
+        $this->assertSame($this->child, (int) $row->tenant_id);
+        $this->assertStringContainsString('Notice child', (string) $row->subject);
+    }
+
+    public function test_each_admin_is_told_in_their_own_language(): void
+    {
+        $english = $this->person($this->child, ['role' => 'admin', 'preferred_language' => 'en']);
+        $french = $this->person($this->child, ['role' => 'admin', 'preferred_language' => 'fr']);
+
+        BillingStandingService::suspend($this->child, null, 'manual');
+        BillingStandingNotifier::paused($this->child);
+
+        $this->assertStringContainsString('has been paused', (string) $this->mailTo($english)[0]->subject);
+        $this->assertStringContainsString('en pause', (string) $this->mailTo($french)[0]->subject);
+    }
+
+    public function test_the_admins_are_told_when_it_is_restored(): void
+    {
+        $admin = $this->person($this->child, ['role' => 'admin']);
+
+        $sent = BillingStandingNotifier::restored($this->child);
+
+        $this->assertSame(1, $sent);
+        $this->assertStringContainsString('open again', (string) $this->mailTo($admin)[0]->subject);
+    }
+
+    public function test_a_community_with_no_admin_is_not_an_error(): void
+    {
+        $this->assertSame(0, BillingStandingNotifier::paused($this->child));
+    }
+
+    public function test_pausing_through_the_parents_page_tells_the_childs_admins_once(): void
+    {
+        $admin = $this->person($this->child, ['role' => 'admin']);
+
+        $this->testTenantId = $this->hub;
+        $manager = User::factory()->forTenant($this->hub)->create([
+            'status' => 'active', 'is_approved' => true, 'role' => 'admin', 'is_tenant_super_admin' => true,
+        ]);
+        Sanctum::actingAs($manager, ['*']);
+        TenantContext::setById($this->hub);
+        SuperPanelAccess::reset();
+
+        $this->apiPost("/v2/admin/super/branch-payments/{$this->child}/suspend", [])->assertStatus(200);
+        // Pausing what is already paused changes nothing and tells nobody again.
+        $this->apiPost("/v2/admin/super/branch-payments/{$this->child}/suspend", [])->assertStatus(200);
+
+        $mail = $this->mailTo($admin);
+        $this->assertCount(1, $mail);
+        $this->assertStringContainsString('has been paused', (string) $mail[0]->subject);
+
+        $this->apiPost("/v2/admin/super/branch-payments/{$this->child}/restore", [])->assertStatus(200);
+
+        $mail = $this->mailTo($admin);
+        $this->assertCount(2, $mail);
+        $this->assertStringContainsString('open again', (string) $mail[1]->subject);
+    }
+}

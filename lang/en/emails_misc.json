@@ -985,5 +985,15 @@
     "body_intro": "Thanks for being part of <strong>{{community}}</strong>. When someone sends you a message, offers help or asks for it, we'll let you know by email, just like this.",
     "body_more": "You can choose which emails you get at any time, using the link at the bottom of this email.",
     "button": "Visit {{community}}"
+  },
+  "billing_standing": {
+    "paused_subject": "{{community}} has been paused",
+    "paused_title": "Your community is paused",
+    "paused_body_parent": "Members of <strong>{{community}}</strong> cannot use it until payment is brought up to date with <strong>{{payee}}</strong>. You can still sign in to the admin panel. Nothing has been deleted.",
+    "paused_body_platform": "Members of <strong>{{community}}</strong> cannot use it until payment is brought up to date with the platform team. You can still sign in to the admin panel. Nothing has been deleted.",
+    "restored_subject": "{{community}} is open again",
+    "restored_title": "Your community is open again",
+    "restored_body": "Members of <strong>{{community}}</strong> can use it again. Everything is as it was.",
+    "cta": "Open the admin panel"
   }
 }
