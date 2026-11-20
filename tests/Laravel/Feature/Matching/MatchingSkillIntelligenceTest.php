@@ -144,4 +144,29 @@ class MatchingSkillIntelligenceTest extends TestCase
 
         $this->assertTrue($match === null || $match['match_type'] === 'cold_start');
     }
+
+    public function test_a_member_known_only_by_help_they_gave_is_alerted_to_a_new_request(): void
+    {
+        $raw = DB::table('tenants')->where('id', $this->testTenantId)->value('configuration');
+        $config = is_string($raw) ? (json_decode($raw, true) ?: []) : [];
+        $config['algorithms']['smart_matching']['hot_match_threshold'] = 45;
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['configuration' => json_encode($config)]);
+        app(SmartMatchingEngine::class)->clearCache();
+
+        $category = $this->category();
+        $helper = $this->member();
+        $done = $this->listingFor($this->member(), 'request', $category, [
+            'title' => 'Hedge trimming for my garden', 'status' => 'completed',
+        ]);
+        $this->completedExchange($helper, $done);
+        $this->listingFor($this->member(), 'request', $category, ['title' => 'Hedge needs trimming', 'created_at' => now()]);
+
+        app(\App\Services\Matching\MatchNotificationService::class)->notifyForNewListings();
+
+        $this->assertGreaterThanOrEqual(
+            1,
+            DB::table('notifications')->where('user_id', $helper->id)->whereIn('type', ['hot_match', 'mutual_match'])->count(),
+            'Only members with a listing or a profile skill were ever considered for an alert'
+        );
+    }
 }

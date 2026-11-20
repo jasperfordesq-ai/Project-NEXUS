@@ -321,6 +321,10 @@ class SmartMatchingEngine
                        SELECT 1 FROM user_skills us
                        WHERE us.tenant_id = u.tenant_id AND us.user_id = u.id)
                    OR TRIM(COALESCE(u.skills, '')) <> ''
+                   -- or help given before (experienceListings)
+                   OR EXISTS (SELECT 1 FROM exchange_requests er
+                              WHERE er.tenant_id = u.tenant_id AND er.status = 'completed'
+                                AND (er.provider_id = u.id OR er.requester_id = u.id))
                )
                AND NOT EXISTS (
                    SELECT 1 FROM match_cache mc

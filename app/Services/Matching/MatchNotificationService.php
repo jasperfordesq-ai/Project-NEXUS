@@ -212,6 +212,10 @@ class MatchNotificationService
                    -- No listing, but skills to match by (see SmartMatchingEngine::skillListings)
                    OR EXISTS (SELECT 1 FROM user_skills us WHERE us.tenant_id = u.tenant_id AND us.user_id = u.id)
                    OR TRIM(COALESCE(u.skills, '')) <> ''
+                   -- or help given before (SmartMatchingEngine::experienceListings)
+                   OR EXISTS (SELECT 1 FROM exchange_requests er
+                              WHERE er.tenant_id = u.tenant_id AND er.status = 'completed'
+                                AND (er.provider_id = u.id OR er.requester_id = u.id))
                )
                AND (
                    mp.notification_frequency = ?
@@ -338,6 +342,12 @@ class MatchNotificationService
             : 'us.is_requesting = 1';
         // The free-text skills field also only describes what a member can do.
         $profileText = $oppositeType === 'offer' ? " OR TRIM(COALESCE(u.skills, '')) <> ''" : '';
+        // ... and so does help the member has given before (SmartMatchingEngine::experienceListings).
+        // Only a shortlist: the engine decides who really fits.
+        $helpedBefore = $oppositeType === 'offer' ? "
+                   OR EXISTS (SELECT 1 FROM exchange_requests er
+                              WHERE er.tenant_id = u.tenant_id AND er.status = 'completed'
+                                AND (er.provider_id = u.id OR er.requester_id = u.id))" : '';
 
         $rows = DB::select(
             "SELECT u.id,
@@ -357,7 +367,7 @@ class MatchNotificationService
                            WHERE l2.user_id = u.id AND l2.tenant_id = u.tenant_id
                              AND l2.status = 'active' AND l2.type = ?)
                    OR EXISTS (SELECT 1 FROM user_skills us
-                              WHERE us.tenant_id = u.tenant_id AND us.user_id = u.id AND {$skillDirection}){$profileText}
+                              WHERE us.tenant_id = u.tenant_id AND us.user_id = u.id AND {$skillDirection}){$profileText}{$helpedBefore}
                )
                AND NOT EXISTS (
                    SELECT 1 FROM match_notification_sent s
