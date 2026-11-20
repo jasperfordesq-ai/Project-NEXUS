@@ -55,6 +55,11 @@ class AdminBillingController extends BaseApiController
         $this->requireAdmin();
         $tenantId = (int) TenantContext::getId();
 
+        // Who this community itself pays. The admin panel offers the
+        // community's own billing page only to a card payer: nobody else has
+        // anything to do there (DESIGN §6.6).
+        $payer = BillingStandingService::get($tenantId)['payer'];
+
         $reason = BillingLock::reasonFor($tenantId);
         if ($reason === null) {
             return $this->respondWithData([
@@ -63,6 +68,7 @@ class AdminBillingController extends BaseApiController
                 'since' => null,
                 'payee' => null,
                 'payee_name' => null,
+                'payer' => $payer,
             ]);
         }
 
@@ -70,7 +76,7 @@ class AdminBillingController extends BaseApiController
         $payeeName = null;
 
         if ($reason['own']) {
-            $payee = BillingStandingService::get($tenantId)['payer'] === 'parent' ? 'parent' : 'platform';
+            $payee = $payer === 'parent' ? 'parent' : 'platform';
 
             if ($payee === 'parent') {
                 $parentId = DB::table('tenants')->where('id', $tenantId)->value('parent_id');
@@ -86,6 +92,7 @@ class AdminBillingController extends BaseApiController
             'since' => $reason['suspended_at'],
             'payee' => $payee,
             'payee_name' => $payeeName,
+            'payer' => $payer,
         ]);
     }
 

@@ -107,6 +107,7 @@ class StripeSubscriptionServiceTest extends TestCase
         DB::shouldReceive('insert')->once()->andReturn(true);
 
         $this->mockActivationEmailPath(5, 'Pro');
+        $this->expectUnreadablePeriodEnd();
 
         Log::shouldReceive('warning')->zeroOrMoreTimes();
         Log::shouldReceive('info')->once()->with(
@@ -151,11 +152,35 @@ class StripeSubscriptionServiceTest extends TestCase
         DB::shouldReceive('update')->once()->andReturn(1);
 
         $this->mockActivationEmailPath(3, 'Team');
+        $this->expectUnreadablePeriodEnd();
 
         Log::shouldReceive('warning')->zeroOrMoreTimes();
         Log::shouldReceive('info')->once();
 
         StripeSubscriptionService::handleCheckoutCompleted($session);
+    }
+
+    /**
+     * Since Stage 5 a completed checkout also asks Stripe for the period it
+     * paid, to set the community's paid-until date. Here Stripe cannot be
+     * reached (a stand-in HTTP client refuses, so no real call can go out
+     * whatever key the environment holds): the error is logged, nothing is
+     * written to the payment record, and activation and the email go ahead.
+     */
+    private function expectUnreadablePeriodEnd(): void
+    {
+        config(['services.stripe.secret' => 'sk_test_not_a_real_key']);
+        \Stripe\ApiRequestor::setHttpClient(new class implements \Stripe\HttpClient\ClientInterface {
+            public function request($method, $absUrl, $headers, $params, $hasFile, $apiMode = 'v1')
+            {
+                throw new \Stripe\Exception\ApiConnectionException('Stripe is unreachable in this test');
+            }
+        });
+
+        Log::shouldReceive('error')->once()->with(
+            'Stripe subscription period could not be read for the community payment record',
+            Mockery::type('array')
+        );
     }
 
     /**

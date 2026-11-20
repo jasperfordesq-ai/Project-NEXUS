@@ -145,6 +145,7 @@ const makePlanOnRow = (overrides = {}) => ({
   nonprofit_verified: false,
   expires_at: null,
   effective_price: { monthly: 49, yearly: 490, has_custom: false, discount_pct: 0, nonprofit: false },
+  assignment_status: 'active',
   ...overrides,
 });
 
@@ -250,6 +251,33 @@ describe('BillingControl', () => {
 
     expect(screen.getAllByText('No Plan')).toHaveLength(1);
     expect(screen.getByText('Pro')).toBeInTheDocument();
+  });
+
+  // Stage 5: a failed card payment leaves the plan `expired`. Until then the
+  // snapshot read only active plans, so such a community showed "No Plan".
+  it('shows the plan with its status when it is not active', async () => {
+    await renderWith([
+      makeSnapshot({ current_plan: makePlanOnRow({ assignment_status: 'expired' }) }),
+      makeSnapshot({ id: 6, name: 'Galway Timebank', current_plan: makePlanOnRow({ name: 'Local', assignment_status: 'trial' }), standing: makeStanding({ tenant_id: 6 }) }),
+      makeSnapshot({ id: 8, name: 'Sligo Timebank', current_plan: makePlanOnRow({ name: 'Spark', assignment_status: 'cancelled' }), standing: makeStanding({ tenant_id: 8 }) }),
+    ]);
+
+    expect(screen.getByText('Pro')).toBeInTheDocument();
+    expect(screen.getByText('Expired')).toBeInTheDocument();
+    expect(screen.getByText('Local')).toBeInTheDocument();
+    expect(screen.getByText('Trial')).toBeInTheDocument();
+    expect(screen.getByText('Spark')).toBeInTheDocument();
+    expect(screen.getByText('Cancelled')).toBeInTheDocument();
+    expect(screen.queryByText('No Plan')).not.toBeInTheDocument();
+  });
+
+  it('adds no status chip beside an active plan', async () => {
+    await renderWith([makeSnapshot()]);
+
+    expect(screen.getByText('Pro')).toBeInTheDocument();
+    expect(screen.queryByText('Expired')).not.toBeInTheDocument();
+    expect(screen.queryByText('Trial')).not.toBeInTheDocument();
+    expect(screen.queryByText('Cancelled')).not.toBeInTheDocument();
   });
 
   it('marks a community over its member limit', async () => {

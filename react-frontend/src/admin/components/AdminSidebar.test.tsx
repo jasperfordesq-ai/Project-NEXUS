@@ -769,6 +769,53 @@ describe('AdminSidebar', () => {
     expect(hrefs).not.toContain('/test/admin/billing');
   });
 
+  // Stage 5 (DESIGN §6.6): a community that pays the platform by card gets its
+  // own billing page back, so its admins can pay. Nobody else does.
+  const standingSays = (payer: string | null, success = true) => {
+    mockApi.get.mockImplementation((url: string) => Promise.resolve(
+      url === '/v2/admin/billing/standing'
+        ? (success ? { success: true, data: { paused: false, payer } } : { success: false, error: 'Forbidden' })
+        : { success: true, data: {} },
+    ));
+  };
+
+  it('shows the Billing link to the platform team without asking who the community pays', async () => {
+    authState.user = { ...PLATFORM_TEAM };
+    standingSays('platform_invoice');
+    const { AdminSidebar } = await import('./AdminSidebar');
+    const { container } = render(<AdminSidebar collapsed={false} />);
+
+    expect(everyHref(container)).toContain('/test/admin/billing');
+    expect(mockApi.get).not.toHaveBeenCalledWith('/v2/admin/billing/standing');
+  });
+
+  it('shows the Billing link to an admin of a community that pays the platform by card', async () => {
+    standingSays('platform_card');
+    const { AdminSidebar } = await import('./AdminSidebar');
+    const { container } = render(<AdminSidebar collapsed={false} />);
+
+    await waitFor(() => expect(everyHref(container)).toContain('/test/admin/billing'));
+    expect(mockApi.get.mock.calls.filter(([url]) => url === '/v2/admin/billing/standing')).toHaveLength(1);
+  });
+
+  it.each([
+    ['pays the platform by invoice', 'platform_invoice', true],
+    ['pays its parent', 'parent', true],
+    ['is not billed', 'not_billed', true],
+    ['cannot be read', null, false],
+  ])('hides the Billing link from an admin of a community that %s', async (_why, payer, success) => {
+    standingSays(payer, success);
+    const { AdminSidebar } = await import('./AdminSidebar');
+    const { container } = render(<AdminSidebar collapsed={false} />);
+
+    await waitFor(() => expect(mockApi.get).toHaveBeenCalledWith('/v2/admin/billing/standing'));
+    // Let the answer land before looking.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(everyHref(container)).not.toContain('/test/admin/billing');
+    // Control: the same query does reach links inside collapsed panels.
+    expect(everyHref(container)).toContain('/test/admin/settings');
+  });
+
   it('still shows the SEO overview to a community admin', async () => {
     const { AdminSidebar } = await import('./AdminSidebar');
     const { container } = render(<AdminSidebar collapsed={false} />);

@@ -50,6 +50,9 @@ final class BillingSnapshotContractTest extends TestCase
         'id', 'name', 'custom_price_monthly', 'custom_price_yearly',
         'discount_percentage', 'discount_reason', 'nonprofit_verified', 'effective_price',
         'max_users', 'max_communities', 'is_standard',
+        // A failed card payment leaves the plan `expired`; the screen shows it
+        // beside the plan rather than reporting "No plan" (Stage 5).
+        'assignment_status',
     ];
 
     /** Read off `current_plan.effective_price`. */
@@ -163,6 +166,86 @@ final class BillingSnapshotContractTest extends TestCase
         $this->assertSame($this->planId, $plan['id']);
         $this->assertSame('Contract plan', $plan['name']);
         $this->assertEquals(400, $plan['effective_price']['yearly']);
+        $this->assertSame('active', $plan['assignment_status']);
+    }
+
+    /**
+     * Until Stage 5 only `active` assignments were read, so a community whose
+     * card payment had failed (`expired`), or that was on a trial, showed as
+     * having no plan at all.
+     *
+     * @return array<string, array{string}>
+     */
+    public static function inactiveStatuses(): array
+    {
+        return [
+            'expired' => ['expired'],
+            'trial' => ['trial'],
+            'cancelled' => ['cancelled'],
+        ];
+    }
+
+    /** @dataProvider inactiveStatuses */
+    public function test_a_community_whose_plan_is_not_active_still_shows_its_plan(string $status): void
+    {
+        DB::table('tenant_plan_assignments')->where('tenant_id', $this->withPlan)->update(['status' => $status]);
+        $this->actAsPlatformTeam();
+
+        $row = collect($this->apiGet('/v2/admin/super/billing/snapshot')->json('data'))->firstWhere('id', $this->withPlan);
+
+        $this->assertNotNull($row['current_plan']);
+        $this->assertSame($this->planId, $row['current_plan']['id']);
+        $this->assertSame($status, $row['current_plan']['assignment_status']);
+        // Usage is still measured against that plan's limit.
+        $this->assertSame(0, $row['usage_percent']);
+        $this->assertFalse($row['over_limit']);
+    }
+
+    public function test_an_active_assignment_wins_over_a_newer_inactive_one(): void
+    {
+        $otherPlan = (int) DB::table('pay_plans')->insertGetId([
+            'name' => 'Contract old plan',
+            'slug' => 'contract-old-' . bin2hex(random_bytes(4)),
+            'price_monthly' => 10,
+            'price_yearly' => 100,
+            'max_users' => 50,
+            'created_at' => now(),
+        ]);
+        DB::table('tenant_plan_assignments')->insert([
+            'tenant_id' => $this->withPlan,
+            'pay_plan_id' => $otherPlan,
+            'status' => 'cancelled',
+        ]);
+        $this->actAsPlatformTeam();
+
+        $row = collect($this->apiGet('/v2/admin/super/billing/snapshot')->json('data'))->firstWhere('id', $this->withPlan);
+
+        $this->assertSame($this->planId, $row['current_plan']['id']);
+        $this->assertSame('active', $row['current_plan']['assignment_status']);
+    }
+
+    public function test_without_an_active_assignment_the_most_recent_one_is_shown(): void
+    {
+        DB::table('tenant_plan_assignments')->where('tenant_id', $this->withPlan)->update(['status' => 'cancelled']);
+        $newerPlan = (int) DB::table('pay_plans')->insertGetId([
+            'name' => 'Contract newer plan',
+            'slug' => 'contract-newer-' . bin2hex(random_bytes(4)),
+            'price_monthly' => 10,
+            'price_yearly' => 100,
+            'max_users' => 50,
+            'created_at' => now(),
+        ]);
+        DB::table('tenant_plan_assignments')->insert([
+            'tenant_id' => $this->withPlan,
+            'pay_plan_id' => $newerPlan,
+            'status' => 'expired',
+        ]);
+        $this->actAsPlatformTeam();
+
+        $row = collect($this->apiGet('/v2/admin/super/billing/snapshot')->json('data'))->firstWhere('id', $this->withPlan);
+
+        $this->assertSame($newerPlan, $row['current_plan']['id']);
+        $this->assertSame('expired', $row['current_plan']['assignment_status']);
     }
 
     public function test_the_plan_list_carries_the_keys_the_screen_reads(): void

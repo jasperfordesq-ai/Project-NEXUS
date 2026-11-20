@@ -66,7 +66,17 @@ interface CurrentPlan {
   nonprofit_verified: boolean;
   expires_at: string | null;
   effective_price: EffectivePrice;
+  /** `expired` after a failed card payment; the plan is still shown beside it. */
+  assignment_status: AssignmentStatus;
 }
+
+type AssignmentStatus = 'active' | 'trial' | 'expired' | 'cancelled';
+
+const ASSIGNMENT_STATUS_COLOR: Record<Exclude<AssignmentStatus, 'active'>, ChipColor> = {
+  trial: 'primary',
+  expired: 'danger',
+  cancelled: 'default',
+};
 
 type Payer = 'platform_card' | 'platform_invoice' | 'parent' | 'not_billed';
 
@@ -323,6 +333,12 @@ export function BillingControl() {
     return 'success';
   };
 
+  const assignmentStatusLabel = (status: Exclude<AssignmentStatus, 'active'>): string => {
+    if (status === 'trial') return t('billing.assignment_status_trial');
+    if (status === 'expired') return t('billing.assignment_status_expired');
+    return t('billing.assignment_status_cancelled');
+  };
+
   const getPlanChipLabel = (row: TenantSnapshot): string => {
     if (!row.current_plan) return t('billing.status_no_plan');
     if (row.is_in_grace_period) return t('billing.in_grace_period');
@@ -428,13 +444,24 @@ export function BillingControl() {
 
                     {/* Plan chip */}
                     <TableCell>
-                      <Chip
-                        size="sm"
-                        variant="soft"
-                        color={getPlanChipColor(row)}
-                      >
-                        {getPlanChipLabel(row)}
-                      </Chip>
+                      <div className="flex items-center gap-1 flex-wrap">
+                        <Chip
+                          size="sm"
+                          variant="soft"
+                          color={getPlanChipColor(row)}
+                        >
+                          {getPlanChipLabel(row)}
+                        </Chip>
+                        {row.current_plan && row.current_plan.assignment_status !== 'active' ? (
+                          <Chip
+                            size="sm"
+                            variant="soft"
+                            color={ASSIGNMENT_STATUS_COLOR[row.current_plan.assignment_status]}
+                          >
+                            {assignmentStatusLabel(row.current_plan.assignment_status)}
+                          </Chip>
+                        ) : null}
+                      </div>
                     </TableCell>
 
                     {/* Effective price */}

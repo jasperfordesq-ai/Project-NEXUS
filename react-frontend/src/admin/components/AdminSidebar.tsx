@@ -97,6 +97,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { canAccessSuperPanel, isGodUser, isPlatformTeamUser, isSuperAdminUser } from '@/lib/access';
+import { api } from '@/lib/api';
 import { isOnPanelPath } from '@/lib/panelPath';
 import { useAdminBadgeCounts, badgeForCount } from '@/admin/hooks/useAdminBadgeCounts';
 import type { LucideIcon } from 'lucide-react';
@@ -172,6 +173,42 @@ function keyword(translatedKeywords: string): string[] {
   return translatedKeywords.split('|').map((word) => word.trim()).filter(Boolean);
 }
 
+/** The one key this menu reads off GET /v2/admin/billing/standing (pinned by BillingPausedFlagTest). */
+interface OwnPayer {
+  payer?: 'platform_card' | 'platform_invoice' | 'parent' | 'not_billed';
+}
+
+/**
+ * Whether this community pays the platform by card. Asked once while the admin
+ * panel is open (the sidebar stays mounted across admin pages), and only when
+ * the answer can change what is shown. Any failure keeps the billing link
+ * hidden: it is the state every community admin had before.
+ */
+function usePaysPlatformByCard(ask: boolean): boolean {
+  const { tenant } = useTenant();
+  const tenantId = tenant?.id;
+  const [paysByCard, setPaysByCard] = useState(false);
+
+  useEffect(() => {
+    setPaysByCard(false);
+    if (!ask || tenantId == null) return;
+
+    let alive = true;
+    api
+      .get<OwnPayer>('/v2/admin/billing/standing')
+      .then((response) => {
+        if (alive) setPaysByCard(response.success === true && response.data?.payer === 'platform_card');
+      })
+      .catch(() => undefined);
+
+    return () => {
+      alive = false;
+    };
+  }, [ask, tenantId]);
+
+  return paysByCard;
+}
+
 function useAdminNav(): NavSection[] {
   const { t } = useTranslation('admin_nav');
   const { hasFeature, hasModule } = useTenant();
@@ -201,6 +238,11 @@ function useAdminNav(): NavSection[] {
   // Server-resolved: covers both a platform super-admin and the super-admin of a
   // community that has communities beneath it. See the super-admin entry below.
   const canSeeSuperPanel = canAccessSuperPanel(user);
+  const paysByCard = usePaysPlatformByCard(!isGod && user != null);
+  // The community's own billing page. Owner, 15 Nov 2026: hidden from
+  // community admins, kept for the platform team. DESIGN §6.6 reverses that for
+  // a community that pays the platform by card only: its admins pay there.
+  const canSeeOwnBilling = isGod || paysByCard;
 
   return useMemo(() => {
     // 🔴 Activity categories. A coordinator reported searching the admin panel
@@ -611,11 +653,11 @@ function useAdminNav(): NavSection[] {
           // Donation refunds moved to the Volunteering section (2026-10-02):
           // donations belong to volunteering giving days, and every
           // /admin/volunteering page now lives in that one section.
-          // The community's own subscription, plan and invoices. Shown to the
-          // platform team only for now (owner, 15 Nov 2026: it stays here in case
-          // communities come to pay for themselves). Plans & Pricing and
-          // Subscriptions are in the Platform team panel.
-          ...(isGod ? [
+          // The community's own subscription, plan and invoices: the platform
+          // team, and the admins of a community that pays the platform by card
+          // (see canSeeOwnBilling). Plans & Pricing and Subscriptions are in
+          // the Platform team panel.
+          ...(canSeeOwnBilling ? [
             { label: t('billing'), href: '/admin/billing', icon: CreditCard },
           ] : []),
           // The community's own Stripe account: one-off donations ride on
@@ -729,7 +771,7 @@ function useAdminNav(): NavSection[] {
     // arrives, the memo is never recomputed, and the super-panel entry never
     // appears — the exact "there is no link to the panel" symptom reported on
     // 2026-08-05.
-  }, [canSeePlatformTeamPanel, canSeeSuperPanel, hasFeature, hasModule, isGod, isSuperAdmin, pendingOrgsBadge, pendingUsersBadge, pendingVolApplicationsBadge, pendingVolExpensesBadge, pendingVolHoursBadge, pendingVolProjectsBadge, pendingVolSwapsBadge, activeWellbeingBadge, t]);
+  }, [canSeeOwnBilling, canSeePlatformTeamPanel, canSeeSuperPanel, hasFeature, hasModule, isGod, isSuperAdmin, pendingOrgsBadge, pendingUsersBadge, pendingVolApplicationsBadge, pendingVolExpensesBadge, pendingVolHoursBadge, pendingVolProjectsBadge, pendingVolSwapsBadge, activeWellbeingBadge, t]);
 }
 
 interface AdminSidebarProps {

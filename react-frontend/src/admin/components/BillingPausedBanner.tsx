@@ -34,6 +34,8 @@ interface BillingStanding {
   since: string | null;
   payee: 'parent' | 'platform' | null;
   payee_name: string | null;
+  /** Who this community itself pays; read by the admin sidebar. */
+  payer?: 'platform_card' | 'platform_invoice' | 'parent' | 'not_billed';
 }
 
 type Loaded = BillingStanding | 'unknown' | null;

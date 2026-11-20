@@ -456,6 +456,18 @@ class StripeSubscriptionService
             throw $e;
         }
 
+        // Stripe does not promise to deliver the first invoice.paid after this
+        // event, and invoice.paid for a subscription with no assignment yet is
+        // dropped. So the paid-until date is set here too, from the period the
+        // checkout just paid for.
+        if (is_string($subscriptionId) && $subscriptionId !== '') {
+            static::recordPaidUntil(
+                $tenantId,
+                static::fetchPeriodEnd($subscriptionId, $tenantId),
+                'Stripe checkout completed'
+            );
+        }
+
         // Email tenant admin — subscription is now active
         try {
             $plan = DB::selectOne("SELECT name FROM pay_plans WHERE id = ?", [$planId]);
@@ -706,11 +718,13 @@ class StripeSubscriptionService
         }
 
         // Fetch the subscription to get updated period_end
+        $periodEndTs = null;
         try {
             $client = StripeService::client();
             $sub = $client->subscriptions->retrieve($stripeSubId);
-            $periodEnd = isset($sub->current_period_end)
-                ? date('Y-m-d H:i:s', $sub->current_period_end)
+            $periodEndTs = isset($sub->current_period_end) ? (int) $sub->current_period_end : null;
+            $periodEnd = $periodEndTs !== null
+                ? date('Y-m-d H:i:s', $periodEndTs)
                 : null;
 
             DB::update(
@@ -731,6 +745,10 @@ class StripeSubscriptionService
             ]);
             throw $e;
         }
+
+        // A card payer is kept on the same payment record as everyone else:
+        // paying moves its paid-until date to the end of the period just paid.
+        static::recordPaidUntil((int) $assignment->tenant_id, $periodEndTs, 'Stripe invoice paid');
 
         // Email tenant admin — subscription renewed successfully
         try {
@@ -758,7 +776,61 @@ class StripeSubscriptionService
     }
 
     /**
+     * Move a community's paid-until date to the end of a period Stripe says
+     * is paid.
+     *
+     * A refusal is logged at `error` and NOT rethrown. The webhook's own work
+     * (the assignment, the email) has already happened, and a Stripe retry
+     * cannot fix a record the platform refuses (the platform's own community,
+     * say): rethrowing would only make Stripe redeliver the event for days.
+     * The next paid invoice writes the date again.
+     */
+    private static function recordPaidUntil(int $tenantId, ?int $periodEndTs, string $note): void
+    {
+        if ($periodEndTs === null) {
+            return;
+        }
+
+        $date = date('Y-m-d', $periodEndTs);
+
+        try {
+            BillingStandingService::setPaidUntil($tenantId, $date, null, $note);
+        } catch (\Throwable $e) {
+            Log::error('Stripe payment could not update the community payment record', [
+                'tenant_id' => $tenantId,
+                'paid_until' => $date,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * The end of a subscription's current period, asked of Stripe. Null, with
+     * an error logged, when Stripe cannot say: the caller carries on without it.
+     */
+    private static function fetchPeriodEnd(string $stripeSubId, int $tenantId): ?int
+    {
+        try {
+            $sub = StripeService::client()->subscriptions->retrieve($stripeSubId);
+
+            return isset($sub->current_period_end) ? (int) $sub->current_period_end : null;
+        } catch (\Throwable $e) {
+            Log::error('Stripe subscription period could not be read for the community payment record', [
+                'tenant_id' => $tenantId,
+                'subscription_id' => $stripeSubId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    /**
      * Handle invoice.payment_failed — log warning.
+     *
+     * Leaves the community's paid-until date alone on purpose: the daily
+     * payment check counts its days late from there, and Stripe's own retries
+     * happen inside that window.
      */
     public static function handleInvoicePaymentFailed(object $invoice): void
     {

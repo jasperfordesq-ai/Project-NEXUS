@@ -171,9 +171,44 @@ final class BillingPausedFlagTest extends TestCase
 
         $response->assertStatus(200);
         $this->assertSame(
-            ['paused' => false, 'own' => null, 'since' => null, 'payee' => null, 'payee_name' => null],
+            ['paused' => false, 'own' => null, 'since' => null, 'payee' => null, 'payee_name' => null, 'payer' => 'parent'],
             $response->json('data')
         );
+    }
+
+    /**
+     * `payer` tells the admin panel whether to offer the community's own
+     * billing page: only a community that pays the platform by card has
+     * anything to do there (Stage 5).
+     */
+    public function test_admin_standing_says_who_an_open_community_pays(): void
+    {
+        $this->signInTo($this->parent, ['role' => 'admin']);
+        $this->assertSame('platform_invoice', $this->apiGet('/v2/admin/billing/standing')->json('data.payer'));
+
+        $planId = (int) DB::table('pay_plans')->insertGetId([
+            'name' => 'Flag card plan',
+            'slug' => 'flag-card-' . bin2hex(random_bytes(4)),
+            'price_monthly' => 10,
+            'price_yearly' => 100,
+            'created_at' => now(),
+        ]);
+        DB::table('tenant_plan_assignments')->insert([
+            'tenant_id' => $this->parent,
+            'pay_plan_id' => $planId,
+            'status' => 'active',
+            'stripe_subscription_id' => 'sub_flag_' . bin2hex(random_bytes(6)),
+        ]);
+
+        $this->assertSame('platform_card', $this->apiGet('/v2/admin/billing/standing')->json('data.payer'));
+    }
+
+    public function test_admin_standing_says_who_a_paused_community_pays(): void
+    {
+        BillingStandingService::suspend($this->child, null, 'manual');
+        $this->signInTo($this->child, ['role' => 'admin']);
+
+        $this->assertSame('parent', $this->apiGet('/v2/admin/billing/standing')->json('data.payer'));
     }
 
     public function test_admin_standing_names_the_parent_for_a_child(): void
@@ -223,7 +258,7 @@ final class BillingPausedFlagTest extends TestCase
 
         $response = $this->apiGet('/v2/admin/billing/standing');
 
-        $this->assertSame(['paused', 'own', 'since', 'payee', 'payee_name'], array_keys($response->json('data')));
+        $this->assertSame(['paused', 'own', 'since', 'payee', 'payee_name', 'payer'], array_keys($response->json('data')));
         $this->assertStringNotContainsString('private note', $response->getContent());
     }
 

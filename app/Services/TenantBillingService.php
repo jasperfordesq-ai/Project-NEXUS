@@ -304,9 +304,13 @@ class TenantBillingService
             $ownCountMap[(int) $row->tenant_id] = (int) $row->cnt;
         }
 
-        // Fetch active plan assignments including all new columns.
+        // Each community's current assignment, whatever its status: a failed
+        // card payment leaves it `expired`, and a trial is `trial`. Reading only
+        // `active` ones showed those communities as having no plan at all. A
+        // community can hold several rows (a new active row is inserted when
+        // none is active), so an active one wins, then the most recent.
         $assignments = DB::select(
-            "SELECT tpa.tenant_id,
+            "SELECT tpa.tenant_id, tpa.status AS assignment_status,
                     tpa.custom_price_monthly, tpa.custom_price_yearly,
                     tpa.discount_percentage, tpa.discount_reason,
                     tpa.grace_period_ends_at, tpa.is_paused, tpa.nonprofit_verified,
@@ -317,11 +321,14 @@ class TenantBillingService
              FROM tenant_plan_assignments tpa
              INNER JOIN pay_plans pp ON pp.id = tpa.pay_plan_id
              WHERE tpa.tenant_id IN ({$placeholders})
-               AND tpa.status = 'active'",
+             ORDER BY tpa.tenant_id, (tpa.status = 'active') DESC, tpa.id DESC",
             $tenantIds
         );
         $planMap = [];
         foreach ($assignments as $row) {
+            if (isset($planMap[(int) $row->tenant_id])) {
+                continue;
+            }
             $assignmentArr = [
                 // The Billing control screen opens "Assign plan" on the
                 // community's current plan, so it has to be told which it is.
@@ -341,6 +348,7 @@ class TenantBillingService
                 'is_paused'             => (bool) ($row->is_paused ?? false),
                 'nonprofit_verified'    => (bool) ($row->nonprofit_verified ?? false),
                 'expires_at'            => $row->expires_at,
+                'assignment_status'     => (string) ($row->assignment_status ?? 'active'),
             ];
             $assignmentArr['effective_price'] = self::getEffectivePrice($assignmentArr);
             $planMap[(int) $row->tenant_id] = $assignmentArr;
