@@ -15,7 +15,10 @@ const { apiGet, logError, tenant } = vi.hoisted(() => ({
 vi.mock('@/lib/api', () => ({ api: { get: apiGet } }));
 vi.mock('@/lib/logger', () => ({ logError }));
 vi.mock('@/contexts', () => ({ useTenant: () => ({ tenant: tenant.current }) }));
-vi.mock('@/lib/helpers', () => ({ formatDate: (value: string) => `DATE(${value.slice(0, 10)})` }));
+vi.mock('@/lib/helpers', () => ({
+  formatDate: (value: string) => `DATE(${value.slice(0, 10)})`,
+  getFormattingLocale: () => 'en-GB',
+}));
 // The wording is checked by key and by what is put into it.
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({

@@ -29,7 +29,7 @@ import { useTranslation } from 'react-i18next';
 import TriangleAlert from 'lucide-react/icons/triangle-alert';
 import { useTenant } from '@/contexts';
 import { api } from '@/lib/api';
-import { formatDate } from '@/lib/helpers';
+import { formatDate, getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 
 interface MemberLimit {
@@ -58,7 +58,7 @@ type Loaded = BillingStanding | 'unknown' | null;
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
 export function BillingPausedBanner() {
-  const { t, i18n } = useTranslation('admin_billing');
+  const { t } = useTranslation('admin_billing');
   const { tenant } = useTenant();
   const paused = tenant?.billing_paused === true;
   const [standing, setStanding] = useState<Loaded>(null);
@@ -109,7 +109,7 @@ export function BillingPausedBanner() {
 
   if (standing === 'unknown') return null;
 
-  const warning = warningWording(standing, t, i18n.language);
+  const warning = warningWording(standing, t);
   if (warning === null) return null;
 
   return (
@@ -143,8 +143,8 @@ function pausedWording(standing: BillingStanding | 'unknown', t: Translate): str
 }
 
 /** One line: an overdue payment first, because that is what leads to a pause. */
-function warningWording(standing: BillingStanding, t: Translate, language: string): string | null {
-  const number = (value: number) => value.toLocaleString(language);
+function warningWording(standing: BillingStanding, t: Translate): string | null {
+  const number = (value: number) => value.toLocaleString(getFormattingLocale());
 
   if (typeof standing.overdue_days === 'number' && standing.overdue_days > 0) {
     return t('paused_banner.overdue', { days: number(standing.overdue_days) });

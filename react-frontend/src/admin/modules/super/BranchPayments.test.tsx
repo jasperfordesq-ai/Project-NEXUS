@@ -52,7 +52,7 @@ vi.mock('@/components/ui', async () => {
 });
 
 // ─── Admin header ─────────────────────────────────────────────────────────────
-vi.mock('../../components', () => ({
+vi.mock('../../components/PageHeader', () => ({
   PageHeader: ({ title, actions }: { title: string; actions?: React.ReactNode }) => (
     <div>
       <h1>{title}</h1>
