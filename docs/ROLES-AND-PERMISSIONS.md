@@ -855,6 +855,17 @@ and the SEO overview stay in the admin panel (owner, 15 November 2026). Controls
 *inside* pages that stay (the footer badge switch, the global super admin switch
 on a user, permanent purge) keep their own checks and are only relabelled.
 
+**The automatic billing checks (20 November 2026).** Only the platform team can
+read or change the settings of the daily check (`GET`/`PUT
+/v2/admin/super/billing/settings`), see what it would do today
+(`GET /v2/admin/super/billing/standing/preview`) or set the paid-until date of
+any community (`POST /v2/admin/super/billing/standing/paid-until`); each starts
+with `requireGodPlatformAdmin()` and is pinned in
+`AdminSuperControllerPlatformTeamLockTest`. The check itself runs as the system
+and is off until the platform team turns it on. A community's own admin may read
+its own overdue days and member-limit state
+(`GET /v2/admin/billing/standing`) and nothing about any other community.
+
 **Pausing a community for non-payment (20 November 2026).** "Paused" is its own
 state, recorded in `tenant_billing_standing`; it is not `tenants.is_active`. A
 paused community's member side is closed for everyone, its own admins included,
