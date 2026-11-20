@@ -14,6 +14,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AdminSidebar } from './components/AdminSidebar';
 import { AdminHeader } from './components/AdminHeader';
+import { BillingPausedBanner } from './components/BillingPausedBanner';
 import { PlatformNoticeBand } from './components/PlatformNoticeBand';
 import { WhatsNewBand } from './components/WhatsNewBand';
 import { AdminBreadcrumbs } from './components/AdminBreadcrumbs';
@@ -172,6 +173,8 @@ function AdminLayoutShell() {
         <div className="mx-auto w-full max-w-[1600px] p-3 sm:p-4 md:p-6">
           {/* A notice from the platform team to every community's admins. */}
           <PlatformNoticeBand />
+          {/* This community is paused for non-payment: say so on every admin page. */}
+          <BillingPausedBanner />
           {/* One line when a new version of the platform has been released. */}
           <WhatsNewBand />
           <AdminBreadcrumbs />

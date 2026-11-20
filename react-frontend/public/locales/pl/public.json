@@ -1146,6 +1146,12 @@
     "admin_login": "Logowanie administratora",
     "deploy_notice": "Ta platforma jest wciąż aktywnie budowana, więc mogą występować fazy szybkich wdrożeń. W tym czasie serwer automatycznie przechodzi w tryb konserwacji. Zwykle trwa to tylko około pięciu minut, podczas gdy wprowadzane są nowe zmiany."
   },
+  "community_paused": {
+    "title": "Społeczność {{community}} jest wstrzymana",
+    "body": "Ta społeczność jest obecnie niedostępna. Skontaktuj się z jej organizatorami.",
+    "organiser_sign_in": "Logowanie dla organizatorów",
+    "go_to_admin": "Przejdź do panelu administracyjnego"
+  },
   "kb": {
     "title": "Baza wiedzy",
     "description": "Znajdź odpowiedzi, przewodniki i pomocne zasoby",

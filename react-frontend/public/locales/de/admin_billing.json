@@ -219,5 +219,11 @@
     "invoice_status_void": "Leere",
     "status_ok": "Ok",
     "upgrade_message": "Aktualisieren"
+  },
+  "paused_banner": {
+    "own_parent": "Diese Community ist pausiert. Mitglieder können sie erst wieder nutzen, wenn die Zahlung an {{payee}} auf dem aktuellen Stand ist. Pausiert seit {{date}}.",
+    "own_platform": "Diese Community ist pausiert. Mitglieder können sie erst wieder nutzen, wenn die Zahlung an das Plattform-Team auf dem aktuellen Stand ist. Pausiert seit {{date}}.",
+    "inherited": "Diese Community ist pausiert, weil die übergeordnete Community pausiert ist. Pausiert seit {{date}}.",
+    "unknown": "Diese Community ist pausiert. Mitglieder können sie nicht nutzen. Der Grund konnte nicht geladen werden. Bitte laden Sie die Seite neu."
   }
 }

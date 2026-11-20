@@ -151,6 +151,10 @@ vi.mock('@/pages/public/MaintenancePage', () => ({
   default: () => <div>Maintenance mode</div>,
 }));
 
+vi.mock('@/pages/public/CommunityPausedPage', () => ({
+  default: () => <div data-testid="community-paused">Community paused</div>,
+}));
+
 vi.mock('@/routes/AuthRoutes', async () => {
   const React = await import('react');
   const { Route } = await import('react-router-dom');
@@ -600,6 +604,74 @@ describe('TenantShell', () => {
       // MaintenancePage is lazy loaded, so we just verify no CommunityNotFound
       renderWithRouter('/dashboard');
       expect(screen.queryByText('Community Not Found')).not.toBeInTheDocument();
+    });
+  });
+
+  // A community paused for non-payment. Unlike maintenance there is no admin
+  // exception on the member side: an admin sees the paused page there too,
+  // and keeps the admin panel.
+  describe('Paused for non-payment', () => {
+    const pausedTenant = {
+      isLoading: false,
+      notFoundSlug: null,
+      tenant: { id: 2, name: 'Test', slug: 'test', settings: {}, billing_paused: true },
+    };
+
+    // appRoutes must hand back <Route> elements: it is rendered inside <Routes>.
+    const theApp = () => <Route path="*" element={<div data-testid="the-app">The app</div>} />;
+
+    beforeEach(() => {
+      mockDetectTenantFromUrl.mockReturnValue({ slug: null, source: null });
+    });
+
+    it('shows the paused page on a member address when billing_paused is true', async () => {
+      setupDefaultMocks({ tenant: pausedTenant, auth: { user: { role: 'member' } } });
+      renderWithRouter('/dashboard', theApp);
+
+      expect(await screen.findByTestId('community-paused')).toBeInTheDocument();
+      expect(screen.queryByTestId('the-app')).not.toBeInTheDocument();
+    });
+
+    it('shows the paused page to a signed-out visitor', async () => {
+      setupDefaultMocks({ tenant: pausedTenant });
+      renderWithRouter('/', theApp);
+
+      expect(await screen.findByTestId('community-paused')).toBeInTheDocument();
+    });
+
+    it('shows the paused page to an admin on a member address', async () => {
+      setupDefaultMocks({ tenant: pausedTenant, auth: { user: { role: 'admin' } } });
+      renderWithRouter('/dashboard', theApp);
+
+      expect(await screen.findByTestId('community-paused')).toBeInTheDocument();
+      expect(screen.queryByTestId('the-app')).not.toBeInTheDocument();
+    });
+
+    it.each(['/admin', '/admin/billing', '/platform-team/billing'])('keeps %s open when billing_paused is true', async (path) => {
+      setupDefaultMocks({ tenant: pausedTenant, auth: { user: { role: 'member', is_tenant_super_admin: true } } });
+      renderWithRouter(path, theApp);
+
+      expect(await screen.findByTestId('the-app')).toBeInTheDocument();
+      expect(screen.queryByTestId('community-paused')).not.toBeInTheDocument();
+    });
+
+    it('keeps the sign-in page open when billing_paused is true', async () => {
+      setupDefaultMocks({ tenant: pausedTenant });
+      renderWithRouter('/login', theApp);
+
+      expect(await screen.findByTestId('the-app')).toBeInTheDocument();
+      expect(screen.queryByTestId('community-paused')).not.toBeInTheDocument();
+    });
+
+    it('shows the app as usual when billing_paused is false', async () => {
+      setupDefaultMocks({
+        tenant: { ...pausedTenant, tenant: { ...pausedTenant.tenant, billing_paused: false } },
+        auth: { user: { role: 'member' } },
+      });
+      renderWithRouter('/dashboard', theApp);
+
+      expect(await screen.findByTestId('the-app')).toBeInTheDocument();
+      expect(screen.queryByTestId('community-paused')).not.toBeInTheDocument();
     });
   });
 });

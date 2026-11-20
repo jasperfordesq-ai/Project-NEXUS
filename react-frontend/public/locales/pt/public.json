@@ -1142,6 +1142,12 @@
     "admin_login": "Login de Administrador",
     "deploy_notice": "Esta plataforma ainda está sendo desenvolvida ativamente, por isso pode haver fases de implantações rápidas. Durante esses períodos, o servidor entra automaticamente em modo de manutenção. Isso normalmente dura apenas cerca de cinco minutos enquanto as novas alterações são aplicadas."
   },
+  "community_paused": {
+    "title": "{{community}} está em pausa",
+    "body": "Esta comunidade não está disponível no momento. Entre em contato com os organizadores.",
+    "organiser_sign_in": "Acesso para organizadores",
+    "go_to_admin": "Ir para o painel de administração"
+  },
   "kb": {
     "title": "Base de conhecimento",
     "description": "Encontre respostas, guias e recursos úteis",

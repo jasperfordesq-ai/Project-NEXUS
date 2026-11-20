@@ -221,5 +221,11 @@
     "mrr_contribution": "Wkład MRR",
     "checkout_failed_desc": "Nie udało nam się potwierdzić Twojej subskrypcji. Jeśli pobrano opłatę, Twoja subskrypcja powinna wkrótce zostać aktywowana.",
     "revenue_desc": "Powtarzające się przychody i aktywność rozliczeniowa w całej platformie."
+  },
+  "paused_banner": {
+    "own_parent": "Ta społeczność jest wstrzymana. Członkowie nie mogą z niej korzystać, dopóki płatność na rzecz {{payee}} nie zostanie uregulowana. Wstrzymana od {{date}}.",
+    "own_platform": "Ta społeczność jest wstrzymana. Członkowie nie mogą z niej korzystać, dopóki płatność na rzecz zespołu platformy nie zostanie uregulowana. Wstrzymana od {{date}}.",
+    "inherited": "Ta społeczność jest wstrzymana, ponieważ społeczność nadrzędna jest wstrzymana. Wstrzymana od {{date}}.",
+    "unknown": "Ta społeczność jest wstrzymana. Członkowie nie mogą z niej korzystać. Nie udało się wczytać powodu; odśwież stronę."
   }
 }

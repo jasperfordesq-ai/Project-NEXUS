@@ -1138,6 +1138,12 @@
     "admin_login": "Admin Inloggen",
     "deploy_notice": "Dit platform wordt nog actief gebouwd, dus er kunnen fasen van snelle implementaties zijn. Tijdens deze tijden gaat de server automatisch in onderhoudsmodus. Dit duurt normaal gesproken slechts ongeveer vijf minuten terwijl nieuwe wijzigingen worden toegepast."
   },
+  "community_paused": {
+    "title": "{{community}} is gepauzeerd",
+    "body": "Deze gemeenschap is op dit moment niet beschikbaar. Neem contact op met de organisatoren.",
+    "organiser_sign_in": "Aanmelden voor organisatoren",
+    "go_to_admin": "Naar het beheerpaneel"
+  },
   "kb": {
     "title": "Kennisbank",
     "description": "Vind antwoorden, handleidingen en nuttige bronnen",

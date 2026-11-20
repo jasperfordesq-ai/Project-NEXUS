@@ -222,5 +222,11 @@
     "mrr_contribution": "Ranníocaíocht MRR",
     "checkout_failed_desc": "Níorbh fhéidir linn do shíntiús a dhearbhú. Má ionsaíodh tú, ba chóir do shíntiús gníomhachtú go luath.",
     "revenue_desc": "Ioncam athfhillteach agus gníomhaíocht billeála leathan-ardán."
+  },
+  "paused_banner": {
+    "own_parent": "Tá an pobal seo curtha ar sos. Ní féidir le baill é a úsáid go dtí go mbeidh an íocaíocht le {{payee}} cothrom le dáta. Ar sos ó {{date}}.",
+    "own_platform": "Tá an pobal seo curtha ar sos. Ní féidir le baill é a úsáid go dtí go mbeidh an íocaíocht le foireann an ardáin cothrom le dáta. Ar sos ó {{date}}.",
+    "inherited": "Tá an pobal seo curtha ar sos toisc go bhfuil an pobal os a chionn curtha ar sos. Ar sos ó {{date}}.",
+    "unknown": "Tá an pobal seo curtha ar sos. Ní féidir le baill é a úsáid. Níorbh fhéidir an chúis a lódáil; athlódáil an leathanach."
   }
 }

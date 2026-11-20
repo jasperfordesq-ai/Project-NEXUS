@@ -219,5 +219,11 @@
     "mrr_contribution": "MRR-bijdrage",
     "checkout_failed_desc": "We konden uw abonnement niet bevestigen. Als er een bedrag in rekening is gebracht, zou uw abonnement binnenkort moeten worden geactiveerd.",
     "revenue_desc": "Platformbrede terugkerende inkomsten en factureringsactiviteiten."
+  },
+  "paused_banner": {
+    "own_parent": "Deze gemeenschap is gepauzeerd. Leden kunnen haar pas weer gebruiken als de betaling aan {{payee}} is bijgewerkt. Gepauzeerd sinds {{date}}.",
+    "own_platform": "Deze gemeenschap is gepauzeerd. Leden kunnen haar pas weer gebruiken als de betaling aan het platformteam is bijgewerkt. Gepauzeerd sinds {{date}}.",
+    "inherited": "Deze gemeenschap is gepauzeerd omdat de bovenliggende gemeenschap is gepauzeerd. Gepauzeerd sinds {{date}}.",
+    "unknown": "Deze gemeenschap is gepauzeerd. Leden kunnen haar niet gebruiken. De reden kon niet worden geladen; laad de pagina opnieuw."
   }
 }

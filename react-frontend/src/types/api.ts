@@ -1412,6 +1412,12 @@ export interface TenantConfig {
   id: number;
   name: string;
   slug: string;
+  /**
+   * True while the community is paused for non-payment. The member side then
+   * shows the paused page; the admin panel stays open. Only the fact is here:
+   * the reason is for admins, from GET /v2/admin/billing/standing.
+   */
+  billing_paused?: boolean;
   /** Uppercase ISO 4217 payment currency resolved by the tenant bootstrap. */
   currency?: string;
   tagline?: string;

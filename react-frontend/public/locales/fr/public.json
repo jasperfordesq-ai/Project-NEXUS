@@ -1142,6 +1142,12 @@
     "admin_login": "Connexion administrateur",
     "deploy_notice": "Cette plateforme est encore en cours de développement actif, il peut donc y avoir des phases de déploiements rapides. Pendant ces périodes, le serveur passe automatiquement en mode maintenance. Cela ne dure normalement qu'environ cinq minutes pendant l'application des nouvelles modifications."
   },
+  "community_paused": {
+    "title": "{{community}} est en pause",
+    "body": "Cette communauté n’est pas disponible pour le moment. Veuillez contacter ses organisateurs.",
+    "organiser_sign_in": "Connexion des organisateurs",
+    "go_to_admin": "Aller au panneau d’administration"
+  },
   "kb": {
     "title": "Base de connaissances",
     "description": "Trouvez des réponses, des guides et des ressources utiles",

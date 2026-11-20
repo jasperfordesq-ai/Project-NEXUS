@@ -1138,6 +1138,12 @@
     "admin_login": "Admin Login",
     "deploy_notice": "This platform is still being actively built, so there may be phases of rapid deployments. During these times, the server automatically enters maintenance mode. This normally only lasts about five minutes while new changes are being applied."
   },
+  "community_paused": {
+    "title": "{{community}} is paused",
+    "body": "This community is not available at the moment. Please contact its organisers.",
+    "organiser_sign_in": "Organiser sign-in",
+    "go_to_admin": "Go to the admin panel"
+  },
   "kb": {
     "title": "Knowledge Base",
     "description": "Find answers, guides, and helpful resources",

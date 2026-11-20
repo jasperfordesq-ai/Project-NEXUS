@@ -192,6 +192,7 @@ export const tenantBootstrapSchema = z.object({
   id: z.number(),
   name: z.string(),
   slug: z.string(),
+  billing_paused: z.boolean().optional(),
   currency: z.string().regex(/^[A-Z]{3}$/).optional(),
   tagline: z.string().optional(),
   features: z.record(z.string(), z.boolean()).optional(),

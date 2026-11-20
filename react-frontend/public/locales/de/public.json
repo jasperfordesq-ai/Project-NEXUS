@@ -1138,6 +1138,12 @@
     "admin_login": "Admin-Anmeldung",
     "deploy_notice": "Diese Plattform wird noch aktiv entwickelt, daher kann es Phasen mit häufigen Deployments geben. In diesen Zeiten wechselt der Server automatisch in den Wartungsmodus. Dies dauert normalerweise nur etwa fünf Minuten, während neue Änderungen eingespielt werden."
   },
+  "community_paused": {
+    "title": "{{community}} ist pausiert",
+    "body": "Diese Community ist derzeit nicht verfügbar. Bitte wenden Sie sich an die Organisatorinnen und Organisatoren.",
+    "organiser_sign_in": "Anmeldung für Organisatoren",
+    "go_to_admin": "Zum Adminbereich"
+  },
   "kb": {
     "title": "Wissensdatenbank",
     "description": "Finden Sie Antworten, Anleitungen und hilfreiche Ressourcen",

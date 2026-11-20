@@ -220,5 +220,11 @@
     "checkout_failed_desc": "No pudimos confirmar su suscripción. Si se le cobró, su suscripción debería activarse en breve.",
     "revenue_desc": "Actividad de ingresos recurrentes y facturación en toda la plataforma.",
     "status_ok": "Ok"
+  },
+  "paused_banner": {
+    "own_parent": "Esta comunidad está en pausa. Los miembros no podrán usarla hasta que el pago a {{payee}} esté al día. En pausa desde {{date}}.",
+    "own_platform": "Esta comunidad está en pausa. Los miembros no podrán usarla hasta que el pago al equipo de la plataforma esté al día. En pausa desde {{date}}.",
+    "inherited": "Esta comunidad está en pausa porque la comunidad de la que depende está en pausa. En pausa desde {{date}}.",
+    "unknown": "Esta comunidad está en pausa. Los miembros no pueden usarla. No se pudo cargar el motivo; vuelve a cargar la página."
   }
 }

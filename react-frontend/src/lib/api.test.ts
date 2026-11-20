@@ -525,6 +525,36 @@ describe('API Client', () => {
       expect(tokenManager.getAccessToken()).toBe('visitor-session');
     });
 
+    // A community paused for non-payment answers every member call with
+    // 403 COMMUNITY_PAUSED. The website shows the paused page; it must not
+    // treat that as a reason to sign the member out.
+    it('does not sign the user out on 403 COMMUNITY_PAUSED', async () => {
+      tokenManager.setAccessToken('member-session');
+      const ended = vi.fn();
+      window.addEventListener('nexus:session_expired', ended);
+      const refusal = {
+        ok: false,
+        status: 403,
+        headers: new Headers(),
+        json: () => Promise.resolve({
+          success: false,
+          error: 'This community is paused.',
+          code: 'COMMUNITY_PAUSED',
+        }),
+      } as Response;
+      vi.mocked(fetch).mockResolvedValueOnce(refusal).mockResolvedValueOnce(refusal);
+
+      const read = await api.get('/v2/listings');
+      const write = await api.post('/v2/feed/posts', { content: 'hello' });
+
+      window.removeEventListener('nexus:session_expired', ended);
+      expect(read.success).toBe(false);
+      expect(read.code).toBe('COMMUNITY_PAUSED');
+      expect(write.code).toBe('COMMUNITY_PAUSED');
+      expect(ended).not.toHaveBeenCalled();
+      expect(tokenManager.getAccessToken()).toBe('member-session');
+    });
+
     it('leaves a public (skipAuth) 403 ACCOUNT_UNDER_MINIMUM_AGE to the caller', async () => {
       tokenManager.setAccessToken('unrelated-session');
       const listener = vi.fn();

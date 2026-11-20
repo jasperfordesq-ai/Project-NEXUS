@@ -4587,6 +4587,12 @@ export default interface Resources {
       "unknown": "Unknown",
       "yes": "Yes"
     },
+    "paused_banner": {
+      "inherited": "This community is paused because the community above it is paused. Paused since {{date}}.",
+      "own_parent": "This community is paused. Members cannot use it until payment is brought up to date with {{payee}}. Paused since {{date}}.",
+      "own_platform": "This community is paused. Members cannot use it until payment is brought up to date with the platform team. Paused since {{date}}.",
+      "unknown": "This community is paused. Members cannot use it. The reason could not be loaded; please reload the page."
+    },
     "shared": {
       "broker_actions": "Broker Actions",
       "content": "Content",
@@ -59416,6 +59422,12 @@ export default interface Resources {
       "search_placeholder": "Search communities",
       "subtitle": "You've reached the main Project NEXUS page. Choose your community below to continue.",
       "title": "Choose your community"
+    },
+    "community_paused": {
+      "body": "This community is not available at the moment. Please contact its organisers.",
+      "go_to_admin": "Go to the admin panel",
+      "organiser_sign_in": "Organiser sign-in",
+      "title": "{{community}} is paused"
     },
     "contact": {
       "back_to_help": "Back to Help Center",

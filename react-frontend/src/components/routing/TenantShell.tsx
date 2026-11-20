@@ -44,6 +44,7 @@ import {
 } from '@/routes/routeRegistryLoader';
 
 const MaintenancePage = lazy(() => import('@/pages/public/MaintenancePage'));
+const CommunityPausedPage = lazy(() => import('@/pages/public/CommunityPausedPage'));
 const TenantPublicProviders = lazy(() => import('./TenantPublicProviders'));
 const TenantAppProviders = lazy(() => import('./TenantAppProviders'));
 const CookieConsentBanner = lazy(() =>
@@ -550,6 +551,20 @@ function TenantGuard({
     lowerPath === `/${p}` ||
     (lowerPrefix && lowerPath === `/${lowerPrefix}/${p}`)
   );
+
+  // Paused for non-payment (`billing_paused` on the tenant bootstrap). Unlike
+  // maintenance there is NO admin exception here: the member side is closed
+  // for everyone, the community's admins included, and only the admin panel,
+  // the Platform team panel and the sign-in pages stay open. So this does not
+  // read `isAdmin` above, which decides from the role string alone and misses
+  // admin levels held as flags.
+  if (tenant?.billing_paused === true && !isAdminRoute && !isAuthRoute) {
+    return (
+      <Suspense fallback={<LoadingScreen />}>
+        <CommunityPausedPage />
+      </Suspense>
+    );
+  }
 
   if (maintenanceMode && !isAdmin && !isAdminRoute && !isAuthRoute) {
     return (

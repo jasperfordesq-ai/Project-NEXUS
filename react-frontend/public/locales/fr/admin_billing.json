@@ -220,5 +220,11 @@
     "mrr_contribution": "Contribution MRR",
     "checkout_failed_desc": "Nous n'avons pas pu confirmer votre abonnement. Si vous avez été facturé, votre abonnement devrait s'activer sous peu.",
     "revenue_desc": "Revenus récurrents et activité de facturation sur l'ensemble de la plateforme."
+  },
+  "paused_banner": {
+    "own_parent": "Cette communauté est en pause. Les membres ne pourront pas l’utiliser tant que le paiement dû à {{payee}} n’est pas à jour. En pause depuis le {{date}}.",
+    "own_platform": "Cette communauté est en pause. Les membres ne pourront pas l’utiliser tant que le paiement dû à l’équipe de la plateforme n’est pas à jour. En pause depuis le {{date}}.",
+    "inherited": "Cette communauté est en pause parce que la communauté dont elle dépend est en pause. En pause depuis le {{date}}.",
+    "unknown": "Cette communauté est en pause. Les membres ne peuvent pas l’utiliser. Le motif n’a pas pu être chargé ; veuillez recharger la page."
   }
 }

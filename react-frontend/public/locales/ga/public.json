@@ -1150,6 +1150,12 @@
     "admin_login": "Logáil Isteach Riaracháin",
     "deploy_notice": "Tá an t-ardán seo fós á thógáil go gníomhach, mar sin d'fhéadfadh tréimhsí imscartha tapa a bheith ann. Le linn na dtréimhsí sin, téann an freastalaí isteach i mód cothabhála go huathoibríoch. De ghnáth ní mhaireann sé seo ach timpeall cúig nóiméad agus athruithe nua á gcur i bhfeidhm."
   },
+  "community_paused": {
+    "title": "Tá {{community}} curtha ar sos",
+    "body": "Níl an pobal seo ar fáil faoi láthair. Déan teagmháil lena eagraithe.",
+    "organiser_sign_in": "Síniú isteach d’eagraithe",
+    "go_to_admin": "Téigh go dtí an painéal riaracháin"
+  },
   "kb": {
     "title": "Bonn Eolais",
     "description": "Faigh freagraí, treoracha agus acmhainní cabhracha",

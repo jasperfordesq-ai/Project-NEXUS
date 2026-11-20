@@ -219,5 +219,11 @@
     "upgrade_mailto_subject": "Plan Upgrade Request",
     "user_count_label_one": "{{count}} / {{max}} users",
     "user_count_label_other": "{{count}} / {{max}} users"
+  },
+  "paused_banner": {
+    "own_parent": "This community is paused. Members cannot use it until payment is brought up to date with {{payee}}. Paused since {{date}}.",
+    "own_platform": "This community is paused. Members cannot use it until payment is brought up to date with the platform team. Paused since {{date}}.",
+    "inherited": "This community is paused because the community above it is paused. Paused since {{date}}.",
+    "unknown": "This community is paused. Members cannot use it. The reason could not be loaded; please reload the page."
   }
 }
