@@ -19,6 +19,8 @@
     "helpSupport": "Aiuto e assistenza"
   },
   "matches": {
+    "mutualOnly": "Sono mostrate solo le corrispondenze reciproche",
+    "showAll": "Mostra tutte le corrispondenze",
     "title": "Matches",
     "subtitle": "Opportunità consigliate in tutta la tua banca del tempo.",
     "total": "Corrispondenze totali",

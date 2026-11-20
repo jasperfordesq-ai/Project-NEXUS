@@ -64,6 +64,8 @@ describe('matches API', () => {
     expect(match.match_type).toBe('potential');
     expect(match.reasons).toEqual(['Same category: Home and Garden', 'Posted recently']);
     expect(match.matched_user).toEqual({ id: 674, name: 'E2E UserA', avatar_url: null });
+    // 'offer' or 'request', as the server sends it for a listing.
+    expect(['offer', 'request']).toContain(match.listing_type);
     expect(match.matched_at).toBe('2026-08-22 09:36:47');
     expect(match.metadata?.category).toBe('Home and Garden');
     // The screen keys its list and its dismissals on this, so it must exist.

@@ -127,12 +127,16 @@ function MatchesScreen() {
     [data?.data, dismissedKeys],
   );
   const requestedType = Array.isArray(params.type) ? params.type[0] : params.type;
+  // A two-way alert opens this list on two-way matches only. The member
+  // can go back to all of them; the list used to be cut down with no sign.
+  const [showAllKinds, setShowAllKinds] = useState(false);
+  const mutualOnly = requestedType === 'mutual' && !showAllKinds;
   const rawHighlight = Array.isArray(params.highlight) ? params.highlight[0] : params.highlight;
   const highlightMatch = rawHighlight?.match(/^listing-(\d+)$/);
   const highlightedListingId = highlightMatch ? Number(highlightMatch[1]) : null;
   const filteredMatches = useMemo(() => {
     let visible = filter === 'all' ? matches : matches.filter((match) => match.source_type === filter);
-    if (requestedType === 'mutual') {
+    if (mutualOnly) {
       visible = visible.filter((match) => match.match_type === 'mutual');
     }
     if (highlightedListingId !== null) {
@@ -143,7 +147,7 @@ function MatchesScreen() {
       });
     }
     return visible;
-  }, [filter, highlightedListingId, matches, requestedType]);
+  }, [filter, highlightedListingId, matches, mutualOnly]);
   // Suggestions shown to a member with nothing posted yet carry a placeholder score, so
   // they stay out of the average and the hot-match count.
   const scoredMatches = matches.filter((match) => !isSuggestion(match));
@@ -271,6 +275,17 @@ function MatchesScreen() {
                   </HeroButton>
                 </HeroCard.Body>
               </HeroCard>
+
+              {mutualOnly ? (
+                <Surface variant="secondary" className="mx-4 flex-row items-center justify-between gap-3 rounded-panel-inner p-4">
+                  <Text className="min-w-0 flex-1 text-sm font-semibold" style={{ color: theme.text }}>
+                    {t('matches.mutualOnly')}
+                  </Text>
+                  <HeroButton size="sm" variant="secondary" onPress={() => setShowAllKinds(true)}>
+                    <HeroButton.Label>{t('matches.showAll')}</HeroButton.Label>
+                  </HeroButton>
+                </Surface>
+              ) : null}
 
               {notices.map((kind) => (
                 <MatchNotice
@@ -429,6 +444,8 @@ function MatchCard({
   onOpen: () => void;
 }) {
   const { t } = useTranslation(['profile']);
+  // "Offer" and "Request" as the rest of the app words them.
+  const { t: tExchanges } = useTranslation('exchanges');
   const theme = useTheme();
   const config = SOURCE_CONFIG[item.source_type];
   const suggestion = isSuggestion(item);
@@ -437,6 +454,9 @@ function MatchCard({
   const canOpen = item.source_id !== null;
   // Every kind of match can be hidden (the server records all four).
   const canDismiss = item.source_id !== null;
+  // Who posted a listing, and its category: the card named neither.
+  const poster = item.source_type === 'listing' ? item.matched_user?.name || null : null;
+  const category = item.source_type === 'listing' ? item.metadata?.category ?? null : null;
   const eventStart = item.source_type === 'event' ? eventStartText(item.metadata?.event_date) : null;
   const organisation = item.source_type === 'volunteering' ? item.metadata?.organization_name ?? null : null;
   const place = item.source_type === 'event' || item.source_type === 'volunteering' ? item.metadata?.location ?? null : null;
@@ -458,7 +478,7 @@ function MatchCard({
           <View className="min-w-0 flex-1 gap-1">
             <View className="flex-row flex-wrap gap-2">
               <Chip size="sm" variant="secondary">
-                <Chip.Label>{t(`matches.source.${item.source_type}`)}</Chip.Label>
+                <Chip.Label>{item.listing_type ? tExchanges(item.listing_type) : t(`matches.source.${item.source_type}`)}</Chip.Label>
               </Chip>
               {suggestion ? (
                 // A suggestion for someone with nothing posted yet: not a scored match, so
@@ -482,6 +502,8 @@ function MatchCard({
                 {item.description}
               </Text>
             ) : null}
+            {poster ? <DetailLine icon="person-outline" text={poster} /> : null}
+            {category ? <DetailLine icon="pricetag-outline" text={category} /> : null}
             {eventStart ? <DetailLine icon="time-outline" text={eventStart} /> : null}
             {organisation ? <DetailLine icon="business-outline" text={organisation} /> : null}
             {place ? <DetailLine icon="location-outline" text={place} /> : null}

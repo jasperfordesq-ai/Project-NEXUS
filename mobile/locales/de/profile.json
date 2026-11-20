@@ -19,6 +19,8 @@
     "helpSupport": "Hilfe & Support"
   },
   "matches": {
+    "mutualOnly": "Es werden nur gegenseitige Übereinstimmungen angezeigt",
+    "showAll": "Alle Übereinstimmungen anzeigen",
     "title": "Matches",
     "subtitle": "Empfohlene Möglichkeiten in deiner Zeitbank.",
     "total": "Übereinstimmungen insgesamt",

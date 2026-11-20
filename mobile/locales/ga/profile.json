@@ -19,6 +19,8 @@
     "helpSupport": "Cabhair agus tacaíocht"
   },
   "matches": {
+    "mutualOnly": "Níl ach meaitseálacha cómhalartacha á dtaispeáint",
+    "showAll": "Taispeáin gach meaitseáil",
     "title": "Meaitseálacha",
     "subtitle": "Deiseanna molta ar fud do bhainc ama.",
     "total": "Líon iomlán na meaitseálacha",

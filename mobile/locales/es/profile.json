@@ -19,6 +19,8 @@
     "helpSupport": "Ayuda y soporte"
   },
   "matches": {
+    "mutualOnly": "Solo se muestran las coincidencias mutuas",
+    "showAll": "Mostrar todas las coincidencias",
     "title": "Matches",
     "subtitle": "Oportunidades recomendadas en todo tu banco de tiempo.",
     "total": "Coincidencias totales",

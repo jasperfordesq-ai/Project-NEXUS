@@ -28,6 +28,8 @@ export interface MatchItem {
   source_id: number | null;
   match_score: number;
   match_type?: string | null;
+  /** For a listing: whether it is an offer or a request. Null for every other kind. */
+  listing_type?: 'offer' | 'request' | null;
   title: string;
   description?: string | null;
   reasons: string[];
@@ -91,6 +93,8 @@ interface RawMatch {
   location?: string | null;
   title?: string | null;
   description?: string | null;
+  /** Listings only: 'offer' or 'request'. */
+  type?: string | null;
   match_score?: number;
   match_type?: string | null;
   match_reasons?: string[] | null;
@@ -273,6 +277,7 @@ function normalizeMatch(raw: RawMatch, index: number): MatchItem {
     source_id: sourceId,
     match_score: typeof raw.match_score === 'number' && Number.isFinite(raw.match_score) ? raw.match_score : 0,
     match_type: typeof raw.match_type === 'string' ? raw.match_type : null,
+    listing_type: sourceType === 'listing' && (raw.type === 'offer' || raw.type === 'request') ? raw.type : null,
     title: (raw.title ?? '').trim(),
     description: raw.description ?? null,
     reasons: Array.isArray(raw.match_reasons) ? raw.match_reasons.filter((r) => typeof r === 'string') : [],

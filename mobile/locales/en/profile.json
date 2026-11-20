@@ -19,6 +19,8 @@
     "helpSupport": "Help & support"
   },
   "matches": {
+    "mutualOnly": "Showing two-way matches only",
+    "showAll": "Show all matches",
     "title": "Matches",
     "subtitle": "Recommended opportunities across your timebank.",
     "total": "Total matches",

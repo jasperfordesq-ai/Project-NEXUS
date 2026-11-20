@@ -74,6 +74,10 @@ jest.mock('react-i18next', () => ({
         'matches.filter.group': 'Groups',
         'matches.filter.event': 'Events',
         'matches.source.listing': 'Listing',
+        'matches.mutualOnly': 'Showing two-way matches only',
+        'matches.showAll': 'Show all matches',
+        offer: 'Offer',
+        request: 'Request',
         'matches.source.volunteering': 'Volunteering',
         'matches.source.group': 'Group',
         'matches.source.event': 'Event',
@@ -432,6 +436,25 @@ describe('MatchesScreen', () => {
     expect(mockPush).toHaveBeenCalledWith({ pathname: '/(modals)/group-detail', params: { id: '9' } });
   });
 
+  it('says when only two-way matches are shown, and offers the way back to all of them', () => {
+    // Opened from a two-way alert, the list was silently cut down with no
+    // sign of it and no way out.
+    mockParams = { type: 'mutual' };
+    showing([
+      { ...eventMatch, match_type: 'event_recommendation' },
+      { ...listingMatch, match_type: 'mutual' },
+    ]);
+    const { getByText, queryByText } = render(<MatchesScreen />);
+
+    expect(getByText('Showing two-way matches only')).toBeTruthy();
+    expect(queryByText('Repair morning')).toBeNull();
+
+    fireEvent.press(getByText('Show all matches'));
+
+    expect(getByText('Repair morning')).toBeTruthy();
+    expect(queryByText('Showing two-way matches only')).toBeNull();
+  });
+
   it('honours hot and mutual-match notification parameters while the screen opens', () => {
     mockParams = { type: 'mutual', highlight: 'listing-10' };
     showing([
@@ -457,6 +480,17 @@ describe('MatchesScreen', () => {
     fireEvent.press(getByLabelText('Dismiss Garden help'));
     await waitFor(() => expect(mockDismissMatch).toHaveBeenCalledWith(10, 'listing'));
     await waitFor(() => expect(queryByText('Garden help')).toBeNull());
+  });
+
+  it('says who posted a listing and whether it is an offer or a request', async () => {
+    // The card showed "Listing" and nothing about who or what kind.
+    showing([{ ...listingMatch, listing_type: 'request', matched_user: { id: 5, name: 'Orla', avatar_url: null }, metadata: { category: 'Home and garden' } }]);
+    const { getByText, queryByText } = render(<MatchesScreen />);
+
+    expect(getByText('Request')).toBeTruthy();
+    expect(queryByText('Listing')).toBeNull();
+    expect(getByText('Orla')).toBeTruthy();
+    expect(getByText('Home and garden')).toBeTruthy();
   });
 
   it('lets a member dismiss an event match too', async () => {

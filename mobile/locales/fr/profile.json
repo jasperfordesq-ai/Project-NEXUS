@@ -19,6 +19,8 @@
     "helpSupport": "Aide et assistance"
   },
   "matches": {
+    "mutualOnly": "Seules les correspondances mutuelles sont affichées",
+    "showAll": "Afficher toutes les correspondances",
     "title": "Matches",
     "subtitle": "Opportunités recommandées dans votre banque de temps.",
     "total": "Correspondances au total",
