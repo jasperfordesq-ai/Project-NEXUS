@@ -30,6 +30,7 @@ import { TenantProvider, useTenantContext } from '@/lib/context/TenantContext';
 import { welcomeStepsMustBeFinished } from '@/lib/tenancy/welcomeSteps';
 import { RealtimeProvider } from '@/lib/context/RealtimeContext';
 import BiometricLockGate from '@/components/BiometricLockGate';
+import CommunityPausedGate from '@/components/CommunityPausedGate';
 import OfflineBanner from '@/components/OfflineBanner';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import SessionNoticeHost from '@/components/ui/SessionNoticeHost';
@@ -232,6 +233,13 @@ function RootLayout() {
                     signed-out app is the fault being fixed. Audit 2026-09-06, F09.
                   */}
                   <SessionRestoreGate>
+                    {/*
+                      Replaces everything below while the community is paused for
+                      non-payment. Above RealtimeProvider so nothing keeps polling a
+                      community that refuses every member request; inside AuthProvider and
+                      TenantProvider because it names the community and offers sign-out.
+                    */}
+                    <CommunityPausedGate>
                     <RealtimeProvider>
                     {/*
                       Inside AuthProvider, because it only has anything to protect once a
@@ -242,6 +250,7 @@ function RootLayout() {
                       <ThemedShell />
                     </BiometricLockGate>
                     </RealtimeProvider>
+                    </CommunityPausedGate>
                   </SessionRestoreGate>
                 </UgcTranslationPreferencesProvider>
                 </AuthProvider>

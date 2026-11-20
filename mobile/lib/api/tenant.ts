@@ -76,6 +76,11 @@ export interface TenantConfig {
   job_config?: JobConfig;
   /** Server-authoritative visibility for configured group sections. */
   group_tabs?: GroupTabConfig;
+  /**
+   * `true` while the community is paused for non-payment; absent otherwise. Members
+   * see `CommunityPausedGate`'s screen instead of the app.
+   */
+  billing_paused?: boolean;
   /** Server-authoritative availability of the AI description buttons. Absent = hidden. */
   ai_descriptions?: AiDescriptionAvailability;
   config: {

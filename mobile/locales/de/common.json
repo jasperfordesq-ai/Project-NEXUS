@@ -177,6 +177,13 @@
     "retry": "Erneut versuchen",
     "signOut": "Stattdessen abmelden"
   },
+  "communityPaused": {
+    "title": "{{community}} ist pausiert",
+    "titleUnnamed": "Diese Gemeinschaft ist pausiert",
+    "body": "Diese Gemeinschaft ist derzeit nicht verfügbar. Bitte wenden Sie sich an ihre Organisatorinnen und Organisatoren.",
+    "signOut": "Abmelden",
+    "chooseAnother": "Andere Gemeinschaft wählen"
+  },
   "unsavedChanges": {
     "title": "Ohne Speichern verlassen?",
     "message": "Deine Änderungen auf diesem Bildschirm wurden noch nicht gespeichert.",

@@ -177,6 +177,13 @@
     "retry": "Riprova",
     "signOut": "Esci invece"
   },
+  "communityPaused": {
+    "title": "{{community}} è in pausa",
+    "titleUnnamed": "Questa comunità è in pausa",
+    "body": "Questa comunità non è disponibile al momento. Contatta i suoi organizzatori.",
+    "signOut": "Esci",
+    "chooseAnother": "Scegli un’altra comunità"
+  },
   "unsavedChanges": {
     "title": "Uscire senza salvare?",
     "message": "Le modifiche su questa schermata non sono ancora state salvate.",

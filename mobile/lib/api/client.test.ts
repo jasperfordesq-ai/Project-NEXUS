@@ -33,6 +33,7 @@ import { ApiResponseError, api, authenticatedMediaRequest, registerUnauthorizedC
 import { storage } from '@/lib/storage';
 import i18n from 'i18next';
 import { updateRequiredStore } from '@/lib/updates/updateRequiredStore';
+import { communityPausedStore } from '@/lib/billing/communityPausedStore';
 
 const mockStorage = storage as jest.Mocked<typeof storage>;
 
@@ -737,6 +738,54 @@ describe('the tenant mismatch callback', () => {
       expect((err as ApiResponseError).status).toBe(403);
       expect((err as ApiResponseError).code).toBe('TENANT_MISMATCH');
     }
+  });
+});
+
+describe('a community paused for non-payment', () => {
+  beforeEach(() => communityPausedStore.__resetForTests());
+
+  const pausedBody = { success: false, error: 'This community is paused.', code: 'COMMUNITY_PAUSED' };
+
+  it('records the pause for the selected community and still throws the refusal', async () => {
+    fetchMock.mockResolvedValueOnce(mockResponse(pausedBody, { status: 403 }));
+
+    await expect(api.get('/api/v2/feed')).rejects.toMatchObject({ status: 403, code: 'COMMUNITY_PAUSED' });
+    expect(communityPausedStore.getSnapshot()).toBe('hour-timebank');
+  });
+
+  /**
+   * 🔴 The member's session is fine; their community is paused. Signing them out would
+   * leave them on a sign-in form that cannot help, and the server keeps sign-out open so
+   * the choice stays theirs.
+   */
+  it('never signs the member out or touches their stored session', async () => {
+    const onUnauthorized = jest.fn();
+    registerUnauthorizedCallback(onUnauthorized);
+    fetchMock.mockResolvedValueOnce(mockResponse(pausedBody, { status: 403 }));
+
+    await expect(api.get('/api/v2/feed')).rejects.toThrow(ApiResponseError);
+
+    expect(onUnauthorized).not.toHaveBeenCalled();
+    expect(mockStorage.remove).not.toHaveBeenCalled();
+    // One request, no refresh and no retry: nothing will change by asking again.
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    registerUnauthorizedCallback(() => {});
+  });
+
+  it('does not blame the selected community for a refusal about another one', async () => {
+    fetchMock.mockResolvedValueOnce(mockResponse(pausedBody, { status: 403 }));
+
+    await expect(
+      api.get('/api/v2/tenant/bootstrap', undefined, { anonymous: true, tenantSlug: 'another-community' }),
+    ).rejects.toThrow(ApiResponseError);
+    expect(communityPausedStore.getSnapshot()).toBeNull();
+  });
+
+  it('ignores an ordinary 403', async () => {
+    fetchMock.mockResolvedValueOnce(mockResponse({ errors: [{ code: 'FORBIDDEN', message: 'No' }] }, { status: 403 }));
+
+    await expect(api.get('/api/v2/feed')).rejects.toThrow(ApiResponseError);
+    expect(communityPausedStore.getSnapshot()).toBeNull();
   });
 });
 

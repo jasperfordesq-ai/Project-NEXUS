@@ -177,6 +177,13 @@
     "retry": "Try again",
     "signOut": "Sign out instead"
   },
+  "communityPaused": {
+    "title": "{{community}} is paused",
+    "titleUnnamed": "This community is paused",
+    "body": "This community is not available at the moment. Please contact its organisers.",
+    "signOut": "Sign out",
+    "chooseAnother": "Choose another community"
+  },
   "unsavedChanges": {
     "title": "Leave without saving?",
     "message": "Your changes on this screen have not been saved yet.",

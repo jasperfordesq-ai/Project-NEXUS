@@ -180,6 +180,13 @@
     "retry": "Bain triail eile as",
     "signOut": "Sínigh amach ina ionad sin"
   },
+  "communityPaused": {
+    "title": "Tá {{community}} curtha ar sos",
+    "titleUnnamed": "Tá an pobal seo curtha ar sos",
+    "body": "Níl an pobal seo ar fáil faoi láthair. Déan teagmháil lena eagraithe.",
+    "signOut": "Sínigh amach",
+    "chooseAnother": "Roghnaigh pobal eile"
+  },
   "unsavedChanges": {
     "title": "Fág gan sábháil?",
     "message": "Níor sábháladh na hathruithe a rinne tú ar an scáileán seo go fóill.",

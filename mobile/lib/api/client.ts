@@ -8,6 +8,7 @@ import i18n from 'i18next';
 import * as FileSystem from 'expo-file-system/legacy';
 import { storage } from '@/lib/storage';
 import { updateRequiredStore } from '@/lib/updates/updateRequiredStore';
+import { communityPausedStore } from '@/lib/billing/communityPausedStore';
 
 /**
  * Generic API client for the Project NEXUS PHP backend.
@@ -772,6 +773,17 @@ async function request<T>(
     // blocking one.
     if (response.status === 426) {
       updateRequiredStore.require(updateRequiredStore.fromResponseBody(data));
+    }
+
+    // The community is paused for non-payment (App\Http\Middleware\CheckBillingLock).
+    // Recorded for the gate to show the paused screen; the session is left alone, because
+    // the member's account is fine and the server keeps sign-in and sign-out open. Only a
+    // refusal about the SELECTED community counts: the picker asks about others on purpose.
+    if (code === 'COMMUNITY_PAUSED') {
+      const selectedSlug = tenantSlug?.trim() || DEFAULT_TENANT;
+      if (resolvedTenantSlug === selectedSlug) {
+        communityPausedStore.markPaused(selectedSlug);
+      }
     }
 
     throw new ApiResponseError(

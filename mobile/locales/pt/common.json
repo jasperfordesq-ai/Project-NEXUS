@@ -177,6 +177,13 @@
     "retry": "Tentar novamente",
     "signOut": "Terminar sessão em vez disso"
   },
+  "communityPaused": {
+    "title": "{{community}} está em pausa",
+    "titleUnnamed": "Esta comunidade está em pausa",
+    "body": "Esta comunidade não está disponível de momento. Contacte os seus organizadores.",
+    "signOut": "Terminar sessão",
+    "chooseAnother": "Escolher outra comunidade"
+  },
   "unsavedChanges": {
     "title": "Sair sem guardar?",
     "message": "As suas alterações neste ecrã ainda não foram guardadas.",
