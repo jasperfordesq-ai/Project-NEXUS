@@ -826,7 +826,7 @@ class TenantBillingService
      * @param mixed $oldValue Array or null — will be json_encoded.
      * @param mixed $newValue Array or null — will be json_encoded.
      */
-    private static function logAudit(
+    public static function logAudit(
         int $tenantId,
         ?int $actedBy,
         string $action,
