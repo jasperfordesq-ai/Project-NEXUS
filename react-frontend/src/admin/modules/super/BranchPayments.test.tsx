@@ -42,7 +42,7 @@ vi.mock('@/components/ui', async () => {
   return new Proxy(base, {
     get(target, prop) {
       if (typeof prop === 'string' && prop in tableOverrides) return tableOverrides[prop];
-      return (target as Record<string, unknown>)[prop];
+      return Reflect.get(target, prop);
     },
     has(target, prop) {
       if (typeof prop === 'string' && prop in tableOverrides) return true;
