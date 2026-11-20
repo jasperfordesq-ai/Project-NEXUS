@@ -43,13 +43,20 @@ class CheckBillingLock
         '/api/v2/admin/',
         '/admin/',
         '/super-admin/',
+        // Signing in. The sign-in page asks for a CSRF token and the
+        // community's sign-in options before anything is typed, and a second
+        // step or a passkey may follow; all of it has to work, or the
+        // community's admins cannot get in to find out why it is paused.
         '/api/auth/',
+        '/api/v2/auth/',
+        '/api/csrf-token',
+        '/api/v2/csrf-token',
+        '/api/totp/',
+        '/api/webauthn/',
         '/api/v2/tenant/bootstrap',
         '/api/v2/tenants',
         '/api/v2/messages/unread-count',
         '/api/v2/notifications/counts',
-        '/api/webauthn/auth-challenge',
-        '/api/webauthn/auth-verify',
         '/api/v2/webhooks/',
         '/health.php',
         '/up',
@@ -61,6 +68,14 @@ class CheckBillingLock
         '/api/v2/users/me',
     ];
 
+    /**
+     * Closed although an open prefix covers them. Checked first.
+     * A paused community takes no new members.
+     */
+    private const CLOSED_ALTHOUGH_UNDER_AN_OPEN_PREFIX = [
+        '/api/v2/auth/register',
+    ];
+
     private static bool $failureReported = false;
 
     public function handle(Request $request, Closure $next): Response
@@ -70,15 +85,18 @@ class CheckBillingLock
         }
 
         $path = $request->getPathInfo();
+        $exact = rtrim($path, '/');
 
-        foreach (self::OPEN_PREFIXES as $prefix) {
-            if (str_starts_with($path, $prefix)) {
+        if (!in_array($exact, self::CLOSED_ALTHOUGH_UNDER_AN_OPEN_PREFIX, true)) {
+            foreach (self::OPEN_PREFIXES as $prefix) {
+                if (str_starts_with($path, $prefix)) {
+                    return $next($request);
+                }
+            }
+
+            if (in_array($exact, self::OPEN_READS, true) && $request->isMethodSafe()) {
                 return $next($request);
             }
-        }
-
-        if (in_array(rtrim($path, '/'), self::OPEN_READS, true) && $request->isMethodSafe()) {
-            return $next($request);
         }
 
         try {

@@ -137,6 +137,57 @@ final class CheckBillingLockTest extends TestCase
         $this->assertNotSame(403, $login->getStatusCode());
     }
 
+    /**
+     * Found by opening the sign-in page of a paused community in a browser
+     * (20 Nov 2026): the page asks for a CSRF token and for the community's
+     * sign-in options before anyone has typed anything, and all three were
+     * refused. An admin who cannot sign in cannot find out why the community
+     * is paused, which is the one thing the lock promises them.
+     */
+    public function test_everything_the_sign_in_page_calls_stays_open(): void
+    {
+        BillingStandingService::suspend($this->child, null, 'manual');
+        $this->testTenantId = $this->child;
+        TenantContext::setById($this->child);
+
+        $calls = [
+            ['GET', '/csrf-token'],
+            ['GET', '/v2/csrf-token'],
+            ['GET', '/auth/csrf-token'],
+            ['GET', '/v2/auth/sso/providers?tenant_id=' . $this->child],
+            ['GET', '/v2/auth/oauth/enabled-providers'],
+            ['POST', '/v2/auth/2fa/verify'],
+            ['POST', '/totp/verify'],
+            ['POST', '/webauthn/auth-challenge'],
+            ['POST', '/auth/forgot-password'],
+        ];
+
+        foreach ($calls as [$method, $uri]) {
+            $response = $method === 'GET' ? $this->apiGet($uri) : $this->apiPost($uri, []);
+
+            $this->assertNotSame(
+                CheckBillingLock::CODE,
+                $response->json('code'),
+                "{$method} {$uri} is part of signing in and must stay open for a paused community"
+            );
+        }
+    }
+
+    public function test_signing_up_to_a_paused_community_is_closed(): void
+    {
+        BillingStandingService::suspend($this->child, null, 'manual');
+        $this->testTenantId = $this->child;
+        TenantContext::setById($this->child);
+
+        $response = $this->apiPost('/v2/auth/register', [
+            'email' => 'newcomer@example.org',
+            'password' => 'not-a-real-password-1A!',
+        ]);
+
+        $response->assertStatus(403);
+        $response->assertJsonPath('code', CheckBillingLock::CODE);
+    }
+
     public function test_who_am_i_write_is_closed(): void
     {
         BillingStandingService::suspend($this->child, null, 'manual');
