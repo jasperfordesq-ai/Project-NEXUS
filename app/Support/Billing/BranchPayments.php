@@ -54,9 +54,14 @@ final class BranchPayments
             return self::NOT_IN_REACH;
         }
 
+        // Decided from where the community sits as well as from its record:
+        // anything directly under the platform's own community pays the
+        // platform whatever a stored value says, so a wrong or changed
+        // `payer` can never hand it to a manager.
+        $parentId = DB::table('tenants')->where('id', $tenantId)->value('parent_id');
         $standing = BillingStandingService::get($tenantId);
 
-        if ($standing['payer'] !== 'parent') {
+        if ($parentId === null || (int) $parentId <= 1 || $standing['payer'] !== 'parent') {
             return self::PAYS_PLATFORM;
         }
 
@@ -107,6 +112,13 @@ final class BranchPayments
                 }
             }
 
+            // The note against a pause and the reason for an exemption are
+            // whoever wrote them's own words — often the platform team's, and
+            // for a manager of the platform community they would cover every
+            // community that pays the platform. The page needs neither.
+            $pausedFromAbove = $standing['locked'] && $standing['locked_by_tenant_id'] !== $id;
+            unset($standing['suspension_note'], $standing['exempt_reason']);
+
             $rows[] = [
                 'id' => $id,
                 'name' => $tenant->name,
@@ -117,7 +129,7 @@ final class BranchPayments
                 'days_late' => $daysLate,
                 'can_act' => $refusal === null,
                 'cannot_act_reason' => $refusal,
-                'paused_from_above' => $standing['locked'] && $standing['locked_by_tenant_id'] !== $id,
+                'paused_from_above' => $pausedFromAbove,
             ];
         }
 

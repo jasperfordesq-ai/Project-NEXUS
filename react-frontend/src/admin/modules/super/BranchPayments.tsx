@@ -32,6 +32,10 @@ import { api } from '@/lib/api';
 import { formatDate } from '@/lib/helpers';
 import { PageHeader } from '../../components/PageHeader';
 
+/**
+ * As the Branch payments list sends it: without the note against a pause and
+ * the reason for an exemption, which are not a parent's manager's to read.
+ */
 interface Standing {
   tenant_id: number;
   payer: 'platform_card' | 'platform_invoice' | 'parent' | 'not_billed';
@@ -39,9 +43,7 @@ interface Standing {
   paid_until: string | null;
   suspended_at: string | null;
   suspension_source: 'auto' | 'manual' | null;
-  suspension_note: string | null;
   exempt: boolean;
-  exempt_reason: string | null;
   locked: boolean;
   locked_by_tenant_id: number | null;
 }

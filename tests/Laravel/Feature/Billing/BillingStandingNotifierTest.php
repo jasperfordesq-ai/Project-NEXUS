@@ -149,6 +149,32 @@ final class BillingStandingNotifierTest extends TestCase
         $this->assertSame(0, BillingStandingNotifier::paused($this->child));
     }
 
+    /**
+     * Found by the Stage 2 review (20 Nov 2026): restoring a community's own
+     * pause while a community above it is still paused sent its admins "your
+     * community is open again" — and its members still saw the paused page.
+     */
+    public function test_nobody_is_told_it_is_open_again_while_a_community_above_is_still_paused(): void
+    {
+        $admin = $this->person($this->child, ['role' => 'admin']);
+        BillingStandingService::suspend($this->hub, null, 'manual');
+        BillingStandingService::suspend($this->child, null, 'manual');
+
+        $this->testTenantId = $this->hub;
+        $manager = User::factory()->forTenant($this->hub)->create([
+            'status' => 'active', 'is_approved' => true, 'role' => 'admin', 'is_tenant_super_admin' => true,
+        ]);
+        Sanctum::actingAs($manager, ['*']);
+        TenantContext::setById($this->hub);
+        SuperPanelAccess::reset();
+
+        $this->apiPost("/v2/admin/super/branch-payments/{$this->child}/restore", [])->assertStatus(200);
+
+        $this->assertNull(BillingStandingService::get($this->child)['suspended_at'], 'Its own pause is lifted.');
+        $this->assertTrue(BillingLock::isLocked($this->child), 'It is still closed, because the hub is.');
+        $this->assertCount(0, $this->mailTo($admin), 'Nobody is told it is open while it is not.');
+    }
+
     public function test_pausing_through_the_parents_page_tells_the_childs_admins_once(): void
     {
         $admin = $this->person($this->child, ['role' => 'admin']);

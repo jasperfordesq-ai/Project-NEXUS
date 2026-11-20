@@ -304,6 +304,93 @@ final class BranchPaymentsEndpointsTest extends TestCase
         $this->assertNull($response->json('data.standing.paid_until'));
     }
 
+    // ── Found by the Stage 2 review (20 Nov 2026) ───────────────────────────
+
+    public function test_a_request_that_does_not_say_paid_until_is_refused_and_clears_nothing(): void
+    {
+        $this->asManagerOf($this->hub);
+        BillingStandingService::setPaidUntil($this->child, '2027-01-31', null);
+        $before = count($this->audit($this->child));
+
+        // Only an explicit null clears the date. An empty body is a mistake.
+        $response = $this->apiPost("/v2/admin/super/branch-payments/{$this->child}/paid-until", ['note' => 'oops']);
+
+        $response->assertStatus(422);
+        $this->assertStringContainsString('PAID_UNTIL_INVALID', (string) $response->getContent());
+        $this->assertSame('2027-01-31', BillingStandingService::get($this->child)['paid_until']);
+        $this->assertCount($before, $this->audit($this->child));
+    }
+
+    public function test_the_list_does_not_show_a_manager_what_the_platform_team_wrote(): void
+    {
+        BillingStandingService::suspend($this->child, 1, 'manual', 'PRIVATE-PLATFORM-NOTE about this community');
+        BillingStandingService::setExempt($this->sibling, true, 1, 'PRIVATE-EXEMPT-REASON council contract');
+        $this->asManagerOf($this->hub);
+
+        $response = $this->apiGet('/v2/admin/super/branch-payments');
+        $response->assertStatus(200);
+
+        $this->assertStringNotContainsString('PRIVATE-PLATFORM-NOTE', (string) $response->getContent());
+        $this->assertStringNotContainsString('PRIVATE-EXEMPT-REASON', (string) $response->getContent());
+
+        foreach ($response->json('data') as $row) {
+            $this->assertArrayNotHasKey('suspension_note', $row['standing']);
+            $this->assertArrayNotHasKey('exempt_reason', $row['standing']);
+        }
+
+        // What the page needs is still there.
+        $paused = collect($response->json('data'))->firstWhere('id', $this->child);
+        $this->assertNotNull($paused['standing']['suspended_at']);
+        $this->assertTrue(collect($response->json('data'))->firstWhere('id', $this->sibling)['standing']['exempt']);
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('writes')]
+    public function test_a_community_directly_under_the_platform_is_refused_even_if_its_record_says_it_pays_a_parent(string $action): void
+    {
+        // Belt and braces: the rule must not rest on a stored value alone.
+        DB::table('tenant_billing_standing')->insert([
+            'tenant_id' => $this->hub, 'payer' => 'parent', 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        BillingLock::flush();
+        DB::table('tenants')->where('id', 1)->update(['allows_subtenants' => 1, 'path' => '/1/']);
+        $this->asManagerOf(1);
+
+        $response = $this->apiPost("/v2/admin/super/branch-payments/{$this->hub}/{$action}", ['paid_until' => '2027-01-31']);
+
+        $response->assertStatus(422);
+        $this->assertStringContainsString('PAYS_PLATFORM', (string) $response->getContent());
+        $this->assertFalse(BillingLock::isLocked($this->hub));
+        $this->assertNull(BillingStandingService::get($this->hub)['paid_until']);
+    }
+
+    public function test_out_of_reach_and_does_not_exist_are_answered_identically(): void
+    {
+        $this->asManagerOf($this->child);
+
+        $outOfReach = $this->apiPost("/v2/admin/super/branch-payments/{$this->sibling}/suspend", []);
+        $missing = $this->apiPost('/v2/admin/super/branch-payments/999999991/suspend', []);
+
+        $this->assertSame(403, $outOfReach->getStatusCode());
+        $this->assertSame($outOfReach->getStatusCode(), $missing->getStatusCode());
+        $this->assertSame($outOfReach->json('errors'), $missing->json('errors'));
+    }
+
+    public function test_a_global_super_admin_who_is_not_on_the_platform_team_has_a_managers_powers_and_no_more(): void
+    {
+        $this->signInTo($this->hub, ['role' => 'super_admin', 'is_super_admin' => true]);
+
+        // The door opens: a community that pays its parent.
+        $this->apiPost("/v2/admin/super/branch-payments/{$this->child}/suspend", [])->assertStatus(200);
+        $this->assertTrue(BillingLock::isLocked($this->child));
+        $this->apiPost("/v2/admin/super/branch-payments/{$this->child}/restore", [])->assertStatus(200);
+
+        // And stays shut: a community that pays the platform is the platform team's.
+        $refused = $this->apiPost("/v2/admin/super/branch-payments/{$this->other}/suspend", []);
+        $refused->assertStatus(422);
+        $this->assertStringContainsString('PAYS_PLATFORM', (string) $refused->getContent());
+        $this->assertFalse(BillingLock::isLocked($this->other));
+    }
+
     /** @return array<string, array{0: array<string, mixed>}> */
     public static function notManagers(): array
     {

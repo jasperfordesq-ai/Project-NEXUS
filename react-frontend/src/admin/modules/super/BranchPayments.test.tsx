@@ -117,9 +117,7 @@ const makeStanding = (overrides = {}) => ({
   paid_until: null,
   suspended_at: null,
   suspension_source: null,
-  suspension_note: null,
   exempt: false,
-  exempt_reason: null,
   locked: false,
   locked_by_tenant_id: null,
   ...overrides,
@@ -270,7 +268,7 @@ describe('BranchPayments', () => {
 
   it('says why and offers nothing on an exempt community', async () => {
     await renderWith([
-      makeRow({ can_act: false, cannot_act_reason: 'exempt', standing: makeStanding({ exempt: true, exempt_reason: 'Council contract' }) }),
+      makeRow({ can_act: false, cannot_act_reason: 'exempt', standing: makeStanding({ exempt: true }) }),
     ]);
 
     expect(screen.getByText('Exempt. Only the platform team can change this.')).toBeInTheDocument();
