@@ -8,7 +8,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Core\TenantContext;
 use App\I18n\LocaleContext;
+use App\Services\BillingStandingService;
 use App\Services\StripeSubscriptionService;
+use App\Support\Billing\BillingLock;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -34,6 +36,57 @@ class AdminBillingController extends BaseApiController
         $subscription = StripeSubscriptionService::getSubscriptionDetails($tenantId);
 
         return $this->respondWithData($subscription);
+    }
+
+    /**
+     * GET /v2/admin/billing/standing
+     *
+     * Tells a community's own admins whether it is paused for non-payment,
+     * since when, and who it pays. The public bootstrap carries only the
+     * fact; this is the "why".
+     *
+     * Deliberately narrow: never the note written against the suspension, and
+     * nothing about another community beyond the name of the direct parent a
+     * community pays. When the lock comes from a community above, nobody is
+     * named.
+     */
+    public function getStanding(): JsonResponse
+    {
+        $this->requireAdmin();
+        $tenantId = (int) TenantContext::getId();
+
+        $reason = BillingLock::reasonFor($tenantId);
+        if ($reason === null) {
+            return $this->respondWithData([
+                'paused' => false,
+                'own' => null,
+                'since' => null,
+                'payee' => null,
+                'payee_name' => null,
+            ]);
+        }
+
+        $payee = null;
+        $payeeName = null;
+
+        if ($reason['own']) {
+            $payee = BillingStandingService::get($tenantId)['payer'] === 'parent' ? 'parent' : 'platform';
+
+            if ($payee === 'parent') {
+                $parentId = DB::table('tenants')->where('id', $tenantId)->value('parent_id');
+                $payeeName = $parentId !== null
+                    ? DB::table('tenants')->where('id', (int) $parentId)->value('name')
+                    : null;
+            }
+        }
+
+        return $this->respondWithData([
+            'paused' => true,
+            'own' => $reason['own'],
+            'since' => $reason['suspended_at'],
+            'payee' => $payee,
+            'payee_name' => $payeeName,
+        ]);
     }
 
     /**

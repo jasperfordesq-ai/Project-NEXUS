@@ -3128,6 +3128,8 @@ Route::post('/v2/admin/billing/checkout', [\App\Http\Controllers\Api\AdminBillin
 Route::post('/v2/admin/billing/portal', [\App\Http\Controllers\Api\AdminBillingController::class, 'createPortalSession']);
 Route::get('/v2/admin/billing/invoices', [\App\Http\Controllers\Api\AdminBillingController::class, 'getInvoices']);
 Route::post('/v2/admin/billing/upgrade-request', [\App\Http\Controllers\Api\AdminBillingController::class, 'requestUpgrade']);
+// Whether this community is paused for non-payment, and who it pays. Own community only.
+Route::get('/v2/admin/billing/standing', [\App\Http\Controllers\Api\AdminBillingController::class, 'getStanding']);
 Route::get('/v2/admin/tools/redirects', [\App\Http\Controllers\Api\AdminToolsController::class, 'getRedirects']);
 Route::post('/v2/admin/tools/redirects', [\App\Http\Controllers\Api\AdminToolsController::class, 'createRedirect']);
 Route::delete('/v2/admin/tools/redirects/{id}', [\App\Http\Controllers\Api\AdminToolsController::class, 'deleteRedirect']);

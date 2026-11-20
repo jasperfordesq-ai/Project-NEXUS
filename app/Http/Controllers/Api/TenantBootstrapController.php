@@ -19,6 +19,7 @@ use App\Core\TenantContext;
 use App\Helpers\UrlHelper;
 use App\Services\BrokerControlConfigService;
 use App\Services\AuthenticationConfigurationService;
+use App\Support\Billing\BillingLock;
 use App\Support\Wallet\OpeningBalance;
 
 /**
@@ -89,12 +90,12 @@ class TenantBootstrapController extends BaseApiController
             // Try cache first
             $cached = $this->redisCache->get(self::CACHE_KEY, $tenantId);
             if ($cached !== null) {
-                return $this->withPublicCache($this->respondWithData($cached), self::CACHE_TTL, 300);
+                return $this->withPublicCache($this->respondWithData($this->withBillingFlag($cached, (int) $tenantId)), self::CACHE_TTL, 300);
             }
 
             $data = $this->buildBootstrapData($slugTenant);
             $this->redisCache->set(self::CACHE_KEY, $data, self::CACHE_TTL, $tenantId);
-            return $this->withPublicCache($this->respondWithData($data), self::CACHE_TTL, 300);
+            return $this->withPublicCache($this->respondWithData($this->withBillingFlag($data, (int) $tenantId)), self::CACHE_TTL, 300);
         }
 
         // Host-based resolution takes priority — TenantContext was resolved from
@@ -150,12 +151,12 @@ class TenantBootstrapController extends BaseApiController
 
                         $cached = $this->redisCache->get(self::CACHE_KEY, $tenantId);
                         if ($cached !== null) {
-                            return $this->withPublicCache($this->respondWithData($cached), self::CACHE_TTL, 300);
+                            return $this->withPublicCache($this->respondWithData($this->withBillingFlag($cached, (int) $tenantId)), self::CACHE_TTL, 300);
                         }
 
                         $data = $this->buildBootstrapData($originTenant);
                         $this->redisCache->set(self::CACHE_KEY, $data, self::CACHE_TTL, $tenantId);
-                        return $this->withPublicCache($this->respondWithData($data), self::CACHE_TTL, 300);
+                        return $this->withPublicCache($this->respondWithData($this->withBillingFlag($data, (int) $tenantId)), self::CACHE_TTL, 300);
                     }
                 }
             }
@@ -163,7 +164,7 @@ class TenantBootstrapController extends BaseApiController
 
         $cached = $this->redisCache->get(self::CACHE_KEY, $tenantId);
         if ($cached !== null) {
-            return $this->withPublicCache($this->respondWithData($cached), self::CACHE_TTL, 300);
+            return $this->withPublicCache($this->respondWithData($this->withBillingFlag($cached, (int) $tenantId)), self::CACHE_TTL, 300);
         }
 
         $tenant = TenantContext::get();
@@ -181,7 +182,7 @@ class TenantBootstrapController extends BaseApiController
         $data = $this->buildBootstrapData($tenant);
         $this->redisCache->set(self::CACHE_KEY, $data, self::CACHE_TTL, $tenantId);
 
-        return $this->withPublicCache($this->respondWithData($data), self::CACHE_TTL, 300);
+        return $this->withPublicCache($this->respondWithData($this->withBillingFlag($data, (int) $tenantId)), self::CACHE_TTL, 300);
     }
 
     /**
@@ -397,6 +398,28 @@ class TenantBootstrapController extends BaseApiController
     // ========================================================================
     // Private helpers — ported from legacy TenantBootstrapController
     // ========================================================================
+
+    /**
+     * Add the "paused for non-payment" flag to a bootstrap payload.
+     *
+     * Added AFTER the cached payload is read, on every return of bootstrap(),
+     * so the Redis copy never holds it and a pause or a restore needs no
+     * bootstrap cache clearing. The response is still cached publicly (see
+     * withPublicCache), so the website can take up to CACHE_TTL to show the
+     * paused page; the API itself closes within BillingLock::CACHE_TTL.
+     *
+     * Only the fact is public. Why, and since when, is for the community's
+     * admins: GET /v2/admin/billing/standing.
+     *
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
+    private function withBillingFlag(array $data, int $tenantId): array
+    {
+        $data['billing_paused'] = BillingLock::isLocked($tenantId);
+
+        return $data;
+    }
 
     /**
      * Build bootstrap data from tenant record.
