@@ -1144,6 +1144,7 @@ return [
     'branch_payments_exempt' => 'Ta społeczność jest zwolniona. Tylko zespół platformy może to zmienić.',
     'branch_payments_paused_from_above' => 'Ta społeczność jest wstrzymana, ponieważ społeczność nadrzędna jest wstrzymana. Można ją przywrócić tylko tam.',
     'billing_standing_paid_until_invalid' => 'Wpisz datę w formacie rok-miesiąc-dzień, na przykład 2027-01-31.',
+    'billing_setting_invalid' => 'Jedno z ustawień jest nieprawidłowe, więc nic nie zostało zapisane. Sprawdź, czy każda liczba mieści się w dozwolonym zakresie i czy wstrzymanie następuje po ostatnim ostrzeżeniu.',
     'tenant_inactive' => 'Najemca jest nieaktywny',
     'ideation_feature_disabled' => 'Moduł Wyzwania Ideacji nie jest włączony dla tej społeczności',
     'job_vacancies_feature_disabled' => 'Moduł Oferty pracy nie jest włączony dla tej społeczności',

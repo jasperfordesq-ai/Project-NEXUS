@@ -71,6 +71,13 @@ final class AdminSuperControllerPlatformTeamLockTest extends PlatformTeamLockTes
             'pause a community' => ['POST', '/v2/admin/super/billing/standing/suspend', 'refusal-only'],
             'restore a community' => ['POST', '/v2/admin/super/billing/standing/restore', 'refusal-only'],
             'exempt a community' => ['POST', '/v2/admin/super/billing/standing/exempt', 'refusal-only'],
+            // The daily check's controls (Stage 3c). Saving settings and
+            // setting a date are refusal-only: their success path changes
+            // what every community is told, or one community's standing.
+            'daily check settings' => ['GET', '/v2/admin/super/billing/settings'],
+            'save daily check settings' => ['PUT', '/v2/admin/super/billing/settings', 'refusal-only'],
+            'what would happen today' => ['GET', '/v2/admin/super/billing/standing/preview'],
+            'set a paid-until date' => ['POST', '/v2/admin/super/billing/standing/paid-until', 'refusal-only'],
         ];
     }
 

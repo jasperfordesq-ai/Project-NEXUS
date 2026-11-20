@@ -47,8 +47,8 @@ final class BillingStandingNotifier
 
     /**
      * The community has been paused. `$automatic` (the daily check paused it)
-     * also tells whoever the community pays; a person who paused it by hand
-     * already knows.
+     * also tells whoever the community pays and the platform team; a person
+     * who paused it by hand already knows.
      *
      * @param array<string, int|string|null> $facts paid_until, days_late (non-payment); over_limit_since (over the limit)
      * @return int how many people were mailed
@@ -79,7 +79,30 @@ final class BillingStandingNotifier
                 ? [self::KEY . 'payee_paused_body_over_limit', ['community' => $about['name'], 'date' => (string) ($facts['over_limit_since'] ?? '')]]
                 : [self::KEY . 'payee_paused_body', ['community' => $about['name'], 'date' => (string) ($facts['paid_until'] ?? ''), 'days' => (string) ($facts['days_late'] ?? '')]];
 
+            $payees = self::payees($about);
             $sent += self::toPayees($tenantId, $about, $admins, self::KEY . 'paused_subject', self::KEY . 'payee_paused_title', [$payeeBody], 'warning');
+
+            // DESIGN §6.5: an automatic pause also reaches the platform team.
+            // For a community that pays the platform it already has; for one
+            // that pays its parent, the platform team is told too, and nobody
+            // already told as an admin or as the parent's manager is told twice.
+            if ($about['pays_parent']) {
+                $alreadyTold = $admins->pluck('id')->merge($payees->pluck('id'))
+                    ->map(static fn ($id): int => (int) $id)->all();
+                $team = self::platformTeam()
+                    ->reject(static fn ($person): bool => in_array((int) $person->id, $alreadyTold, true))
+                    ->values();
+
+                $sent += self::deliver(
+                    $team,
+                    $about['name'],
+                    self::KEY . 'paused_subject',
+                    self::KEY . 'payee_paused_title',
+                    [$payeeBody, [self::KEY . 'payee_note_platform', ['community' => $about['name']]]],
+                    'warning',
+                    '/platform-team/billing'
+                );
+            }
         }
 
         return $sent;
@@ -275,6 +298,37 @@ final class BillingStandingNotifier
     }
 
     /**
+     * Whoever the community pays: the active tenant super admins of its direct
+     * parent when it pays its parent, otherwise the platform team.
+     *
+     * @param array{id:int, name:string, parent_id:?int, pays_parent:bool, payee_name:?string} $about
+     */
+    private static function payees(array $about): Collection
+    {
+        if (!$about['pays_parent']) {
+            return self::platformTeam();
+        }
+
+        return DB::table('users')
+            ->where('status', 'active')
+            ->whereNotNull('email')
+            ->where('tenant_id', $about['parent_id'])
+            ->where('is_tenant_super_admin', 1)
+            ->get(['id', 'tenant_id', 'email', 'first_name', 'name', 'preferred_language']);
+    }
+
+    /** Active platform team members: `is_god` AND `is_super_admin`. */
+    private static function platformTeam(): Collection
+    {
+        return DB::table('users')
+            ->where('status', 'active')
+            ->whereNotNull('email')
+            ->where('is_god', 1)
+            ->where('is_super_admin', 1)
+            ->get(['id', 'tenant_id', 'email', 'first_name', 'name', 'preferred_language']);
+    }
+
+    /**
      * Mail whoever the community pays, leaving out anyone already told as one
      * of its admins.
      *
@@ -292,23 +346,16 @@ final class BillingStandingNotifier
         string $theme,
         array $subjectParams = []
     ): int {
-        $query = DB::table('users')
-            ->where('status', 'active')
-            ->whereNotNull('email');
-
         if ($about['pays_parent']) {
-            $query->where('tenant_id', $about['parent_id'])->where('is_tenant_super_admin', 1);
             $note = [self::KEY . 'payee_note_parent', ['community' => $about['name']]];
             $path = '/super-admin/branch-payments';
         } else {
-            $query->where('is_god', 1)->where('is_super_admin', 1);
             $note = [self::KEY . 'payee_note_platform', ['community' => $about['name']]];
             $path = '/platform-team/billing';
         }
 
         $alreadyTold = $admins->pluck('id')->map(static fn ($id): int => (int) $id)->all();
-        $payees = $query
-            ->get(['id', 'tenant_id', 'email', 'first_name', 'name', 'preferred_language'])
+        $payees = self::payees($about)
             ->reject(static fn ($person): bool => in_array((int) $person->id, $alreadyTold, true))
             ->values();
 

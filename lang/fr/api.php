@@ -1213,6 +1213,7 @@ return [
     'branch_payments_exempt' => 'Cette communauté est exemptée. Seule l’équipe de la plateforme peut changer cela.',
     'branch_payments_paused_from_above' => 'Cette communauté est en pause parce qu’une communauté dont elle dépend est en pause. Elle ne peut être rétablie que là.',
     'billing_standing_paid_until_invalid' => 'Saisissez la date sous la forme année-mois-jour, par exemple 2027-01-31.',
+    'billing_setting_invalid' => 'L’un des réglages n’est pas valide, donc rien n’a été enregistré. Vérifiez que chaque nombre est dans la plage autorisée et que la mise en pause vient après le dernier avertissement.',
     'tenant_inactive' => 'Le locataire est inactif',
     'ideation_feature_disabled' => 'Le module Défis d\'idéation n\'est pas activé pour cette communauté',
     'job_vacancies_feature_disabled' => 'Le module Offres d\'emploi n\'est pas activé pour cette communauté',

@@ -17,8 +17,10 @@ use App\Models\User;
 use App\Services\FederationAuditService;
 use App\Services\FederationFeatureService;
 use App\Services\FederationPartnershipService;
+use App\Services\BillingAutomationService;
 use App\Services\BillingStandingNotifier;
 use App\Services\BillingStandingService;
+use App\Support\Billing\BillingSettings;
 use App\Support\Billing\BranchPayments;
 use App\Services\SuperAdminAuditService;
 use App\Services\TenantBillingService;
@@ -3074,6 +3076,90 @@ class AdminSuperController extends BaseApiController
         $this->tellAdminsIfStandingChanged($tenantId, $wasClosed);
 
         return $this->respondWithData(['standing' => BillingStandingService::get($tenantId)]);
+    }
+
+    /**
+     * POST /api/v2/admin/super/billing/standing/paid-until
+     *
+     * The platform team records the date a community is paid up to, for any
+     * community (DESIGN §6.4), including one that pays its parent.
+     */
+    public function setCommunityPaidUntil(): JsonResponse
+    {
+        $userId = $this->requireGodPlatformAdmin();
+        $input = $this->getAllInput();
+        $tenantId = (int) ($input['tenant_id'] ?? 0);
+        if ($tenantId < 1) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.tenant_id_is_required'), 'tenant_id', 422);
+        }
+
+        // Only an explicit null clears the date. A request that does not say
+        // paid_until at all is a mistake, not an instruction to stop tracking.
+        $date = $input['paid_until'] ?? null;
+        if (!array_key_exists('paid_until', $input) || ($date !== null && !is_string($date))) {
+            return $this->respondWithError('PAID_UNTIL_INVALID', __('api.billing_standing_paid_until_invalid'), 'paid_until', 422);
+        }
+
+        $wasClosed = $this->communityIsClosed($tenantId);
+        try {
+            BillingStandingService::setPaidUntil($tenantId, $date, $userId, $this->standingNote($input['note'] ?? null));
+        } catch (\DomainException $e) {
+            return $this->standingRefusal($e);
+        }
+
+        $this->tellAdminsIfStandingChanged($tenantId, $wasClosed);
+
+        return $this->respondWithData(['standing' => BillingStandingService::get($tenantId)]);
+    }
+
+    // =====================================================================
+    // THE DAILY CHECK — its settings and what it would do today
+    // =====================================================================
+
+    /** GET /api/v2/admin/super/billing/settings */
+    public function getBillingAutomationSettings(): JsonResponse
+    {
+        $this->requireGodPlatformAdmin();
+
+        return $this->respondWithData(BillingSettings::all());
+    }
+
+    /**
+     * PUT /api/v2/admin/super/billing/settings
+     *
+     * Any subset of the settings. All or nothing: one bad key or value and
+     * none is saved.
+     */
+    public function updateBillingAutomationSettings(): JsonResponse
+    {
+        $userId = $this->requireGodPlatformAdmin();
+        $input = $this->getAllInput();
+
+        try {
+            BillingSettings::setMany($input, $userId);
+        } catch (\DomainException $e) {
+            if ($e->getMessage() !== 'billing_setting_invalid') {
+                throw $e;
+            }
+
+            return $this->respondWithError('BILLING_SETTING_INVALID', __('api.billing_setting_invalid'), null, 422);
+        }
+
+        return $this->respondWithData(BillingSettings::all());
+    }
+
+    /**
+     * GET /api/v2/admin/super/billing/standing/preview
+     *
+     * What the daily check would do today. Never acts and never sends, and
+     * answers whether the master switch is on or off: reading this list is
+     * how the switch is meant to be turned on.
+     */
+    public function previewBillingAutomation(): JsonResponse
+    {
+        $this->requireGodPlatformAdmin();
+
+        return $this->respondWithData(BillingAutomationService::preview());
     }
 
     // =====================================================================

@@ -1144,6 +1144,7 @@ return [
     'branch_payments_exempt' => 'Deze gemeenschap is vrijgesteld. Alleen het platformteam kan dat wijzigen.',
     'branch_payments_paused_from_above' => 'Deze gemeenschap is gepauzeerd omdat een bovenliggende gemeenschap is gepauzeerd. Ze kan alleen daar worden hersteld.',
     'billing_standing_paid_until_invalid' => 'Voer de datum in als jaar-maand-dag, bijvoorbeeld 2027-01-31.',
+    'billing_setting_invalid' => 'Een van de instellingen is niet geldig, dus er is niets opgeslagen. Controleer of elk getal binnen het toegestane bereik ligt en of de pauze na de laatste waarschuwing komt.',
     'tenant_inactive' => 'Huurder is inactief',
     'ideation_feature_disabled' => 'De module Idee-uitdagingen is niet ingeschakeld voor deze community',
     'job_vacancies_feature_disabled' => 'De module Vacatures is niet ingeschakeld voor deze community',

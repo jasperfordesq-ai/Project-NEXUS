@@ -1144,6 +1144,7 @@ return [
     'branch_payments_exempt' => 'このコミュニティは対象外です。変更できるのはプラットフォームチームだけです。',
     'branch_payments_paused_from_above' => '上位のコミュニティが一時停止中のため、このコミュニティも一時停止中です。再開は上位のコミュニティでのみ行えます。',
     'billing_standing_paid_until_invalid' => '日付は「年-月-日」の形式で入力してください（例：2027-01-31）。',
+    'billing_setting_invalid' => '設定のいずれかが無効なため、何も保存されませんでした。各数値が許容範囲内であること、一時停止が最終警告より後になっていることを確認してください。',
     'tenant_inactive' => 'テナントは非アクティブです',
     'ideation_feature_disabled' => 'このコミュニティではアイデア チャレンジ モジュールが有効になっていません',
     'job_vacancies_feature_disabled' => 'このコミュニティでは求人モジュールが有効になっていません',

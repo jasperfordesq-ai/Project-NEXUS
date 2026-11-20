@@ -74,11 +74,90 @@ describe('BillingPausedBanner', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('paused_banner.own_platform');
   });
 
-  it('asks nothing and renders nothing when the community is not paused', () => {
+  // ── An open community: warnings before anything is paused (Stage 3c) ─────
+
+  const open = (over: Record<string, unknown> = {}) => ({
+    success: true,
+    data: {
+      paused: false, own: null, since: null, payee: null, payee_name: null, payer: 'platform_invoice',
+      overdue_days: null, member_limit: null, ...over,
+    },
+  });
+
+  const notPaused = () => {
     tenant.current = { id: 2, name: 'Riverside', slug: 'riverside', billing_paused: false };
+  };
+
+  it('renders nothing for an open community with nothing to say, after asking once', async () => {
+    notPaused();
+    apiGet.mockResolvedValue(open());
     const { container } = render(<BillingPausedBanner />);
 
-    expect(apiGet).not.toHaveBeenCalled();
+    await waitFor(() => expect(apiGet).toHaveBeenCalledWith('/v2/admin/billing/standing'));
+    expect(apiGet).toHaveBeenCalledTimes(1);
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('warns an open community that its payment is overdue', async () => {
+    notPaused();
+    apiGet.mockResolvedValue(open({ overdue_days: 10 }));
+    render(<BillingPausedBanner />);
+
+    const line = await screen.findByRole('status');
+    expect(line).toHaveTextContent('paused_banner.overdue');
+    expect(line).toHaveTextContent('"days":"10"');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['approaching', 'paused_banner.limit_approaching'],
+    ['reached', 'paused_banner.limit_reached'],
+    ['over', 'paused_banner.limit_over'],
+  ])('warns an open community whose member limit is %s', async (stage, key) => {
+    notPaused();
+    apiGet.mockResolvedValue(open({ member_limit: { used: 85, max: 100, percent: 85, stage } }));
+    render(<BillingPausedBanner />);
+
+    const line = await screen.findByRole('status');
+    expect(line).toHaveTextContent(key);
+    expect(line).toHaveTextContent('"used":"85"');
+    expect(line).toHaveTextContent('"max":"100"');
+  });
+
+  it('says nothing about a member limit below the warning', async () => {
+    notPaused();
+    apiGet.mockResolvedValue(open({ member_limit: { used: 10, max: 100, percent: 10, stage: null } }));
+    const { container } = render(<BillingPausedBanner />);
+
+    await waitFor(() => expect(apiGet).toHaveBeenCalled());
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('shows one line only: an overdue payment before the member limit', async () => {
+    notPaused();
+    apiGet.mockResolvedValue(open({ overdue_days: 3, member_limit: { used: 120, max: 100, percent: 120, stage: 'over' } }));
+    render(<BillingPausedBanner />);
+
+    const line = await screen.findByRole('status');
+    expect(line).toHaveTextContent('paused_banner.overdue');
+    expect(line).not.toHaveTextContent('limit_over');
+  });
+
+  it('is silent when the request fails for an open community', async () => {
+    notPaused();
+    apiGet.mockResolvedValue({ success: false, error: 'nope', code: 'HTTP_500' });
+    const { container } = render(<BillingPausedBanner />);
+
+    await waitFor(() => expect(apiGet).toHaveBeenCalled());
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('is silent when the request throws for an open community', async () => {
+    notPaused();
+    apiGet.mockRejectedValue(new Error('offline'));
+    const { container } = render(<BillingPausedBanner />);
+
+    await waitFor(() => expect(apiGet).toHaveBeenCalled());
     expect(container).toBeEmptyDOMElement();
   });
 

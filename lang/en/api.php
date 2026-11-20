@@ -2175,6 +2175,7 @@ return [
     'branch_payments_exempt' => 'This community is exempt. Only the platform team can change that.',
     'branch_payments_paused_from_above' => 'This community is paused because a community above it is paused. It can only be restored there.',
     'billing_standing_paid_until_invalid' => 'Enter the date as year-month-day, for example 2027-01-31.',
+    'billing_setting_invalid'              => 'One of the settings is not valid, so nothing was saved. Check that each number is in its allowed range and that the pause comes after the final warning.',
     'tenant_inactive'                      => 'Tenant is inactive',
 
     // Feature gates

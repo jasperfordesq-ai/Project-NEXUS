@@ -8,6 +8,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Core\TenantContext;
 use App\I18n\LocaleContext;
+use App\Services\BillingAutomationService;
 use App\Services\BillingStandingService;
 use App\Services\StripeSubscriptionService;
 use App\Support\Billing\BillingLock;
@@ -49,6 +50,11 @@ class AdminBillingController extends BaseApiController
      * nothing about another community beyond the name of the direct parent a
      * community pays. When the lock comes from a community above, nobody is
      * named.
+     *
+     * Also, paused or not: `overdue_days` (payment late, null if not) and
+     * `member_limit` (`{used, max, percent, stage}`, null without a standard
+     * package with a limit), so an open community is warned before anything
+     * happens to it.
      */
     public function getStanding(): JsonResponse
     {
@@ -60,6 +66,13 @@ class AdminBillingController extends BaseApiController
         // anything to do there (DESIGN §6.6).
         $payer = BillingStandingService::get($tenantId)['payer'];
 
+        // The warnings before any pause (Stage 3c), measured the way the daily
+        // check measures them, so the banner and the check's emails agree.
+        $warnings = [
+            'overdue_days' => BillingAutomationService::overdueDays($tenantId),
+            'member_limit' => BillingAutomationService::memberLimitState($tenantId),
+        ];
+
         $reason = BillingLock::reasonFor($tenantId);
         if ($reason === null) {
             return $this->respondWithData([
@@ -69,7 +82,7 @@ class AdminBillingController extends BaseApiController
                 'payee' => null,
                 'payee_name' => null,
                 'payer' => $payer,
-            ]);
+            ] + $warnings);
         }
 
         $payee = null;
@@ -93,7 +106,7 @@ class AdminBillingController extends BaseApiController
             'payee' => $payee,
             'payee_name' => $payeeName,
             'payer' => $payer,
-        ]);
+        ] + $warnings);
     }
 
     /**

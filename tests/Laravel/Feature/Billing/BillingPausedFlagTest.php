@@ -171,7 +171,12 @@ final class BillingPausedFlagTest extends TestCase
 
         $response->assertStatus(200);
         $this->assertSame(
-            ['paused' => false, 'own' => null, 'since' => null, 'payee' => null, 'payee_name' => null, 'payer' => 'parent'],
+            [
+                'paused' => false, 'own' => null, 'since' => null, 'payee' => null, 'payee_name' => null, 'payer' => 'parent',
+                // Stage 3c: the warnings an open community's admins see before
+                // anything is paused. Nothing to say here: no date, no package.
+                'overdue_days' => null, 'member_limit' => null,
+            ],
             $response->json('data')
         );
     }
@@ -258,7 +263,7 @@ final class BillingPausedFlagTest extends TestCase
 
         $response = $this->apiGet('/v2/admin/billing/standing');
 
-        $this->assertSame(['paused', 'own', 'since', 'payee', 'payee_name', 'payer'], array_keys($response->json('data')));
+        $this->assertSame(['paused', 'own', 'since', 'payee', 'payee_name', 'payer', 'overdue_days', 'member_limit'], array_keys($response->json('data')));
         $this->assertStringNotContainsString('private note', $response->getContent());
     }
 

@@ -3478,10 +3478,16 @@ Route::post('/v2/admin/super/billing/delegate/revoke', [\App\Http\Controllers\Ap
 Route::post('/v2/admin/super/billing/pause', [\App\Http\Controllers\Api\AdminSuperController::class, 'pauseTenantBilling']);
 Route::post('/v2/admin/super/billing/resume', [\App\Http\Controllers\Api\AdminSuperController::class, 'resumeTenantBilling']);
 Route::post('/v2/admin/super/billing/grace-period', [\App\Http\Controllers\Api\AdminSuperController::class, 'setBillingGracePeriod']);
-// Payment standing: pause a community for non-payment, restore it, exempt it. Platform team only.
+// Payment standing: pause a community for non-payment, restore it, exempt it, set
+// its paid-until date; the daily check's settings and its "what would happen
+// today" list. Platform team only.
 Route::post('/v2/admin/super/billing/standing/suspend', [\App\Http\Controllers\Api\AdminSuperController::class, 'suspendCommunityForBilling']);
 Route::post('/v2/admin/super/billing/standing/restore', [\App\Http\Controllers\Api\AdminSuperController::class, 'restoreCommunityForBilling']);
 Route::post('/v2/admin/super/billing/standing/exempt', [\App\Http\Controllers\Api\AdminSuperController::class, 'setCommunityBillingExemption']);
+Route::post('/v2/admin/super/billing/standing/paid-until', [\App\Http\Controllers\Api\AdminSuperController::class, 'setCommunityPaidUntil']);
+Route::get('/v2/admin/super/billing/standing/preview', [\App\Http\Controllers\Api\AdminSuperController::class, 'previewBillingAutomation']);
+Route::get('/v2/admin/super/billing/settings', [\App\Http\Controllers\Api\AdminSuperController::class, 'getBillingAutomationSettings']);
+Route::put('/v2/admin/super/billing/settings', [\App\Http\Controllers\Api\AdminSuperController::class, 'updateBillingAutomationSettings']);
 
 // AG44 — Tenant provisioning queue (review + approve).
 // Approval assigns a parent tenant anywhere in the tree, so platform-only —

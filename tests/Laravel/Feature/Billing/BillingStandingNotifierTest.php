@@ -214,6 +214,40 @@ final class BillingStandingNotifierTest extends TestCase
         return $all['billing_standing'];
     }
 
+    /**
+     * DESIGN §6.5: an AUTOMATIC pause tells the community's admins, whoever it
+     * pays, and the platform team. Until Stage 3c a community that pays its
+     * parent was paused without the platform team hearing of it.
+     */
+    public function test_an_automatic_pause_of_a_community_that_pays_its_parent_also_tells_the_platform_team(): void
+    {
+        $admin = $this->person($this->child, ['role' => 'admin']);
+        $manager = $this->person($this->hub, ['role' => 'admin', 'is_tenant_super_admin' => true]);
+        $team = $this->person($this->hub, ['role' => 'member', 'is_super_admin' => true, 'is_god' => true]);
+        // On the platform team AND the parent's manager: one mail, not two.
+        $both = $this->person($this->hub, ['role' => 'admin', 'is_tenant_super_admin' => true, 'is_super_admin' => true, 'is_god' => true]);
+        $member = $this->person($this->hub, ['role' => 'member']);
+
+        BillingStandingService::suspend($this->child, null, 'auto', null, 'non_payment');
+        BillingStandingNotifier::paused($this->child, true, ['paid_until' => '2027-01-31', 'days_late' => 14]);
+
+        foreach ([$admin, $manager, $team, $both] as $told) {
+            $this->assertCount(1, $this->mailTo($told), 'told once');
+        }
+        $this->assertCount(0, $this->mailTo($member));
+        $this->assertStringContainsString('Notice child', (string) $this->mailTo($team)[0]->subject);
+    }
+
+    public function test_a_pause_by_hand_does_not_tell_the_platform_team(): void
+    {
+        $team = $this->person($this->hub, ['role' => 'member', 'is_super_admin' => true, 'is_god' => true]);
+
+        BillingStandingService::suspend($this->child, null, 'manual');
+        BillingStandingNotifier::paused($this->child);
+
+        $this->assertCount(0, $this->mailTo($team));
+    }
+
     public function test_pausing_through_the_parents_page_tells_the_childs_admins_once(): void
     {
         $admin = $this->person($this->child, ['role' => 'admin']);

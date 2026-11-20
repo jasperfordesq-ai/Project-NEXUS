@@ -1213,6 +1213,7 @@ return [
     'branch_payments_exempt' => 'Tá an pobal seo díolmhaithe. Ní féidir ach le foireann an ardáin é sin a athrú.',
     'branch_payments_paused_from_above' => 'Tá an pobal seo ar sos toisc go bhfuil pobal os a chionn ar sos. Ní féidir é a athchóiriú ach ansin.',
     'billing_standing_paid_until_invalid' => 'Cuir an dáta isteach mar bhliain-mí-lá, mar shampla 2027-01-31.',
+    'billing_setting_invalid' => 'Níl ceann de na socruithe bailí, mar sin níor sábháladh aon rud. Seiceáil go bhfuil gach uimhir laistigh dá raon ceadaithe agus go dtagann an sos i ndiaidh an rabhaidh dheiridh.',
     'tenant_inactive' => 'Tá an tionónta neamhghníomhach',
     'ideation_feature_disabled' => 'Níl modúl Ideation Challenges cumasaithe don phobal seo',
     'job_vacancies_feature_disabled' => 'Níl an modúl Folúntais Poist cumasaithe don phobal seo',

@@ -146,6 +146,8 @@ const makePlanOnRow = (overrides = {}) => ({
   expires_at: null,
   effective_price: { monthly: 49, yearly: 490, has_custom: false, discount_pct: 0, nonprofit: false },
   assignment_status: 'active',
+  max_communities: null,
+  is_standard: false,
   ...overrides,
 });
 
@@ -159,7 +161,9 @@ const makeSnapshot = (overrides: Record<string, unknown> = {}) => ({
   own_user_count: 80,
   subtree_user_count: 80,
   current_plan: makePlanOnRow(),
-  suggested_plan: 'community',
+  active_member_count: 60,
+  usage_percent: 30,
+  suggested_plan: 'pro',
   over_limit: false,
   is_in_grace_period: false,
   grace_days_remaining: 0,
@@ -174,31 +178,50 @@ const makePlan = (overrides = {}) => ({
   max_users: 200,
   price_monthly: '49.00',
   price_yearly: '490.00',
+  is_active: 1,
+  is_standard: false,
   ...overrides,
 });
 
+const PLAN_LIST = [
+  makePlan(),
+  makePlan({ id: 11, name: 'Growth', slug: 'growth', max_users: 10000, is_standard: true }),
+  // The plan list also returns retired plans; they are never offered.
+  makePlan({ id: 12, name: 'Old Starter', slug: 'legacy-starter-3', is_active: 0 }),
+];
+
 const button = (label: string) =>
   screen.queryAllByRole('button').find((b) => b.textContent?.trim() === label);
+
+/** Every GET this screen makes, answered in the server's shape. */
+const serveGets = (rows: unknown[]) => {
+  mockApi.get.mockImplementation((url: string) => {
+    if (url.includes('/plans')) return Promise.resolve({ success: true, data: PLAN_LIST });
+    if (url === '/v2/admin/super/billing/settings') {
+      return Promise.resolve({
+        success: true,
+        data: {
+          automation_enabled: false, reminder_days_before: 7, final_warning_days_late: 7, suspend_days_late: 14,
+          limit_warning_percent: 80, over_limit_action: 'none', over_limit_grace_days: 30,
+        },
+      });
+    }
+    if (url === '/v2/admin/super/billing/standing/preview') return Promise.resolve({ success: true, data: [] });
+    return Promise.resolve({ success: true, data: rows });
+  });
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 describe('BillingControl', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    mockApi.get.mockImplementation((url: string) => {
-      if (url.includes('/plans')) {
-        return Promise.resolve({ success: true, data: [makePlan()] });
-      }
-      return Promise.resolve({ success: true, data: [makeSnapshot()] });
-    });
+    serveGets([makeSnapshot()]);
     mockApi.post.mockResolvedValue({ success: true, data: {} });
     mockApi.download.mockResolvedValue(undefined);
   });
 
   const renderWith = async (rows: unknown[]) => {
-    mockApi.get.mockImplementation((url: string) => {
-      if (url.includes('/plans')) return Promise.resolve({ success: true, data: [makePlan()] });
-      return Promise.resolve({ success: true, data: rows });
-    });
+    serveGets(rows);
     const { BillingControl } = await import('./BillingControl');
     render(<BillingControl />);
     await waitFor(() => expect(screen.queryAllByRole('row').length).toBeGreaterThan(1));
@@ -418,6 +441,120 @@ describe('BillingControl', () => {
     expect(button('Resume Billing')).toBeUndefined();
     expect(button('Set Grace Period')).toBeUndefined();
     expect(mockApi.post).not.toHaveBeenCalled();
+  });
+
+  // ── Members, packages and paid-until (Stage 3c) ───────────────────────────
+
+  const membersCell = (row: number): HTMLElement => {
+    const cell = screen.getAllByTestId('billing-members')[row];
+    if (!cell) throw new Error(`no members cell for row ${row}`);
+    return cell;
+  };
+
+  it('shows active members against the package limit', async () => {
+    await renderWith([makeSnapshot({ active_member_count: 60, usage_percent: 30 })]);
+
+    expect(membersCell(0)).toHaveTextContent('60 / 200 (30%)');
+    expect(membersCell(0).className).not.toMatch(/text-(warning|danger)/);
+    // The registered count stays in its own column.
+    expect(screen.getByText('80')).toBeInTheDocument();
+  });
+
+  it('colours the members from the warning percent, and as danger over the limit', async () => {
+    await renderWith([
+      makeSnapshot({ active_member_count: 170, usage_percent: 85 }),
+      makeSnapshot({ id: 6, name: 'Galway Timebank', active_member_count: 210, usage_percent: 105, over_limit: true, standing: makeStanding({ tenant_id: 6 }) }),
+    ]);
+
+    expect(membersCell(0)).toHaveTextContent('170 / 200 (85%)');
+    expect(membersCell(0).className).toMatch(/text-warning/);
+    expect(membersCell(1)).toHaveTextContent('210 / 200 (105%)');
+    expect(membersCell(1).className).toMatch(/text-danger/);
+  });
+
+  it('shows only the active count when there is no plan or no limit', async () => {
+    await renderWith([
+      makeSnapshot({ current_plan: null, active_member_count: 42, usage_percent: null }),
+      makeSnapshot({ id: 6, name: 'Galway Timebank', current_plan: makePlanOnRow({ max_users: null }), active_member_count: 43, usage_percent: null, standing: makeStanding({ tenant_id: 6 }) }),
+    ]);
+
+    expect(membersCell(0).textContent?.trim()).toBe('42');
+    expect(membersCell(1).textContent?.trim()).toBe('43');
+  });
+
+  it('suggests a better-fitting package by its name from the plan list', async () => {
+    await renderWith([
+      makeSnapshot({ suggested_plan: 'growth' }),
+      makeSnapshot({ id: 6, name: 'Galway Timebank', suggested_plan: 'pro', standing: makeStanding({ tenant_id: 6 }) }),
+    ]);
+
+    await waitFor(() => expect(screen.getByText('Suggested: Growth')).toBeInTheDocument());
+    expect(screen.getAllByText(/^Suggested:/)).toHaveLength(1);
+  });
+
+  it('shows the paid-until date, or that none is set', async () => {
+    await renderWith([
+      makeSnapshot({ standing: makeStanding({ paid_until: '2027-01-31' }) }),
+      makeSnapshot({ id: 6, name: 'Galway Timebank', standing: makeStanding({ tenant_id: 6 }) }),
+    ]);
+
+    expect(screen.getByText((text) => text.includes('2027'))).toBeInTheDocument();
+    expect(screen.getAllByText('No date set')).toHaveLength(1);
+  });
+
+  it('posts the community id and the date when setting paid-until', async () => {
+    const user = userEvent.setup();
+    await renderWith([makeSnapshot()]);
+
+    await user.click(button('Set paid-until date')!);
+    fireEvent.change(screen.getByLabelText('Paid up to and including'), { target: { value: '2027-01-31' } });
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => {
+      expect(mockApi.post).toHaveBeenCalledWith('/v2/admin/super/billing/standing/paid-until', { tenant_id: 5, paid_until: '2027-01-31' });
+    });
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('Paid-until date saved'));
+  });
+
+  it('opens on the date already recorded and sends null when it is emptied', async () => {
+    const user = userEvent.setup();
+    await renderWith([makeSnapshot({ standing: makeStanding({ paid_until: '2026-12-31' }) })]);
+
+    await user.click(button('Set paid-until date')!);
+    const field = screen.getByLabelText('Paid up to and including') as HTMLInputElement;
+    expect(field.value).toBe('2026-12-31');
+
+    fireEvent.change(field, { target: { value: '' } });
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => {
+      expect(mockApi.post).toHaveBeenCalledWith('/v2/admin/super/billing/standing/paid-until', { tenant_id: 5, paid_until: null });
+    });
+  });
+
+  it('shows the server’s refusal when a date is refused', async () => {
+    const user = userEvent.setup();
+    mockApi.post.mockResolvedValue({ success: false, error: 'Enter the date as year-month-day, for example 2027-01-31.' });
+    await renderWith([makeSnapshot()]);
+
+    await user.click(button('Set paid-until date')!);
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Enter the date as year-month-day, for example 2027-01-31.'));
+  });
+
+  it('shows the automatic checks card above the table', async () => {
+    await renderWith([makeSnapshot()]);
+
+    await waitFor(() => expect(screen.getByText('Automatic checks')).toBeInTheDocument());
+    expect(mockApi.get).toHaveBeenCalledWith('/v2/admin/super/billing/standing/preview');
+  });
+
+  it('offers only active plans to assign', async () => {
+    const { assignablePlans } = await import('./assignablePlans');
+
+    expect(assignablePlans(PLAN_LIST).map((p) => p.name)).toEqual(['Pro', 'Growth']);
+    expect(assignablePlans([makePlan({ is_active: true }), makePlan({ id: 9, is_active: false })]).map((p) => p.id)).toEqual([2]);
   });
 
   // ── Unchanged behaviour ───────────────────────────────────────────────────

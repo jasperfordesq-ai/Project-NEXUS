@@ -9,9 +9,11 @@ import Download from 'lucide-react/icons/download';
 import { usePageTitle } from '@/hooks';
 import { useAuth, useToast } from '@/contexts';
 import { api } from '@/lib/api';
-import { getFormattingLocale } from '@/lib/helpers';
+import { formatDate, getFormattingLocale } from '@/lib/helpers';
 import { PageHeader } from '../../components/PageHeader';
 import { BillingDevelopmentNotice } from './BillingDevelopmentNotice';
+import { BillingAutomationCard } from './BillingAutomationCard';
+import { assignablePlans } from './assignablePlans';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -68,6 +70,9 @@ interface CurrentPlan {
   effective_price: EffectivePrice;
   /** `expired` after a failed card payment; the plan is still shown beside it. */
   assignment_status: AssignmentStatus;
+  max_communities: number | null;
+  /** One of the seven standard packages (DESIGN §11), not a retired plan. */
+  is_standard: boolean;
 }
 
 type AssignmentStatus = 'active' | 'trial' | 'expired' | 'cancelled';
@@ -104,7 +109,12 @@ interface TenantSnapshot {
   own_user_count: number;
   subtree_user_count: number;
   current_plan: CurrentPlan | null;
-  suggested_plan: string;
+  /** Active accounts that signed in within 90 days, the whole branch. */
+  active_member_count: number;
+  /** Of the plan's member limit; null with no plan or no limit. */
+  usage_percent: number | null;
+  /** Slug of the smallest standard package that fits; null above the largest. */
+  suggested_plan: string | null;
   over_limit: boolean;
   is_in_grace_period: boolean;
   grace_days_remaining: number;
@@ -119,6 +129,8 @@ interface PlanItem {
   max_users: number | null;
   price_monthly: number | string | null;
   price_yearly: number | string | null;
+  /** 0/1 from the database; retired `legacy-…` plans are 0. */
+  is_active: number | boolean;
 }
 
 type StandingState = 'open' | 'paused' | 'paused_from_above' | 'exempt';
@@ -144,6 +156,27 @@ const formatUserCount = (row: TenantSnapshot): string => {
   }
   return String(row.own_user_count);
 };
+
+function formatCount(value: number): string {
+  return new Intl.NumberFormat(getFormattingLocale()).format(value);
+}
+
+/** `820 / 1,000 (82%)`, or just the active count when nothing limits it. */
+function formatMembers(row: TenantSnapshot): string {
+  const max = row.current_plan?.max_users ?? null;
+  if (max === null || row.usage_percent === null) {
+    return formatCount(row.active_member_count);
+  }
+  return `${formatCount(row.active_member_count)} / ${formatCount(max)} (${row.usage_percent}%)`;
+}
+
+/** The same thresholds the daily check uses: warning from its percent, danger over the limit. */
+function membersColour(row: TenantSnapshot, warningPercent: number): string {
+  if (row.usage_percent === null) return 'text-muted';
+  if (row.usage_percent > 100) return 'font-semibold text-danger';
+  if (row.usage_percent >= warningPercent) return 'font-semibold text-warning';
+  return 'text-muted';
+}
 
 /** Exempt wins: an exempt community is never paused, whatever is above it. */
 function standingState(row: TenantSnapshot): StandingState {
@@ -199,6 +232,13 @@ export function BillingControl() {
   const [standingText, setStandingText] = useState('');
   const [standingBusyId, setStandingBusyId] = useState<number | null>(null);
 
+  // ---- set paid-until dialog (local state, as on Branch payments) ----
+  const [paidUntilRow, setPaidUntilRow] = useState<TenantSnapshot | null>(null);
+  const [paidUntilText, setPaidUntilText] = useState('');
+
+  // The daily check's warning percent, from its settings card; 80 until known.
+  const [warningPercent, setWarningPercent] = useState(80);
+
   // ---------------------------------------------------------------------------
   // Data fetching
   // ---------------------------------------------------------------------------
@@ -229,6 +269,13 @@ export function BillingControl() {
     // failure is non-critical — plans list will be empty
     setPlansLoading(false);
   }, [plans.length]);
+
+  // Loaded up front too: the "Suggested" line names a package by the plan
+  // list's own name, not by translated text.
+  // fetchPlans skips a list already loaded, so this runs the request once.
+  useEffect(() => {
+    void fetchPlans();
+  }, [fetchPlans]);
 
   // ---------------------------------------------------------------------------
   // Assign plan handlers
@@ -323,6 +370,49 @@ export function BillingControl() {
   };
 
   // ---------------------------------------------------------------------------
+  // Paid-until date
+  // ---------------------------------------------------------------------------
+
+  const openPaidUntil = (row: TenantSnapshot) => {
+    setPaidUntilText(row.standing.paid_until ?? '');
+    setPaidUntilRow(row);
+  };
+
+  const closePaidUntil = () => {
+    setPaidUntilRow(null);
+    setPaidUntilText('');
+  };
+
+  const confirmPaidUntil = async () => {
+    if (!paidUntilRow) return;
+    const value = paidUntilText.trim();
+    const row = paidUntilRow;
+
+    setStandingBusyId(row.id);
+    // An emptied field sends null on purpose: that is "stop tracking a date".
+    const response = await api.post('/v2/admin/super/billing/standing/paid-until', {
+      tenant_id: row.id,
+      paid_until: value === '' ? null : value,
+    });
+    setStandingBusyId(null);
+
+    if (response.success) {
+      toast.success(t('control.done_paid_until'));
+      closePaidUntil();
+      void fetchSnapshot();
+      return;
+    }
+
+    toast.error(response.error || t('billing.standing_failed'));
+  };
+
+  /** The suggested package's own name, when it differs from the current plan. */
+  const suggestedPlanName = (row: TenantSnapshot): string | null => {
+    if (!row.suggested_plan || row.suggested_plan === row.current_plan?.slug) return null;
+    return plans.find((plan) => plan.slug === row.suggested_plan)?.name ?? null;
+  };
+
+  // ---------------------------------------------------------------------------
   // Plan chip rendering
   // ---------------------------------------------------------------------------
 
@@ -395,6 +485,8 @@ export function BillingControl() {
 
       <BillingDevelopmentNotice />
 
+      <BillingAutomationCard onWarningPercent={setWarningPercent} />
+
       <Card>
         <CardHeader className="flex items-center gap-2 pb-0">
           <CreditCard size={18} className="text-accent" />
@@ -405,9 +497,11 @@ export function BillingControl() {
             <TableHeader>
               <TableColumn>{t('billing.col_tenant')}</TableColumn>
               <TableColumn>{t('billing.col_users')}</TableColumn>
+              <TableColumn>{t('control.col_members')}</TableColumn>
               <TableColumn>{t('billing.col_current_plan')}</TableColumn>
               <TableColumn>{t('billing.col_effective_price')}</TableColumn>
               <TableColumn>{t('billing.col_pays')}</TableColumn>
+              <TableColumn>{t('control.col_paid_until')}</TableColumn>
               <TableColumn>{t('billing.col_standing')}</TableColumn>
               {isGod
                 ? <TableColumn>{t('billing.col_actions')}</TableColumn>
@@ -419,6 +513,7 @@ export function BillingControl() {
                 const price = row.current_plan?.effective_price ?? null;
                 const state = standingState(row);
                 const busy = standingBusyId === row.id;
+                const suggested = suggestedPlanName(row);
 
                 return (
                   <TableRow key={row.id}>
@@ -442,6 +537,13 @@ export function BillingControl() {
                       </span>
                     </TableCell>
 
+                    {/* Active members against the package limit */}
+                    <TableCell>
+                      <span data-testid="billing-members" className={`text-sm whitespace-nowrap ${membersColour(row, warningPercent)}`}>
+                        {formatMembers(row)}
+                      </span>
+                    </TableCell>
+
                     {/* Plan chip */}
                     <TableCell>
                       <div className="flex items-center gap-1 flex-wrap">
@@ -462,6 +564,11 @@ export function BillingControl() {
                           </Chip>
                         ) : null}
                       </div>
+                      {suggested ? (
+                        <span className="mt-1 block text-xs text-muted">
+                          {t('control.suggested', { plan: suggested })}
+                        </span>
+                      ) : null}
                     </TableCell>
 
                     {/* Effective price */}
@@ -491,6 +598,13 @@ export function BillingControl() {
                       </span>
                     </TableCell>
 
+                    {/* Paid until */}
+                    <TableCell>
+                      <span className="text-sm text-muted whitespace-nowrap">
+                        {row.standing.paid_until ? formatDate(row.standing.paid_until) : t('control.no_date')}
+                      </span>
+                    </TableCell>
+
                     {/* Standing */}
                     <TableCell>
                       <Chip size="sm" variant="soft" color={STANDING_COLOR[state]}>
@@ -508,6 +622,15 @@ export function BillingControl() {
                             onPress={() => handleOpenAssign(row)}
                           >
                             {t('billing.assign_plan')}
+                          </Button>
+
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            isDisabled={busy}
+                            onPress={() => openPaidUntil(row)}
+                          >
+                            {t('control.set_paid_until')}
                           </Button>
 
                           {state === 'open' ? (
@@ -596,7 +719,7 @@ export function BillingControl() {
                   }}
                   isRequired
                 >
-                  {plans.map((plan) => (
+                  {assignablePlans(plans).map((plan) => (
                     <SelectItem key={String(plan.id)} id={String(plan.id)}>
                       {plan.name}
                     </SelectItem>
@@ -722,6 +845,41 @@ export function BillingControl() {
               isDisabled={exemptNeedsReason}
             >
               {standingDialog?.kind === 'exempt' ? t('billing.exempt_modal_title') : t('billing.pause_modal_title')}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Set paid-until date dialog                                           */}
+      {/* ------------------------------------------------------------------ */}
+      <Modal isOpen={paidUntilRow !== null} onClose={closePaidUntil} size="md">
+        <ModalContent>
+          <ModalHeader>
+            {t('control.set_paid_until')}
+            {paidUntilRow && (
+              <span className="text-muted text-sm font-normal ml-2">
+                — {paidUntilRow.name}
+              </span>
+            )}
+          </ModalHeader>
+          <ModalBody>
+            <div className="flex flex-col gap-3">
+              <p className="text-sm text-muted">{t('control.paid_until_help')}</p>
+              <Input
+                label={t('control.paid_until_label')}
+                type="date"
+                value={paidUntilText}
+                onValueChange={setPaidUntilText}
+              />
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="tertiary" onPress={closePaidUntil} isDisabled={standingBusyId !== null}>
+              {t('billing.cancel')}
+            </Button>
+            <Button onPress={() => void confirmPaidUntil()} isLoading={standingBusyId !== null}>
+              {t('control.save')}
             </Button>
           </ModalFooter>
         </ModalContent>

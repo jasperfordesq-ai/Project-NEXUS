@@ -50,6 +50,8 @@ final class BillingSnapshotContractTest extends TestCase
         'id', 'name', 'custom_price_monthly', 'custom_price_yearly',
         'discount_percentage', 'discount_reason', 'nonprofit_verified', 'effective_price',
         'max_users', 'max_communities', 'is_standard',
+        // Compared with `suggested_plan` to show a better-fitting package.
+        'slug',
         // A failed card payment leaves the plan `expired`; the screen shows it
         // beside the plan rather than reporting "No plan" (Stage 5).
         'assignment_status',
@@ -59,7 +61,7 @@ final class BillingSnapshotContractTest extends TestCase
     private const REQUIRED_PRICE_KEYS = ['yearly', 'has_custom', 'discount_pct', 'nonprofit'];
 
     /** Read off `standing`. */
-    private const REQUIRED_STANDING_KEYS = ['payer', 'suspended_at', 'exempt', 'locked', 'locked_by_tenant_id'];
+    private const REQUIRED_STANDING_KEYS = ['payer', 'suspended_at', 'exempt', 'locked', 'locked_by_tenant_id', 'paid_until'];
 
     /** Read off each row of GET /v2/admin/plans. */
     private const REQUIRED_PLAN_LIST_KEYS = [

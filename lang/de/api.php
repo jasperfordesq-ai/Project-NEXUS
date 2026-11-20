@@ -1213,6 +1213,7 @@ return [
     'branch_payments_exempt' => 'Diese Community ist ausgenommen. Nur das Plattform-Team kann das ändern.',
     'branch_payments_paused_from_above' => 'Diese Community ist pausiert, weil eine übergeordnete Community pausiert ist. Sie kann nur dort wiederhergestellt werden.',
     'billing_standing_paid_until_invalid' => 'Geben Sie das Datum als Jahr-Monat-Tag ein, zum Beispiel 2027-01-31.',
+    'billing_setting_invalid' => 'Eine der Einstellungen ist ungültig, daher wurde nichts gespeichert. Prüfen Sie, ob jede Zahl im erlaubten Bereich liegt und die Pause nach der letzten Warnung kommt.',
     'tenant_inactive' => 'Mieter ist inaktiv',
     'ideation_feature_disabled' => 'Das Modul „Ideenherausforderungen“ ist für diese Community nicht aktiviert',
     'job_vacancies_feature_disabled' => 'Das Modul „Stellenangebote“ ist für diese Community nicht aktiviert',

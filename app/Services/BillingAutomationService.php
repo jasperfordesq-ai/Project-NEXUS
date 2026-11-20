@@ -71,6 +71,81 @@ final class BillingAutomationService
         return self::evaluate(self::day($today), false);
     }
 
+    /**
+     * Where one community stands against its package's member limit, measured
+     * exactly as the daily check measures it: active members of the whole
+     * branch, the platform's warning percent. For the community's own admin
+     * banner, so what they are warned of on screen is what the check would
+     * mail them.
+     *
+     * Null when no limit is watched: no package, an unlimited one, or a
+     * retired (non-standard) one.
+     *
+     * @return array{used:int, max:int, percent:int, stage:?string}|null
+     */
+    public static function memberLimitState(int $tenantId): ?array
+    {
+        $limit = self::limitedCommunities($tenantId)[$tenantId] ?? null;
+        if ($limit === null) {
+            return null;
+        }
+
+        $active = TenantBillingService::getSubtreeActiveMemberCount($tenantId, StandardPlans::ACTIVE_WINDOW_DAYS);
+        $max = $limit['max_users'];
+
+        return [
+            'used' => $active,
+            'max' => $max,
+            'percent' => (int) floor($active * 100 / $max),
+            'stage' => self::limitStage($active, $max, (int) BillingSettings::get('limit_warning_percent')),
+        ];
+    }
+
+    /**
+     * Whole days a community's payment is late, counted as the payment clock
+     * counts them (1 = the day after the paid-until date). Null when it is
+     * not late, or when the clock does not run for it at all — no date,
+     * exempt, not billed, the platform's own community — so the admin banner
+     * never warns of a pause that cannot come.
+     */
+    public static function overdueDays(int $tenantId, ?CarbonInterface $today = null): ?int
+    {
+        if ($tenantId === 1) {
+            return null;
+        }
+
+        $row = DB::table('tenant_billing_standing')->where('tenant_id', $tenantId)->first();
+        if ($row === null || $row->paid_until === null || !empty($row->exempt)) {
+            return null;
+        }
+
+        $payer = $row->payer ?? BillingStandingService::defaultPayer($tenantId);
+        if ($payer === 'not_billed') {
+            return null;
+        }
+
+        $paidUntil = CarbonImmutable::parse(substr((string) $row->paid_until, 0, 10));
+        $daysLate = (int) $paidUntil->diffInDays(self::day($today), false);
+
+        return $daysLate >= 1 ? $daysLate : null;
+    }
+
+    /** `approaching` from the warning percent, `reached` at 100%, `over` above it; else null. */
+    private static function limitStage(int $active, int $max, int $warningPercent): ?string
+    {
+        if ($active > $max) {
+            return 'over';
+        }
+        if ($active >= $max) {
+            return 'reached';
+        }
+        if ($active * 100 >= $warningPercent * $max) {
+            return 'approaching';
+        }
+
+        return null;
+    }
+
     private static function day(?CarbonInterface $today): CarbonImmutable
     {
         return CarbonImmutable::parse(($today ?? now())->toDateString());
@@ -254,16 +329,7 @@ final class BillingAutomationService
         $active = TenantBillingService::getSubtreeActiveMemberCount($id, StandardPlans::ACTIVE_WINDOW_DAYS);
         $max = $limit['max_users'];
         $percent = (int) floor($active * 100 / $max);
-
-        if ($active > $max) {
-            $stage = 'over';
-        } elseif ($active >= $max) {
-            $stage = 'reached';
-        } elseif ($active * 100 >= (int) $settings['limit_warning_percent'] * $max) {
-            $stage = 'approaching';
-        } else {
-            $stage = null;
-        }
+        $stage = self::limitStage($active, $max, (int) $settings['limit_warning_percent']);
 
         $facts = [
             'active_members' => $active,
@@ -422,14 +488,18 @@ final class BillingAutomationService
      *
      * @return array<int, array{plan_name:string, max_users:int}>
      */
-    private static function limitedCommunities(): array
+    private static function limitedCommunities(?int $onlyTenantId = null): array
     {
-        $rows = DB::table('tenant_plan_assignments as tpa')
+        $query = DB::table('tenant_plan_assignments as tpa')
             ->join('pay_plans as pp', 'pp.id', '=', 'tpa.pay_plan_id')
             ->where('tpa.status', 'active')
             ->where('pp.is_standard', 1)
             ->whereNotNull('pp.max_users')
-            ->where('pp.max_users', '>', 0)
+            ->where('pp.max_users', '>', 0);
+        if ($onlyTenantId !== null) {
+            $query->where('tpa.tenant_id', $onlyTenantId);
+        }
+        $rows = $query
             ->orderBy('tpa.id')
             ->get(['tpa.tenant_id', 'pp.name', 'pp.max_users']);
 
