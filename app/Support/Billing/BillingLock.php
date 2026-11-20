@@ -39,14 +39,60 @@ final class BillingLock
     /** Seconds. Also the longest a change made outside the service takes to show. */
     public const CACHE_TTL = 60;
 
+    /**
+     * Mail a paused community may still receive. Everything else — and any
+     * mail sent without a category — is refused while it is locked.
+     *
+     * Payment notices, getting back into an account, and safeguarding. A
+     * paused community's admins must be able to sign in and be told what is
+     * owed, and a safeguarding concern is never held back for a bill.
+     */
+    public const MAIL_CATEGORIES_OPEN_WHILE_LOCKED = [
+        'billing',
+        'password_reset',
+        'email_verification',
+        'verification',
+        'security',
+        'security_alert',
+        'safeguarding',
+        'safeguarding_review',
+    ];
+
     /** A line longer than this is treated as broken data, not walked for ever. */
     private const MAX_DEPTH = 20;
 
     private static bool $cacheFailureReported = false;
 
+    private static bool $checkFailureReported = false;
+
     public static function isLocked(int $tenantId): bool
     {
         return self::reasonFor($tenantId) !== null;
+    }
+
+    /**
+     * The same question, for the mail and push entry points.
+     *
+     * Those are called from jobs and listeners all over the platform, and a
+     * payment-standing check that cannot run must not stop every email and
+     * notification from going out. So a failure here answers "open" — and is
+     * logged at error, once per process, so it is never silent.
+     */
+    public static function isLockedFailOpen(int $tenantId, string $caller): bool
+    {
+        try {
+            return self::isLocked($tenantId);
+        } catch (\Throwable $e) {
+            if (!self::$checkFailureReported) {
+                self::$checkFailureReported = true;
+                Log::error('[BillingLock] payment-standing check failed; sending allowed', [
+                    'caller' => $caller,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            return false;
+        }
     }
 
     /**
@@ -114,6 +160,11 @@ final class BillingLock
         }
 
         return $line;
+    }
+
+    public static function mailAllowedWhileLocked(?string $category): bool
+    {
+        return in_array(trim((string) $category), self::MAIL_CATEGORIES_OPEN_WHILE_LOCKED, true);
     }
 
     /** Forget the cached lists. Call after every change to a standing row. */

@@ -13,6 +13,7 @@ use App\Support\Billing\BillingLock;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Tests\Laravel\TestCase;
 
 /**
@@ -203,5 +204,29 @@ final class BillingLockTest extends TestCase
 
         BillingLock::flush();
         $this->assertFalse(BillingLock::isLocked($this->child));
+    }
+
+    public function test_the_outbound_check_reports_open_and_logs_when_it_cannot_run(): void
+    {
+        BillingStandingService::suspend($this->child, null, 'manual');
+        BillingLock::flush();
+
+        // Mail and push ask through this method. If the standing table cannot
+        // be read they must carry on sending, and say so, not throw.
+        $reported = new \ReflectionProperty(BillingLock::class, 'checkFailureReported');
+        $reported->setValue(null, false);
+
+        Log::shouldReceive('error')->once();
+        DB::shouldReceive('table')->with('tenant_billing_standing')->andThrow(new \RuntimeException('table unreadable'));
+
+        $this->assertFalse(BillingLock::isLockedFailOpen($this->child, 'test'));
+    }
+
+    public function test_the_outbound_check_agrees_with_the_lock_when_it_can_run(): void
+    {
+        BillingStandingService::suspend($this->child, null, 'manual');
+
+        $this->assertTrue(BillingLock::isLockedFailOpen($this->child, 'test'));
+        $this->assertFalse(BillingLock::isLockedFailOpen($this->sibling, 'test'));
     }
 }

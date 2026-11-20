@@ -7,6 +7,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Support\Billing\BillingLock;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Minishlink\WebPush\Subscription;
@@ -29,6 +30,11 @@ class WebPushService
      */
     public function sendToUser($userId, $title, $body, $link = null, $type = 'general', $options = []): bool
     {
+        // A community paused for non-payment sends nothing to its members.
+        if (BillingLock::isLockedFailOpen((int) \App\Core\TenantContext::getId(), 'WebPushService')) {
+            return false;
+        }
+
         try {
             // Check push_enabled preference — default to sending (opt-out model)
             try {

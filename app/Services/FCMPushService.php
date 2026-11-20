@@ -8,6 +8,7 @@ namespace App\Services;
 
 use App\I18n\LocaleContext;
 use App\Jobs\CheckExpoPushReceipts;
+use App\Support\Billing\BillingLock;
 use App\Support\Push\PushCopy;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
@@ -61,6 +62,11 @@ class FCMPushService
      */
     public static function sendToUser(int $userId, string $title, string $body, array $data = [], array $context = []): array
     {
+        // A community paused for non-payment sends nothing to its members.
+        if (BillingLock::isLockedFailOpen((int) TenantContext::getId(), 'FCMPushService')) {
+            return ['sent' => 0, 'failed' => 0, 'errors' => [], 'suppressed' => true];
+        }
+
         // Honour the user's push_enabled preference. Default true so legacy
         // users with no JSON pref still receive notifications until they
         // explicitly opt out. Best-effort — pref-lookup failures don't block.
@@ -110,6 +116,11 @@ class FCMPushService
      */
     public static function sendToUsers(array $userIds, string $title, string $body, array $data = [], array $context = []): array
     {
+        // A community paused for non-payment sends nothing to its members.
+        if (BillingLock::isLockedFailOpen((int) TenantContext::getId(), 'FCMPushService')) {
+            return ['sent' => 0, 'failed' => 0, 'errors' => [], 'suppressed' => true];
+        }
+
         if (empty($userIds)) {
             return ['sent' => 0, 'failed' => 0, 'errors' => []];
         }

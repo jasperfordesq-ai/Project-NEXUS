@@ -10,6 +10,7 @@ namespace App\Services;
 
 use App\Core\Mailer;
 use App\Core\TenantContext;
+use App\Support\Billing\BillingLock;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -173,6 +174,21 @@ class EmailDispatchService
         }
 
         $tenantId = $this->resolveTenantId($options, $to);
+
+        // A community paused for non-payment sends nothing to its members.
+        // Its admin API stays open, so this is what stops a newsletter, and it
+        // is here — not in each job — because everything passes through here.
+        // Not an error: `false` with an info line, like an unroutable address.
+        if ($tenantId !== null && !BillingLock::mailAllowedWhileLocked($category) && BillingLock::isLockedFailOpen((int) $tenantId, 'EmailDispatchService::send')) {
+            Log::info('EmailDispatchService::send refused: community is paused for non-payment', [
+                'tenant_id' => (int) $tenantId,
+                'source' => $source,
+                'category' => $category !== '' ? $category : null,
+                'to' => $this->maskEmail($to),
+            ]);
+
+            return false;
+        }
         $allowMissingTenant = (bool) ($options['allow_missing_tenant'] ?? false);
         $dispatchId = trim((string) ($options['dispatch_id'] ?? $options['dispatchId'] ?? ''));
         if ($dispatchId === '') {
