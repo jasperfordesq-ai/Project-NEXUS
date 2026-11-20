@@ -35115,6 +35115,7 @@ export default interface Resources {
       "risk_tags": "Listing risk tags",
       "safeguarding": "Safeguarding",
       "safeguarding_options": "Safeguarding options",
+      "unmet_needs": "Unmet needs",
       "vetting": "Vetting confirmations"
     },
     "checking_permissions": "Checking permissions...",
@@ -36441,6 +36442,7 @@ export default interface Resources {
       "safeguarding_support_actions": "Support actions",
       "safeguarding_support_needs": "Members' support needs",
       "safeguarding_volunteering": "Volunteering incidents",
+      "unmet_needs": "Unmet needs",
       "vetting": "Vetting confirmations"
     },
     "onboarding": {
@@ -36689,6 +36691,21 @@ export default interface Resources {
       "urgent": "Urgent",
       "verified": "Verified",
       "warning": "Warning"
+    },
+    "unmet": {
+      "ai_button": "Ask the AI what is missing",
+      "ai_failed": "The AI could not answer just now. The list is not affected.",
+      "ai_note": "Sends the titles and descriptions of these requests to your community's AI provider. No names are sent.",
+      "col_matched": "Members matched",
+      "col_requested_by": "Requested by",
+      "col_waiting": "Waiting",
+      "days": "{{number}} days",
+      "description": "Requests posted at least {{days}} days ago that nobody has taken up: no exchange, and no message about them from another member.",
+      "empty_hint": "Every request older than {{days}} days has had a response.",
+      "empty_title": "No unmet needs",
+      "load_error_title": "Couldn't load unmet needs",
+      "nobody": "Nobody",
+      "totals": "Waiting: {{total}}. Matched with nobody: {{noMatch}}. Shown to members, no response: {{noResponse}}."
     },
     "vetting": {
       "action_confirm": "Confirm attestation",

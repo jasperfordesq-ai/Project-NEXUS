@@ -31,6 +31,8 @@ import type {
   MatchApproval,
   MatchApprovalDetail,
   MatchApprovalStats,
+  UnmetNeedsPage,
+  UnmetNeedsAiSummary,
   MatchingListingDiagnosis,
   MatchingUserDiagnosis,
   SmartMatchingConfig,
@@ -1022,6 +1024,14 @@ export const adminMatching = {
 
   getApprovalStats: (days = 30) =>
     api.get<MatchApprovalStats>(`/v2/admin/matching/approvals/stats?days=${days}`),
+
+  /** Requests nobody has taken up after two weeks (broker or admin). */
+  getUnmetNeeds: () =>
+    api.get<UnmetNeedsPage>('/v2/admin/matching/unmet-needs'),
+
+  /** Has the community's AI say what the unmet requests have in common. */
+  summariseUnmetNeeds: () =>
+    api.post<UnmetNeedsAiSummary>('/v2/admin/matching/unmet-needs/summary', {}),
 
   approveMatch: (id: number, notes?: string) =>
     api.post<{ success: boolean }>(`/v2/admin/matching/approvals/${id}/approve`, { notes }),

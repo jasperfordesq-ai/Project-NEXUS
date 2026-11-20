@@ -72,6 +72,7 @@
     "vetting": "Bestätigungen prüfen",
     "exchanges": "Tauschvorgänge",
     "match_approvals": "Vorgeschlagene Matches",
+    "unmet_needs": "Unerfüllte Bedarfe",
     "messages": "Nachrichtenprüfungen",
     "monitoring": "Überwachte Mitglieder",
     "risk_tags": "Risiko-Tags für Inserate",
@@ -99,6 +100,7 @@
     "vetting": "Bestätigungen prüfen",
     "exchanges": "Tauschvorgänge",
     "match_approvals": "Vorgeschlagene Matches",
+    "unmet_needs": "Unerfüllte Bedarfe",
     "messages": "Nachrichtenprüfungen",
     "monitoring": "Überwachte Mitglieder",
     "risk_tags": "Risiko-Tags für Inserate",
@@ -1490,6 +1492,21 @@
     "action_admin": "Nur ein Admin kann ihn festlegen. Als Admin können Sie das auf der Seite „Konfiguration“ unter „Compliance & Schutzmaßnahmen“ tun.",
     "action_ask_admin": "Nur ein Admin kann ihn festlegen. Bitten Sie einen Admin Ihrer Gemeinschaft, das zu tun.",
     "set_button": "Rechtsraum festlegen"
+  },
+  "unmet": {
+    "description": "Gesuche, die vor mindestens {{days}} Tagen eingestellt wurden und die niemand aufgegriffen hat: kein Austausch und keine Nachricht eines anderen Mitglieds dazu.",
+    "totals": "Wartend: {{total}}. Mit niemandem abgeglichen: {{noMatch}}. Mitgliedern gezeigt, keine Antwort: {{noResponse}}.",
+    "col_requested_by": "Angefragt von",
+    "col_waiting": "Wartet seit",
+    "col_matched": "Passende Mitglieder",
+    "days": "{{number}} Tagen",
+    "nobody": "Niemand",
+    "empty_title": "Keine unerfüllten Bedarfe",
+    "empty_hint": "Auf jedes Gesuch, das älter als {{days}} Tage ist, gab es eine Reaktion.",
+    "load_error_title": "Unerfüllte Bedarfe konnten nicht geladen werden",
+    "ai_button": "Die KI fragen, was fehlt",
+    "ai_note": "Sendet die Titel und Beschreibungen dieser Gesuche an den KI-Anbieter Ihrer Gemeinschaft. Es werden keine Namen gesendet.",
+    "ai_failed": "Die KI konnte gerade nicht antworten. Die Liste ist davon nicht betroffen."
   },
   "matching": {
     "title": "Vorgeschlagene Matches",

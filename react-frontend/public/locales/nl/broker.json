@@ -72,6 +72,7 @@
     "vetting": "Bevestigingen doorlichten",
     "exchanges": "Uitwisselingen",
     "match_approvals": "Voorgestelde matches",
+    "unmet_needs": "Onvervulde behoeften",
     "messages": "Berichtcontroles",
     "monitoring": "Gemonitorde leden",
     "risk_tags": "Risicolabels voor advertenties",
@@ -99,6 +100,7 @@
     "vetting": "Bevestigingen doorlichten",
     "exchanges": "Uitwisselingen",
     "match_approvals": "Voorgestelde matches",
+    "unmet_needs": "Onvervulde behoeften",
     "messages": "Berichtcontroles",
     "monitoring": "Gemonitorde leden",
     "risk_tags": "Risicolabels voor advertenties",
@@ -1490,6 +1492,21 @@
     "action_admin": "Alleen een beheerder kan dit instellen. Als beheerder kunt u dit doen op de pagina Configuratie, onder Compliance en bescherming.",
     "action_ask_admin": "Alleen een admin kan het instellen. Vraag een admin van je gemeenschap om dat te doen.",
     "set_button": "Rechtsgebied instellen"
+  },
+  "unmet": {
+    "description": "Verzoeken die minstens {{days}} dagen geleden zijn geplaatst en die niemand heeft opgepakt: geen uitwisseling en geen bericht erover van een ander lid.",
+    "totals": "In afwachting: {{total}}. Met niemand gematcht: {{noMatch}}. Aan leden getoond, geen reactie: {{noResponse}}.",
+    "col_requested_by": "Gevraagd door",
+    "col_waiting": "Wacht al",
+    "col_matched": "Gematchte leden",
+    "days": "{{number}} dagen",
+    "nobody": "Niemand",
+    "empty_title": "Geen onvervulde behoeften",
+    "empty_hint": "Op elk verzoek dat ouder is dan {{days}} dagen is gereageerd.",
+    "load_error_title": "Onvervulde behoeften konden niet worden geladen",
+    "ai_button": "Vraag de AI wat er ontbreekt",
+    "ai_note": "Stuurt de titels en beschrijvingen van deze verzoeken naar de AI-aanbieder van uw gemeenschap. Er worden geen namen verstuurd.",
+    "ai_failed": "De AI kon nu geen antwoord geven. De lijst wordt hierdoor niet beïnvloed."
   },
   "matching": {
     "title": "Voorgestelde matches",

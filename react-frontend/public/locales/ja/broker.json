@@ -72,6 +72,7 @@
     "vetting": "審査確認",
     "exchanges": "交換",
     "match_approvals": "提案されたマッチ",
+    "unmet_needs": "満たされていないニーズ",
     "messages": "メッセージの確認",
     "monitoring": "監視中のメンバー",
     "risk_tags": "リスティングのリスクタグ",
@@ -99,6 +100,7 @@
     "vetting": "審査確認",
     "exchanges": "交換",
     "match_approvals": "提案されたマッチ",
+    "unmet_needs": "満たされていないニーズ",
     "messages": "メッセージの確認",
     "monitoring": "監視中のメンバー",
     "risk_tags": "リスティングのリスクタグ",
@@ -1485,6 +1487,21 @@
     "action_admin": "設定できるのは管理者のみです。管理者の方は、設定ページの「コンプライアンスとセーフガーディング」で設定できます。",
     "action_ask_admin": "設定できるのは管理者だけです。コミュニティの管理者に設定を依頼してください。",
     "set_button": "管轄を設定する"
+  },
+  "unmet": {
+    "description": "{{days}}日以上前に投稿され、誰も対応していない依頼です。交換がなく、他のメンバーからのメッセージもありません。",
+    "totals": "待機中: {{total}}件。誰ともマッチしていない: {{noMatch}}件。メンバーに表示済みで反応なし: {{noResponse}}件。",
+    "col_requested_by": "依頼者",
+    "col_waiting": "待機期間",
+    "col_matched": "マッチしたメンバー",
+    "days": "{{number}}日",
+    "nobody": "なし",
+    "empty_title": "満たされていないニーズはありません",
+    "empty_hint": "{{days}}日より前の依頼にはすべて反応がありました。",
+    "load_error_title": "満たされていないニーズを読み込めませんでした",
+    "ai_button": "何が足りないかAIに尋ねる",
+    "ai_note": "これらの依頼のタイトルと説明をコミュニティのAIプロバイダーに送信します。名前は送信されません。",
+    "ai_failed": "AIは今は回答できませんでした。リストに影響はありません。"
   },
   "matching": {
     "title": "提案されたマッチ",

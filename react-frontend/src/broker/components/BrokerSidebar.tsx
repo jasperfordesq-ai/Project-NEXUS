@@ -33,6 +33,7 @@ import ClipboardCheck from 'lucide-react/icons/clipboard-check';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
 import UserCheck from 'lucide-react/icons/user-check';
+import SearchX from 'lucide-react/icons/search-x';
 import MessageSquareWarning from 'lucide-react/icons/message-square-warning';
 import ShieldPlus from 'lucide-react/icons/shield-plus';
 import MessageSquare from 'lucide-react/icons/message-square';
@@ -179,6 +180,7 @@ export function BrokerSidebar({ collapsed, onToggle, badges }: BrokerSidebarProp
         ...(showMatchApprovals
           ? ([
               { key: 'match-approvals', label: t('nav.match_approvals'), icon: UserCheck, path: '/broker/match-approvals', badgeKey: 'pending_matches' },
+              { key: 'unmet-needs', label: t('nav.unmet_needs'), icon: SearchX, path: '/broker/unmet-needs' },
             ] as NavItem[])
           : []),
         { key: 'messages', label: t('nav.messages'), icon: MessageSquareWarning, path: '/broker/messages', badgeKey: 'unreviewed_messages' },

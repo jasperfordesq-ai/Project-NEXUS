@@ -72,6 +72,7 @@
     "vetting": "Confirmaciones de verificación",
     "exchanges": "Intercambios",
     "match_approvals": "Coincidencias sugeridas",
+    "unmet_needs": "Necesidades sin cubrir",
     "messages": "Revisión de mensajes",
     "monitoring": "Miembros monitoreados",
     "risk_tags": "Etiquetas de riesgo de anuncios",
@@ -99,6 +100,7 @@
     "vetting": "Confirmaciones de verificación",
     "exchanges": "Intercambios",
     "match_approvals": "Coincidencias sugeridas",
+    "unmet_needs": "Necesidades sin cubrir",
     "messages": "Revisión de mensajes",
     "monitoring": "Miembros monitoreados",
     "risk_tags": "Etiquetas de riesgo de anuncios",
@@ -1505,6 +1507,21 @@
     "action_admin": "Solo un administrador puede establecerla. Como administrador, puede hacerlo en la página Configuración, en Cumplimiento y protección.",
     "action_ask_admin": "Solo un administrador puede definirla. Pide a un administrador de tu comunidad que lo haga.",
     "set_button": "Definir la jurisdicción"
+  },
+  "unmet": {
+    "description": "Peticiones publicadas hace al menos {{days}} días que nadie ha atendido: sin intercambio y sin ningún mensaje de otro miembro sobre ellas.",
+    "totals": "En espera: {{total}}. Sin ninguna coincidencia: {{noMatch}}. Mostradas a miembros, sin respuesta: {{noResponse}}.",
+    "col_requested_by": "Solicitado por",
+    "col_waiting": "En espera",
+    "col_matched": "Miembros coincidentes",
+    "days": "{{number}} días",
+    "nobody": "Nadie",
+    "empty_title": "No hay necesidades sin cubrir",
+    "empty_hint": "Todas las peticiones con más de {{days}} días han tenido respuesta.",
+    "load_error_title": "No se pudieron cargar las necesidades sin cubrir",
+    "ai_button": "Preguntar a la IA qué falta",
+    "ai_note": "Envía los títulos y las descripciones de estas peticiones al proveedor de IA de su comunidad. No se envían nombres.",
+    "ai_failed": "La IA no ha podido responder ahora. La lista no se ve afectada."
   },
   "matching": {
     "title": "Coincidencias sugeridas",

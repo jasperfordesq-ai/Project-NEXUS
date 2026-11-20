@@ -2059,6 +2059,9 @@ Route::get('/v2/admin/matching/diagnose/listing/{id}', [\App\Http\Controllers\Ap
 // tests/Laravel/Feature/Controllers/BrokerMatchApprovalAuthorizationTest.php.
 Route::withoutMiddleware('admin')->middleware('broker-or-admin')->group(function () {
     Route::get('/v2/admin/matching/approvals', [\App\Http\Controllers\Api\AdminMatchingController::class, 'index']);
+    // Coordinator's "Unmet needs" page: requests nobody has taken up.
+    Route::get('/v2/admin/matching/unmet-needs', [\App\Http\Controllers\Api\AdminMatchingController::class, 'unmetNeeds']);
+    Route::post('/v2/admin/matching/unmet-needs/summary', [\App\Http\Controllers\Api\AdminMatchingController::class, 'unmetNeedsSummary'])->middleware('throttle:nexus-route-60-per-1m');
     Route::get('/v2/admin/matching/approvals/stats', [\App\Http\Controllers\Api\AdminMatchingController::class, 'approvalStats']);
     Route::get('/v2/admin/matching/approvals/{id}', [\App\Http\Controllers\Api\AdminMatchingController::class, 'show']);
     // Mutations throttled to 60/min/user like the other broker decision

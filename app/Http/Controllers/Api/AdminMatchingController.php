@@ -363,6 +363,50 @@ class AdminMatchingController extends BaseApiController
         ]);
     }
 
+    /**
+     * GET /api/v2/admin/matching/unmet-needs
+     *
+     * Requests nobody has taken up after two weeks, for the coordinator's
+     * "Unmet needs" page ({@see \App\Services\Matching\UnmetNeedsService}).
+     * Worked out from the platform's own records; needs no AI.
+     */
+    public function unmetNeeds(): JsonResponse
+    {
+        $this->requireBrokerOrAdmin();
+        $tenantId = $this->getTenantId();
+        $service = app(\App\Services\Matching\UnmetNeedsService::class);
+
+        return $this->respondWithData($service->forTenant($tenantId) + [
+            'ai_available' => $service->aiAvailable($tenantId),
+        ]);
+    }
+
+    /**
+     * POST /api/v2/admin/matching/unmet-needs/summary
+     *
+     * The community's AI says what the unmet requests have in common. Only
+     * when a coordinator asks, only where the community has AI on, and at
+     * most a handful of times an hour for one coordinator.
+     */
+    public function unmetNeedsSummary(): JsonResponse
+    {
+        $this->requireBrokerOrAdmin();
+        $tenantId = $this->getTenantId();
+        $service = app(\App\Services\Matching\UnmetNeedsService::class);
+
+        if (!$service->aiAvailable($tenantId)) {
+            return $this->respondWithError('AI_NOT_CONFIGURED', __('api.ai_not_configured'), null, 409);
+        }
+        $this->rateLimit('unmet_needs_summary', 10, 3600);
+
+        $summary = $service->aiSummary($tenantId, (string) app()->getLocale());
+        if ($summary === null) {
+            return $this->respondWithError('AI_ERROR', __('api.ai_error_generic'), null, 503);
+        }
+
+        return $this->respondWithData($summary);
+    }
+
     /** The six v1 weight fields, request name => stored name. */
     private const WEIGHT_FIELDS = [
         'category_weight' => 'category',

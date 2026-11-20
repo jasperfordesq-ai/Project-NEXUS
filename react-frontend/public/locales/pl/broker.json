@@ -72,6 +72,7 @@
     "vetting": "Potwierdzenia weryfikacji",
     "exchanges": "Wymiany",
     "match_approvals": "Proponowane dopasowania",
+    "unmet_needs": "Niezaspokojone potrzeby",
     "messages": "Kontrola wiadomości",
     "monitoring": "Monitorowani członkowie",
     "risk_tags": "Tagi ryzyka ogłoszeń",
@@ -99,6 +100,7 @@
     "vetting": "Potwierdzenia weryfikacji",
     "exchanges": "Wymiany",
     "match_approvals": "Proponowane dopasowania",
+    "unmet_needs": "Niezaspokojone potrzeby",
     "messages": "Kontrola wiadomości",
     "monitoring": "Monitorowani członkowie",
     "risk_tags": "Tagi ryzyka ogłoszeń",
@@ -1530,6 +1532,21 @@
     "action_admin": "Tylko administrator może ją ustawić. Jako administrator możesz to zrobić na stronie Konfiguracja, w sekcji Zgodność i ochrona.",
     "action_ask_admin": "Może ją ustawić tylko administrator. Poproś administratora swojej społeczności, aby to zrobił.",
     "set_button": "Ustaw jurysdykcję"
+  },
+  "unmet": {
+    "description": "Prośby opublikowane co najmniej {{days}} dni temu, którymi nikt się nie zajął: bez wymiany i bez żadnej wiadomości od innego członka w ich sprawie.",
+    "totals": "Oczekujące: {{total}}. Bez żadnego dopasowania: {{noMatch}}. Pokazane członkom, bez odpowiedzi: {{noResponse}}.",
+    "col_requested_by": "Prosi",
+    "col_waiting": "Czeka",
+    "col_matched": "Dopasowani członkowie",
+    "days": "{{number}} dni",
+    "nobody": "Nikt",
+    "empty_title": "Brak niezaspokojonych potrzeb",
+    "empty_hint": "Na każdą prośbę starszą niż {{days}} dni ktoś odpowiedział.",
+    "load_error_title": "Nie udało się wczytać niezaspokojonych potrzeb",
+    "ai_button": "Zapytaj AI, czego brakuje",
+    "ai_note": "Wysyła tytuły i opisy tych próśb do dostawcy AI Twojej społeczności. Nie są wysyłane żadne imiona ani nazwiska.",
+    "ai_failed": "AI nie mogło teraz odpowiedzieć. Nie ma to wpływu na listę."
   },
   "matching": {
     "title": "Proponowane dopasowania",

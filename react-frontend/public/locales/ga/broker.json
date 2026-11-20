@@ -72,6 +72,7 @@
     "vetting": "Deimhnithe grinnfhiosrúcháin",
     "exchanges": "Malartuithe",
     "match_approvals": "Meaitseálacha molta",
+    "unmet_needs": "Riachtanais gan freastal",
     "messages": "Seiceálacha teachtaireachtaí",
     "monitoring": "Baill faoi mhonatóireacht",
     "risk_tags": "Clibeanna riosca liostuithe",
@@ -99,6 +100,7 @@
     "vetting": "Deimhnithe grinnfhiosrúcháin",
     "exchanges": "Malartuithe",
     "match_approvals": "Meaitseálacha molta",
+    "unmet_needs": "Riachtanais gan freastal",
     "messages": "Seiceálacha teachtaireachtaí",
     "monitoring": "Baill faoi mhonatóireacht",
     "risk_tags": "Clibeanna riosca liostuithe",
@@ -1550,6 +1552,21 @@
     "action_admin": "Ní féidir ach le riarthóir í a shocrú. Mar riarthóir, is féidir leat é sin a dhéanamh ar an leathanach Cumraíocht, faoi Comhlíonadh agus cosaint.",
     "action_ask_admin": "Ní féidir ach le riarthóir í a shocrú. Iarr ar riarthóir i do phobal í a shocrú.",
     "set_button": "Socraigh an dlínse"
+  },
+  "unmet": {
+    "description": "Iarratais a postáladh {{days}} lá ó shin ar a laghad agus nár thóg aon duine orthu: gan aon mhalartú, agus gan aon teachtaireacht fúthu ó bhall eile.",
+    "totals": "Ag fanacht: {{total}}. Gan mheaitseáil le haon duine: {{noMatch}}. Taispeánta do bhaill, gan freagra: {{noResponse}}.",
+    "col_requested_by": "Iarrtha ag",
+    "col_waiting": "Ag fanacht",
+    "col_matched": "Baill mheaitseáilte",
+    "days": "{{number}} lá",
+    "nobody": "Aon duine",
+    "empty_title": "Níl aon riachtanas gan freastal",
+    "empty_hint": "Fuair gach iarratas atá níos sine ná {{days}} lá freagra.",
+    "load_error_title": "Níorbh fhéidir na riachtanais gan freastal a lódáil",
+    "ai_button": "Fiafraigh den AI cad atá in easnamh",
+    "ai_note": "Seoltar teidil agus cur síos na n-iarratas seo chuig soláthraí AI do phobail. Ní sheoltar aon ainm.",
+    "ai_failed": "Níorbh fhéidir leis an AI freagra a thabhairt faoi láthair. Níl aon tionchar aige seo ar an liosta."
   },
   "matching": {
     "title": "Meaitseálacha molta",

@@ -72,6 +72,7 @@
     "vetting": "Confirmations de vérification",
     "exchanges": "Échanges",
     "match_approvals": "Appariements suggérés",
+    "unmet_needs": "Besoins non satisfaits",
     "messages": "Vérification des messages",
     "monitoring": "Membres surveillés",
     "risk_tags": "Étiquettes de risque des annonces",
@@ -99,6 +100,7 @@
     "vetting": "Confirmations de vérification",
     "exchanges": "Échanges",
     "match_approvals": "Appariements suggérés",
+    "unmet_needs": "Besoins non satisfaits",
     "messages": "Vérification des messages",
     "monitoring": "Membres surveillés",
     "risk_tags": "Étiquettes de risque des annonces",
@@ -1505,6 +1507,21 @@
     "action_admin": "Seul un administrateur peut la définir. En tant qu’administrateur, vous pouvez le faire sur la page Configuration, sous Conformité et protection.",
     "action_ask_admin": "Seul un administrateur peut la définir. Demandez à un administrateur de votre communauté de le faire.",
     "set_button": "Définir la juridiction"
+  },
+  "unmet": {
+    "description": "Demandes publiées il y a au moins {{days}} jours et que personne n'a prises en charge : aucun échange, et aucun message d'un autre membre à leur sujet.",
+    "totals": "En attente : {{total}}. Sans aucune correspondance : {{noMatch}}. Montrées à des membres, sans réponse : {{noResponse}}.",
+    "col_requested_by": "Demandé par",
+    "col_waiting": "En attente depuis",
+    "col_matched": "Membres correspondants",
+    "days": "{{number}} jours",
+    "nobody": "Personne",
+    "empty_title": "Aucun besoin non satisfait",
+    "empty_hint": "Chaque demande de plus de {{days}} jours a reçu une réponse.",
+    "load_error_title": "Impossible de charger les besoins non satisfaits",
+    "ai_button": "Demander à l'IA ce qui manque",
+    "ai_note": "Envoie les titres et les descriptions de ces demandes au fournisseur d'IA de votre communauté. Aucun nom n'est envoyé.",
+    "ai_failed": "L'IA n'a pas pu répondre pour le moment. La liste n'est pas affectée."
   },
   "matching": {
     "title": "Appariements suggérés",

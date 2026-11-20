@@ -72,6 +72,7 @@
     "vetting": "Vetting confirmations",
     "exchanges": "Exchanges",
     "match_approvals": "Suggested matches",
+    "unmet_needs": "Unmet needs",
     "messages": "Message checks",
     "monitoring": "Monitored members",
     "risk_tags": "Listing risk tags",
@@ -99,6 +100,7 @@
     "vetting": "Vetting confirmations",
     "exchanges": "Exchanges",
     "match_approvals": "Suggested matches",
+    "unmet_needs": "Unmet needs",
     "messages": "Message checks",
     "monitoring": "Monitored members",
     "risk_tags": "Listing risk tags",
@@ -1490,6 +1492,21 @@
     "action_admin": "Only an admin can set it. As an admin, you can set it on the Configuration page, under Compliance & Safeguarding.",
     "action_ask_admin": "Only an admin can set it. Please ask an admin in your community to set it.",
     "set_button": "Set the jurisdiction"
+  },
+  "unmet": {
+    "description": "Requests posted at least {{days}} days ago that nobody has taken up: no exchange, and no message about them from another member.",
+    "totals": "Waiting: {{total}}. Matched with nobody: {{noMatch}}. Shown to members, no response: {{noResponse}}.",
+    "col_requested_by": "Requested by",
+    "col_waiting": "Waiting",
+    "col_matched": "Members matched",
+    "days": "{{number}} days",
+    "nobody": "Nobody",
+    "empty_title": "No unmet needs",
+    "empty_hint": "Every request older than {{days}} days has had a response.",
+    "load_error_title": "Couldn't load unmet needs",
+    "ai_button": "Ask the AI what is missing",
+    "ai_note": "Sends the titles and descriptions of these requests to your community's AI provider. No names are sent.",
+    "ai_failed": "The AI could not answer just now. The list is not affected."
   },
   "matching": {
     "title": "Suggested matches",

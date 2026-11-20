@@ -33,6 +33,7 @@ import UserRound from 'lucide-react/icons/user-round';
 import UserRoundCheck from 'lucide-react/icons/user-round-check';
 import UserPlus from 'lucide-react/icons/user-plus';
 import UserCheck from 'lucide-react/icons/user-check';
+import SearchX from 'lucide-react/icons/search-x';
 import HeartHandshake from 'lucide-react/icons/heart-handshake';
 import HandHeart from 'lucide-react/icons/hand-heart';
 import ClipboardCheck from 'lucide-react/icons/clipboard-check';
@@ -74,7 +75,7 @@ export interface BrokerDestination {
   /** Tenant feature that must be enabled for this destination. */
   feature?: 'exchange_workflow' | 'reviews' | 'volunteering';
   /** Tenant module that must be enabled for this destination. */
-  module?: 'feed';
+  module?: 'feed' | 'listings';
 }
 
 export const BROKER_DESTINATIONS: BrokerDestination[] = [
@@ -83,6 +84,7 @@ export const BROKER_DESTINATIONS: BrokerDestination[] = [
   { key: 'onboarding', labelKey: 'nav.onboarding', icon: UserPlus, path: '/broker/onboarding' },
   { key: 'exchanges', labelKey: 'nav.exchanges', icon: ArrowLeftRight, path: '/broker/exchanges', feature: 'exchange_workflow' },
   { key: 'match-approvals', labelKey: 'nav.match_approvals', icon: UserCheck, path: '/broker/match-approvals', feature: 'exchange_workflow' },
+  { key: 'unmet-needs', labelKey: 'nav.unmet_needs', icon: SearchX, path: '/broker/unmet-needs', module: 'listings' },
   { key: 'messages', labelKey: 'nav.messages', icon: MessageSquareWarning, path: '/broker/messages' },
   { key: 'moderation-queue', labelKey: 'nav.moderation_queue', icon: ShieldPlus, path: '/broker/moderation/queue' },
   { key: 'moderation-feed', labelKey: 'nav.moderation_feed', icon: MessageSquare, path: '/broker/moderation/feed', module: 'feed' },

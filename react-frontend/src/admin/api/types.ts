@@ -455,6 +455,33 @@ export interface MatchApprovalDetail extends MatchApproval {
   category_name?: string | null;
 }
 
+/** A request nobody has taken up (broker "Unmet needs" page) */
+export interface UnmetNeed {
+  id: number;
+  title: string;
+  description: string;
+  category_name: string | null;
+  created_at: string;
+  days_waiting: number;
+  /** Members who currently have this request among their matches */
+  matched_members: number;
+  requester_id: number;
+  requester_name: string;
+}
+
+export interface UnmetNeedsPage {
+  items: UnmetNeed[];
+  summary: { total: number; no_match: number; no_response: number };
+  waiting_days: number;
+  /** Whether a coordinator here can ask the community's AI for a summary */
+  ai_available: boolean;
+}
+
+export interface UnmetNeedsAiSummary {
+  summary: string;
+  themes: Array<{ need: string; requests: number; suggestion: string }>;
+}
+
 export interface MatchApprovalStats {
   pending_count: number;
   approved_count: number;

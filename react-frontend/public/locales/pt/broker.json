@@ -72,6 +72,7 @@
     "vetting": "Confirmações de verificação",
     "exchanges": "Trocas",
     "match_approvals": "Correspondências sugeridas",
+    "unmet_needs": "Necessidades por satisfazer",
     "messages": "Verificação de mensagens",
     "monitoring": "Membros monitorados",
     "risk_tags": "Etiquetas de risco de anúncios",
@@ -99,6 +100,7 @@
     "vetting": "Confirmações de verificação",
     "exchanges": "Trocas",
     "match_approvals": "Correspondências sugeridas",
+    "unmet_needs": "Necessidades por satisfazer",
     "messages": "Verificação de mensagens",
     "monitoring": "Membros monitorados",
     "risk_tags": "Etiquetas de risco de anúncios",
@@ -1505,6 +1507,21 @@
     "action_admin": "Só um administrador a pode definir. Como administrador, pode fazê-lo na página Configuração, em Conformidade e proteção.",
     "action_ask_admin": "Só um administrador a pode definir. Peça a um administrador da sua comunidade que o faça.",
     "set_button": "Definir a jurisdição"
+  },
+  "unmet": {
+    "description": "Pedidos publicados há pelo menos {{days}} dias a que ninguém respondeu: sem troca e sem qualquer mensagem de outro membro sobre eles.",
+    "totals": "Em espera: {{total}}. Sem qualquer correspondência: {{noMatch}}. Mostrados a membros, sem resposta: {{noResponse}}.",
+    "col_requested_by": "Pedido por",
+    "col_waiting": "Em espera há",
+    "col_matched": "Membros correspondentes",
+    "days": "{{number}} dias",
+    "nobody": "Ninguém",
+    "empty_title": "Não há necessidades por satisfazer",
+    "empty_hint": "Todos os pedidos com mais de {{days}} dias tiveram resposta.",
+    "load_error_title": "Não foi possível carregar as necessidades por satisfazer",
+    "ai_button": "Perguntar à IA o que falta",
+    "ai_note": "Envia os títulos e as descrições destes pedidos ao fornecedor de IA da sua comunidade. Não são enviados nomes.",
+    "ai_failed": "A IA não conseguiu responder neste momento. A lista não é afetada."
   },
   "matching": {
     "title": "Correspondências sugeridas",

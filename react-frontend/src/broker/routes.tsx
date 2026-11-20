@@ -116,6 +116,7 @@ const MessageReviewPage = lazy(() => import('./pages/MessageReviewPage'));
 
 // Matching (gated on exchange_workflow like Exchanges)
 const MatchApprovalsPage = lazy(() => import('./pages/MatchApprovalsPage'));
+const UnmetNeedsPage = lazy(() => import('./pages/UnmetNeedsPage'));
 const MatchApprovalDetailPage = lazy(() => import('./pages/MatchApprovalDetailPage'));
 
 // Detail / drill-down pages
@@ -182,6 +183,8 @@ export function BrokerRoutes() {
       {/* Match approvals — wherever the community has offers and requests. */}
       <Route path="match-approvals" element={<MatchApprovalsRoute><Lazy><MatchApprovalsPage /></Lazy></MatchApprovalsRoute>} />
       <Route path="match-approvals/:id" element={<MatchApprovalsRoute><Lazy><MatchApprovalDetailPage /></Lazy></MatchApprovalsRoute>} />
+      {/* Unmet needs: requests nobody has taken up. Same condition: offers and requests. */}
+      <Route path="unmet-needs" element={<MatchApprovalsRoute><Lazy><UnmetNeedsPage /></Lazy></MatchApprovalsRoute>} />
 
       {/* Messages */}
       <Route path="messages" element={<Lazy><MessageReviewPage /></Lazy>} />

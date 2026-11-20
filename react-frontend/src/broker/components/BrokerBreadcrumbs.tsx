@@ -34,6 +34,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   vetting: 'breadcrumbs.vetting',
   exchanges: 'breadcrumbs.exchanges',
   'match-approvals': 'breadcrumbs.match_approvals',
+  'unmet-needs': 'breadcrumbs.unmet_needs',
   messages: 'breadcrumbs.messages',
   moderation: 'breadcrumbs.moderation',
   queue: 'breadcrumbs.moderation_queue',

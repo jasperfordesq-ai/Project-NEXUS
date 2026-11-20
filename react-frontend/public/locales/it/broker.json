@@ -72,6 +72,7 @@
     "vetting": "Conferme di controllo",
     "exchanges": "Scambi",
     "match_approvals": "Abbinamenti suggeriti",
+    "unmet_needs": "Bisogni non soddisfatti",
     "messages": "Controllo dei messaggi",
     "monitoring": "Membri monitorati",
     "risk_tags": "Tag di rischio degli annunci",
@@ -99,6 +100,7 @@
     "vetting": "Conferme di controllo",
     "exchanges": "Scambi",
     "match_approvals": "Abbinamenti suggeriti",
+    "unmet_needs": "Bisogni non soddisfatti",
     "messages": "Controllo dei messaggi",
     "monitoring": "Membri monitorati",
     "risk_tags": "Tag di rischio degli annunci",
@@ -1505,6 +1507,21 @@
     "action_admin": "Solo un amministratore può impostarla. Come amministratore, puoi farlo nella pagina Configurazione, sotto Conformità e tutela.",
     "action_ask_admin": "Solo un amministratore può impostarla. Chiedi a un amministratore della tua comunità di farlo.",
     "set_button": "Imposta la giurisdizione"
+  },
+  "unmet": {
+    "description": "Richieste pubblicate almeno {{days}} giorni fa che nessuno ha raccolto: nessuno scambio e nessun messaggio di un altro membro al riguardo.",
+    "totals": "In attesa: {{total}}. Senza alcuna corrispondenza: {{noMatch}}. Mostrate ai membri, nessuna risposta: {{noResponse}}.",
+    "col_requested_by": "Richiesto da",
+    "col_waiting": "In attesa da",
+    "col_matched": "Membri corrispondenti",
+    "days": "{{number}} giorni",
+    "nobody": "Nessuno",
+    "empty_title": "Nessun bisogno non soddisfatto",
+    "empty_hint": "Ogni richiesta più vecchia di {{days}} giorni ha ricevuto una risposta.",
+    "load_error_title": "Impossibile caricare i bisogni non soddisfatti",
+    "ai_button": "Chiedi all'IA cosa manca",
+    "ai_note": "Invia i titoli e le descrizioni di queste richieste al fornitore di IA della tua comunità. Non viene inviato alcun nome.",
+    "ai_failed": "L'IA non è riuscita a rispondere in questo momento. L'elenco non è interessato."
   },
   "matching": {
     "title": "Abbinamenti suggeriti",
