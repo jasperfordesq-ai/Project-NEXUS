@@ -11,7 +11,10 @@ use App\Models\User;
 use App\Services\Matching\MatchDiscoveryService;
 use App\Services\Matching\TextReadingService;
 use App\Services\SmartMatchingEngine;
+use App\Jobs\DiscoverMatchesForListingJob;
+use App\Jobs\EnrichListingForMatchingJob;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Tests\Laravel\TestCase;
@@ -32,6 +35,12 @@ class MatchingAiDiscoveryTest extends TestCase
         parent::setUp();
         Cache::flush();
         app(SmartMatchingEngine::class)->clearCache();
+        // Saving a listing queues the AI's reading and match search for it,
+        // and in tests the queue runs them at once. On an empty database
+        // (CI) the search then finds nothing to compare and records "looked
+        // at", so a test's own call was answered "already done". These tests
+        // drive the service themselves.
+        Bus::fake([EnrichListingForMatchingJob::class, DiscoverMatchesForListingJob::class]);
     }
 
     private function aiSwitch(bool $on): void
