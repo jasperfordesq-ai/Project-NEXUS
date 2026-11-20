@@ -120,6 +120,8 @@ return [
         'paused_title' => 'La mise en relation est en pause',
         'paused_body' => 'Vous avez mis la mise en relation en pause. Nous ne vous proposons donc pas de nouvelles correspondances pour le moment.',
         'paused_link' => 'Aller à vos paramètres de mise en relation pour la relancer',
+        'from_skills_title' => 'Ces correspondances viennent des compétences de votre profil',
+        'from_skills_body' => 'Vous n\'avez publié ni offre ni demande ; nous vous proposons donc des correspondances d\'après les compétences que vous avez indiquées. Modifiez vos compétences, ou publiez une offre ou une demande, pour changer ce que vous voyez.',
         'disabled_title' => 'La mise en relation n\'est pas utilisée ici',
         'disabled_body' => 'Cette communauté n\'utilise pas la mise en relation pour le moment.',
         'from_notification' => 'Depuis votre notification',

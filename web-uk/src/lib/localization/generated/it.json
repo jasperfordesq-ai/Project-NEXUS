@@ -8158,6 +8158,8 @@
                 "paused_title": "L'abbinamento è in pausa",
                 "paused_body": "Hai messo in pausa l'abbinamento, quindi al momento non ti proponiamo nuove corrispondenze.",
                 "paused_link": "Vai alle impostazioni di abbinamento per riattivarlo",
+                "from_skills_title": "Questi abbinamenti derivano dalle competenze del tuo profilo",
+                "from_skills_body": "Non hai pubblicato né un'offerta né una richiesta, quindi ti abbiniamo in base alle competenze che hai indicato. Modifica le tue competenze, oppure pubblica un'offerta o una richiesta, per cambiare ciò che vedi.",
                 "disabled_title": "L'abbinamento non è in uso qui",
                 "disabled_body": "Al momento questa comunità non usa l'abbinamento.",
                 "from_notification": "Dalla tua notifica",

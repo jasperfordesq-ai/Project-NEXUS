@@ -63,6 +63,9 @@
   {% elif noCoordinates and not errorMessage %}
     {% set notice = "location" %}{% include "matches/_state-notice.njk" %}
   {% endif %}
+  {% if matchedFromSkills and matches.length and not matchingPaused and not errorMessage %}
+    {% set notice = "from-skills" %}{% include "matches/_state-notice.njk" %}
+  {% endif %}
 
   {% if errorMessage %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">

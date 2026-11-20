@@ -120,6 +120,8 @@ return [
         'paused_title' => 'As combinações estão pausadas',
         'paused_body' => 'Você pausou as combinações, por isso não estamos sugerindo novas combinações para você no momento.',
         'paused_link' => 'Ir para as suas configurações de combinações para retomá-las',
+        'from_skills_title' => 'Estas correspondências vêm das competências do seu perfil',
+        'from_skills_body' => 'Você ainda não publicou nenhuma oferta nem pedido, por isso fazemos a correspondência com base nas competências que indicou. Altere as suas competências, ou publique uma oferta ou um pedido, para mudar o que vê.',
         'disabled_title' => 'As combinações não estão em uso aqui',
         'disabled_body' => 'Esta comunidade não está usando combinações no momento.',
         'from_notification' => 'Da sua notificação',

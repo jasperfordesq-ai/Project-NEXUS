@@ -244,6 +244,21 @@ describe.each([
     expect(res.text).toContain('5 December 2026 - Town Hall');
   });
 
+  it('tells a member with no listing that the matches come from their profile skills', async () => {
+    respond(allKinds, { has_active_listings: false, matched_from_skills: true });
+    const res = await get(page);
+
+    expect(res.text).toContain('matches-from-skills-notice');
+    expect(res.text).toContain('These matches come from the skills on your profile');
+  });
+
+  it('says nothing about profile skills to a member matched by their own listings', async () => {
+    respond(allKinds, { matched_from_skills: false });
+    const res = await get(page);
+
+    expect(res.text).not.toContain('matches-from-skills-notice');
+  });
+
   it('offers to hide every kind of match', async () => {
     // Volunteering and event matches could not be hidden until 19 Nov 2026.
     respond(allKinds);

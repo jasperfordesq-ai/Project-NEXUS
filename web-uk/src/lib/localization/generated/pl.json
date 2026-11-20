@@ -8158,6 +8158,8 @@
                 "paused_title": "Dopasowywanie jest wstrzymane",
                 "paused_body": "Dopasowywanie zostało przez Ciebie wstrzymane, dlatego obecnie nie proponujemy Ci nowych dopasowań.",
                 "paused_link": "Przejdź do ustawień dopasowywania, aby je wznowić",
+                "from_skills_title": "Te dopasowania wynikają z umiejętności w Twoim profilu",
+                "from_skills_body": "Nie masz jeszcze opublikowanej oferty ani prośby, dlatego dopasowujemy Cię na podstawie podanych umiejętności. Zmień swoje umiejętności albo opublikuj ofertę lub prośbę, aby zmienić to, co widzisz.",
                 "disabled_title": "Dopasowywanie nie jest tutaj używane",
                 "disabled_body": "Ta społeczność obecnie nie korzysta z dopasowywania.",
                 "from_notification": "Z Twojego powiadomienia",

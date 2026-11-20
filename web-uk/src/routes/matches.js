@@ -298,7 +298,9 @@ function matchingState(meta = {}) {
     matchingDisabled: meta.disabled === true,
     matchingPaused: meta.paused === true,
     noCoordinates: meta.needs_location === true || meta.degraded_reason === 'no_coordinates',
-    noActiveListings: meta.has_active_listings === false
+    noActiveListings: meta.has_active_listings === false,
+    // No listing of their own: matched by the skills on their profile.
+    matchedFromSkills: meta.matched_from_skills === true
   };
 }
 

@@ -8158,6 +8158,8 @@
                 "paused_title": "Der Abgleich ist pausiert",
                 "paused_body": "Sie haben den Abgleich pausiert. Deshalb schlagen wir Ihnen im Moment keine neuen Treffer vor.",
                 "paused_link": "Zu Ihren Abgleich-Einstellungen, um den Abgleich wieder zu starten",
+                "from_skills_title": "Diese Vorschläge beruhen auf den Fähigkeiten in Ihrem Profil",
+                "from_skills_body": "Sie haben noch kein Angebot und kein Gesuch veröffentlicht. Deshalb gleichen wir Sie anhand der Fähigkeiten ab, die Sie angegeben haben. Ändern Sie Ihre Fähigkeiten oder veröffentlichen Sie ein Angebot oder Gesuch, um andere Vorschläge zu sehen.",
                 "disabled_title": "Der Abgleich wird hier nicht genutzt",
                 "disabled_body": "Diese Gemeinschaft nutzt den Abgleich zurzeit nicht.",
                 "from_notification": "Aus Ihrer Benachrichtigung",

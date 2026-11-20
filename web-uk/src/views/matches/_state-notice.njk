@@ -10,6 +10,7 @@
     "disabled"    - the community has switched matching off (nothing the member can do)
     "paused"      - the member paused matching; links to the setting that resumes it
     "location"    - the member has no location, so distance cannot be used
+    "from-skills" - the member has no listing and was matched by their profile skills
     "no-listings" - matching works from offers and requests and the member has none
 #}
 {% if notice == "disabled" %}
@@ -27,6 +28,12 @@
   <div class="govuk-inset-text" id="matches-location-notice">
     <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("matches.no_location_title") }}</h2>
     <p class="govuk-body govuk-!-margin-bottom-0">{{ t("matches.no_location_desc") }} <a class="govuk-link" href="{{ urlFor('/profile/settings#location') }}">{{ t("matches.set_location_cta") }}</a></p>
+  </div>
+{% elif notice == "from-skills" %}
+  {# The member has no offer or request and was matched by their profile skills. #}
+  <div class="govuk-inset-text" id="matches-from-skills-notice">
+    <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("govuk_alpha_connections.matches_shared.from_skills_title") }}</h2>
+    <p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha_connections.matches_shared.from_skills_body") }}</p>
   </div>
 {% elif notice == "no-listings" %}
   <div class="govuk-inset-text" id="matches-no-listings-notice">

@@ -122,6 +122,8 @@ return [
         'paused_title' => 'Matching is paused',
         'paused_body' => 'You have paused matching, so we are not suggesting new matches for you at the moment.',
         'paused_link' => 'Go to your matching settings to start matching again',
+        'from_skills_title' => 'These matches come from the skills on your profile',
+        'from_skills_body' => 'You have not posted an offer or a request, so we match you by the skills you listed. Change your skills, or post an offer or request, to change what you see.',
         'disabled_title' => 'Matching is not in use here',
         'disabled_body' => 'This community is not using matching at the moment.',
         'from_notification' => 'From your notification',

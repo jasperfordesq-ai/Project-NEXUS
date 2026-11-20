@@ -120,6 +120,8 @@ return [
         'paused_title' => 'Las coincidencias están en pausa',
         'paused_body' => 'Has puesto en pausa las coincidencias, así que por ahora no te sugerimos coincidencias nuevas.',
         'paused_link' => 'Ve a tu configuración de coincidencias para reactivarlas',
+        'from_skills_title' => 'Estas coincidencias proceden de las habilidades de tu perfil',
+        'from_skills_body' => 'No has publicado ninguna oferta ni solicitud, así que te emparejamos según las habilidades que has indicado. Cambia tus habilidades, o publica una oferta o una solicitud, para cambiar lo que ves.',
         'disabled_title' => 'Las coincidencias no se usan aquí',
         'disabled_body' => 'Esta comunidad no usa las coincidencias por el momento.',
         'from_notification' => 'De tu notificación',

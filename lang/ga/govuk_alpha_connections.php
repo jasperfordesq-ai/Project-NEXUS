@@ -120,6 +120,8 @@ return [
         'paused_title' => 'Tá an mheaitseáil ar sos',
         'paused_body' => 'Chuir tú an mheaitseáil ar sos, mar sin níl meaitseálacha nua á moladh againn duit faoi láthair.',
         'paused_link' => 'Téigh chuig do shocruithe meaitseála chun an mheaitseáil a thosú arís',
+        'from_skills_title' => 'Tagann na meaitseálacha seo ó na scileanna ar do phróifíl',
+        'from_skills_body' => 'Níl tairiscint ná iarratas postáilte agat, mar sin déanaimid tú a mheaitseáil de réir na scileanna a liostaigh tú. Athraigh do scileanna, nó postáil tairiscint nó iarratas, chun an méid a fheiceann tú a athrú.',
         'disabled_title' => 'Níl an mheaitseáil in úsáid anseo',
         'disabled_body' => 'Níl an pobal seo ag úsáid meaitseála faoi láthair.',
         'from_notification' => 'Ó d\'fhógra',

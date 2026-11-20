@@ -8158,6 +8158,8 @@
                 "paused_title": "Matchen is gepauzeerd",
                 "paused_body": "Je hebt het matchen gepauzeerd. Daarom stellen we je op dit moment geen nieuwe matches voor.",
                 "paused_link": "Ga naar je matchinstellingen om het matchen weer te starten",
+                "from_skills_title": "Deze matches komen uit de vaardigheden op uw profiel",
+                "from_skills_body": "U hebt nog geen aanbod of vraag geplaatst, dus we matchen u op de vaardigheden die u hebt opgegeven. Pas uw vaardigheden aan, of plaats een aanbod of vraag, om te veranderen wat u ziet.",
                 "disabled_title": "Matchen wordt hier niet gebruikt",
                 "disabled_body": "Deze gemeenschap gebruikt het matchen op dit moment niet.",
                 "from_notification": "Uit je melding",
