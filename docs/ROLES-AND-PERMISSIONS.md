@@ -275,8 +275,9 @@ keep their own checks.
 **Frontend.** `GET /v2/users/me` returns `super_panel_level`
 (`master`/`regional`/`none`), resolved server-side — the UI must not infer it from
 flags, because eligibility also depends on `allows_subtenants` and the path.
-`SuperAdminRoute` admits both levels, and the panel now shows both the **same six
-pages** (dashboard, communities, hierarchy, users, bulk operations, audit log).
+`SuperAdminRoute` admits both levels, and the panel now shows both the **same seven
+pages** (dashboard, communities, hierarchy, users, bulk operations, audit log,
+branch payments).
 `PlatformOnlyRoute` and the menu's tier-B sections no longer exist: the old
 `/super-admin/...` addresses of the moved screens are redirects that send the
 platform team to the new page and anyone else to the super admin home page.
@@ -865,9 +866,31 @@ with `requireGodPlatformAdmin()` and pinned in
 every community below it; an exemption keeps a community, and everything below
 it, open. A community's admin may read its own standing
 (`GET /v2/admin/billing/standing`, `requireAdmin()`) and nothing else.
-🔴 A parent community's manager cannot yet pause or restore the communities
-below it. That is planned as its own step, through
-`SuperPanelAccess::canManageTenant()` (below only), and is not built.
+**A parent community's manager and the communities below it (20 November
+2026).** The super admin panel's Branch payments page
+(`/super-admin/branch-payments`) lets a tenant super admin, or a global super
+admin, record the date a community is paid up to and pause or restore it:
+`GET /v2/admin/super/branch-payments` and
+`POST /v2/admin/super/branch-payments/{id}/{paid-until,suspend,restore}`. These
+are in the panel's regional tier and are **not** platform-team-only. Each one
+confines itself through `App\Support\Billing\BranchPayments`, the single rule
+the list and every write share:
+
+- the community must be below the caller's own
+  (`SuperPanelAccess::canManageTenant()`): never its own, above or beside.
+  Out of reach and "does not exist" answer the same 403;
+- it must pay its parent. A community directly under the platform's own
+  community pays the platform and is the platform team's: a manager of the
+  platform community reaches it by the reach rule and is still refused (422);
+- it must not be exempt. The exemption is the platform team's (422).
+
+A community paused only because a community above it is paused cannot be
+restored from below (422): it is restored on the community above. A community's
+admins are mailed when it is paused or restored (`BillingStandingNotifier`).
+Both ends are pinned in `tests/Laravel/Feature/Billing/BranchPaymentsEndpointsTest.php`.
+The super admin panel stays open for a community that is itself paused, so a
+paused parent's manager can still manage the communities below it; the broker
+panel does not.
 
 **Adding a page to the panel.** Mount it in `PlatformTeamRoutes.tsx`, add it to
 `PlatformTeamSidebar.tsx` in the zone that matches what the page acts on ("The
