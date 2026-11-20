@@ -62219,6 +62219,25 @@ export default interface Resources {
       "table_title": "Recent Activity",
       "title": "Audit Log"
     },
+    "branch_payments": {
+      "cannot_exempt": "Exempt. Only the platform team can change this.",
+      "cannot_pays_platform": "Pays the platform. Only the platform team can change this.",
+      "col_community": "Community",
+      "col_days_late": "Days late",
+      "col_paid_until": "Paid until",
+      "date_help": "Leave the date empty to stop tracking one for this community.",
+      "date_label": "Paid up to and including",
+      "description": "The payment standing of the communities below yours. Record the date each one is paid up to, and pause or restore it.",
+      "done_date": "Date saved",
+      "empty": "There are no communities below yours.",
+      "load_failed": "The communities could not be loaded.",
+      "no_date": "No date set",
+      "paused_from_above_note": "Paused because a community above it is paused.",
+      "pays_platform": "The platform",
+      "save": "Save",
+      "set_date": "Set paid-until date",
+      "title": "Branch payments"
+    },
     "breadcrumbs": {
       "aria_label": "Breadcrumbs",
       "audit": "Audit Log",
@@ -62565,6 +62584,7 @@ export default interface Resources {
       "audit_log": "Audit Log",
       "back_to_platform_admin": "Back to Platform Admin",
       "billing_control": "Billing Control",
+      "branch_payments": "Branch payments",
       "brand": "Super Admin",
       "bulk_ops": "Bulk Ops",
       "dashboard": "Dashboard",

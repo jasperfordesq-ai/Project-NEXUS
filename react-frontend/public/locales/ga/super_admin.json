@@ -22,7 +22,8 @@
     "regional_analytics": "Anailís Réigiúnach",
     "national_dashboard": "Painéal Náisiúnta",
     "platform_translation": "Eochair aistriúcháin",
-    "platform_team_panel": "Painéal fhoireann an ardáin"
+    "platform_team_panel": "Painéal fhoireann an ardáin",
+    "branch_payments": "Íocaíochtaí an bhrainse"
   },
   "layout": {
     "loading": "Super admin íoslódáil",
@@ -803,5 +804,24 @@
       "feat_groups_title": "Grúpaí",
       "feat_groups_desc": "Ceadaigh ballraíocht grúpa tras-tionóntaí"
     }
+  },
+  "branch_payments": {
+    "title": "Íocaíochtaí an bhrainse",
+    "description": "Stádas íocaíochta na bpobal faoi do phobal féin. Taifead an dáta a bhfuil gach ceann íoctha suas go dtí é, agus cuir ar sos nó athchóirigh é.",
+    "col_community": "Pobal",
+    "col_paid_until": "Íoctha go dtí",
+    "col_days_late": "Laethanta déanach",
+    "no_date": "Níl dáta socraithe",
+    "pays_platform": "An t-ardán",
+    "set_date": "Socraigh an dáta íoctha",
+    "cannot_pays_platform": "Íocann leis an ardán. Ní féidir ach le foireann an ardáin é seo a athrú.",
+    "cannot_exempt": "Díolmhaithe. Ní féidir ach le foireann an ardáin é seo a athrú.",
+    "paused_from_above_note": "Ar sos toisc go bhfuil pobal os a chionn ar sos.",
+    "date_label": "Íoctha suas go dtí an lá seo san áireamh",
+    "date_help": "Fág an dáta folamh chun stop a chur le dáta a rianú don phobal seo.",
+    "save": "Sábháil",
+    "done_date": "Dáta sábháilte",
+    "load_failed": "Níorbh fhéidir na pobail a lódáil.",
+    "empty": "Níl aon phobal faoi do phobal féin."
   }
 }

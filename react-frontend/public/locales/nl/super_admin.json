@@ -22,7 +22,8 @@
     "regional_analytics": "Regionale analyse",
     "national_dashboard": "Nationaal dashboard",
     "platform_translation": "Vertaalsleutel",
-    "platform_team_panel": "Paneel van het platformteam"
+    "platform_team_panel": "Paneel van het platformteam",
+    "branch_payments": "Betalingen in de tak"
   },
   "layout": {
     "loading": "Superbeheerder laden",
@@ -803,5 +804,24 @@
       "feat_groups_desc": "Sta groepslidmaatschap tussen meerdere tenants toe",
       "partnerships_card_title": "Partnerschappen (:count)"
     }
+  },
+  "branch_payments": {
+    "title": "Betalingen in de tak",
+    "description": "De betaalstatus van de gemeenschappen onder die van jou. Leg vast tot welke datum elke gemeenschap heeft betaald, en pauzeer of herstel haar.",
+    "col_community": "Gemeenschap",
+    "col_paid_until": "Betaald tot",
+    "col_days_late": "Dagen te laat",
+    "no_date": "Geen datum ingesteld",
+    "pays_platform": "Het platform",
+    "set_date": "Datum 'betaald tot' instellen",
+    "cannot_pays_platform": "Betaalt aan het platform. Alleen het platformteam kan dit wijzigen.",
+    "cannot_exempt": "Vrijgesteld. Alleen het platformteam kan dit wijzigen.",
+    "paused_from_above_note": "Gepauzeerd omdat een bovenliggende gemeenschap is gepauzeerd.",
+    "date_label": "Betaald tot en met",
+    "date_help": "Laat de datum leeg om voor deze gemeenschap geen datum meer bij te houden.",
+    "save": "Opslaan",
+    "done_date": "Datum opgeslagen",
+    "load_failed": "De gemeenschappen konden niet worden geladen.",
+    "empty": "Er zijn geen gemeenschappen onder die van jou."
   }
 }

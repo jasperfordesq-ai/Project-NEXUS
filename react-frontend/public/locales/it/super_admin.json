@@ -22,7 +22,8 @@
     "regional_analytics": "Analisi regionale",
     "national_dashboard": "Cruscotto nazionale",
     "platform_translation": "Chiave di traduzione",
-    "platform_team_panel": "Pannello del team della piattaforma"
+    "platform_team_panel": "Pannello del team della piattaforma",
+    "branch_payments": "Pagamenti del ramo"
   },
   "layout": {
     "loading": "Caricamento super amministratore",
@@ -803,5 +804,24 @@
       "feat_groups_title": "Gruppi",
       "feat_groups_desc": "Consenti l'appartenenza a gruppi tra tenant"
     }
+  },
+  "branch_payments": {
+    "title": "Pagamenti del ramo",
+    "description": "Lo stato dei pagamenti delle comunità sotto la tua. Registra fino a quale data ha pagato ciascuna, mettila in pausa o ripristinala.",
+    "col_community": "Comunità",
+    "col_paid_until": "Pagato fino al",
+    "col_days_late": "Giorni di ritardo",
+    "no_date": "Nessuna data",
+    "pays_platform": "La piattaforma",
+    "set_date": "Imposta la data di pagamento",
+    "cannot_pays_platform": "Paga la piattaforma. Solo il team della piattaforma può cambiarlo.",
+    "cannot_exempt": "Esente. Solo il team della piattaforma può cambiarlo.",
+    "paused_from_above_note": "In pausa perché una comunità superiore è in pausa.",
+    "date_label": "Pagato fino al giorno (incluso)",
+    "date_help": "Lascia vuota la data per non seguire più una data per questa comunità.",
+    "save": "Salva",
+    "done_date": "Data salvata",
+    "load_failed": "Non è stato possibile caricare le comunità.",
+    "empty": "Non ci sono comunità sotto la tua."
   }
 }

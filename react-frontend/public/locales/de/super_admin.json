@@ -22,7 +22,8 @@
     "national_dashboard": "Nationales Dashboard",
     "whitelist": "Weiße Liste",
     "platform_translation": "Übersetzungsschlüssel",
-    "platform_team_panel": "Bereich des Plattform-Teams"
+    "platform_team_panel": "Bereich des Plattform-Teams",
+    "branch_payments": "Zahlungen im Zweig"
   },
   "layout": {
     "loading": "Super Admin wird geladen",
@@ -803,5 +804,24 @@
       "feat_groups_title": "Gruppen",
       "feat_groups_desc": "Mandantenübergreifende Gruppenmitgliedschaft zulassen"
     }
+  },
+  "branch_payments": {
+    "title": "Zahlungen im Zweig",
+    "description": "Der Zahlungsstatus der Communitys unterhalb Ihrer eigenen. Erfassen Sie, bis zu welchem Datum jede bezahlt ist, und pausieren oder stellen Sie sie wieder her.",
+    "col_community": "Gemeinschaft",
+    "col_paid_until": "Bezahlt bis",
+    "col_days_late": "Tage überfällig",
+    "no_date": "Kein Datum gesetzt",
+    "pays_platform": "Die Plattform",
+    "set_date": "Datum „bezahlt bis“ setzen",
+    "cannot_pays_platform": "Zahlt an die Plattform. Nur das Plattform-Team kann das ändern.",
+    "cannot_exempt": "Ausgenommen. Nur das Plattform-Team kann das ändern.",
+    "paused_from_above_note": "Pausiert, weil eine übergeordnete Community pausiert ist.",
+    "date_label": "Bezahlt bis einschließlich",
+    "date_help": "Lassen Sie das Datum leer, um für diese Community kein Datum mehr zu verfolgen.",
+    "save": "Speichern",
+    "done_date": "Datum gespeichert",
+    "load_failed": "Die Communitys konnten nicht geladen werden.",
+    "empty": "Unterhalb Ihrer Community gibt es keine Communitys."
   }
 }

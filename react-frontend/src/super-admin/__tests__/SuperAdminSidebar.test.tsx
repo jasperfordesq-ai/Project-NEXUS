@@ -112,7 +112,7 @@ describe('SuperAdminSidebar', () => {
   /**
    * 🔴 One tier since 15 Nov 2026. The platform-wide pages moved to the Platform
    * team panel, so a global super admin ('master') and a tenant super admin
-   * ('regional') are offered exactly the same six pages here.
+   * ('regional') are offered exactly the same seven pages here.
    */
   function panelLinks(user: Record<string, unknown>): string[] {
     vi.mocked(useAuth).mockReturnValue({ user } as never);
@@ -129,21 +129,25 @@ describe('SuperAdminSidebar', () => {
     return list;
   }
 
-  const SIX_PAGES = [
+  const BRANCH_PAGES = [
     '/test/super-admin',
     '/test/super-admin/tenants',
     '/test/super-admin/tenants/hierarchy',
     '/test/super-admin/users',
     '/test/super-admin/bulk',
     '/test/super-admin/audit',
+    // Added 20 Nov 2026: the payment standing of the communities below the
+    // signed-in manager. A branch page, not a platform-wide one, so it
+    // belongs here and both levels see it.
+    '/test/super-admin/branch-payments',
   ];
 
-  it('offers a global super admin exactly the six branch pages', () => {
-    expect(panelLinks({ is_super_admin: true, super_panel_level: 'master' })).toEqual(SIX_PAGES);
+  it('offers a global super admin exactly the seven branch pages', () => {
+    expect(panelLinks({ is_super_admin: true, super_panel_level: 'master' })).toEqual(BRANCH_PAGES);
   });
 
-  it('offers a tenant super admin the same six pages', () => {
-    expect(panelLinks({ is_tenant_super_admin: true, super_panel_level: 'regional' })).toEqual(SIX_PAGES);
+  it('offers a tenant super admin the same seven pages', () => {
+    expect(panelLinks({ is_tenant_super_admin: true, super_panel_level: 'regional' })).toEqual(BRANCH_PAGES);
   });
 
   it('no longer lists the platform-wide pages, even for a global super admin', () => {

@@ -22,7 +22,8 @@
     "regional_analytics": "Análise Regional",
     "national_dashboard": "Painel Nacional",
     "platform_translation": "Chave de tradução",
-    "platform_team_panel": "Painel da equipe da plataforma"
+    "platform_team_panel": "Painel da equipe da plataforma",
+    "branch_payments": "Pagamentos do ramo"
   },
   "layout": {
     "loading": "Carregando superadministrador",
@@ -803,5 +804,24 @@
       "feat_groups_desc": "Permitir associação de grupo entre locatários",
       "partnerships_card_title": "Parcerias (:count)"
     }
+  },
+  "branch_payments": {
+    "title": "Pagamentos do ramo",
+    "description": "A situação de pagamento das comunidades abaixo da sua. Registre até que data cada uma está paga, e pause ou restaure.",
+    "col_community": "Comunidade",
+    "col_paid_until": "Pago até",
+    "col_days_late": "Dias de atraso",
+    "no_date": "Sem data definida",
+    "pays_platform": "A plataforma",
+    "set_date": "Definir data de pagamento",
+    "cannot_pays_platform": "Paga à plataforma. Só a equipe da plataforma pode alterar isso.",
+    "cannot_exempt": "Isenta. Só a equipe da plataforma pode alterar isso.",
+    "paused_from_above_note": "Em pausa porque uma comunidade acima dela está em pausa.",
+    "date_label": "Pago até o dia (inclusive)",
+    "date_help": "Deixe a data vazia para parar de acompanhar uma data nesta comunidade.",
+    "save": "Salvar",
+    "done_date": "Data salva",
+    "load_failed": "Não foi possível carregar as comunidades.",
+    "empty": "Não há comunidades abaixo da sua."
   }
 }

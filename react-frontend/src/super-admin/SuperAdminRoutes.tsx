@@ -28,6 +28,7 @@ const SuperUserForm = lazy(() => import('@/admin/modules/super/SuperUserForm'));
 const UserShow = lazy(() => import('@/admin/modules/super/UserShow'));
 const BulkOperations = lazy(() => import('@/admin/modules/super/BulkOperations'));
 const SuperAuditLog = lazy(() => import('@/admin/modules/super/SuperAuditLog'));
+const BranchPayments = lazy(() => import('@/admin/modules/super/BranchPayments'));
 const FederationTenantFeatures = lazy(() => import('@/admin/modules/super/FederationTenantFeatures'));
 
 function Lazy({ children }: { children: ReactNode }) {
@@ -60,6 +61,7 @@ export function SuperAdminRoutes() {
       <Route path="users/:id/edit" element={<Lazy><SuperUserForm /></Lazy>} />
       <Route path="bulk" element={<Lazy><BulkOperations /></Lazy>} />
       <Route path="audit" element={<Lazy><SuperAuditLog /></Lazy>} />
+      <Route path="branch-payments" element={<Lazy><BranchPayments /></Lazy>} />
 
       {/* Per-community federation feature toggles are subtree-scoped by the API
           (canAccessTenant), so a tenant super admin may use them. */}

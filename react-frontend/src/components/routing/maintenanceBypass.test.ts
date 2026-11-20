@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, expect, it } from 'vitest';
-import { staysOpenDuringMaintenance } from './maintenanceBypass';
+import { staysOpenDuringMaintenance, staysOpenWhilePaused } from './maintenanceBypass';
 
 describe('staysOpenDuringMaintenance', () => {
   it('keeps the admin panel open, with or without a community slug', () => {
@@ -45,5 +45,25 @@ describe('staysOpenDuringMaintenance', () => {
   it('does not treat a panel name in the wrong place as the panel', () => {
     expect(staysOpenDuringMaintenance('/other/admin', 'test')).toBe(false);
     expect(staysOpenDuringMaintenance('/blog/platform-team')).toBe(false);
+  });
+});
+
+describe('staysOpenWhilePaused', () => {
+  it('keeps the admin, Platform team and super admin panels open, with or without a community prefix', () => {
+    for (const path of ['/admin', '/admin/billing', '/platform-team', '/super-admin', '/super-admin/branch-payments']) {
+      expect(staysOpenWhilePaused(path)).toBe(true);
+      expect(staysOpenWhilePaused(`/riverside${path}`, 'riverside')).toBe(true);
+    }
+  });
+
+  it('does not keep the member side or the broker panel open', () => {
+    for (const path of ['/', '/dashboard', '/broker', '/broker/members', '/super-administrator', '/administer']) {
+      expect(staysOpenWhilePaused(path)).toBe(false);
+    }
+  });
+
+  it('leaves the maintenance list as it was: the super admin panel is not on it', () => {
+    expect(staysOpenDuringMaintenance('/super-admin')).toBe(false);
+    expect(staysOpenDuringMaintenance('/admin')).toBe(true);
   });
 });

@@ -22,7 +22,8 @@
     "regional_analytics": "Analítica Regional",
     "national_dashboard": "Panel Nacional",
     "platform_translation": "Clave de traducción",
-    "platform_team_panel": "Panel del equipo de la plataforma"
+    "platform_team_panel": "Panel del equipo de la plataforma",
+    "branch_payments": "Pagos de la rama"
   },
   "layout": {
     "loading": "Cargando superadministrador",
@@ -803,5 +804,24 @@
       "feat_groups_title": "Grupos",
       "feat_groups_desc": "Permitir la pertenencia a grupos entre inquilinos"
     }
+  },
+  "branch_payments": {
+    "title": "Pagos de la rama",
+    "description": "El estado de pago de las comunidades que dependen de la tuya. Registra hasta qué fecha ha pagado cada una, y páusala o restáurala.",
+    "col_community": "Comunidad",
+    "col_paid_until": "Pagado hasta",
+    "col_days_late": "Días de retraso",
+    "no_date": "Sin fecha",
+    "pays_platform": "La plataforma",
+    "set_date": "Fijar fecha de pago",
+    "cannot_pays_platform": "Paga a la plataforma. Solo el equipo de la plataforma puede cambiarlo.",
+    "cannot_exempt": "Exenta. Solo el equipo de la plataforma puede cambiarlo.",
+    "paused_from_above_note": "En pausa porque una comunidad superior está en pausa.",
+    "date_label": "Pagado hasta el día (incluido)",
+    "date_help": "Deja la fecha vacía para dejar de seguir una fecha en esta comunidad.",
+    "save": "Guardar",
+    "done_date": "Fecha guardada",
+    "load_failed": "No se pudieron cargar las comunidades.",
+    "empty": "No hay comunidades que dependan de la tuya."
   }
 }

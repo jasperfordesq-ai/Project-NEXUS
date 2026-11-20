@@ -14,6 +14,7 @@ import { useAuth, useTenant } from '@/contexts';
 import { isPlatformTeamUser } from '@/lib/access';
 import { ScrollShadow } from '@/components/ui';
 import { Button, Tooltip } from '@/components/ui';
+import Banknote from 'lucide-react/icons/banknote';
 import Building2 from 'lucide-react/icons/building-2';
 import LayoutDashboard from 'lucide-react/icons/layout-dashboard';
 import ListChecks from 'lucide-react/icons/list-checks';
@@ -53,7 +54,7 @@ export function SuperAdminSidebar({ collapsed, onToggle }: SuperAdminSidebarProp
   /*
    * 🔴 One tier. Everything in this menu is confined by the server to the
    * caller's own branch (their community and the communities below it), so a
-   * global super admin and a tenant super admin see the SAME six entries.
+   * global super admin and a tenant super admin see the SAME seven entries.
    *
    * The platform-wide pages that used to sit here behind a 'master' check
    * (pilot enquiries, the provisioning queue, the translation key, the
@@ -80,6 +81,8 @@ export function SuperAdminSidebar({ collapsed, onToggle }: SuperAdminSidebarProp
         { key: 'users', label: t('nav.users'), icon: Users, path: '/super-admin/users' },
         { key: 'bulk', label: t('nav.bulk_ops'), icon: ListChecks, path: '/super-admin/bulk' },
         { key: 'audit', label: t('nav.audit_log'), icon: ScrollText, path: '/super-admin/audit' },
+        // The payment standing of the communities below the signed-in manager's own.
+        { key: 'branch_payments', label: t('nav.branch_payments'), icon: Banknote, path: '/super-admin/branch-payments' },
       ],
     },
   ];

@@ -22,7 +22,8 @@
     "regional_analytics": "Analytique régionale",
     "national_dashboard": "Tableau de bord national",
     "platform_translation": "Clé de traduction",
-    "platform_team_panel": "Espace de l'équipe de la plateforme"
+    "platform_team_panel": "Espace de l'équipe de la plateforme",
+    "branch_payments": "Paiements de la branche"
   },
   "layout": {
     "loading": "Chargement du super administrateur",
@@ -803,5 +804,24 @@
       "feat_groups_title": "Groupes",
       "feat_groups_desc": "Autoriser l’appartenance à un groupe entre locataires"
     }
+  },
+  "branch_payments": {
+    "title": "Paiements de la branche",
+    "description": "L’état des paiements des communautés qui dépendent de la vôtre. Enregistrez la date jusqu’à laquelle chacune a payé, mettez-la en pause ou rétablissez-la.",
+    "col_community": "Communauté",
+    "col_paid_until": "Payé jusqu’au",
+    "col_days_late": "Jours de retard",
+    "no_date": "Aucune date",
+    "pays_platform": "La plateforme",
+    "set_date": "Définir la date de paiement",
+    "cannot_pays_platform": "Paie la plateforme. Seule l’équipe de la plateforme peut changer cela.",
+    "cannot_exempt": "Exemptée. Seule l’équipe de la plateforme peut changer cela.",
+    "paused_from_above_note": "En pause parce qu’une communauté dont elle dépend est en pause.",
+    "date_label": "Payé jusqu’au (inclus)",
+    "date_help": "Laissez la date vide pour ne plus suivre de date pour cette communauté.",
+    "save": "Enregistrer",
+    "done_date": "Date enregistrée",
+    "load_failed": "Les communautés n’ont pas pu être chargées.",
+    "empty": "Aucune communauté ne dépend de la vôtre."
   }
 }

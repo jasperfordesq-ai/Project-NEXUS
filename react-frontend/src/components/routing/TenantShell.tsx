@@ -34,7 +34,7 @@ import { useCookieConsent } from '@/contexts/CookieConsentContext';
 import { detectTenantFromUrl, isSharedPlatformHost } from '@/lib/tenant-routing';
 import { CARING_COMMUNITY_ROUTE } from '@/pages/caring-community/config';
 import { LoadingScreen } from '@/components/feedback/LoadingScreen';
-import { staysOpenDuringMaintenance } from './maintenanceBypass';
+import { staysOpenDuringMaintenance, staysOpenWhilePaused } from './maintenanceBypass';
 import { lazy, Suspense, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ContextType } from 'react';
 import { listenForImpersonationToken } from '@/lib/impersonate';
 import {
@@ -555,10 +555,11 @@ function TenantGuard({
   // Paused for non-payment (`billing_paused` on the tenant bootstrap). Unlike
   // maintenance there is NO admin exception here: the member side is closed
   // for everyone, the community's admins included, and only the admin panel,
-  // the Platform team panel and the sign-in pages stay open. So this does not
+  // the Platform team panel, the super admin panel and the sign-in pages stay
+  // open (see staysOpenWhilePaused). So this does not
   // read `isAdmin` above, which decides from the role string alone and misses
   // admin levels held as flags.
-  if (tenant?.billing_paused === true && !isAdminRoute && !isAuthRoute) {
+  if (tenant?.billing_paused === true && !staysOpenWhilePaused(location.pathname, slugPrefix) && !isAuthRoute) {
     return (
       <Suspense fallback={<LoadingScreen />}>
         <CommunityPausedPage />

@@ -22,7 +22,8 @@
     "regional_analytics": "Analizy regionalne",
     "national_dashboard": "Panel krajowy",
     "platform_translation": "Klucz tłumaczenia",
-    "platform_team_panel": "Panel zespołu platformy"
+    "platform_team_panel": "Panel zespołu platformy",
+    "branch_payments": "Płatności gałęzi"
   },
   "layout": {
     "loading": "Ładowanie superadministratora",
@@ -803,5 +804,24 @@
       "feat_groups_title": "Grupy",
       "feat_groups_desc": "Zezwalaj na członkostwo w grupach obejmujących wielu dzierżawców"
     }
+  },
+  "branch_payments": {
+    "title": "Płatności gałęzi",
+    "description": "Stan płatności społeczności podległych twojej. Zapisz, do kiedy każda z nich ma opłacone, wstrzymaj ją lub przywróć.",
+    "col_community": "Społeczność",
+    "col_paid_until": "Opłacone do",
+    "col_days_late": "Dni opóźnienia",
+    "no_date": "Nie ustawiono daty",
+    "pays_platform": "Platforma",
+    "set_date": "Ustaw datę opłacenia",
+    "cannot_pays_platform": "Płaci platformie. Tylko zespół platformy może to zmienić.",
+    "cannot_exempt": "Zwolniona. Tylko zespół platformy może to zmienić.",
+    "paused_from_above_note": "Wstrzymana, ponieważ społeczność nadrzędna jest wstrzymana.",
+    "date_label": "Opłacone do dnia włącznie",
+    "date_help": "Pozostaw datę pustą, aby przestać śledzić datę dla tej społeczności.",
+    "save": "Zapisz",
+    "done_date": "Data zapisana",
+    "load_failed": "Nie udało się wczytać społeczności.",
+    "empty": "Nie ma społeczności podległych twojej."
   }
 }

@@ -22,7 +22,8 @@
     "regional_analytics": "地域別分析",
     "national_dashboard": "全国ダッシュボード",
     "platform_translation": "翻訳キー",
-    "platform_team_panel": "プラットフォームチームのパネル"
+    "platform_team_panel": "プラットフォームチームのパネル",
+    "branch_payments": "ブランチの支払い"
   },
   "layout": {
     "loading": "スーパー管理者の読み込み中",
@@ -803,5 +804,24 @@
       "feat_groups_title": "グループ",
       "feat_groups_desc": "クロステナントグループメンバーシップを許可する"
     }
+  },
+  "branch_payments": {
+    "title": "ブランチの支払い",
+    "description": "あなたのコミュニティの下位にあるコミュニティの支払い状況です。各コミュニティの支払い済み期限を記録し、一時停止または再開できます。",
+    "col_community": "コミュニティ名",
+    "col_paid_until": "支払い済み期限",
+    "col_days_late": "遅延日数",
+    "no_date": "日付未設定",
+    "pays_platform": "プラットフォーム",
+    "set_date": "支払い済み期限を設定",
+    "cannot_pays_platform": "プラットフォームに支払います。変更できるのはプラットフォームチームだけです。",
+    "cannot_exempt": "対象外です。変更できるのはプラットフォームチームだけです。",
+    "paused_from_above_note": "上位のコミュニティが一時停止中のため停止しています。",
+    "date_label": "この日まで支払い済み",
+    "date_help": "このコミュニティの日付の管理をやめるには、日付を空にしてください。",
+    "save": "保存",
+    "done_date": "日付を保存しました",
+    "load_failed": "コミュニティを読み込めませんでした。",
+    "empty": "あなたのコミュニティの下位にコミュニティはありません。"
   }
 }

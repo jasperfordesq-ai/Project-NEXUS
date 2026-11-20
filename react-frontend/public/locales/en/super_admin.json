@@ -22,7 +22,8 @@
     "regional_analytics": "Regional Analytics",
     "national_dashboard": "National Dashboard",
     "platform_translation": "Translation key",
-    "platform_team_panel": "Platform team panel"
+    "platform_team_panel": "Platform team panel",
+    "branch_payments": "Branch payments"
   },
   "layout": {
     "loading": "Loading super admin",
@@ -803,5 +804,24 @@
       "feat_groups_title": "Groups",
       "feat_groups_desc": "Allow cross-tenant group membership"
     }
+  },
+  "branch_payments": {
+    "title": "Branch payments",
+    "description": "The payment standing of the communities below yours. Record the date each one is paid up to, and pause or restore it.",
+    "col_community": "Community",
+    "col_paid_until": "Paid until",
+    "col_days_late": "Days late",
+    "no_date": "No date set",
+    "pays_platform": "The platform",
+    "set_date": "Set paid-until date",
+    "cannot_pays_platform": "Pays the platform. Only the platform team can change this.",
+    "cannot_exempt": "Exempt. Only the platform team can change this.",
+    "paused_from_above_note": "Paused because a community above it is paused.",
+    "date_label": "Paid up to and including",
+    "date_help": "Leave the date empty to stop tracking one for this community.",
+    "save": "Save",
+    "done_date": "Date saved",
+    "load_failed": "The communities could not be loaded.",
+    "empty": "There are no communities below yours."
   }
 }

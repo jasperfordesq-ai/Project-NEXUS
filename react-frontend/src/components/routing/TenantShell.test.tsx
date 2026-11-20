@@ -647,12 +647,21 @@ describe('TenantShell', () => {
       expect(screen.queryByTestId('the-app')).not.toBeInTheDocument();
     });
 
-    it.each(['/admin', '/admin/billing', '/platform-team/billing'])('keeps %s open when billing_paused is true', async (path) => {
+    // The super admin panel is on this list (and not on the maintenance one): a
+    // paused parent's manager must still manage the communities below it.
+    it.each(['/admin', '/admin/billing', '/platform-team/billing', '/super-admin', '/super-admin/branch-payments'])('keeps %s open when billing_paused is true', async (path) => {
       setupDefaultMocks({ tenant: pausedTenant, auth: { user: { role: 'member', is_tenant_super_admin: true } } });
       renderWithRouter(path, theApp);
 
       expect(await screen.findByTestId('the-app')).toBeInTheDocument();
       expect(screen.queryByTestId('community-paused')).not.toBeInTheDocument();
+    });
+
+    it('shows the paused page on the broker panel: a broker works on the member side', async () => {
+      setupDefaultMocks({ tenant: pausedTenant, auth: { user: { role: 'broker' } } });
+      renderWithRouter('/broker', theApp);
+
+      expect(await screen.findByTestId('community-paused')).toBeInTheDocument();
     });
 
     it('keeps the sign-in page open when billing_paused is true', async () => {

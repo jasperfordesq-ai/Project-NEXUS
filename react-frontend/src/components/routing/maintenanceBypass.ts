@@ -19,12 +19,31 @@
  */
 const PANELS_OPEN_DURING_MAINTENANCE = ['admin', 'platform-team'] as const;
 
-export function staysOpenDuringMaintenance(pathname: string, slugPrefix?: string | null): boolean {
+function isUnderPanel(panels: readonly string[], pathname: string, slugPrefix?: string | null): boolean {
   const path = pathname.toLowerCase();
   const prefix = slugPrefix ? `/${slugPrefix.toLowerCase()}` : null;
 
-  return PANELS_OPEN_DURING_MAINTENANCE.some((panel) => {
+  return panels.some((panel) => {
     const bases = prefix ? [`/${panel}`, `${prefix}/${panel}`] : [`/${panel}`];
     return bases.some((base) => path === base || path.startsWith(`${base}/`));
   });
+}
+
+export function staysOpenDuringMaintenance(pathname: string, slugPrefix?: string | null): boolean {
+  return isUnderPanel(PANELS_OPEN_DURING_MAINTENANCE, pathname, slugPrefix);
+}
+
+/**
+ * Which addresses stay reachable while a community is paused for non-payment.
+ *
+ * The same two panels, plus the super admin panel: a paused parent community's
+ * manager must still be able to manage the payment standing of the communities
+ * below it (Branch payments lives there), and the panel's API is open for a
+ * paused community. The broker panel is not here: a paused community's member
+ * side, which is what a broker works on, is closed.
+ */
+const PANELS_OPEN_WHILE_PAUSED = ['admin', 'platform-team', 'super-admin'] as const;
+
+export function staysOpenWhilePaused(pathname: string, slugPrefix?: string | null): boolean {
+  return isUnderPanel(PANELS_OPEN_WHILE_PAUSED, pathname, slugPrefix);
 }
