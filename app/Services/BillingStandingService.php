@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Support\Billing\BillingLock;
+use App\Support\Billing\BillingSettings;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -30,12 +31,21 @@ final class BillingStandingService
 {
     public const PAYERS = ['platform_card', 'platform_invoice', 'parent', 'not_billed'];
 
+    /**
+     * Why a community is paused. Recorded so that settling one never lifts the
+     * other: paying up does not open a community paused for being over its
+     * member limit, and getting back under the limit does not open one paused
+     * for not paying.
+     */
+    public const REASONS = ['non_payment', 'over_limit'];
+
     private const NOTE_MAX = 500;
 
     /**
      * @return array{
      *   tenant_id:int, payer:string, payer_is_default:bool, paid_until:?string,
      *   suspended_at:?string, suspension_source:?string, suspension_note:?string,
+     *   suspension_reason:?string, over_limit_since:?string,
      *   exempt:bool, exempt_reason:?string, locked:bool, locked_by_tenant_id:?int
      * }
      */
@@ -53,6 +63,10 @@ final class BillingStandingService
             'suspended_at' => isset($row->suspended_at) ? (string) $row->suspended_at : null,
             'suspension_source' => isset($row->suspended_at) ? (string) ($row->suspension_source ?? 'manual') : null,
             'suspension_note' => isset($row->suspended_at) ? ($row->suspension_note ?? null) : null,
+            // A pause from before reasons were recorded was for non-payment:
+            // that was the only kind there was.
+            'suspension_reason' => isset($row->suspended_at) ? (string) ($row->suspension_reason ?? 'non_payment') : null,
+            'over_limit_since' => isset($row->over_limit_since) ? substr((string) $row->over_limit_since, 0, 10) : null,
             'exempt' => !empty($row->exempt),
             'exempt_reason' => !empty($row->exempt) ? ($row->exempt_reason ?? null) : null,
             'locked' => $reason !== null,
@@ -90,12 +104,17 @@ final class BillingStandingService
     }
 
     /**
-     * Suspend a community for non-payment. `$actedBy` null = the system.
+     * Suspend a community. `$actedBy` null = the system. `$reason` is
+     * `non_payment` (every pause a person makes) or `over_limit` (only the
+     * daily check's member-limit clock).
      */
-    public static function suspend(int $tenantId, ?int $actedBy, string $source, ?string $note = null): void
+    public static function suspend(int $tenantId, ?int $actedBy, string $source, ?string $note = null, string $reason = 'non_payment'): void
     {
         if (!in_array($source, ['auto', 'manual'], true)) {
             throw new \InvalidArgumentException("Unknown suspension source: {$source}");
+        }
+        if (!in_array($reason, self::REASONS, true)) {
+            throw new \InvalidArgumentException("Unknown suspension reason: {$reason}");
         }
 
         self::requireBillable($tenantId);
@@ -117,6 +136,7 @@ final class BillingStandingService
             'suspended_by_user_id' => $actedBy,
             'suspension_source' => $source,
             'suspension_note' => $note,
+            'suspension_reason' => $reason,
         ]);
 
         TenantBillingService::logAudit(
@@ -124,7 +144,7 @@ final class BillingStandingService
             $actedBy,
             'standing_suspended',
             ['suspended_at' => null],
-            ['suspended_at' => $now->toDateTimeString(), 'source' => $source],
+            ['suspended_at' => $now->toDateTimeString(), 'source' => $source, 'reason' => $reason],
             $note
         );
 
@@ -150,13 +170,18 @@ final class BillingStandingService
             'suspended_by_user_id' => null,
             'suspension_source' => null,
             'suspension_note' => null,
+            'suspension_reason' => null,
         ]);
 
         TenantBillingService::logAudit(
             $tenantId,
             $actedBy,
             'standing_restored',
-            ['suspended_at' => (string) $row->suspended_at, 'source' => $row->suspension_source ?? null],
+            [
+                'suspended_at' => (string) $row->suspended_at,
+                'source' => $row->suspension_source ?? null,
+                'reason' => $row->suspension_reason ?? null,
+            ],
             ['suspended_at' => null],
             $note
         );
@@ -169,9 +194,14 @@ final class BillingStandingService
      * and nothing automatic ever happens to it.
      *
      * A date in the past is accepted on purpose: it is how "overdue since"
-     * is recorded. Paying up — a date of today or later — restores a
-     * community the SYSTEM paused. One a person paused stays paused until a
-     * person restores it: they may have had another reason.
+     * is recorded. A date the daily check would not pause for — fewer than
+     * `suspend_days_late` days in the past — restores a community the SYSTEM
+     * paused for non-payment. One a person paused stays paused until a
+     * person restores it: they may have had another reason. A pause for being
+     * over the member limit is not about money and is never lifted here.
+     *
+     * A new date starts the payment notices again: each is sent once per
+     * paid-until date.
      */
     public static function setPaidUntil(int $tenantId, ?string $date, ?int $actedBy, ?string $note = null): void
     {
@@ -197,12 +227,13 @@ final class BillingStandingService
             $date !== null
             && isset($row->suspended_at)
             && ($row->suspension_source ?? null) === 'auto'
-            && $date >= now()->toDateString()
+            && ($row->suspension_reason ?? 'non_payment') === 'non_payment'
+            && $date > now()->subDays((int) BillingSettings::get('suspend_days_late'))->toDateString()
         ) {
             self::restore($tenantId, $actedBy, $note);
         }
 
-        self::write($tenantId, ['paid_until' => $date]);
+        self::write($tenantId, ['paid_until' => $date, 'last_notice_stage' => null, 'last_notice_at' => null]);
 
         TenantBillingService::logAudit(
             $tenantId,
@@ -278,6 +309,28 @@ final class BillingStandingService
         }
 
         BillingLock::flush();
+    }
+
+    /**
+     * The daily check's own memory for a community: which notice it sent last
+     * and since when it has been over its member limit. Not a change in
+     * standing, so not audited (the notices themselves are in the mail log).
+     *
+     * @param array<string, mixed> $values
+     */
+    public static function recordCheckState(int $tenantId, array $values): void
+    {
+        $allowed = ['last_notice_stage', 'last_notice_at', 'over_limit_since', 'limit_notice_stage', 'limit_notice_at'];
+        $unknown = array_diff(array_keys($values), $allowed);
+        if ($unknown !== []) {
+            throw new \InvalidArgumentException('Not check state: ' . implode(', ', $unknown));
+        }
+        if ($values === []) {
+            return;
+        }
+
+        self::requireTenant($tenantId);
+        self::write($tenantId, $values);
     }
 
     private static function row(int $tenantId): ?object

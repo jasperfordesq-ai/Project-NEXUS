@@ -175,6 +175,45 @@ final class BillingStandingNotifierTest extends TestCase
         $this->assertCount(0, $this->mailTo($admin), 'Nobody is told it is open while it is not.');
     }
 
+    public function test_every_language_has_every_billing_notice_with_the_same_placeholders(): void
+    {
+        $english = $this->billingStandingWording('en');
+
+        foreach (['ar', 'de', 'es', 'fr', 'ga', 'it', 'ja', 'nl', 'pl', 'pt'] as $locale) {
+            $wording = $this->billingStandingWording($locale);
+            $this->assertSame(array_keys($english), array_keys($wording), "{$locale}: keys differ");
+
+            foreach ($english as $key => $text) {
+                preg_match_all('/\{\{\w+\}\}/', $text, $want);
+                preg_match_all('/\{\{\w+\}\}/', $wording[$key], $got);
+                sort($want[0]);
+                sort($got[0]);
+                $this->assertSame($want[0], $got[0], "{$locale}.{$key}: placeholders differ");
+                $this->assertNotSame($text, $wording[$key], "{$locale}.{$key} is still English");
+            }
+        }
+    }
+
+    public function test_a_member_limit_notice_says_how_many_members_the_limit_and_what_active_means(): void
+    {
+        $usage = __('emails_misc.billing_standing.limit_usage', [
+            'community' => 'X', 'count' => '820', 'max' => '1000', 'plan' => 'Community',
+        ]);
+        $this->assertStringContainsString('820', $usage);
+        $this->assertStringContainsString('1000', $usage);
+
+        $note = __('emails_misc.billing_standing.active_member_note', ['days' => '90']);
+        $this->assertStringContainsString('90 days', $note);
+    }
+
+    /** @return array<string, string> */
+    private function billingStandingWording(string $locale): array
+    {
+        $all = json_decode((string) file_get_contents(base_path("lang/{$locale}/emails_misc.json")), true);
+
+        return $all['billing_standing'];
+    }
+
     public function test_pausing_through_the_parents_page_tells_the_childs_admins_once(): void
     {
         $admin = $this->person($this->child, ['role' => 'admin']);

@@ -298,6 +298,60 @@ final class BillingStandingServiceTest extends TestCase
         $this->assertTrue(BillingStandingService::get($this->child)['locked']);
     }
 
+    /**
+     * Stage 3b replaced "a date of today or later restores" with "a date less
+     * than suspend_days_late (default 14) days in the past restores": moving
+     * the date to one the daily check would not pause for opens it again.
+     */
+    public function test_a_date_less_than_the_pause_days_in_the_past_restores_a_community_the_system_paused(): void
+    {
+        BillingStandingService::suspend($this->child, null, 'auto');
+
+        BillingStandingService::setPaidUntil($this->child, now()->subDays(13)->toDateString(), $this->actor);
+
+        $this->assertFalse(BillingStandingService::get($this->child)['locked']);
+    }
+
+    public function test_a_date_the_pause_days_in_the_past_does_not_restore(): void
+    {
+        BillingStandingService::suspend($this->child, null, 'auto');
+
+        BillingStandingService::setPaidUntil($this->child, now()->subDays(14)->toDateString(), $this->actor);
+
+        $this->assertTrue(BillingStandingService::get($this->child)['locked']);
+    }
+
+    public function test_a_pause_records_why_and_a_restore_clears_it(): void
+    {
+        BillingStandingService::suspend($this->child, $this->actor, 'manual');
+        $this->assertSame('non_payment', BillingStandingService::get($this->child)['suspension_reason']);
+
+        BillingStandingService::restore($this->child, $this->actor);
+        $this->assertNull(BillingStandingService::get($this->child)['suspension_reason']);
+        $this->assertNull(DB::table('tenant_billing_standing')->where('tenant_id', $this->child)->value('suspension_reason'));
+
+        BillingStandingService::suspend($this->child, null, 'auto', null, 'over_limit');
+        $standing = BillingStandingService::get($this->child);
+        $this->assertSame('over_limit', $standing['suspension_reason']);
+        $this->assertArrayHasKey('over_limit_since', $standing);
+    }
+
+    public function test_an_unknown_pause_reason_is_refused(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        BillingStandingService::suspend($this->child, null, 'auto', null, 'because');
+    }
+
+    public function test_a_pause_for_being_over_the_limit_is_not_lifted_by_paying(): void
+    {
+        BillingStandingService::suspend($this->child, null, 'auto', null, 'over_limit');
+
+        BillingStandingService::setPaidUntil($this->child, now()->addYear()->toDateString(), $this->actor);
+
+        $this->assertTrue(BillingStandingService::get($this->child)['locked']);
+    }
+
     public function test_default_payer_by_position(): void
     {
         $this->assertSame('not_billed', BillingStandingService::defaultPayer(1));

@@ -16640,6 +16640,18 @@ CREATE TABLE `platform_agreements` (
   CONSTRAINT `fk_platform_agreements_updated_by` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `platform_billing_settings`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `platform_billing_settings` (
+  `setting_key` varchar(60) NOT NULL,
+  `setting_value` varchar(255) NOT NULL,
+  `updated_by_user_id` int(10) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`setting_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `platform_capability_overrides`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -19202,12 +19214,16 @@ CREATE TABLE `tenant_billing_standing` (
   `suspended_by_user_id` int(10) unsigned DEFAULT NULL,
   `suspension_source` enum('auto','manual') DEFAULT NULL,
   `suspension_note` varchar(500) DEFAULT NULL,
+  `suspension_reason` varchar(30) DEFAULT NULL,
   `exempt` tinyint(1) NOT NULL DEFAULT 0,
   `exempt_reason` varchar(500) DEFAULT NULL,
   `exempt_by_user_id` int(10) unsigned DEFAULT NULL,
   `exempt_at` timestamp NULL DEFAULT NULL,
   `last_notice_stage` varchar(30) DEFAULT NULL,
   `last_notice_at` timestamp NULL DEFAULT NULL,
+  `over_limit_since` date DEFAULT NULL,
+  `limit_notice_stage` varchar(30) DEFAULT NULL,
+  `limit_notice_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`tenant_id`),

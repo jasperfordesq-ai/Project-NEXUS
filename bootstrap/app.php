@@ -654,6 +654,17 @@ $app = Application::configure(basePath: dirname(__DIR__))
             ->runInBackground()
             ->name('identity-poll-stuck');
 
+        // Billing: the daily payment and member-limit check. Does nothing at
+        // all until the platform team turns its master switch on
+        // (platform_billing_settings.automation_enabled, default off). Runs
+        // before the two subscription reminders below.
+        $schedule->call(function () {
+            \App\Services\BillingAutomationService::run();
+        })
+            ->dailyAt('08:00')
+            ->name('billing:apply-standing')
+            ->withoutOverlapping(5);
+
         // Subscriptions: send 7-day renewal reminder to tenant admins
         $schedule->call(function () {
             \App\Services\StripeSubscriptionService::sendRenewalReminders();
