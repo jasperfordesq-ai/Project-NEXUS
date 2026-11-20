@@ -81,6 +81,7 @@ export function PayerDialog({ community, onClose, onSaved }: PayerDialogProps) {
       return;
     }
 
+    // admin-i18n-ignore: localized server message — AdminSuperController::setCommunityPayer refusals (lang/*/api.php)
     toast.error(response.error || t('billing.standing_failed'));
   };
 

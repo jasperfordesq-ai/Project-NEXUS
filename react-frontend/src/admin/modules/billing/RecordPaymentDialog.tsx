@@ -160,6 +160,7 @@ export function RecordPaymentDialog({ community, onClose, onRecorded }: RecordPa
     }
 
     // The server names the rule that was broken, in the reader's language.
+    // admin-i18n-ignore: localized server message — AdminSuperController::recordCommunityPayment refusals (lang/*/api.php)
     toast.error(response.error || t('billing.standing_failed'));
   };
 

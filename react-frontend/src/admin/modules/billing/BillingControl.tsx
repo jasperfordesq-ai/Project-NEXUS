@@ -351,6 +351,7 @@ export function BillingControl() {
 
     // The server explains its own refusals (exempt, the platform's own
     // community …) in the reader's language: show that, not a generic line.
+    // admin-i18n-ignore: localized server message — AdminSuperController standing refusals (lang/*/api.php)
     toast.error(response.error || t('billing.standing_failed'));
     return false;
   };
@@ -411,6 +412,7 @@ export function BillingControl() {
       return;
     }
 
+    // admin-i18n-ignore: localized server message — AdminSuperController standing refusals (lang/*/api.php)
     toast.error(response.error || t('billing.standing_failed'));
   };
 

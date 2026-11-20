@@ -184,6 +184,7 @@ export function BillingAutomationCard({ onWarningPercent }: BillingAutomationCar
 
     // The server says which rule was broken, in the reader's language. The
     // draft stays on screen so it can be corrected.
+    // admin-i18n-ignore: localized server message — AdminSuperController::updateBillingAutomationSettings refusals (lang/*/api.php)
     toast.error(response.error || t('automation.save_failed'));
   };
 

@@ -128,6 +128,7 @@ export function BranchPayments() {
     }
 
     // The server explains its own refusals in the reader's language.
+    // admin-i18n-ignore: localized server message — AdminSuperController Branch payments refusals (lang/*/api.php)
     toast.error(response.error || t('admin_billing:billing.standing_failed'));
     return false;
   };
