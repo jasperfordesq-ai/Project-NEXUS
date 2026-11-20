@@ -275,6 +275,11 @@ class TenantBillingService
                 'over_limit'          => $overLimit,
                 'is_in_grace_period'  => $isInGracePeriod,
                 'grace_days_remaining'=> $graceDaysRemaining,
+                // Payment standing: who it pays, paid until, paused or exempt.
+                // One definition, shared with every other caller, at the cost
+                // of a few small queries per row on a platform-team-only page
+                // that already counts members once per row.
+                'standing'            => BillingStandingService::get($id),
             ];
         }
 

@@ -66,6 +66,11 @@ final class AdminSuperControllerPlatformTeamLockTest extends PlatformTeamLockTes
             'pause billing' => ['POST', '/v2/admin/super/billing/pause', 'refusal-only'],
             'resume billing' => ['POST', '/v2/admin/super/billing/resume', 'refusal-only'],
             'billing grace period' => ['POST', '/v2/admin/super/billing/grace-period', 'refusal-only'],
+            // Pausing a community for non-payment (20 Nov 2026). Refusal-only:
+            // the success path changes a community's standing.
+            'pause a community' => ['POST', '/v2/admin/super/billing/standing/suspend', 'refusal-only'],
+            'restore a community' => ['POST', '/v2/admin/super/billing/standing/restore', 'refusal-only'],
+            'exempt a community' => ['POST', '/v2/admin/super/billing/standing/exempt', 'refusal-only'],
         ];
     }
 

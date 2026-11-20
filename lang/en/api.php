@@ -2168,6 +2168,9 @@ return [
     // Tenant
     'community_not_found_or_inactive'      => 'We can\'t find that community, or it isn\'t available right now. Please check the web address.',
     'community_paused'                     => 'This community is paused.',
+    'billing_standing_platform_tenant' => 'The platform\'s own community cannot be paused.',
+    'billing_standing_community_is_exempt' => 'This community is exempt. Remove the exemption first.',
+    'billing_standing_exempt_reason_required' => 'Give a reason for the exemption.',
     'tenant_inactive'                      => 'Tenant is inactive',
 
     // Feature gates

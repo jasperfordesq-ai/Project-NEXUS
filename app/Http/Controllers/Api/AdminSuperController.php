@@ -17,6 +17,7 @@ use App\Models\User;
 use App\Services\FederationAuditService;
 use App\Services\FederationFeatureService;
 use App\Services\FederationPartnershipService;
+use App\Services\BillingStandingService;
 use App\Services\SuperAdminAuditService;
 use App\Services\TenantBillingService;
 use App\Services\TenantHierarchyService;
@@ -2994,5 +2995,101 @@ class AdminSuperController extends BaseApiController
         }
         TenantBillingService::setGracePeriod($tenantId, $days, $userId);
         return $this->respondWithData(['grace_period_set' => true, 'tenant_id' => $tenantId, 'days' => $days]);
+    }
+
+    // =====================================================================
+    // PAYMENT STANDING — pause, restore and exempt a community
+    // =====================================================================
+    //
+    // "Paused for non-payment" is its own state (tenant_billing_standing),
+    // not tenants.is_active: the community's members see a paused page and
+    // its admins keep the admin panel. Platform team only here; a parent's
+    // manager gets its own, narrower endpoints through SuperPanelAccess.
+
+    /** POST /api/v2/admin/super/billing/standing/suspend */
+    public function suspendCommunityForBilling(): JsonResponse
+    {
+        $userId = $this->requireGodPlatformAdmin();
+        $input = $this->getAllInput();
+        $tenantId = (int) ($input['tenant_id'] ?? 0);
+        if ($tenantId < 1) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.tenant_id_is_required'), 'tenant_id', 422);
+        }
+
+        try {
+            BillingStandingService::suspend($tenantId, $userId, 'manual', $this->standingNote($input['note'] ?? null));
+        } catch (\DomainException $e) {
+            return $this->standingRefusal($e);
+        }
+
+        return $this->respondWithData(['standing' => BillingStandingService::get($tenantId)]);
+    }
+
+    /** POST /api/v2/admin/super/billing/standing/restore */
+    public function restoreCommunityForBilling(): JsonResponse
+    {
+        $userId = $this->requireGodPlatformAdmin();
+        $input = $this->getAllInput();
+        $tenantId = (int) ($input['tenant_id'] ?? 0);
+        if ($tenantId < 1) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.tenant_id_is_required'), 'tenant_id', 422);
+        }
+
+        try {
+            BillingStandingService::restore($tenantId, $userId, $this->standingNote($input['note'] ?? null));
+        } catch (\DomainException $e) {
+            return $this->standingRefusal($e);
+        }
+
+        return $this->respondWithData(['standing' => BillingStandingService::get($tenantId)]);
+    }
+
+    /** POST /api/v2/admin/super/billing/standing/exempt */
+    public function setCommunityBillingExemption(): JsonResponse
+    {
+        $userId = $this->requireGodPlatformAdmin();
+        $input = $this->getAllInput();
+        $tenantId = (int) ($input['tenant_id'] ?? 0);
+        if ($tenantId < 1) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.tenant_id_is_required'), 'tenant_id', 422);
+        }
+
+        $exempt = filter_var($input['exempt'] ?? false, FILTER_VALIDATE_BOOLEAN);
+
+        try {
+            BillingStandingService::setExempt($tenantId, $exempt, $userId, $this->standingNote($input['reason'] ?? null));
+        } catch (\DomainException $e) {
+            return $this->standingRefusal($e);
+        }
+
+        return $this->respondWithData(['standing' => BillingStandingService::get($tenantId)]);
+    }
+
+    private function standingNote(mixed $value): ?string
+    {
+        return is_string($value) ? $value : null;
+    }
+
+    /**
+     * A refusal from BillingStandingService, as a translated 422.
+     *
+     * The service names each refusal with a fixed code. An unknown one is a
+     * programming error, not something to show a person: let it surface.
+     */
+    private function standingRefusal(\DomainException $e): JsonResponse
+    {
+        $messages = [
+            'tenant_not_found' => ['api.tenant_not_found', 'tenant_id'],
+            'platform_tenant_not_billable' => ['api.billing_standing_platform_tenant', 'tenant_id'],
+            'community_is_exempt' => ['api.billing_standing_community_is_exempt', 'tenant_id'],
+            'exempt_reason_required' => ['api.billing_standing_exempt_reason_required', 'reason'],
+        ];
+
+        $code = $e->getMessage();
+        if (!isset($messages[$code])) {
+            throw $e;
+        }
+
+        return $this->respondWithError(strtoupper($code), __($messages[$code][0]), $messages[$code][1], 422);
     }
 }
