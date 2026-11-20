@@ -6278,6 +6278,12 @@
                 "generic_title": "Sorry, er is een probleem",
                 "generic_body": "Probeer het later opnieuw."
             },
+            "community_paused": {
+                "title": ":community is gepauzeerd",
+                "body": "Deze gemeenschap is op dit moment niet beschikbaar. Neem contact op met de organisatoren.",
+                "sign_in": "Aanmelden",
+                "sign_out": "Afmelden"
+            },
             "ux": {
                 "confirm_irreversible": "Deze actie is definitief en kan niet ongedaan worden gemaakt.",
                 "confirm_delete_button": "Ja, verwijderen",

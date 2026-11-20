@@ -168,6 +168,7 @@ const { tenantRouting } = require('./middleware/tenant-routing');
 const { applyTenantSessionTimeout } = require('./lib/session-timeout');
 const { handleSessionTouch } = require('./lib/session-touch');
 const { requestTenantContext } = require('./middleware/request-tenant-context');
+const { communityPausedGate } = require('./middleware/community-paused-gate');
 const { requestClientContext } = require('./middleware/request-client-context');
 const { isValidEmail } = require('./lib/inputValidator');
 const { validateReturnUrl } = require('./lib/urlValidator');
@@ -765,6 +766,13 @@ app.use(async (req, res, next) => {
 
 // /health and /version are registered much earlier — above generalLimiter and
 // above every gate. See the block beside `app.use(generalLimiter)`.
+
+// A community paused for non-payment shows one paused page on every member page
+// (src/middleware/community-paused-gate.js). After the shell locals, because the
+// page needs `t`, `urlFor` and the CSRF token for its sign-out form; before the
+// feature gates, the legal gate and every router, because Laravel refuses all of
+// their calls for a paused community.
+app.use(communityPausedGate);
 
 app.use(tenantFeatureGate);
 // Organisation pages also need the `organisations` feature (27 Oct 2026); sets

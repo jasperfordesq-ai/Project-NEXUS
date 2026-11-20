@@ -10,6 +10,7 @@
 const { ApiError, ApiOfflineError } = require('./api');
 const { clearAuthCookies } = require('../middleware/auth');
 const { endUnderAgeSession, isAccountUnderMinimumAgeError } = require('./account-age-refusal');
+const { isCommunityPausedError, renderCommunityPaused } = require('./community-paused');
 
 function resolveRedirectTarget(res, target) {
   if (typeof target !== 'string') return target;
@@ -89,6 +90,14 @@ function handleApiError(error, req, res, options = {}) {
     // ACCOUNT_UNDER_MINIMUM_AGE). Treat it as signed out, and say why.
     if (isAccountUnderMinimumAgeError(error)) {
       endUnderAgeSession(req, res);
+      return true;
+    }
+
+    // The community is paused (HTTP 403, COMMUNITY_PAUSED). The member is
+    // still signed in and may sign out, so this is the paused page, not a
+    // "you do not have permission" page.
+    if (isCommunityPausedError(error)) {
+      renderCommunityPaused(req, res);
       return true;
     }
 

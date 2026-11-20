@@ -6278,6 +6278,12 @@
                 "generic_title": "Ár leithscéal, tá fadhb ann",
                 "generic_body": "Bain triail eile as ar ball."
             },
+            "community_paused": {
+                "title": "Tá :community curtha ar sos",
+                "body": "Níl an pobal seo ar fáil faoi láthair. Déan teagmháil lena eagraithe.",
+                "sign_in": "Sínigh isteach",
+                "sign_out": "Sínigh amach"
+            },
             "ux": {
                 "confirm_irreversible": "Tá an gníomh seo buan agus ní féidir é a chealú.",
                 "confirm_delete_button": "Scrios, cinnte",

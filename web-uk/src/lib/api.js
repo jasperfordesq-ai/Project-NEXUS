@@ -11,6 +11,7 @@ const { getRequestLocale } = require('./request-locale-context');
 const { getRequestClientIp } = require('./request-client-context');
 const { getRequestTenantSlug, normalizeTenantSlug } = require('./request-tenant-context');
 const { captureTrustedDeviceCookie, trustedDeviceCookieHeader } = require('./trusted-device-cookies');
+const { notePausedRefusal } = require('./community-paused');
 
 const API_BASE_URL = getApiBaseUrl();
 const DEFAULT_API_REQUEST_TIMEOUT_MS = 15000;
@@ -283,6 +284,18 @@ function sharedGetKey(url, options, headers, captureTrustedDevice) {
 }
 
 async function request(endpoint, options = {}, captureTrustedDevice = false) {
+  try {
+    return await requestOnce(endpoint, options, captureTrustedDevice);
+  } catch (error) {
+    // Noted here, in the caller's own request context, and not in
+    // performRequest: a shared anonymous GET runs there under whichever
+    // request asked first.
+    notePausedRefusal(error);
+    throw error;
+  }
+}
+
+async function requestOnce(endpoint, options = {}, captureTrustedDevice = false) {
   const url = `${API_BASE_URL}${endpoint}`;
   const isFormData = typeof globalThis.FormData !== 'undefined' && options.body instanceof globalThis.FormData;
 
@@ -375,11 +388,13 @@ async function downloadRequest(endpoint, options = {}) {
         data = await response.text();
       }
 
-      throw new ApiError(
+      const refusal = new ApiError(
         data.error || data.message || data.title || 'API request failed',
         response.status,
         data
       );
+      notePausedRefusal(refusal);
+      throw refusal;
     }
 
     return {

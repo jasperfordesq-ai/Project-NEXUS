@@ -5249,6 +5249,12 @@ return [
         'generic_title' => '申し訳ありませんが、問題が発生しました',
         'generic_body' => '後でもう一度お試しください。',
     ],
+    'community_paused' => [
+        'title' => ':communityは一時停止中です',
+        'body' => 'このコミュニティは現在ご利用いただけません。運営担当者にお問い合わせください。',
+        'sign_in' => 'サインイン',
+        'sign_out' => 'サインアウト',
+    ],
     'ux' => [
         'confirm_irreversible' => 'この操作は取り消すことができません。',
         'confirm_delete_button' => 'はい、削除します',

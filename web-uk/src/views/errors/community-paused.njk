@@ -1,0 +1,34 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{#
+  A community paused for non-payment (src/lib/community-paused.js).
+  The standalone error layout on purpose: the community's navigation would
+  only lead to pages that are closed. It never says why the community is
+  paused; that is for its admins. Signing out stays possible, so a member on
+  a shared computer can always leave.
+#}
+
+{% extends "layouts/error.njk" %}
+
+{% block errorTitle %}{{ t("community_paused.title", { community: communityName }) }}{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">{{ t("community_paused.title", { community: communityName }) }}</h1>
+      <p class="govuk-body">{{ t("community_paused.body") }}</p>
+      {% if isAuthenticated %}
+        <form method="post" action="{{ urlFor('/logout') }}" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("community_paused.sign_out") }}</button>
+        </form>
+      {% else %}
+        <p class="govuk-body">
+          <a href="{{ urlFor('/login') }}" class="govuk-link">{{ t("community_paused.sign_in") }}</a>
+        </p>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

@@ -5394,6 +5394,12 @@ return [
         'generic_title' => 'Sorry, there is a problem',
         'generic_body' => 'Try again later.',
     ],
+    'community_paused' => [
+        'title' => ':community is paused',
+        'body' => 'This community is not available at the moment. Please contact its organisers.',
+        'sign_in' => 'Sign in',
+        'sign_out' => 'Sign out',
+    ],
     'ux' => [
         'confirm_irreversible' => 'This action is permanent and cannot be undone.',
         'confirm_delete_button' => 'Yes, delete',

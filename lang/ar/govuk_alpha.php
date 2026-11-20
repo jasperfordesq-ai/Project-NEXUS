@@ -5249,6 +5249,12 @@ return [
         'generic_title' => 'عذراً، حدثت مشكلة',
         'generic_body' => 'حاول مرة أخرى لاحقاً.',
     ],
+    'community_paused' => [
+        'title' => ':community متوقف مؤقتًا',
+        'body' => 'هذا المجتمع غير متاح حاليًا. يُرجى التواصل مع منظّميه.',
+        'sign_in' => 'تسجيل الدخول',
+        'sign_out' => 'تسجيل الخروج',
+    ],
     'ux' => [
         'confirm_irreversible' => 'هذا الإجراء نهائي ولا يمكن التراجع عنه.',
         'confirm_delete_button' => 'نعم، احذف',

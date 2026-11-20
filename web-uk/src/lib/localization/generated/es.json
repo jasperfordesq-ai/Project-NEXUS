@@ -6278,6 +6278,12 @@
                 "generic_title": "Lo sentimos, hay un problema",
                 "generic_body": "Inténtalo de nuevo más tarde."
             },
+            "community_paused": {
+                "title": ":community está en pausa",
+                "body": "Esta comunidad no está disponible en este momento. Ponte en contacto con sus organizadores.",
+                "sign_in": "Iniciar sesión",
+                "sign_out": "Cerrar sesión"
+            },
             "ux": {
                 "confirm_irreversible": "Esta acción es permanente y no se puede deshacer.",
                 "confirm_delete_button": "Sí, eliminar",

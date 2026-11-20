@@ -6278,6 +6278,12 @@
                 "generic_title": "Es ist leider ein Problem aufgetreten",
                 "generic_body": "Versuchen Sie es später erneut."
             },
+            "community_paused": {
+                "title": ":community ist pausiert",
+                "body": "Diese Community ist derzeit nicht verfügbar. Bitte wenden Sie sich an die Organisatorinnen und Organisatoren.",
+                "sign_in": "Anmelden",
+                "sign_out": "Abmelden"
+            },
             "ux": {
                 "confirm_irreversible": "Diese Aktion ist dauerhaft und kann nicht rückgängig gemacht werden.",
                 "confirm_delete_button": "Ja, löschen",

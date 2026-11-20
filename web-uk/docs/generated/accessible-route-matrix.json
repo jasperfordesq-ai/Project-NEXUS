@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-11-20T10:40:22.157Z",
+  "generatedAt": "2026-11-20T15:26:39.478Z",
   "provenance": {
-    "generatedAt": "2026-11-20T10:40:22.157Z",
+    "generatedAt": "2026-11-20T15:26:39.478Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "1f60fe32ed2d5751e8c4b1dff6393f6604a667c4",
+    "laravelCommitSha": "12c9419a07a1b1f99d9fe5f1e22b2a35bae97f2d",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "1f60fe32ed2d5751e8c4b1dff6393f6604a667c4",
+    "webUkRepositoryCommitSha": "12c9419a07a1b1f99d9fe5f1e22b2a35bae97f2d",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-11-20T10:40:22.157Z",
+    "generatedAt": "2026-11-20T15:26:39.478Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,

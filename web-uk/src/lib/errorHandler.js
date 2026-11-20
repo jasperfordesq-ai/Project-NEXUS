@@ -11,6 +11,7 @@ const { ApiError, ApiOfflineError } = require('./api');
 const { createChoiceTranslator, createTranslator } = require('./localization');
 const { prefixLocalPath } = require('./accessible-shell');
 const { localeFromAcceptLanguage } = require('../middleware/localization');
+const { isCommunityPausedError, renderCommunityPaused } = require('./community-paused');
 
 /**
  * 🔴 MAKE THE ERROR PAGES RENDERABLE WHEREVER A REQUEST DIES.
@@ -193,6 +194,10 @@ function finalErrorHandler(err, req, res, next) {
     res.clearCookie('token', { path: '/', httpOnly: true, signed: true, sameSite: 'lax' });
     res.clearCookie('refresh_token', { path: '/', httpOnly: true, signed: true, sameSite: 'lax' });
     return redirectTo(res, '/login');
+  }
+
+  if (isCommunityPausedError(err)) {
+    return renderCommunityPaused(req, res);
   }
 
   if (status === 403) {

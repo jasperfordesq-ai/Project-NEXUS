@@ -5249,6 +5249,12 @@ return [
         'generic_title' => 'Spiacenti, si è verificato un problema',
         'generic_body' => 'Riprova più tardi.',
     ],
+    'community_paused' => [
+        'title' => ':community è in pausa',
+        'body' => 'Questa comunità non è disponibile al momento. Contatta i suoi organizzatori.',
+        'sign_in' => 'Accedi',
+        'sign_out' => 'Esci',
+    ],
     'ux' => [
         'confirm_irreversible' => 'Questa azione è permanente e non può essere annullata.',
         'confirm_delete_button' => 'Sì, elimina',
