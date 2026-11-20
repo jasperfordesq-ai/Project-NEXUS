@@ -269,6 +269,7 @@
     "action_payment_final_warning": "Laatste waarschuwing: {{days}} dagen te laat, pauze op {{pause_date}}",
     "action_payment_reminder": "Herinnering: betaald tot {{date}}",
     "action_payment_suspend": "Gepauzeerd wegens niet-betaling: {{days}} dagen te laat",
+    "action_payment_waiting_for_stripe": "Niet gepauzeerd: {{days}} dagen te laat, maar Stripe probeert de kaart nog steeds",
     "clock_member_limit": "Ledenlimiet",
     "clock_payment": "Betaling",
     "final_warning_days_late": "Laatste waarschuwing: dagen te laat",

@@ -130,6 +130,20 @@ describe('BillingAutomationCard', () => {
     expect(screen.getByText('Member limit')).toBeInTheDocument();
   });
 
+  it('names a card payer that is late but not paused because Stripe is still retrying', async () => {
+    serve(makeSettings(), [{
+      tenant_id: 7,
+      tenant_name: 'Sligo Timebank',
+      clock: 'payment',
+      action: 'waiting_for_stripe',
+      detail: { paid_until: '2026-10-01', days_late: 20 },
+    }]);
+    await renderCard();
+
+    await waitFor(() => expect(screen.getByText('Sligo Timebank')).toBeInTheDocument());
+    expect(screen.getByText('Not paused: 20 days late, but Stripe is still retrying the card')).toBeInTheDocument();
+  });
+
   it('says so in words when nothing would happen', async () => {
     serve(makeSettings(), []);
     await renderCard();

@@ -19376,6 +19376,7 @@ CREATE TABLE `tenant_plan_assignments` (
   `updated_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp(),
   `stripe_subscription_id` varchar(255) DEFAULT NULL,
   `stripe_current_period_end` timestamp NULL DEFAULT NULL,
+  `stripe_status` varchar(30) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_tpa_stripe_sub` (`stripe_subscription_id`),
   KEY `idx_tenant_plan_tenant` (`tenant_id`),

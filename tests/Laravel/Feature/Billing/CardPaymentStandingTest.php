@@ -407,6 +407,74 @@ final class CardPaymentStandingTest extends TestCase
             ->where('stripe_subscription_id', $this->subscriptionId)->value('status'));
     }
 
+    // ── What Stripe last said, word for word (stripe_status) ─────────────────
+
+    private function stripeStatus(): ?string
+    {
+        return DB::table('tenant_plan_assignments')
+            ->where('stripe_subscription_id', $this->subscriptionId)->value('stripe_status');
+    }
+
+    /** @return array<string, array{string}> */
+    public static function everyStripeStatus(): array
+    {
+        return [
+            'active' => ['active'],
+            'trialing' => ['trialing'],
+            'past_due' => ['past_due'],
+            'unpaid' => ['unpaid'],
+            'incomplete' => ['incomplete'],
+            'incomplete_expired' => ['incomplete_expired'],
+            'paused' => ['paused'],
+        ];
+    }
+
+    /** @dataProvider everyStripeStatus */
+    public function test_a_subscription_update_keeps_stripes_own_status(string $status): void
+    {
+        $this->assertNull($this->stripeStatus());
+
+        StripeSubscriptionService::handleSubscriptionUpdated((object) [
+            'id' => $this->subscriptionId,
+            'status' => $status,
+            'current_period_end' => now()->addDays(30)->getTimestamp(),
+        ]);
+
+        $this->assertSame($status, $this->stripeStatus());
+    }
+
+    public function test_a_deleted_subscription_is_recorded_as_canceled(): void
+    {
+        DB::table('tenant_plan_assignments')->where('stripe_subscription_id', $this->subscriptionId)
+            ->update(['stripe_status' => 'past_due']);
+
+        StripeSubscriptionService::handleSubscriptionDeleted((object) ['id' => $this->subscriptionId]);
+
+        $this->assertSame('canceled', $this->stripeStatus());
+    }
+
+    public function test_a_paid_invoice_records_that_stripe_is_no_longer_retrying(): void
+    {
+        DB::table('tenant_plan_assignments')->where('stripe_subscription_id', $this->subscriptionId)
+            ->update(['stripe_status' => 'past_due']);
+        $this->fakeStripeSubscription($this->subscriptionId, now()->addDays(30)->getTimestamp());
+
+        StripeSubscriptionService::handleInvoicePaid((object) ['subscription' => $this->subscriptionId]);
+
+        $this->assertSame('active', $this->stripeStatus());
+    }
+
+    public function test_a_completed_checkout_starts_from_a_clean_stripe_status(): void
+    {
+        DB::table('tenant_plan_assignments')->where('stripe_subscription_id', $this->subscriptionId)
+            ->update(['stripe_status' => 'unpaid', 'status' => 'expired']);
+        $this->fakeStripeSubscription($this->subscriptionId, now()->addDays(31)->getTimestamp());
+
+        $this->completeCheckout();
+
+        $this->assertSame('active', $this->stripeStatus());
+    }
+
     public function test_a_cancelled_subscription_leaves_paid_until_at_the_paid_period_end(): void
     {
         BillingStandingService::setPaidUntil($this->community, '2026-12-15', null);

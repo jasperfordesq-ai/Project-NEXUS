@@ -318,6 +318,7 @@ class StripeSubscriptionService
                 DB::update(
                     "UPDATE tenant_plan_assignments
                      SET pay_plan_id = ?, status = 'active', stripe_subscription_id = NULL,
+                         stripe_status = NULL,
                          starts_at = NOW(), expires_at = NULL, updated_at = NOW()
                      WHERE tenant_id = ?",
                     [$planId, $tenantId]
@@ -503,6 +504,7 @@ class StripeSubscriptionService
                     DB::update(
                         "UPDATE tenant_plan_assignments
                          SET pay_plan_id = ?, status = 'active', stripe_subscription_id = ?,
+                             stripe_status = 'active',
                              starts_at = NOW(), expires_at = NULL, updated_at = NOW()
                          WHERE tenant_id = ?",
                         [$planId, $subscriptionId, $tenantId]
@@ -510,8 +512,8 @@ class StripeSubscriptionService
                 } else {
                     DB::insert(
                         "INSERT INTO tenant_plan_assignments
-                         (tenant_id, pay_plan_id, status, stripe_subscription_id, starts_at, created_at, updated_at)
-                         VALUES (?, ?, 'active', ?, NOW(), NOW(), NOW())",
+                         (tenant_id, pay_plan_id, status, stripe_subscription_id, stripe_status, starts_at, created_at, updated_at)
+                         VALUES (?, ?, 'active', ?, 'active', NOW(), NOW(), NOW())",
                         [$tenantId, $planId, $subscriptionId]
                     );
                 }
@@ -649,9 +651,12 @@ class StripeSubscriptionService
         try {
             DB::update(
                 "UPDATE tenant_plan_assignments
-                 SET status = ?, stripe_current_period_end = ?, pay_plan_id = ?, updated_at = NOW()
+                 SET status = ?, stripe_status = ?, stripe_current_period_end = ?, pay_plan_id = ?, updated_at = NOW()
                  WHERE id = ?",
-                [$nexusStatus, $periodEnd, $newPlanId, $assignment->id]
+                // stripe_status is Stripe's own word: the daily billing check
+                // reads it to tell "still retrying the card" (past_due) from
+                // "given up" (unpaid), which `status` folds into one value.
+                [$nexusStatus, substr((string) $stripeStatus, 0, 30), $periodEnd, $newPlanId, $assignment->id]
             );
 
             Log::info('Stripe subscription updated', [
@@ -751,7 +756,7 @@ class StripeSubscriptionService
         try {
             DB::update(
                 "UPDATE tenant_plan_assignments
-                 SET status = 'cancelled', expires_at = NOW(), updated_at = NOW()
+                 SET status = 'cancelled', stripe_status = 'canceled', expires_at = NOW(), updated_at = NOW()
                  WHERE id = ?",
                 [$assignment->id]
             );
@@ -815,11 +820,18 @@ class StripeSubscriptionService
                 ? date('Y-m-d H:i:s', $periodEndTs)
                 : null;
 
+            // What Stripe says about the subscription now that this invoice
+            // is paid (normally `active`), so the daily billing check stops
+            // treating the card as still being retried.
+            $stripeStatusNow = is_string($sub->status ?? null) && $sub->status !== ''
+                ? substr($sub->status, 0, 30)
+                : 'active';
+
             DB::update(
                 "UPDATE tenant_plan_assignments
-                 SET stripe_current_period_end = ?, updated_at = NOW()
+                 SET stripe_current_period_end = ?, stripe_status = ?, updated_at = NOW()
                  WHERE id = ?",
-                [$periodEnd, $assignment->id]
+                [$periodEnd, $stripeStatusNow, $assignment->id]
             );
 
             Log::info('Stripe invoice paid — period end updated', [

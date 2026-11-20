@@ -232,6 +232,150 @@ final class BillingAutomationPaymentTest extends TestCase
         $this->assertTrue(BillingLock::isLocked($this->direct));
     }
 
+    // ── A card payer Stripe is still retrying (owner, 20 Nov 2026) ────────────
+
+    /** A card subscription for a community, with what Stripe last said about it. */
+    private function cardSubscription(int $tenantId, ?string $stripeStatus): void
+    {
+        $planId = (int) DB::table('pay_plans')->insertGetId([
+            'name' => 'Card plan',
+            'slug' => 'card-plan-' . bin2hex(random_bytes(4)),
+            'tier_level' => 1,
+            'price_monthly' => 10,
+            'price_yearly' => 100,
+            'is_active' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('tenant_plan_assignments')->insert([
+            'tenant_id' => $tenantId,
+            'pay_plan_id' => $planId,
+            'status' => $stripeStatus === 'active' ? 'active' : 'expired',
+            'starts_at' => now(),
+            'stripe_subscription_id' => 'sub_auto_' . bin2hex(random_bytes(6)),
+            'stripe_status' => $stripeStatus,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    private function stripeNowSays(int $tenantId, string $stripeStatus): void
+    {
+        DB::table('tenant_plan_assignments')->where('tenant_id', $tenantId)->update(['stripe_status' => $stripeStatus]);
+    }
+
+    /** @return array<string, array{string}> */
+    public static function stripeStillRetrying(): array
+    {
+        return ['past_due' => ['past_due'], 'incomplete' => ['incomplete']];
+    }
+
+    /** @dataProvider stripeStillRetrying */
+    public function test_a_card_payer_is_warned_but_not_paused_while_stripe_is_still_retrying_the_card(string $stripeStatus): void
+    {
+        $this->standing($this->direct, ['paid_until' => $this->today->toDateString(), 'payer' => 'platform_card']);
+        $this->cardSubscription($this->direct, $stripeStatus);
+        $admin = $this->person($this->direct, ['role' => 'admin']);
+
+        $this->assertSame(['payment:due'], $this->previewThenRun($this->direct, $this->day(1)));
+        $this->assertSame(['payment:final_warning'], $this->previewThenRun($this->direct, $this->day(7)));
+        $mailAfterWarnings = count($this->mailTo($admin));
+        $this->assertSame(2, $mailAfterWarnings, 'now due and the final warning were both sent');
+
+        // The pause day, and well past it: Stripe is still trying the card.
+        foreach ([14, 15, 40] as $offset) {
+            $this->assertSame(['payment:waiting_for_stripe'], $this->previewThenRun($this->direct, $this->day($offset)));
+            $this->assertFalse(BillingLock::isLocked($this->direct), "Paused on day {$offset} while Stripe was still retrying.");
+        }
+        $this->assertSame('final_warning', $this->standingRow($this->direct)->last_notice_stage, 'Waiting records no stage.');
+        $this->assertNull($this->standingRow($this->direct)->suspended_at);
+        $this->assertCount($mailAfterWarnings, $this->mailTo($admin), 'Waiting sends nothing.');
+
+        // Stripe gives up: the normal rule applies on the next run.
+        $this->stripeNowSays($this->direct, 'unpaid');
+        $this->assertSame(['payment:suspend'], $this->previewThenRun($this->direct, $this->day(41)));
+        $this->assertTrue(BillingLock::isLocked($this->direct));
+        $this->assertSame('non_payment', $this->standingRow($this->direct)->suspension_reason);
+    }
+
+    public function test_the_waiting_entry_says_how_late_the_payment_is_and_names_no_pause_date(): void
+    {
+        $this->standing($this->direct, [
+            'paid_until' => $this->today->toDateString(),
+            'payer' => 'platform_card',
+            'last_notice_stage' => 'final_warning',
+            'last_notice_at' => $this->day(7)->toDateTimeString(),
+        ]);
+        $this->cardSubscription($this->direct, 'past_due');
+
+        $entries = array_values(array_filter(
+            BillingAutomationService::preview($this->day(20)),
+            fn (array $entry): bool => $entry['tenant_id'] === $this->direct
+        ));
+
+        $this->assertCount(1, $entries);
+        $this->assertSame('waiting_for_stripe', $entries[0]['action']);
+        $this->assertSame($this->today->toDateString(), $entries[0]['detail']['paid_until']);
+        $this->assertSame(20, $entries[0]['detail']['days_late']);
+        $this->assertArrayNotHasKey('pause_date', $entries[0]['detail']);
+    }
+
+    /** @return array<string, array{?string}> */
+    public static function stripeNotRetrying(): array
+    {
+        return [
+            'unpaid' => ['unpaid'],
+            'canceled' => ['canceled'],
+            'incomplete_expired' => ['incomplete_expired'],
+            'paused' => ['paused'],
+            'never told' => [null],
+        ];
+    }
+
+    /** @dataProvider stripeNotRetrying */
+    public function test_a_card_payer_stripe_has_given_up_on_is_paused_on_the_normal_day(?string $stripeStatus): void
+    {
+        $this->standing($this->direct, ['paid_until' => $this->today->toDateString(), 'payer' => 'platform_card']);
+        $this->cardSubscription($this->direct, $stripeStatus);
+
+        $this->assertSame(['payment:due'], $this->previewThenRun($this->direct, $this->day(1)));
+        $this->assertSame(['payment:final_warning'], $this->previewThenRun($this->direct, $this->day(7)));
+        $this->assertSame(['payment:suspend'], $this->previewThenRun($this->direct, $this->day(14)));
+        $this->assertTrue(BillingLock::isLocked($this->direct));
+    }
+
+    public function test_only_a_card_payer_waits_for_stripe(): void
+    {
+        // Pays its parent, with an old card subscription Stripe still calls past due.
+        $this->standing($this->child, ['paid_until' => $this->today->toDateString(), 'payer' => 'parent']);
+        $this->cardSubscription($this->child, 'past_due');
+
+        $this->previewThenRun($this->child, $this->day(1));
+        $this->previewThenRun($this->child, $this->day(7));
+        $this->assertSame(['payment:suspend'], $this->previewThenRun($this->child, $this->day(14)));
+        $this->assertTrue(BillingLock::isLocked($this->child));
+    }
+
+    public function test_the_platform_team_can_still_pause_by_hand_while_stripe_is_retrying(): void
+    {
+        $this->standing($this->direct, [
+            'paid_until' => $this->today->toDateString(),
+            'payer' => 'platform_card',
+            'last_notice_stage' => 'final_warning',
+            'last_notice_at' => $this->day(7)->toDateTimeString(),
+        ]);
+        $this->cardSubscription($this->direct, 'past_due');
+        $this->assertSame(['payment:waiting_for_stripe'], $this->previewThenRun($this->direct, $this->day(14)));
+
+        BillingStandingService::suspend($this->direct, null, 'manual');
+        $this->assertTrue(BillingLock::isLocked($this->direct));
+
+        // The check leaves a hand-made pause alone and says nothing more.
+        $this->assertSame([], $this->previewThenRun($this->direct, $this->day(15)));
+        $this->assertTrue(BillingLock::isLocked($this->direct));
+    }
+
     public function test_switched_off_nothing_is_sent_or_paused_and_the_preview_says_what_would_happen(): void
     {
         DB::table('platform_billing_settings')->where('setting_key', 'automation_enabled')->delete();

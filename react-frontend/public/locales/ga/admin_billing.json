@@ -272,6 +272,7 @@
     "action_payment_final_warning": "Rabhadh deiridh: {{days}} lá déanach, sos ar {{pause_date}}",
     "action_payment_reminder": "Meabhrúchán: íoctha go dtí {{date}}",
     "action_payment_suspend": "Curtha ar sos mar gheall ar neamhíocaíocht: {{days}} lá déanach",
+    "action_payment_waiting_for_stripe": "Níor cuireadh ar sos: {{days}} lá déanach, ach tá Stripe fós ag triail an chárta arís",
     "clock_member_limit": "Teorainn ball",
     "clock_payment": "Íocaíocht",
     "final_warning_days_late": "Rabhadh deiridh: laethanta déanach",

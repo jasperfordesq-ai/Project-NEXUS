@@ -273,6 +273,7 @@
     "action_payment_final_warning": "التحذير الأخير: متأخر {{days}} يومًا، والإيقاف المؤقت في {{pause_date}}",
     "action_payment_reminder": "تذكير: مدفوع حتى {{date}}",
     "action_payment_suspend": "أُوقف مؤقتًا لعدم الدفع: متأخر {{days}} يومًا",
+    "action_payment_waiting_for_stripe": "لم يُوقف مؤقتًا: متأخر {{days}} يومًا، لكن Stripe ما زال يعيد محاولة الخصم من البطاقة",
     "clock_member_limit": "حد الأعضاء",
     "clock_payment": "الدفع",
     "final_warning_days_late": "التحذير الأخير: عدد أيام التأخير",

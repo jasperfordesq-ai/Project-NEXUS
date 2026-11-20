@@ -269,6 +269,7 @@
     "action_payment_final_warning": "Letzte Warnung: {{days}} Tage im Verzug, Pause am {{pause_date}}",
     "action_payment_reminder": "Erinnerung: bezahlt bis {{date}}",
     "action_payment_suspend": "Wegen Nichtzahlung pausiert: {{days}} Tage im Verzug",
+    "action_payment_waiting_for_stripe": "Nicht pausiert: {{days}} Tage im Verzug, aber Stripe versucht weiterhin, die Karte zu belasten",
     "clock_member_limit": "Mitgliederlimit",
     "clock_payment": "Zahlung",
     "final_warning_days_late": "Letzte Warnung: Tage im Verzug",

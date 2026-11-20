@@ -27,7 +27,9 @@ use Illuminate\Support\Facades\Log;
  *   (`last_notice_stage`). A run moves at most one stage, with the normal
  *   schedule's spacing between them, so nothing is paused without a final
  *   warning that has stood its time (see paymentStep()). Card payers get no
- *   reminder: their card renews by itself.
+ *   reminder: their card renews by itself. A card payer is warned but not
+ *   paused while Stripe is still retrying its card (owner, 20 Nov 2026): the
+ *   pause comes once Stripe has given up (see stripeIsStillRetrying()).
  * - Member limit: for a community on a STANDARD package with a member limit,
  *   not exempt. Active members (signed in within 90 days, the whole branch)
  *   against the limit: approaching, reached, over. A stage is told at most
@@ -51,6 +53,13 @@ final class BillingAutomationService
     private const PAYMENT_STAGES = ['reminder' => 1, 'due' => 2, 'final_warning' => 3, 'suspend' => 4];
 
     private const LIMIT_STAGES = ['approaching' => 1, 'reached' => 2, 'over' => 3];
+
+    /**
+     * Stripe's subscription statuses that mean "the payment has not arrived
+     * but Stripe is still trying to collect it". Every other status, and no
+     * status at all, means there is nothing to wait for.
+     */
+    private const STRIPE_STILL_RETRYING = ['past_due', 'incomplete'];
 
     /** A member-limit stage is not told again within this many days. */
     private const LIMIT_NOTICE_HOLD_DAYS = 30;
@@ -280,6 +289,17 @@ final class BillingAutomationService
             'pause_date' => self::pauseDate($stage, $paidUntil, $settings, $today)->toDateString(),
         ];
 
+        if ($stage === 'suspend' && !$step['silent'] && $payer === 'platform_card' && self::stripeIsStillRetrying($id)) {
+            // Owner, 20 November 2026: a card payer is not paused while
+            // Stripe is still retrying its card. Nothing is recorded and
+            // nobody is told; the entry is in the list so the platform team
+            // can see who is being waited for, and can pause by hand. The
+            // pause comes on the first run after Stripe gives up.
+            unset($facts['pause_date']);
+
+            return [self::entry($id, $name, 'payment', 'waiting_for_stripe', $facts)];
+        }
+
         $recordedStage = $stage;
         if ($act) {
             // Recorded first: a notice is sent once even if the mail fails.
@@ -306,6 +326,30 @@ final class BillingAutomationService
         }
 
         return [self::entry($id, $name, 'payment', $stage, $facts)];
+    }
+
+    /**
+     * Whether Stripe is still trying to collect a card payer's payment.
+     *
+     * Read from what Stripe last told us about the community's subscription
+     * (`tenant_plan_assignments.stripe_status`, kept word for word by the
+     * webhook handlers). `past_due` and `incomplete` mean retries are still
+     * running. `unpaid`, `canceled`, `incomplete_expired` and `paused` mean
+     * Stripe has stopped. No subscription, or a status never received, is
+     * not waited for: there is no sign that anything is being retried.
+     *
+     * A failed lookup is not swallowed here: evaluate() logs it and skips
+     * this community for today, so an error never turns into a pause.
+     */
+    private static function stripeIsStillRetrying(int $tenantId): bool
+    {
+        $status = DB::table('tenant_plan_assignments')
+            ->where('tenant_id', $tenantId)
+            ->whereNotNull('stripe_subscription_id')
+            ->orderByDesc('id')
+            ->value('stripe_status');
+
+        return in_array($status, self::STRIPE_STILL_RETRYING, true);
     }
 
     /**

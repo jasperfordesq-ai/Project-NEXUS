@@ -63,7 +63,7 @@ const NUMBER_KEYS: NumberKey[] = [
 
 /** Every action the check can name, by clock. Anything else is "another action". */
 const KNOWN_ACTIONS: Record<PreviewEntry['clock'], string[]> = {
-  payment: ['reminder', 'due', 'final_warning', 'suspend'],
+  payment: ['reminder', 'due', 'final_warning', 'suspend', 'waiting_for_stripe'],
   member_limit: ['approaching', 'reached', 'over', 'suspend', 'restore'],
 };
 

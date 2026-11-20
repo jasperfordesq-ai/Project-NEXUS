@@ -270,6 +270,7 @@
     "action_payment_final_warning": "Último aviso: {{days}} días de retraso, se pausará el {{pause_date}}",
     "action_payment_reminder": "Recordatorio: pagado hasta el {{date}}",
     "action_payment_suspend": "Pausada por falta de pago: {{days}} días de retraso",
+    "action_payment_waiting_for_stripe": "No pausada: {{days}} días de retraso, pero Stripe sigue intentando cobrar la tarjeta",
     "clock_member_limit": "Límite de miembros",
     "clock_payment": "Pago",
     "final_warning_days_late": "Último aviso: días de retraso",

@@ -269,6 +269,7 @@
     "action_payment_final_warning": "最終警告：{{days}} 日遅延、{{pause_date}} に一時停止予定",
     "action_payment_reminder": "リマインダー：{{date}} まで支払済み",
     "action_payment_suspend": "未払いのため一時停止：{{days}} 日遅延",
+    "action_payment_waiting_for_stripe": "一時停止していません：{{days}} 日遅延していますが、Stripe がカードへの請求を再試行中です",
     "clock_member_limit": "メンバー上限",
     "clock_payment": "支払い",
     "final_warning_days_late": "最終警告：遅延日数",

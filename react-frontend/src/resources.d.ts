@@ -4403,6 +4403,7 @@ export default interface Resources {
       "action_payment_final_warning": "Final warning: {{days}} days late, to be paused on {{pause_date}}",
       "action_payment_reminder": "Reminder: paid until {{date}}",
       "action_payment_suspend": "Paused for non-payment: {{days}} days late",
+      "action_payment_waiting_for_stripe": "Not paused: {{days}} days late, but Stripe is still retrying the card",
       "clock_member_limit": "Member limit",
       "clock_payment": "Payment",
       "final_warning_days_late": "Final warning: days late",
