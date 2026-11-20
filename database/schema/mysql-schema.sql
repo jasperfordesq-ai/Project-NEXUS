@@ -16426,6 +16426,8 @@ CREATE TABLE `pay_plans` (
   `max_communities` int(10) unsigned DEFAULT NULL,
   `storage_gb` int(10) unsigned DEFAULT NULL,
   `emails_per_month` int(10) unsigned DEFAULT NULL,
+  `stripe_price_id_monthly_gbp` varchar(255) DEFAULT NULL,
+  `stripe_price_id_yearly_gbp` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `slug` (`slug`),
   KEY `idx_pay_plans_tier` (`tier_level`),

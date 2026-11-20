@@ -77,11 +77,94 @@ class StripeSubscriptionService
     }
 
     /**
+     * Where each currency's amount and Stripe price id live on a `pay_plans`
+     * row. The euro columns are the original ones, so a price id stored before
+     * pound prices existed is read as the euro price.
+     */
+    private const PRICE_COLUMNS = [
+        'eur' => [
+            'monthly' => ['amount' => 'price_monthly', 'price_id' => 'stripe_price_id_monthly', 'interval' => 'month'],
+            'yearly' => ['amount' => 'price_yearly', 'price_id' => 'stripe_price_id_yearly', 'interval' => 'year'],
+        ],
+        'gbp' => [
+            'monthly' => ['amount' => 'price_monthly_gbp', 'price_id' => 'stripe_price_id_monthly_gbp', 'interval' => 'month'],
+            'yearly' => ['amount' => 'price_yearly_gbp', 'price_id' => 'stripe_price_id_yearly_gbp', 'interval' => 'year'],
+        ],
+    ];
+
+    /**
+     * The currency a community is billed in: pounds when its own currency is
+     * GBP, euro for everything else. Plans are priced in euro and pounds only,
+     * so a community set to any other currency pays the euro price.
+     *
+     * The community's own currency is TenantContext::getCurrency() read in
+     * that community's context (its `general.default_currency` /
+     * `default_currency` setting, then `general.currency` in its
+     * configuration, then the installation default).
+     */
+    public static function billingCurrencyFor(int $tenantId): string
+    {
+        $previousTenantId = TenantContext::currentId();
+
+        if ($previousTenantId === $tenantId) {
+            $currency = TenantContext::getCurrency();
+        } else {
+            TenantContext::setById($tenantId);
+            try {
+                $currency = TenantContext::getCurrency();
+            } finally {
+                if ($previousTenantId !== null) {
+                    TenantContext::setById($previousTenantId);
+                } else {
+                    TenantContext::reset();
+                }
+            }
+        }
+
+        return strtolower($currency) === 'gbp' ? 'gbp' : 'eur';
+    }
+
+    /**
+     * The currency this plan is actually charged in for a community billed in
+     * $communityCurrency. A plan with no pound price for that interval (every
+     * retired `legacy-…` plan, any custom plan) is charged in euro with its
+     * euro amount: sending the euro number as pounds would undercharge.
+     */
+    private static function chargeCurrency(object $plan, string $interval, string $communityCurrency): string
+    {
+        if ($communityCurrency === 'gbp' && self::planAmount($plan, 'gbp', $interval) > 0) {
+            return 'gbp';
+        }
+
+        return 'eur';
+    }
+
+    private static function planAmount(object $plan, string $currency, string $interval): float
+    {
+        $column = self::PRICE_COLUMNS[$currency][$interval]['amount'];
+
+        return (float) ($plan->{$column} ?? 0);
+    }
+
+    private static function planPriceId(object $plan, string $currency, string $interval): ?string
+    {
+        $column = self::PRICE_COLUMNS[$currency][$interval]['price_id'];
+        $value = $plan->{$column} ?? null;
+
+        return is_string($value) && $value !== '' ? $value : null;
+    }
+
+    /**
      * Sync a pay_plan to Stripe (create/update Product + Prices).
      *
-     * Idempotent: skips creation if Stripe IDs already exist.
+     * One Stripe price per currency and interval, each created with exactly
+     * that currency's amount. With no $currency (the platform team's sync
+     * button, plan create/edit) every currency the plan has a price in is
+     * synced; checkout passes the one currency it needs.
+     *
+     * Idempotent: a price id already stored is never replaced.
      */
-    public static function syncPlanToStripe(int $planId): void
+    public static function syncPlanToStripe(int $planId, ?string $currency = null): void
     {
         $plan = DB::selectOne("SELECT * FROM pay_plans WHERE id = ?", [$planId]);
 
@@ -90,14 +173,15 @@ class StripeSubscriptionService
             return;
         }
 
+        if ($currency !== null && !isset(self::PRICE_COLUMNS[$currency])) {
+            throw new \InvalidArgumentException("Plans are not priced in currency '{$currency}'");
+        }
+        $currencies = $currency !== null ? [$currency] : array_keys(self::PRICE_COLUMNS);
+
         try {
             $client = StripeService::client();
             $updates = [];
             $params = [];
-
-            // Per-tenant currency (falls back to config, then 'eur').
-            // Per-plan currency override would still require a currency column on pay_plans.
-            $currency = TenantContext::getCurrency();
 
             // --- Product ---
             if (empty($plan->stripe_product_id)) {
@@ -121,34 +205,35 @@ class StripeSubscriptionService
                 ]);
             }
 
-            // --- Monthly Price ---
-            if (empty($plan->stripe_price_id_monthly) && $plan->price_monthly > 0) {
-                $monthlyPrice = $client->prices->create([
-                    'product' => $stripeProductId,
-                    'unit_amount' => (int) round($plan->price_monthly * 100),
-                    'currency' => $currency,
-                    'recurring' => ['interval' => 'month'],
-                    'metadata' => ['nexus_plan_id' => (string) $planId, 'interval' => 'monthly'],
-                ]);
-                $updates[] = 'stripe_price_id_monthly = ?';
-                $params[] = $monthlyPrice->id;
+            // --- Prices: one per currency and interval ---
+            foreach ($currencies as $priceCurrency) {
+                foreach (self::PRICE_COLUMNS[$priceCurrency] as $interval => $columns) {
+                    $amount = self::planAmount($plan, $priceCurrency, $interval);
+                    if (self::planPriceId($plan, $priceCurrency, $interval) !== null || $amount <= 0) {
+                        continue;
+                    }
 
-                Log::info('Stripe monthly price created', ['plan_id' => $planId, 'price_id' => $monthlyPrice->id]);
-            }
+                    $price = $client->prices->create([
+                        'product' => $stripeProductId,
+                        'unit_amount' => (int) round($amount * 100),
+                        'currency' => $priceCurrency,
+                        'recurring' => ['interval' => $columns['interval']],
+                        'metadata' => [
+                            'nexus_plan_id' => (string) $planId,
+                            'interval' => $interval,
+                            'currency' => $priceCurrency,
+                        ],
+                    ]);
+                    $updates[] = $columns['price_id'] . ' = ?';
+                    $params[] = $price->id;
 
-            // --- Yearly Price ---
-            if (empty($plan->stripe_price_id_yearly) && $plan->price_yearly > 0) {
-                $yearlyPrice = $client->prices->create([
-                    'product' => $stripeProductId,
-                    'unit_amount' => (int) round($plan->price_yearly * 100),
-                    'currency' => $currency,
-                    'recurring' => ['interval' => 'year'],
-                    'metadata' => ['nexus_plan_id' => (string) $planId, 'interval' => 'yearly'],
-                ]);
-                $updates[] = 'stripe_price_id_yearly = ?';
-                $params[] = $yearlyPrice->id;
-
-                Log::info('Stripe yearly price created', ['plan_id' => $planId, 'price_id' => $yearlyPrice->id]);
+                    Log::info('Stripe price created', [
+                        'plan_id' => $planId,
+                        'price_id' => $price->id,
+                        'currency' => $priceCurrency,
+                        'interval' => $interval,
+                    ]);
+                }
             }
 
             // Persist Stripe IDs back to pay_plans
@@ -216,10 +301,12 @@ class StripeSubscriptionService
             }
         }
 
-        // Resolve the correct price ID
-        $priceId = $billingInterval === 'yearly'
-            ? $plan->stripe_price_id_yearly
-            : $plan->stripe_price_id_monthly;
+        // The price in the currency this community pays in, and only that
+        // currency's: a pound community never gets the euro price id, nor
+        // the reverse.
+        $interval = $billingInterval === 'yearly' ? 'yearly' : 'monthly';
+        $currency = self::chargeCurrency($plan, $interval, static::billingCurrencyFor($tenantId));
+        $priceId = self::planPriceId($plan, $currency, $interval);
 
         // Free plan — activate directly without Stripe
         if ((float) $plan->price_monthly === 0.0 && (float) $plan->price_yearly === 0.0) {
@@ -248,17 +335,15 @@ class StripeSubscriptionService
         }
 
         // Auto-sync to Stripe if price IDs are missing (e.g., pre-existing plans)
-        if (empty($priceId)) {
-            Log::info("Auto-syncing plan {$planId} to Stripe (no price ID for {$billingInterval})");
-            static::syncPlanToStripe($planId);
+        if ($priceId === null) {
+            Log::info("Auto-syncing plan {$planId} to Stripe (no {$currency} price ID for {$billingInterval})");
+            static::syncPlanToStripe($planId, $currency);
             // Reload plan from DB after sync (stdClass from selectOne has no refresh())
             $plan = DB::selectOne("SELECT * FROM pay_plans WHERE id = ?", [$planId]);
-            $priceId = $billingInterval === 'yearly'
-                ? $plan->stripe_price_id_yearly
-                : $plan->stripe_price_id_monthly;
+            $priceId = $plan ? self::planPriceId($plan, $currency, $interval) : null;
 
-            if (empty($priceId)) {
-                throw new \RuntimeException("Failed to sync plan {$planId} to Stripe — no price created for {$billingInterval}");
+            if ($priceId === null) {
+                throw new \RuntimeException("Failed to sync plan {$planId} to Stripe — no {$currency} price created for {$billingInterval}");
             }
         }
 
@@ -545,8 +630,11 @@ class StripeSubscriptionService
         $newPriceId = !empty($stripeItems) ? ($stripeItems[0]->price->id ?? null) : null;
         if ($newPriceId) {
             $pricedPlan = DB::selectOne(
-                "SELECT id FROM pay_plans WHERE stripe_price_id_monthly = ? OR stripe_price_id_yearly = ? LIMIT 1",
-                [$newPriceId, $newPriceId]
+                "SELECT id FROM pay_plans
+                 WHERE stripe_price_id_monthly = ? OR stripe_price_id_yearly = ?
+                    OR stripe_price_id_monthly_gbp = ? OR stripe_price_id_yearly_gbp = ?
+                 LIMIT 1",
+                [$newPriceId, $newPriceId, $newPriceId, $newPriceId]
             );
             if ($pricedPlan) {
                 $newPlanId = (int) $pricedPlan->id;
@@ -722,7 +810,7 @@ class StripeSubscriptionService
         try {
             $client = StripeService::client();
             $sub = $client->subscriptions->retrieve($stripeSubId);
-            $periodEndTs = isset($sub->current_period_end) ? (int) $sub->current_period_end : null;
+            $periodEndTs = static::periodEndOf($sub, (string) $stripeSubId, (int) $assignment->tenant_id);
             $periodEnd = $periodEndTs !== null
                 ? date('Y-m-d H:i:s', $periodEndTs)
                 : null;
@@ -776,8 +864,15 @@ class StripeSubscriptionService
     }
 
     /**
-     * Move a community's paid-until date to the end of a period Stripe says
-     * is paid.
+     * Move a community's paid-until date forward to the end of a period
+     * Stripe says is paid.
+     *
+     * Forward only. A later date already on the record (one the platform team
+     * set by hand, say, for an agreed extension) is kept: pulling it back to
+     * Stripe's shorter period could get a paying community paused by mistake.
+     *
+     * A null period end returns without writing; whoever read the period has
+     * already logged why there is none.
      *
      * A refusal is logged at `error` and NOT rethrown. The webhook's own work
      * (the assignment, the email) has already happened, and a Stripe retry
@@ -794,6 +889,17 @@ class StripeSubscriptionService
         $date = date('Y-m-d', $periodEndTs);
 
         try {
+            $current = BillingStandingService::get($tenantId)['paid_until'];
+            if ($current !== null && $current > $date) {
+                Log::info('Stripe period end is earlier than the community\'s paid-until date; the later date is kept', [
+                    'tenant_id' => $tenantId,
+                    'paid_until' => $current,
+                    'stripe_period_end' => $date,
+                ]);
+
+                return;
+            }
+
             BillingStandingService::setPaidUntil($tenantId, $date, null, $note);
         } catch (\Throwable $e) {
             Log::error('Stripe payment could not update the community payment record', [
@@ -812,8 +918,6 @@ class StripeSubscriptionService
     {
         try {
             $sub = StripeService::client()->subscriptions->retrieve($stripeSubId);
-
-            return isset($sub->current_period_end) ? (int) $sub->current_period_end : null;
         } catch (\Throwable $e) {
             Log::error('Stripe subscription period could not be read for the community payment record', [
                 'tenant_id' => $tenantId,
@@ -823,6 +927,38 @@ class StripeSubscriptionService
 
             return null;
         }
+
+        return static::periodEndOf($sub, $stripeSubId, $tenantId);
+    }
+
+    /**
+     * The end of the period a Stripe subscription has paid for.
+     *
+     * Older Stripe API versions put `current_period_end` on the subscription;
+     * newer ones (from 2025-03-31 "basil") move it onto each subscription
+     * item. Both are read, the subscription first. When neither is there the
+     * paid-until date cannot be moved, which left alone would surface weeks
+     * later as a paying community paused for non-payment, so it is logged at
+     * `error` rather than skipped quietly.
+     */
+    private static function periodEndOf(object $sub, string $stripeSubId, int $tenantId): ?int
+    {
+        if (isset($sub->current_period_end) && is_numeric($sub->current_period_end)) {
+            return (int) $sub->current_period_end;
+        }
+
+        $items = $sub->items->data ?? null;
+        $firstItem = is_array($items) ? ($items[0] ?? null) : null;
+        if (is_object($firstItem) && isset($firstItem->current_period_end) && is_numeric($firstItem->current_period_end)) {
+            return (int) $firstItem->current_period_end;
+        }
+
+        Log::error('Stripe reported no period end for the subscription; the community payment record was not updated', [
+            'tenant_id' => $tenantId,
+            'subscription_id' => $stripeSubId,
+        ]);
+
+        return null;
     }
 
     /**

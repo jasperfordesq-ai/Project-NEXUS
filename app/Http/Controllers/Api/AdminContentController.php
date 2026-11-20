@@ -738,12 +738,20 @@ class AdminContentController extends BaseApiController
 
         try {
             StripeSubscriptionService::syncPlanToStripe($id);
-            $plan = DB::selectOne("SELECT stripe_product_id, stripe_price_id_monthly, stripe_price_id_yearly FROM pay_plans WHERE id = ?", [$id]);
+            $plan = DB::selectOne(
+                "SELECT stripe_product_id, stripe_price_id_monthly, stripe_price_id_yearly,
+                        stripe_price_id_monthly_gbp, stripe_price_id_yearly_gbp
+                 FROM pay_plans WHERE id = ?",
+                [$id]
+            );
+            // The unsuffixed price ids are the euro ones.
             return $this->respondWithData([
-                'synced'                  => true,
-                'stripe_product_id'       => $plan->stripe_product_id ?? null,
-                'stripe_price_id_monthly' => $plan->stripe_price_id_monthly ?? null,
-                'stripe_price_id_yearly'  => $plan->stripe_price_id_yearly ?? null,
+                'synced'                      => true,
+                'stripe_product_id'           => $plan->stripe_product_id ?? null,
+                'stripe_price_id_monthly'     => $plan->stripe_price_id_monthly ?? null,
+                'stripe_price_id_yearly'      => $plan->stripe_price_id_yearly ?? null,
+                'stripe_price_id_monthly_gbp' => $plan->stripe_price_id_monthly_gbp ?? null,
+                'stripe_price_id_yearly_gbp'  => $plan->stripe_price_id_yearly_gbp ?? null,
             ]);
         } catch (\Exception $e) {
             Log::warning('Manual Stripe sync failed', ['plan_id' => $id, 'error' => $e->getMessage()]);

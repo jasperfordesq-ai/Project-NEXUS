@@ -140,13 +140,13 @@ final class CardPaymentStandingTest extends TestCase
      *
      * @return object{requests: array<int, string>}
      */
-    private function fakeStripeSubscription(string $id, int $periodEnd, bool $unreachable = false): object
+    private function fakeStripeSubscription(string $id, ?int $periodEnd, bool $unreachable = false, ?int $itemPeriodEnd = null): object
     {
-        $client = new class($id, $periodEnd, $unreachable) implements ClientInterface {
+        $client = new class($id, $periodEnd, $unreachable, $itemPeriodEnd) implements ClientInterface {
             /** @var array<int, string> */
             public array $requests = [];
 
-            public function __construct(private string $id, private int $periodEnd, private bool $unreachable)
+            public function __construct(private string $id, private ?int $periodEnd, private bool $unreachable, private ?int $itemPeriodEnd)
             {
             }
 
@@ -158,12 +158,25 @@ final class CardPaymentStandingTest extends TestCase
                     throw new \Stripe\Exception\ApiConnectionException('Stripe is unreachable in this test');
                 }
 
-                $body = json_encode([
+                // Newer Stripe API versions report the period on each
+                // subscription item instead of on the subscription.
+                $subscription = [
                     'id' => $this->id,
                     'object' => 'subscription',
                     'status' => 'active',
-                    'current_period_end' => $this->periodEnd,
-                ]);
+                    'items' => [
+                        'object' => 'list',
+                        'data' => $this->itemPeriodEnd === null ? [] : [[
+                            'id' => 'si_' . $this->id,
+                            'object' => 'subscription_item',
+                            'current_period_end' => $this->itemPeriodEnd,
+                        ]],
+                    ],
+                ];
+                if ($this->periodEnd !== null) {
+                    $subscription['current_period_end'] = $this->periodEnd;
+                }
+                $body = json_encode($subscription);
 
                 return [$body, 200, new CaseInsensitiveArray([])];
             }
@@ -257,6 +270,95 @@ final class CardPaymentStandingTest extends TestCase
 
         $assignment = DB::table('tenant_plan_assignments')->where('stripe_subscription_id', $subscriptionId)->first();
         $this->assertSame(date('Y-m-d H:i:s', $periodEnd), (string) $assignment->stripe_current_period_end);
+        $this->assertCount(1, $this->mailer->calls, 'the renewal email still went');
+    }
+
+    // ── a date from Stripe only ever moves forward ───────────────────────────
+
+    /**
+     * The platform team may set a later date by hand (an agreed extension,
+     * a year paid by invoice). A Stripe payment for a shorter period must not
+     * pull it back, or the community could later be paused by mistake.
+     */
+    public function test_a_later_hand_set_date_survives_a_paid_invoice_with_an_earlier_period_end(): void
+    {
+        $handSet = now()->addDays(120)->toDateString();
+        BillingStandingService::setPaidUntil($this->community, $handSet, null, 'agreed extension');
+        $this->fakeStripeSubscription($this->subscriptionId, now()->addDays(30)->getTimestamp());
+
+        Log::spy();
+
+        StripeSubscriptionService::handleInvoicePaid((object) ['subscription' => $this->subscriptionId]);
+
+        $this->assertSame($handSet, $this->paidUntil($this->community));
+        Log::shouldHaveReceived('info')->withArgs(
+            fn (string $message, array $context = []): bool => str_contains($message, 'later')
+                && ($context['tenant_id'] ?? null) === $this->community
+        )->once();
+        $this->assertCount(1, $this->mailer->calls, 'the renewal email still went');
+    }
+
+    public function test_an_earlier_date_is_moved_forward_by_a_paid_invoice(): void
+    {
+        BillingStandingService::setPaidUntil($this->community, now()->addDays(2)->toDateString(), null);
+        $periodEnd = now()->addDays(30)->getTimestamp();
+        $this->fakeStripeSubscription($this->subscriptionId, $periodEnd);
+
+        StripeSubscriptionService::handleInvoicePaid((object) ['subscription' => $this->subscriptionId]);
+
+        $this->assertSame(date('Y-m-d', $periodEnd), $this->paidUntil($this->community));
+    }
+
+    public function test_a_later_hand_set_date_survives_a_completed_checkout(): void
+    {
+        $handSet = now()->addDays(200)->toDateString();
+        BillingStandingService::setPaidUntil($this->community, $handSet, null);
+        $this->fakeStripeSubscription($this->subscriptionId, now()->addDays(31)->getTimestamp());
+
+        $this->completeCheckout();
+
+        $this->assertSame($handSet, $this->paidUntil($this->community));
+    }
+
+    // ── where Stripe puts the period end ─────────────────────────────────────
+
+    public function test_the_period_end_is_read_from_the_subscription_item_when_the_subscription_has_none(): void
+    {
+        $periodEnd = now()->addDays(30)->getTimestamp();
+        $this->fakeStripeSubscription($this->subscriptionId, null, itemPeriodEnd: $periodEnd);
+
+        StripeSubscriptionService::handleInvoicePaid((object) ['subscription' => $this->subscriptionId]);
+
+        $this->assertSame(date('Y-m-d', $periodEnd), $this->paidUntil($this->community));
+        $this->assertSame(date('Y-m-d H:i:s', $periodEnd), (string) DB::table('tenant_plan_assignments')
+            ->where('stripe_subscription_id', $this->subscriptionId)->value('stripe_current_period_end'));
+    }
+
+    public function test_a_checkout_reads_the_period_end_from_the_subscription_item_too(): void
+    {
+        $periodEnd = now()->addDays(31)->getTimestamp();
+        $this->fakeStripeSubscription($this->subscriptionId, null, itemPeriodEnd: $periodEnd);
+
+        $this->completeCheckout();
+
+        $this->assertSame(date('Y-m-d', $periodEnd), $this->paidUntil($this->community));
+    }
+
+    public function test_with_no_period_end_anywhere_an_error_is_logged_and_the_handler_completes(): void
+    {
+        BillingStandingService::setPaidUntil($this->community, '2026-11-01', null);
+        $this->fakeStripeSubscription($this->subscriptionId, null);
+
+        Log::spy();
+
+        StripeSubscriptionService::handleInvoicePaid((object) ['subscription' => $this->subscriptionId]);
+
+        Log::shouldHaveReceived('error')->withArgs(
+            fn (string $message, array $context = []): bool => str_contains($message, 'period end')
+                && ($context['tenant_id'] ?? null) === $this->community
+                && ($context['subscription_id'] ?? null) === $this->subscriptionId
+        )->once();
+        $this->assertSame('2026-11-01', $this->paidUntil($this->community), 'left where it was');
         $this->assertCount(1, $this->mailer->calls, 'the renewal email still went');
     }
 
