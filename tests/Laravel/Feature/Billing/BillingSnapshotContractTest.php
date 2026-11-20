@@ -43,7 +43,13 @@ final class BillingSnapshotContractTest extends TestCase
         'current_plan', 'over_limit', 'is_in_grace_period', 'standing',
         // Sized by active members (DESIGN §11), not registered ones.
         'active_member_count', 'usage_percent', 'suggested_plan',
+        // Stage 6: the earliest automatic pause date and the newest payment
+        // recorded by hand.
+        'pause_on', 'last_payment',
     ];
+
+    /** Read off `last_payment` when a community has one. */
+    private const REQUIRED_LAST_PAYMENT_KEYS = ['received_on', 'method'];
 
     /** Read off `current_plan` when a community has one. */
     private const REQUIRED_PLAN_KEYS = [
@@ -248,6 +254,48 @@ final class BillingSnapshotContractTest extends TestCase
 
         $this->assertSame($newerPlan, $row['current_plan']['id']);
         $this->assertSame('expired', $row['current_plan']['assignment_status']);
+    }
+
+    public function test_pause_on_and_last_payment_are_sent(): void
+    {
+        $actor = $this->actAsPlatformTeam();
+        \App\Services\BillingStandingService::recordPayment($this->withPlan, [
+            'paid_until' => '2027-03-10',
+            'received_on' => now()->subDays(10)->toDateString(),
+            'method' => 'bank_transfer',
+        ], (int) $actor->id);
+        \App\Services\BillingStandingService::recordPayment($this->withPlan, [
+            'paid_until' => '2027-04-10',
+            'received_on' => now()->subDays(2)->toDateString(),
+            'method' => 'cheque',
+        ], (int) $actor->id);
+
+        // While the daily check is off nothing is paused automatically, so
+        // no pause day is named.
+        $off = collect($this->apiGet('/v2/admin/super/billing/snapshot')->json('data'))->firstWhere('id', $this->withPlan);
+        $this->assertArrayHasKey('pause_on', $off);
+        $this->assertNull($off['pause_on'], 'A pause day was named while the checks are switched off.');
+
+        \App\Support\Billing\BillingSettings::set('automation_enabled', true, null);
+
+        $rows = collect($this->apiGet('/v2/admin/super/billing/snapshot')->json('data'));
+        $withPlan = $rows->firstWhere('id', $this->withPlan);
+        $withoutPlan = $rows->firstWhere('id', $this->withoutPlan);
+
+        $this->assertSame(
+            \App\Services\BillingAutomationService::earliestPauseDate('2027-04-10', $withPlan['standing']['payer'], false, false),
+            $withPlan['pause_on']
+        );
+        $this->assertNotNull($withPlan['pause_on'], 'A tracked date that is billed has a pause date.');
+
+        foreach (self::REQUIRED_LAST_PAYMENT_KEYS as $key) {
+            $this->assertArrayHasKey($key, $withPlan['last_payment'], "row.last_payment.{$key}");
+        }
+        $this->assertSame(['received_on' => now()->subDays(2)->toDateString(), 'method' => 'cheque'], $withPlan['last_payment']);
+
+        // No date tracked and no payment by hand: both null, not missing.
+        $this->assertNull($withoutPlan['pause_on']);
+        $this->assertNull($withoutPlan['last_payment']);
     }
 
     public function test_the_plan_list_carries_the_keys_the_screen_reads(): void

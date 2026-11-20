@@ -8,6 +8,7 @@ import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 import userEvent from '@testing-library/user-event';
+import { formatDate } from '@/lib/helpers';
 
 // ─── UI mock ──────────────────────────────────────────────────────────────────
 // BillingControl uses HeroUI Table with `items` prop + render-function children
@@ -168,6 +169,8 @@ const makeSnapshot = (overrides: Record<string, unknown> = {}) => ({
   is_in_grace_period: false,
   grace_days_remaining: 0,
   standing: makeStanding(),
+  pause_on: null,
+  last_payment: null,
   ...overrides,
 });
 
@@ -201,12 +204,13 @@ const serveGets = (rows: unknown[]) => {
       return Promise.resolve({
         success: true,
         data: {
-          automation_enabled: false, reminder_days_before: 7, final_warning_days_late: 7, suspend_days_late: 14,
-          limit_warning_percent: 80, over_limit_action: 'none', over_limit_grace_days: 30,
+          automation_enabled: false, reminder_days: '30,14,7,1', final_warning_days_late: 7, suspend_days_late: 14,
+          card_retry_max_days_late: 30, limit_warning_percent: 80, over_limit_action: 'none', over_limit_grace_days: 30,
         },
       });
     }
     if (url === '/v2/admin/super/billing/standing/preview') return Promise.resolve({ success: true, data: [] });
+    if (url.startsWith('/v2/admin/super/billing/standing/payments')) return Promise.resolve({ success: true, data: [] });
     return Promise.resolve({ success: true, data: rows });
   });
 };
@@ -541,6 +545,81 @@ describe('BillingControl', () => {
     await user.click(screen.getByRole('button', { name: 'Save' }));
 
     await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Enter the date as year-month-day, for example 2027-01-31.'));
+  });
+
+  // ── Payments by hand and how a community pays (Stage 6) ───────────────────
+
+  it('shows the automatic pause date under the paid-until date, and nothing when none applies', async () => {
+    await renderWith([
+      makeSnapshot({ pause_on: '2027-02-14', standing: makeStanding({ paid_until: '2027-01-31' }) }),
+      makeSnapshot({ id: 6, name: 'Galway Timebank', pause_on: null, standing: makeStanding({ tenant_id: 6 }) }),
+    ]);
+
+    const lines = screen.getAllByTestId('billing-pause-on');
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toHaveTextContent(`Automatic pause: ${formatDate('2027-02-14')}`);
+  });
+
+  it('shows the last payment recorded by hand under the paid-until date', async () => {
+    await renderWith([
+      makeSnapshot({ standing: makeStanding({ paid_until: '2027-10-31' }), last_payment: { received_on: '2026-11-02', method: 'bank_transfer' } }),
+      makeSnapshot({ id: 6, name: 'Galway Timebank', standing: makeStanding({ tenant_id: 6 }) }),
+    ]);
+
+    expect(screen.getByText(`Last payment: ${formatDate('2026-11-02')}, Bank transfer`)).toBeInTheDocument();
+    expect(screen.getAllByText(/^Last payment:/)).toHaveLength(1);
+  });
+
+  it('records a payment with the contract body and reloads the list', async () => {
+    const user = userEvent.setup();
+    mockApi.post.mockResolvedValue({ success: true, data: { standing: {}, payment_id: 4 } });
+    await renderWith([makeSnapshot({ standing: makeStanding({ paid_until: '2026-12-31' }) })]);
+
+    await user.click(button('Record a payment')!);
+    await waitFor(() => expect(mockApi.get).toHaveBeenCalledWith('/v2/admin/super/billing/standing/payments?tenant_id=5'));
+    fireEvent.change(screen.getByLabelText('Received on'), { target: { value: '2026-11-18' } });
+    fireEvent.change(screen.getByLabelText('Reference (optional)'), { target: { value: 'BT 7781' } });
+    fireEvent.change(screen.getByLabelText('Now paid up to and including'), { target: { value: '2027-12-31' } });
+    await user.click(button('Record payment')!);
+
+    await waitFor(() => {
+      expect(mockApi.post).toHaveBeenCalledWith('/v2/admin/super/billing/standing/record-payment', {
+        tenant_id: 5,
+        paid_until: '2027-12-31',
+        received_on: '2026-11-18',
+        method: 'bank_transfer',
+        reference: 'BT 7781',
+        amount: null,
+        currency: null,
+      });
+    });
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('Payment recorded'));
+    await waitFor(() => {
+      const snapshotLoads = mockApi.get.mock.calls.filter(([url]) => url === '/v2/admin/super/billing/snapshot');
+      expect(snapshotLoads.length).toBe(2);
+    });
+    expect(screen.queryByLabelText('Received on')).not.toBeInTheDocument();
+  });
+
+  it('changes how a community pays, sending null for the default', async () => {
+    const user = userEvent.setup();
+    await renderWith([makeSnapshot({ standing: makeStanding({ payer: 'not_billed', payer_is_default: true }) })]);
+
+    await user.click(button('Change how it pays')!);
+    await user.click(button('Save')!);
+
+    await waitFor(() => {
+      expect(mockApi.post).toHaveBeenCalledWith('/v2/admin/super/billing/standing/payer', { tenant_id: 5, payer: null });
+    });
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('Saved how this community pays'));
+  });
+
+  it('keeps setting the paid-until date beside the new actions', async () => {
+    await renderWith([makeSnapshot()]);
+
+    expect(button('Set paid-until date')).toBeDefined();
+    expect(button('Record a payment')).toBeDefined();
+    expect(button('Change how it pays')).toBeDefined();
   });
 
   it('shows the automatic checks card above the table', async () => {

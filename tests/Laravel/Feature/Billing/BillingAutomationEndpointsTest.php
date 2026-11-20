@@ -112,7 +112,30 @@ final class BillingAutomationEndpointsTest extends TestCase
             'an unknown setting' => [['automation_enabled' => true, 'make_everyone_pay' => 1]],
             'the pause before the final warning' => [['final_warning_days_late' => 20, 'suspend_days_late' => 10]],
             'an unknown over-limit choice' => [['over_limit_action' => 'delete']],
+            'a reminder day out of range' => [['reminder_days' => '30,200']],
+            'reminder days that are not numbers' => [['reminder_days' => 'monthly']],
+            'the removed single reminder day' => [['reminder_days_before' => 7]],
+            'the longest card wait out of range' => [['card_retry_max_days_late' => 0]],
         ];
+    }
+
+    public function test_reminder_days_and_the_longest_card_wait_are_saved_as_sent(): void
+    {
+        $this->actAsPlatformTeam();
+
+        $response = $this->apiPut('/v2/admin/super/billing/settings', [
+            'reminder_days' => '7, 30,14',
+            'card_retry_max_days_late' => 21,
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertSame('30,14,7', $response->json('data.reminder_days'));
+        $this->assertSame(21, $response->json('data.card_retry_max_days_late'));
+        $this->assertArrayNotHasKey('reminder_days_before', $response->json('data'));
+
+        $none = $this->apiPut('/v2/admin/super/billing/settings', ['reminder_days' => '']);
+        $none->assertStatus(200);
+        $this->assertSame('', $none->json('data.reminder_days'));
     }
 
     /**

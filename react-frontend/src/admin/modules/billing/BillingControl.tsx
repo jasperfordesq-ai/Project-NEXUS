@@ -14,6 +14,8 @@ import { PageHeader } from '../../components/PageHeader';
 import { BillingDevelopmentNotice } from './BillingDevelopmentNotice';
 import { BillingAutomationCard } from './BillingAutomationCard';
 import { assignablePlans } from './assignablePlans';
+import { RecordPaymentDialog, type PaymentMethod } from './RecordPaymentDialog';
+import { PayerDialog, type Payer } from './PayerDialog';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -83,8 +85,6 @@ const ASSIGNMENT_STATUS_COLOR: Record<Exclude<AssignmentStatus, 'active'>, ChipC
   cancelled: 'default',
 };
 
-type Payer = 'platform_card' | 'platform_invoice' | 'parent' | 'not_billed';
-
 interface Standing {
   tenant_id: number;
   payer: Payer;
@@ -119,6 +119,10 @@ interface TenantSnapshot {
   is_in_grace_period: boolean;
   grace_days_remaining: number;
   standing: Standing;
+  /** Earliest day the daily check would pause it (paid-until + the pause days); null when none applies. */
+  pause_on: string | null;
+  /** The newest payment recorded by hand, if any. */
+  last_payment: { received_on: string; method: PaymentMethod } | null;
 }
 
 /** A row of GET /v2/admin/plans. Prices arrive as the database's strings. */
@@ -235,6 +239,10 @@ export function BillingControl() {
   // ---- set paid-until dialog (local state, as on Branch payments) ----
   const [paidUntilRow, setPaidUntilRow] = useState<TenantSnapshot | null>(null);
   const [paidUntilText, setPaidUntilText] = useState('');
+
+  // ---- record a payment / change how it pays ----
+  const [paymentRow, setPaymentRow] = useState<TenantSnapshot | null>(null);
+  const [payerRow, setPayerRow] = useState<TenantSnapshot | null>(null);
 
   // The daily check's warning percent, from its settings card; 80 until known.
   const [warningPercent, setWarningPercent] = useState(80);
@@ -520,7 +528,7 @@ export function BillingControl() {
                     {/* Community name with depth indent */}
                     <TableCell>
                       <span
-                        className="text-sm font-medium"
+                        className="inline-block min-w-32 text-sm font-medium"
                         style={{ paddingLeft: `${row.depth * 16}px` }}
                       >
                         {row.over_limit && !row.is_in_grace_period && (
@@ -593,7 +601,7 @@ export function BillingControl() {
 
                     {/* Who it pays */}
                     <TableCell>
-                      <span className="text-sm text-muted">
+                      <span className="inline-block min-w-24 text-sm text-muted">
                         {t(`billing.payer_${row.standing.payer}`)}
                       </span>
                     </TableCell>
@@ -603,6 +611,20 @@ export function BillingControl() {
                       <span className="text-sm text-muted whitespace-nowrap">
                         {row.standing.paid_until ? formatDate(row.standing.paid_until) : t('control.no_date')}
                       </span>
+                      {row.last_payment ? (
+                        <span className="mt-1 block text-xs text-muted">
+                          {t('control.last_payment', {
+                            date: formatDate(row.last_payment.received_on),
+                            method: t(`control.method_${row.last_payment.method}`),
+                          })}
+                        </span>
+                      ) : null}
+                      {/* The earliest day the daily check would pause it */}
+                      {row.pause_on ? (
+                        <span data-testid="billing-pause-on" className="mt-1 block text-xs text-muted">
+                          {t('control.pause_on_line', { date: formatDate(row.pause_on) })}
+                        </span>
+                      ) : null}
                     </TableCell>
 
                     {/* Standing */}
@@ -631,6 +653,24 @@ export function BillingControl() {
                             onPress={() => openPaidUntil(row)}
                           >
                             {t('control.set_paid_until')}
+                          </Button>
+
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            isDisabled={busy}
+                            onPress={() => setPaymentRow(row)}
+                          >
+                            {t('control.record_payment')}
+                          </Button>
+
+                          <Button
+                            size="sm"
+                            variant="tertiary"
+                            isDisabled={busy}
+                            onPress={() => setPayerRow(row)}
+                          >
+                            {t('control.change_payer')}
                           </Button>
 
                           {state === 'open' ? (
@@ -884,6 +924,30 @@ export function BillingControl() {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      <RecordPaymentDialog
+        community={paymentRow ? { id: paymentRow.id, name: paymentRow.name, paidUntil: paymentRow.standing.paid_until } : null}
+        onClose={() => setPaymentRow(null)}
+        onRecorded={() => {
+          setPaymentRow(null);
+          void fetchSnapshot();
+        }}
+      />
+
+      <PayerDialog
+        community={payerRow ? {
+          id: payerRow.id,
+          name: payerRow.name,
+          payer: payerRow.standing.payer,
+          payerIsDefault: payerRow.standing.payer_is_default,
+          canPayParent: payerRow.parent_id !== null && payerRow.parent_id > 1,
+        } : null}
+        onClose={() => setPayerRow(null)}
+        onSaved={() => {
+          setPayerRow(null);
+          void fetchSnapshot();
+        }}
+      />
     </div>
   );
 }

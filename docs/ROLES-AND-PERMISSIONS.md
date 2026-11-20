@@ -859,9 +859,16 @@ on a user, permanent purge) keep their own checks and are only relabelled.
 read or change the settings of the daily check (`GET`/`PUT
 /v2/admin/super/billing/settings`), see what it would do today
 (`GET /v2/admin/super/billing/standing/preview`) or set the paid-until date of
-any community (`POST /v2/admin/super/billing/standing/paid-until`); each starts
-with `requireGodPlatformAdmin()` and is pinned in
-`AdminSuperControllerPlatformTeamLockTest`. The check itself runs as the system
+any community (`POST /v2/admin/super/billing/standing/paid-until`). Only the
+platform team can record a payment that arrived outside Stripe
+(`POST /v2/admin/super/billing/standing/record-payment`), read a community's
+payments recorded by hand (`GET /v2/admin/super/billing/standing/payments`) or
+say who a community pays (`POST /v2/admin/super/billing/standing/payer`). Each
+starts with `requireGodPlatformAdmin()` and is pinned in
+`AdminSuperControllerPlatformTeamLockTest`. A parent's manager has none of
+these three; it sets a paid-until date for the communities below it on Branch
+payments, and loses that for a child the platform team sets to pay the
+platform. The check itself runs as the system
 and is off until the platform team turns it on. A community's own admin may read
 its own overdue days and member-limit state
 (`GET /v2/admin/billing/standing`) and nothing about any other community.

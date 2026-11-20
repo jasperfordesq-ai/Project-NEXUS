@@ -21,15 +21,17 @@ use Illuminate\Support\Facades\Log;
  * Two clocks per community:
  *
  * - Payment: for a community with a paid-until date, not exempt, not
- *   `not_billed`, not the platform's own. A reminder before the date, "due"
- *   the day after it, a final warning, then an automatic pause for
- *   non-payment. Each stage is sent once per paid-until date
+ *   `not_billed`, not the platform's own. Reminders before the date (by
+ *   default 30, 14, 7 and 1 days before; each sent once, see reminderStep()),
+ *   "due" the day after it, a final warning, then an automatic pause for
+ *   non-payment. Each late stage is sent once per paid-until date
  *   (`last_notice_stage`). A run moves at most one stage, with the normal
  *   schedule's spacing between them, so nothing is paused without a final
  *   warning that has stood its time (see paymentStep()). Card payers get no
  *   reminder: their card renews by itself. A card payer is warned but not
  *   paused while Stripe is still retrying its card (owner, 20 Nov 2026): the
- *   pause comes once Stripe has given up (see stripeIsStillRetrying()).
+ *   pause comes once Stripe has given up (see stripeIsStillRetrying()), or
+ *   at the latest `card_retry_max_days_late` days late.
  * - Member limit: for a community on a STANDARD package with a member limit,
  *   not exempt. Active members (signed in within 90 days, the whole branch)
  *   against the limit: approaching, reached, over. A stage is told at most
@@ -151,6 +153,39 @@ final class BillingAutomationService
         $daysLate = (int) $paidUntil->diffInDays(self::day($today), false);
 
         return $daysLate >= 1 ? $daysLate : null;
+    }
+
+    /**
+     * The earliest day the payment clock could pause a community for
+     * non-payment: the paid-until date plus `suspend_days_late`. For Billing
+     * control, beside the paid-until date.
+     *
+     * It is the earliest, not a promise: a community the check has not yet
+     * warned is paused later (a run moves one stage at a time), and a card
+     * payer Stripe is still retrying may be waited for. Null when no
+     * automatic pause can come: the checks are switched off, no date, not
+     * billed, exempt, or already paused. Never a day already gone: a
+     * community long overdue that the check has not paused yet cannot be
+     * paused before today.
+     *
+     * Pure: reads only the platform's settings.
+     */
+    public static function earliestPauseDate(?string $paidUntil, string $payer, bool $exempt, bool $suspended, ?CarbonInterface $today = null): ?string
+    {
+        if ($paidUntil === null || trim($paidUntil) === '' || $payer === 'not_billed' || $exempt || $suspended) {
+            return null;
+        }
+
+        // While the daily check is off nothing is paused automatically, so
+        // naming a day would promise a pause that will not come.
+        if (!BillingSettings::get('automation_enabled')) {
+            return null;
+        }
+
+        $byDate = CarbonImmutable::parse(substr($paidUntil, 0, 10))
+            ->addDays((int) BillingSettings::get('suspend_days_late'));
+
+        return self::later($byDate, self::day($today))->toDateString();
     }
 
     /** `approaching` from the warning percent, `reached` at 100%, `over` above it; else null. */
@@ -288,14 +323,28 @@ final class BillingAutomationService
             'days_late' => max(0, (int) $paidUntil->diffInDays($today, false)),
             'pause_date' => self::pauseDate($stage, $paidUntil, $settings, $today)->toDateString(),
         ];
+        if ($stage === 'reminder') {
+            $facts['days_before'] = (int) self::reminderDay($paidUntil, $settings, $today);
+            $facts['days_left'] = -(int) $paidUntil->diffInDays($today, false);
+        }
 
-        if ($stage === 'suspend' && !$step['silent'] && $payer === 'platform_card' && self::stripeIsStillRetrying($id)) {
+        $longestWait = (int) $settings['card_retry_max_days_late'];
+        if (
+            $stage === 'suspend'
+            && !$step['silent']
+            && $payer === 'platform_card'
+            && $facts['days_late'] < $longestWait
+            && self::stripeIsStillRetrying($id)
+        ) {
             // Owner, 20 November 2026: a card payer is not paused while
             // Stripe is still retrying its card. Nothing is recorded and
             // nobody is told; the entry is in the list so the platform team
             // can see who is being waited for, and can pause by hand. The
-            // pause comes on the first run after Stripe gives up.
-            unset($facts['pause_date']);
+            // pause comes on the first run after Stripe gives up, and at the
+            // latest once the payment is `card_retry_max_days_late` days
+            // late, whatever Stripe says: Stripe's retry schedule is set in
+            // Stripe, and the platform must not wait on it for ever.
+            $facts['pause_date'] = $paidUntil->addDays($longestWait)->toDateString();
 
             return [self::entry($id, $name, 'payment', 'waiting_for_stripe', $facts)];
         }
@@ -372,13 +421,49 @@ final class BillingAutomationService
             return 'due';
         }
 
-        // 0 means "no reminder", not "a reminder on the last paid day".
-        $before = (int) $settings['reminder_days_before'];
-        if ($before > 0 && -$daysLate <= $before) {
-            return 'reminder';
+        return self::reminderDay($paidUntil, $settings, $today) !== null ? 'reminder' : null;
+    }
+
+    /**
+     * The reminder day (days before the paid-until date) that applies today:
+     * of the reminders whose date (paid-until − days) has come, the latest.
+     * Null while none has come, once the date has passed, and when the
+     * platform team chose no reminders.
+     *
+     * @param array<string, int|bool|string> $settings
+     */
+    private static function reminderDay(CarbonImmutable $paidUntil, array $settings, CarbonImmutable $today): ?int
+    {
+        $daysLeft = -(int) $paidUntil->diffInDays($today, false);
+        if ($daysLeft < 0) {
+            return null;
         }
 
-        return null;
+        $applies = null;
+        foreach (self::reminderDays($settings) as $days) {
+            if ($days >= $daysLeft && ($applies === null || $days < $applies)) {
+                $applies = $days;
+            }
+        }
+
+        return $applies;
+    }
+
+    /**
+     * The reminder days from this run's copy of the settings, so the preview
+     * and the run read one set of numbers.
+     *
+     * @param array<string, int|bool|string> $settings
+     * @return list<int>
+     */
+    private static function reminderDays(array $settings): array
+    {
+        $value = (string) ($settings['reminder_days'] ?? '');
+        if ($value === '') {
+            return [];
+        }
+
+        return array_map('intval', explode(',', $value));
     }
 
     /**
@@ -411,6 +496,11 @@ final class BillingAutomationService
 
         $dateRank = self::PAYMENT_STAGES[$byDate];
         $recorded = self::PAYMENT_STAGES[(string) $row->last_notice_stage] ?? 0;
+
+        if ($byDate === 'reminder') {
+            return self::reminderStep($row, $payer, $recorded, $settings, $today);
+        }
+
         if ($dateRank <= $recorded) {
             return null;
         }
@@ -439,6 +529,40 @@ final class BillingAutomationService
         $names = array_flip(self::PAYMENT_STAGES);
 
         return ['stage' => $names[$next], 'silent' => false];
+    }
+
+    /**
+     * Whether today's reminder is sent: when nothing is recorded for this
+     * paid-until date, or the last reminder went out before today's
+     * reminder's date. So each reminder goes once, and a run after missed
+     * days sends only the latest one that has come, never a burst. Never for
+     * a card payer, never once a later stage is recorded.
+     *
+     * A date that has just been set carries the day it was set
+     * (`last_notice_at` with no stage, see setPaidUntil()): a reminder whose
+     * day had already gone by then is not sent after the fact. Without that,
+     * a community paying month by month got "payment is due soon" the
+     * morning after it paid.
+     *
+     * @param array<string, int|bool|string> $settings
+     * @return array{stage:string, silent:bool}|null
+     */
+    private static function reminderStep(object $row, string $payer, int $recorded, array $settings, CarbonImmutable $today): ?array
+    {
+        if ($payer === 'platform_card' || $recorded > self::PAYMENT_STAGES['reminder']) {
+            return null;
+        }
+
+        $sentOn = self::noticeDay($row->last_notice_at);
+        if ($recorded === self::PAYMENT_STAGES['reminder'] || $sentOn !== null) {
+            $paidUntil = CarbonImmutable::parse(substr((string) $row->paid_until, 0, 10));
+            $days = self::reminderDay($paidUntil, $settings, $today);
+            if ($days === null || $sentOn === null || !$sentOn->lessThan($paidUntil->subDays($days))) {
+                return null;
+            }
+        }
+
+        return ['stage' => 'reminder', 'silent' => false];
     }
 
     /**

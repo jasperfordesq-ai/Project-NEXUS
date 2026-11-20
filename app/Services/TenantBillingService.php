@@ -356,6 +356,27 @@ class TenantBillingService
 
         $activeCountMap = self::activeMemberCountsForBranches($tenantIds);
 
+        // The newest payment recorded by hand per community, in one query.
+        // Newest = latest received, then latest recorded, as the history.
+        $lastPayments = DB::select(
+            "SELECT tenant_id, received_on, method
+             FROM (
+                 SELECT tenant_id, received_on, method,
+                        ROW_NUMBER() OVER (PARTITION BY tenant_id ORDER BY received_on DESC, id DESC) AS rn
+                 FROM billing_payments
+                 WHERE tenant_id IN ({$placeholders})
+             ) newest
+             WHERE rn = 1",
+            $tenantIds
+        );
+        $lastPaymentMap = [];
+        foreach ($lastPayments as $row) {
+            $lastPaymentMap[(int) $row->tenant_id] = [
+                'received_on' => substr((string) $row->received_on, 0, 10),
+                'method'      => (string) $row->method,
+            ];
+        }
+
         $snapshot = [];
         foreach ($tenants as $tenant) {
             $id           = (int) $tenant->id;
@@ -389,6 +410,8 @@ class TenantBillingService
                 }
             }
 
+            $standing = BillingStandingService::get($id);
+
             $snapshot[] = [
                 'id'                  => $id,
                 'name'                => $tenant->name,
@@ -409,7 +432,16 @@ class TenantBillingService
                 // One definition, shared with every other caller, at the cost
                 // of a few small queries per row on a platform-team-only page
                 // that already counts members once per row.
-                'standing'            => BillingStandingService::get($id),
+                'standing'            => $standing,
+                // The "cutoff": the earliest day the daily check would pause
+                // it, from the paid-until date. Null when it never would.
+                'pause_on'            => BillingAutomationService::earliestPauseDate(
+                    $standing['paid_until'],
+                    $standing['payer'],
+                    $standing['exempt'],
+                    $standing['suspended_at'] !== null
+                ),
+                'last_payment'        => $lastPaymentMap[$id] ?? null,
             ];
         }
 

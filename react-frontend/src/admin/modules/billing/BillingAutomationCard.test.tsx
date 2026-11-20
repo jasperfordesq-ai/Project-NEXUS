@@ -8,6 +8,7 @@ import React, { createContext, useContext } from 'react';
 import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 import userEvent from '@testing-library/user-event';
+import { formatDate } from '@/lib/helpers';
 
 // ─── UI mock ──────────────────────────────────────────────────────────────────
 // The shared uiMock renders a Radio as an input with no handler of its own, so
@@ -63,9 +64,10 @@ vi.mock('@/contexts', () => createMockContexts({ useToast: () => mockToast }));
 // tests/Laravel/Feature/Billing/BillingAutomationEndpointsTest.php.
 const makeSettings = (overrides: Record<string, unknown> = {}) => ({
   automation_enabled: false,
-  reminder_days_before: 7,
+  reminder_days: '30,14,7,1',
   final_warning_days_late: 7,
   suspend_days_late: 14,
+  card_retry_max_days_late: 30,
   limit_warning_percent: 80,
   over_limit_action: 'none',
   over_limit_grace_days: 30,
@@ -130,18 +132,72 @@ describe('BillingAutomationCard', () => {
     expect(screen.getByText('Member limit')).toBeInTheDocument();
   });
 
-  it('names a card payer that is late but not paused because Stripe is still retrying', async () => {
+  it('names a card payer that is late but not paused because Stripe is still retrying, and the latest pause date', async () => {
     serve(makeSettings(), [{
       tenant_id: 7,
       tenant_name: 'Sligo Timebank',
       clock: 'payment',
       action: 'waiting_for_stripe',
-      detail: { paid_until: '2026-10-01', days_late: 20 },
+      detail: { paid_until: '2026-10-01', days_late: 20, pause_date: '2026-10-31' },
     }]);
     await renderCard();
 
     await waitFor(() => expect(screen.getByText('Sligo Timebank')).toBeInTheDocument());
-    expect(screen.getByText('Not paused: 20 days late, but Stripe is still retrying the card')).toBeInTheDocument();
+    expect(screen.getByText(
+      `Not paused yet: 20 days late and Stripe is still retrying the card. Paused on ${formatDate('2026-10-31')} at the latest`,
+    )).toBeInTheDocument();
+  });
+
+  it('loads the reminder days and the longest wait for Stripe, and no longer shows the single reminder day', async () => {
+    serve(makeSettings({ reminder_days: '45,20', card_retry_max_days_late: 21 }), []);
+    await renderCard();
+
+    expect((screen.getByLabelText('Reminders: days before the paid-until date') as HTMLInputElement).value).toBe('45,20');
+    expect((screen.getByLabelText('Longest wait for a card Stripe is still retrying: days late') as HTMLInputElement).value).toBe('21');
+    expect(screen.getByText('Comma separated, for example 30, 14, 7, 1. Leave it empty to send no reminders.')).toBeInTheDocument();
+    expect(screen.getByText('After this many days late the community is paused, whatever Stripe says.')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Reminder: days before the paid-until date')).not.toBeInTheDocument();
+  });
+
+  it('sends the reminder days as typed, and the longest wait as a number', async () => {
+    const user = userEvent.setup();
+    await renderCard();
+
+    fireEvent.change(screen.getByLabelText('Reminders: days before the paid-until date'), { target: { value: '7, 30,14' } });
+    fireEvent.change(screen.getByLabelText('Longest wait for a card Stripe is still retrying: days late'), { target: { value: '45' } });
+    await user.click(button('Save settings')!);
+
+    await waitFor(() => {
+      expect(mockApi.put).toHaveBeenCalledWith('/v2/admin/super/billing/settings', {
+        reminder_days: '7, 30,14',
+        card_retry_max_days_late: 45,
+      });
+    });
+  });
+
+  it('sends an emptied reminder list as an empty string, which means no reminders', async () => {
+    const user = userEvent.setup();
+    await renderCard();
+
+    fireEvent.change(screen.getByLabelText('Reminders: days before the paid-until date'), { target: { value: '' } });
+    await user.click(button('Save settings')!);
+
+    await waitFor(() => {
+      expect(mockApi.put).toHaveBeenCalledWith('/v2/admin/super/billing/settings', { reminder_days: '' });
+    });
+  });
+
+  it('shows the server’s refusal of a reminder list', async () => {
+    const user = userEvent.setup();
+    mockApi.put.mockResolvedValue({ success: false, error: 'One of the settings is not valid, so nothing was saved.', code: 'BILLING_SETTING_INVALID' });
+    await renderCard();
+
+    fireEvent.change(screen.getByLabelText('Reminders: days before the paid-until date'), { target: { value: '30, soon' } });
+    await user.click(button('Save settings')!);
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('One of the settings is not valid, so nothing was saved.'));
+    expect(mockApi.put).toHaveBeenCalledWith('/v2/admin/super/billing/settings', { reminder_days: '30, soon' });
+    expect((screen.getByLabelText('Reminders: days before the paid-until date') as HTMLInputElement).value).toBe('30, soon');
   });
 
   it('says so in words when nothing would happen', async () => {
@@ -173,13 +229,13 @@ describe('BillingAutomationCard', () => {
     await waitFor(() => expect(screen.getByText('Cork Timebank')).toBeInTheDocument());
 
     await user.click(screen.getByLabelText('Run the automatic checks every morning'));
-    fireEvent.change(screen.getByLabelText('Reminder: days before the paid-until date'), { target: { value: '3' } });
+    fireEvent.change(screen.getByLabelText('Final warning: days late'), { target: { value: '3' } });
     await user.click(button('Save settings')!);
 
     await waitFor(() => {
       expect(mockApi.put).toHaveBeenCalledWith('/v2/admin/super/billing/settings', {
         automation_enabled: true,
-        reminder_days_before: 3,
+        final_warning_days_late: 3,
       });
     });
     await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('Settings saved'));

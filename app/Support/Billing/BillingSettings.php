@@ -35,12 +35,23 @@ final class BillingSettings
 
     public const OVER_LIMIT_ACTIONS = ['none', 'pause'];
 
-    /** @var array<string, int|bool|string> */
+    /**
+     * `reminder_days` is a list of days before the paid-until date, stored as
+     * a string ("30,14,7,1", largest first; "" = no reminders). It replaced the
+     * single `reminder_days_before` (owner, 20 Nov 2026: warnings from a month
+     * before, then in steps). A stored row under the old key is ignored.
+     *
+     * `card_retry_max_days_late` is the longest a card payer Stripe is still
+     * retrying is waited for before the normal pause applies.
+     *
+     * @var array<string, int|bool|string>
+     */
     public const DEFAULTS = [
         'automation_enabled' => false,
-        'reminder_days_before' => 7,
+        'reminder_days' => '30,14,7,1',
         'final_warning_days_late' => 7,
         'suspend_days_late' => 14,
+        'card_retry_max_days_late' => 30,
         'limit_warning_percent' => 80,
         'over_limit_action' => 'none',
         'over_limit_grace_days' => 30,
@@ -48,18 +59,23 @@ final class BillingSettings
 
     /** Inclusive ranges for the whole-number settings. */
     private const RANGES = [
-        'reminder_days_before' => [0, 60],
         'final_warning_days_late' => [1, 180],
         'suspend_days_late' => [1, 365],
+        'card_retry_max_days_late' => [1, 180],
         'limit_warning_percent' => [50, 99],
         'over_limit_grace_days' => [1, 365],
     ];
 
+    /** Each reminder day's inclusive range, and how many there may be. */
+    private const REMINDER_DAY_RANGE = [1, 120];
+
+    private const REMINDER_DAYS_MAX = 8;
+
     private static bool $cacheFailureReported = false;
 
     /**
-     * Every setting, typed: `automation_enabled` bool, `over_limit_action`
-     * string, the rest whole numbers.
+     * Every setting, typed: `automation_enabled` bool, `reminder_days` and
+     * `over_limit_action` strings, the rest whole numbers.
      *
      * @return array<string, int|bool|string>
      */
@@ -95,6 +111,22 @@ final class BillingSettings
         }
 
         return self::all()[$key];
+    }
+
+    /**
+     * The reminder days before the paid-until date, largest first. Empty
+     * when the platform team chose no reminders.
+     *
+     * @return list<int>
+     */
+    public static function reminderDays(): array
+    {
+        $value = (string) self::get('reminder_days');
+        if ($value === '') {
+            return [];
+        }
+
+        return array_map('intval', explode(',', $value));
     }
 
     public static function set(string $key, mixed $value, ?int $userId): void
@@ -221,6 +253,10 @@ final class BillingSettings
             throw new \DomainException('billing_setting_invalid');
         }
 
+        if ($key === 'reminder_days') {
+            return self::normaliseReminderDays($value);
+        }
+
         if (is_string($value) && preg_match('/^\d{1,6}$/', $value) === 1) {
             $value = (int) $value;
         }
@@ -234,6 +270,51 @@ final class BillingSettings
         }
 
         return $value;
+    }
+
+    /**
+     * "7, 30,14" or [7, 30, 14] → "30,14,7". Whole numbers 1 to 120, each
+     * once, largest first, at most eight. An empty string or list is "no
+     * reminders". A gap between commas, a fraction or a word is refused
+     * rather than guessed at.
+     *
+     * Null is "no reminders" too: Laravel turns an empty string in a request
+     * into null before the controller sees it, so an emptied field arrives
+     * as null.
+     */
+    private static function normaliseReminderDays(mixed $value): string
+    {
+        if ($value === null) {
+            return '';
+        }
+        if (is_string($value)) {
+            $value = trim($value);
+            $parts = $value === '' ? [] : array_map('trim', explode(',', $value));
+        } elseif (is_array($value) && array_is_list($value)) {
+            $parts = $value;
+        } else {
+            throw new \DomainException('billing_setting_invalid');
+        }
+
+        [$min, $max] = self::REMINDER_DAY_RANGE;
+        $days = [];
+        foreach ($parts as $part) {
+            if (is_string($part) && preg_match('/^\d{1,4}$/', $part) === 1) {
+                $part = (int) $part;
+            }
+            if (!is_int($part) || $part < $min || $part > $max) {
+                throw new \DomainException('billing_setting_invalid');
+            }
+            $days[$part] = $part;
+        }
+
+        if (count($days) > self::REMINDER_DAYS_MAX) {
+            throw new \DomainException('billing_setting_invalid');
+        }
+
+        rsort($days);
+
+        return implode(',', $days);
     }
 
     private static function store(int|bool|string $value): string

@@ -25,11 +25,20 @@ use Illuminate\Support\Facades\DB;
  * Refusals are `\DomainException` with one of these messages, which callers
  * map to a translated error: `tenant_not_found`,
  * `platform_tenant_not_billable`, `community_is_exempt`,
- * `exempt_reason_required`, `paid_until_invalid`.
+ * `exempt_reason_required`, `paid_until_invalid`, and for payments recorded
+ * by hand and the payer: `payment_paid_until_required`,
+ * `payment_received_on_invalid`, `payment_method_invalid`,
+ * `payment_amount_invalid`, `payment_currency_invalid`, `payer_invalid`,
+ * `payer_needs_parent`.
  */
 final class BillingStandingService
 {
     public const PAYERS = ['platform_card', 'platform_invoice', 'parent', 'not_billed'];
+
+    /** How a payment recorded by hand arrived. */
+    public const PAYMENT_METHODS = ['bank_transfer', 'cheque', 'cash', 'card', 'other'];
+
+    private const REFERENCE_MAX = 190;
 
     /**
      * Why a community is paused. Recorded so that settling one never lifts the
@@ -244,7 +253,12 @@ final class BillingStandingService
             self::restore($tenantId, $actedBy, $note);
         }
 
-        self::write($tenantId, ['paid_until' => $date, 'last_notice_stage' => null, 'last_notice_at' => null]);
+        // The notice stages start again for the new date. A date that is
+        // still ahead keeps the day it was set, so the daily check does not
+        // send a reminder whose day had already gone by then (paid on the
+        // 30th for the month ahead: no "30 days to go" email on the 31st).
+        $setOn = $date !== null && $date >= now()->toDateString() ? now() : null;
+        self::write($tenantId, ['paid_until' => $date, 'last_notice_stage' => null, 'last_notice_at' => $setOn]);
 
         TenantBillingService::logAudit(
             $tenantId,
@@ -323,6 +337,186 @@ final class BillingStandingService
     }
 
     /**
+     * Record a payment that did not come through Stripe — a bank transfer, a
+     * cheque — and move the paid-until date to what it pays for. Returns the
+     * new payment's id.
+     *
+     * The date moves through setPaidUntil(), inside the same transaction as
+     * the payment row, so the notice stages, lifting an automatic non-payment
+     * pause and the audit entry happen exactly as for a date set directly,
+     * and once. A payment may be recorded for an exempt community and for a
+     * card payer: money that arrived is recorded whoever it came from.
+     *
+     * @param array<string, mixed> $payment paid_until, received_on, method,
+     *                                      reference?, amount?, currency?
+     */
+    public static function recordPayment(int $tenantId, array $payment, int $actedBy): int
+    {
+        self::requireBillable($tenantId);
+
+        $paidUntil = $payment['paid_until'] ?? null;
+        if ($paidUntil === null || $paidUntil === '') {
+            throw new \DomainException('payment_paid_until_required');
+        }
+        if (!is_string($paidUntil) || !self::isDate($paidUntil)) {
+            throw new \DomainException('paid_until_invalid');
+        }
+
+        $receivedOn = $payment['received_on'] ?? null;
+        // Not in the future. One day of slack: the screen sends the browser's
+        // own today, which east of the server's clock is its tomorrow.
+        if (!is_string($receivedOn) || !self::isDate($receivedOn) || $receivedOn > now()->addDay()->toDateString()) {
+            throw new \DomainException('payment_received_on_invalid');
+        }
+
+        $method = $payment['method'] ?? null;
+        if (!is_string($method) || !in_array($method, self::PAYMENT_METHODS, true)) {
+            throw new \DomainException('payment_method_invalid');
+        }
+
+        $reference = $payment['reference'] ?? null;
+        $reference = is_string($reference) || is_int($reference) || is_float($reference)
+            ? trim((string) $reference)
+            : '';
+        $reference = $reference === '' ? null : mb_substr($reference, 0, self::REFERENCE_MAX);
+
+        $amount = self::cleanAmount($payment['amount'] ?? null);
+
+        // A currency means nothing without an amount, so it is not kept.
+        $currency = null;
+        if ($amount !== null) {
+            $currency = $payment['currency'] ?? null;
+            if (!is_string($currency) || preg_match('/^[A-Z]{3}$/', $currency) !== 1) {
+                throw new \DomainException('payment_currency_invalid');
+            }
+        }
+
+        return (int) DB::transaction(function () use ($tenantId, $paidUntil, $receivedOn, $method, $reference, $amount, $currency, $actedBy): int {
+            $row = self::row($tenantId);
+            $before = isset($row->paid_until) ? substr((string) $row->paid_until, 0, 10) : null;
+
+            // A payment that leaves the date where it is, or moves it back,
+            // would be stored and change nothing else: no reminders started
+            // again, no community reopened, while the screen says "recorded".
+            // Correcting a date is setPaidUntil()'s job, not a payment's.
+            if ($before !== null && $paidUntil <= $before) {
+                throw new \DomainException('payment_paid_until_not_later');
+            }
+
+            $id = (int) DB::table('billing_payments')->insertGetId([
+                'tenant_id' => $tenantId,
+                'received_on' => $receivedOn,
+                'method' => $method,
+                'reference' => $reference,
+                'amount' => $amount,
+                'currency' => $currency,
+                'paid_until_before' => $before,
+                'paid_until_after' => $paidUntil,
+                'recorded_by_user_id' => $actedBy,
+                'created_at' => now(),
+            ]);
+
+            // The audit note points at the payment record rather than
+            // repeating it: the method and reference are what a person
+            // reading the log looks for.
+            $note = "payment {$id}: {$method}" . ($reference !== null ? ", {$reference}" : '');
+            self::setPaidUntil($tenantId, $paidUntil, $actedBy, $note);
+
+            return $id;
+        });
+    }
+
+    /**
+     * The payments recorded by hand for a community, newest first.
+     *
+     * @return list<array{
+     *   id:int, received_on:string, method:string, reference:?string,
+     *   amount:?string, currency:?string, paid_until_before:?string,
+     *   paid_until_after:string, recorded_by_user_id:?int,
+     *   recorded_by_name:?string, created_at:?string
+     * }>
+     */
+    public static function payments(int $tenantId, int $limit = 50): array
+    {
+        self::requireTenant($tenantId);
+        $limit = max(1, min(200, $limit));
+
+        // The recorder is joined by id alone, not by tenant: a platform team
+        // member belongs to another community than the one they record for.
+        $rows = DB::table('billing_payments as bp')
+            ->leftJoin('users as u', 'u.id', '=', 'bp.recorded_by_user_id')
+            ->where('bp.tenant_id', $tenantId)
+            ->orderByDesc('bp.received_on')
+            ->orderByDesc('bp.id')
+            ->limit($limit)
+            ->get([
+                'bp.id', 'bp.received_on', 'bp.method', 'bp.reference', 'bp.amount', 'bp.currency',
+                'bp.paid_until_before', 'bp.paid_until_after', 'bp.recorded_by_user_id', 'bp.created_at',
+                DB::raw("COALESCE(NULLIF(TRIM(CONCAT_WS(' ', u.first_name, u.last_name)), ''), u.name) AS recorded_by_name"),
+            ]);
+
+        $list = [];
+        foreach ($rows as $row) {
+            $list[] = [
+                'id' => (int) $row->id,
+                'received_on' => substr((string) $row->received_on, 0, 10),
+                'method' => (string) $row->method,
+                'reference' => $row->reference !== null ? (string) $row->reference : null,
+                'amount' => $row->amount !== null ? number_format((float) $row->amount, 2, '.', '') : null,
+                'currency' => $row->currency !== null ? (string) $row->currency : null,
+                'paid_until_before' => $row->paid_until_before !== null ? substr((string) $row->paid_until_before, 0, 10) : null,
+                'paid_until_after' => substr((string) $row->paid_until_after, 0, 10),
+                'recorded_by_user_id' => $row->recorded_by_user_id !== null ? (int) $row->recorded_by_user_id : null,
+                'recorded_by_name' => $row->recorded_by_name !== null ? (string) $row->recorded_by_name : null,
+                'created_at' => $row->created_at !== null ? (string) $row->created_at : null,
+            ];
+        }
+
+        return $list;
+    }
+
+    /**
+     * Say who a community pays. Null = back to the default its place in the
+     * tree gives it (defaultPayer()).
+     *
+     * Nothing is locked by who pays, so no lock cache is forgotten, and the
+     * notices and pauses are left as they are. It does decide who may record
+     * the community's payments: a child set to pay the platform leaves its
+     * parent's Branch payments page.
+     */
+    public static function setPayer(int $tenantId, ?string $payer, int $actedBy): void
+    {
+        $tenant = self::requireBillable($tenantId);
+
+        if ($payer !== null && !in_array($payer, self::PAYERS, true)) {
+            throw new \DomainException('payer_invalid');
+        }
+
+        // Paying a parent needs a parent that is not the platform itself:
+        // the same rule defaultPayer() uses.
+        if ($payer === 'parent' && !($tenant->parent_id !== null && (int) $tenant->parent_id > 1)) {
+            throw new \DomainException('payer_needs_parent');
+        }
+
+        $row = self::row($tenantId);
+        $current = isset($row->payer) ? (string) $row->payer : null;
+        if ($current === $payer) {
+            return;
+        }
+
+        self::write($tenantId, ['payer' => $payer]);
+
+        TenantBillingService::logAudit(
+            $tenantId,
+            $actedBy,
+            'standing_payer_set',
+            ['payer' => $current],
+            ['payer' => $payer],
+            null
+        );
+    }
+
+    /**
      * The daily check's own memory for a community: which notice it sent last
      * and since when it has been over its member limit. Not a change in
      * standing, so not audited (the notices themselves are in the mail log).
@@ -383,13 +577,51 @@ final class BillingStandingService
         return $tenant;
     }
 
-    private static function requireBillable(int $tenantId): void
+    private static function requireBillable(int $tenantId): object
     {
         if ($tenantId === 1) {
             throw new \DomainException('platform_tenant_not_billable');
         }
 
-        self::requireTenant($tenantId);
+        return self::requireTenant($tenantId);
+    }
+
+    /** A real calendar date written exactly as Y-m-d. */
+    private static function isDate(string $value): bool
+    {
+        $parsed = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+
+        return $parsed !== false && $parsed->format('Y-m-d') === $value;
+    }
+
+    /**
+     * An amount as the decimal string the column stores ("120.00"), or null
+     * for none. Refused: negative, more than two decimals, more than the
+     * column holds (9999999999.99), or anything that is not a number.
+     */
+    private static function cleanAmount(mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (is_int($value)) {
+            $text = (string) $value;
+        } elseif (is_float($value) && is_finite($value)) {
+            // PHP writes a float as the shortest text that reads back the
+            // same, so 240.5 is "240.5" and 1.0E+20 fails the pattern below.
+            $text = (string) $value;
+        } elseif (is_string($value)) {
+            $text = trim($value);
+        } else {
+            throw new \DomainException('payment_amount_invalid');
+        }
+
+        if (preg_match('/^(\d{1,10})(?:\.(\d{1,2}))?$/', $text, $m) !== 1) {
+            throw new \DomainException('payment_amount_invalid');
+        }
+
+        return $m[1] . '.' . str_pad($m[2] ?? '', 2, '0');
     }
 
     private static function cleanNote(?string $note): ?string

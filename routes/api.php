@@ -3485,6 +3485,10 @@ Route::post('/v2/admin/super/billing/standing/suspend', [\App\Http\Controllers\A
 Route::post('/v2/admin/super/billing/standing/restore', [\App\Http\Controllers\Api\AdminSuperController::class, 'restoreCommunityForBilling']);
 Route::post('/v2/admin/super/billing/standing/exempt', [\App\Http\Controllers\Api\AdminSuperController::class, 'setCommunityBillingExemption']);
 Route::post('/v2/admin/super/billing/standing/paid-until', [\App\Http\Controllers\Api\AdminSuperController::class, 'setCommunityPaidUntil']);
+// Payments recorded by hand (bank transfer, cheque...) and who a community pays (Stage 6).
+Route::post('/v2/admin/super/billing/standing/record-payment', [\App\Http\Controllers\Api\AdminSuperController::class, 'recordCommunityPayment']);
+Route::get('/v2/admin/super/billing/standing/payments', [\App\Http\Controllers\Api\AdminSuperController::class, 'communityPayments']);
+Route::post('/v2/admin/super/billing/standing/payer', [\App\Http\Controllers\Api\AdminSuperController::class, 'setCommunityPayer']);
 Route::get('/v2/admin/super/billing/standing/preview', [\App\Http\Controllers\Api\AdminSuperController::class, 'previewBillingAutomation']);
 Route::get('/v2/admin/super/billing/settings', [\App\Http\Controllers\Api\AdminSuperController::class, 'getBillingAutomationSettings']);
 Route::put('/v2/admin/super/billing/settings', [\App\Http\Controllers\Api\AdminSuperController::class, 'updateBillingAutomationSettings']);

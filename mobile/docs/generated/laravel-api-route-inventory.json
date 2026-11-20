@@ -2,11 +2,11 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2900,
-  "api_route_rows": 2865,
-  "distinct_api_paths": 2393,
+  "total_registered_routes": 2903,
+  "api_route_rows": 2868,
+  "distinct_api_paths": 2396,
   "route_source_fingerprint": {
-    "digest": "5f3676a476a630e9bb3d2fee6a30f63f0bb65a1f308d9bb898a5267ff1463ff2",
+    "digest": "d64fdb50f54994a4c28015a9901d1473d4e6ab5e080360929e17ed3dbac12367",
     "files": [
       {
         "file": "routes/api-marketplace-admin.php",
@@ -18,7 +18,7 @@
       },
       {
         "file": "routes/api.php",
-        "sha256": "8797822ef59071e421e94d87f0b78466e3481d37caaf9c873425324f7c5be52e"
+        "sha256": "5d26c3478da637ab0c0468e1da1bc6d965e91880f5027d7762291101ca4d48bb"
       },
       {
         "file": "routes/channels.php",
@@ -3101,8 +3101,17 @@
     "/api/v2/admin/super/billing/standing/paid-until": [
       "POST"
     ],
+    "/api/v2/admin/super/billing/standing/payer": [
+      "POST"
+    ],
+    "/api/v2/admin/super/billing/standing/payments": [
+      "GET"
+    ],
     "/api/v2/admin/super/billing/standing/preview": [
       "GET"
+    ],
+    "/api/v2/admin/super/billing/standing/record-payment": [
+      "POST"
     ],
     "/api/v2/admin/super/billing/standing/restore": [
       "POST"

@@ -3112,6 +3112,91 @@ class AdminSuperController extends BaseApiController
         return $this->respondWithData(['standing' => BillingStandingService::get($tenantId)]);
     }
 
+    /**
+     * POST /api/v2/admin/super/billing/standing/record-payment
+     *
+     * A payment that did not come through Stripe (a bank transfer, a cheque),
+     * recorded with the date it pays up to. Reopens a community the system
+     * paused for non-payment, and tells its admins, as setting the date does.
+     */
+    public function recordCommunityPayment(): JsonResponse
+    {
+        $userId = $this->requireGodPlatformAdmin();
+        $input = $this->getAllInput();
+        $tenantId = (int) ($input['tenant_id'] ?? 0);
+        if ($tenantId < 1) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.tenant_id_is_required'), 'tenant_id', 422);
+        }
+
+        $wasClosed = $this->communityIsClosed($tenantId);
+        try {
+            $paymentId = BillingStandingService::recordPayment($tenantId, [
+                'paid_until' => $input['paid_until'] ?? null,
+                'received_on' => $input['received_on'] ?? null,
+                'method' => $input['method'] ?? null,
+                'reference' => $input['reference'] ?? null,
+                'amount' => $input['amount'] ?? null,
+                'currency' => $input['currency'] ?? null,
+            ], $userId);
+        } catch (\DomainException $e) {
+            return $this->standingRefusal($e);
+        }
+
+        $this->tellAdminsIfStandingChanged($tenantId, $wasClosed);
+
+        return $this->respondWithData([
+            'standing' => BillingStandingService::get($tenantId),
+            'payment_id' => $paymentId,
+        ]);
+    }
+
+    /** GET /api/v2/admin/super/billing/standing/payments?tenant_id=N */
+    public function communityPayments(): JsonResponse
+    {
+        $this->requireGodPlatformAdmin();
+        $tenantId = (int) ($this->getAllInput()['tenant_id'] ?? 0);
+        if ($tenantId < 1) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.tenant_id_is_required'), 'tenant_id', 422);
+        }
+
+        try {
+            return $this->respondWithData(BillingStandingService::payments($tenantId));
+        } catch (\DomainException $e) {
+            return $this->standingRefusal($e);
+        }
+    }
+
+    /**
+     * POST /api/v2/admin/super/billing/standing/payer
+     *
+     * Who a community pays. `payer: null` returns it to the default its place
+     * in the tree gives it.
+     */
+    public function setCommunityPayer(): JsonResponse
+    {
+        $userId = $this->requireGodPlatformAdmin();
+        $input = $this->getAllInput();
+        $tenantId = (int) ($input['tenant_id'] ?? 0);
+        if ($tenantId < 1) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.tenant_id_is_required'), 'tenant_id', 422);
+        }
+
+        // Only an explicit null returns to the default. A request that does
+        // not say payer at all is a mistake, not an instruction to reset.
+        $payer = $input['payer'] ?? null;
+        if (!array_key_exists('payer', $input) || ($payer !== null && !is_string($payer))) {
+            return $this->respondWithError('PAYER_INVALID', __('api.billing_standing_payer_invalid'), 'payer', 422);
+        }
+
+        try {
+            BillingStandingService::setPayer($tenantId, $payer, $userId);
+        } catch (\DomainException $e) {
+            return $this->standingRefusal($e);
+        }
+
+        return $this->respondWithData(['standing' => BillingStandingService::get($tenantId)]);
+    }
+
     // =====================================================================
     // THE DAILY CHECK — its settings and what it would do today
     // =====================================================================
@@ -3324,6 +3409,14 @@ class AdminSuperController extends BaseApiController
             'community_is_exempt' => ['api.billing_standing_community_is_exempt', 'tenant_id'],
             'exempt_reason_required' => ['api.billing_standing_exempt_reason_required', 'reason'],
             'paid_until_invalid' => ['api.billing_standing_paid_until_invalid', 'paid_until'],
+            'payment_paid_until_required' => ['api.billing_standing_payment_paid_until_required', 'paid_until'],
+            'payment_paid_until_not_later' => ['api.billing_standing_payment_paid_until_not_later', 'paid_until'],
+            'payment_received_on_invalid' => ['api.billing_standing_payment_received_on_invalid', 'received_on'],
+            'payment_method_invalid' => ['api.billing_standing_payment_method_invalid', 'method'],
+            'payment_amount_invalid' => ['api.billing_standing_payment_amount_invalid', 'amount'],
+            'payment_currency_invalid' => ['api.billing_standing_payment_currency_invalid', 'currency'],
+            'payer_invalid' => ['api.billing_standing_payer_invalid', 'payer'],
+            'payer_needs_parent' => ['api.billing_standing_payer_needs_parent', 'payer'],
         ];
 
         $code = $e->getMessage();

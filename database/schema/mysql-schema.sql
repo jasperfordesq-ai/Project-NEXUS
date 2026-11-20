@@ -924,6 +924,25 @@ CREATE TABLE `billing_delegates` (
   KEY `billing_delegates_user_id_index` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `billing_payments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `billing_payments` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(11) NOT NULL,
+  `received_on` date NOT NULL,
+  `method` varchar(30) NOT NULL,
+  `reference` varchar(190) DEFAULT NULL,
+  `amount` decimal(12,2) DEFAULT NULL,
+  `currency` char(3) DEFAULT NULL,
+  `paid_until_before` date DEFAULT NULL,
+  `paid_until_after` date NOT NULL,
+  `recorded_by_user_id` int(10) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_bp_tenant_received` (`tenant_id`,`received_on`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `blog_posts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;

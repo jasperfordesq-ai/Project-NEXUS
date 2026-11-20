@@ -2176,6 +2176,14 @@ return [
     'branch_payments_paused_from_above' => 'This community is paused because a community above it is paused. It can only be restored there.',
     'billing_standing_paid_until_invalid' => 'Enter the date as year-month-day, for example 2027-01-31.',
     'billing_setting_invalid'              => 'One of the settings is not valid, so nothing was saved. Check that each number is in its allowed range and that the pause comes after the final warning.',
+    'billing_standing_payment_paid_until_required' => 'Enter the date this payment pays up to.',
+    'billing_standing_payment_paid_until_not_later' => 'The paid-until date must be later than the current one. A payment cannot leave the date where it is or move it back.',
+    'billing_standing_payment_received_on_invalid' => 'Enter the date the payment arrived as year-month-day. It cannot be in the future.',
+    'billing_standing_payment_method_invalid' => 'Choose how the payment was made.',
+    'billing_standing_payment_amount_invalid' => 'Enter the amount as a number of zero or more, with at most two decimal places, for example 120.50.',
+    'billing_standing_payment_currency_invalid' => 'Choose a currency for the amount, as a three-letter code such as GBP or EUR.',
+    'billing_standing_payer_invalid' => 'Choose how this community pays: by card, by invoice or bank transfer, through its parent community, or not billed.',
+    'billing_standing_payer_needs_parent' => 'This community has no parent community to pay. Choose another way for it to pay.',
     'tenant_inactive'                      => 'Tenant is inactive',
 
     // Feature gates

@@ -44,9 +44,10 @@ final class BillingSettingsTest extends TestCase
 
         $this->assertSame([
             'automation_enabled' => false,
-            'reminder_days_before' => 7,
+            'reminder_days' => '30,14,7,1',
             'final_warning_days_late' => 7,
             'suspend_days_late' => 14,
+            'card_retry_max_days_late' => 30,
             'limit_warning_percent' => 80,
             'over_limit_action' => 'none',
             'over_limit_grace_days' => 30,
@@ -87,10 +88,76 @@ final class BillingSettingsTest extends TestCase
 
     public function test_a_saved_value_is_read_back_after_the_cache_is_forgotten(): void
     {
-        BillingSettings::set('reminder_days_before', 10, null);
+        BillingSettings::set('reminder_days', '10,3', null);
+        BillingSettings::set('card_retry_max_days_late', 12, null);
         BillingSettings::flush();
 
-        $this->assertSame(10, BillingSettings::get('reminder_days_before'));
+        $this->assertSame('10,3', BillingSettings::get('reminder_days'));
+        $this->assertSame([10, 3], BillingSettings::reminderDays());
+        $this->assertSame(12, BillingSettings::get('card_retry_max_days_late'));
+    }
+
+    public function test_the_default_reminder_days_are_a_month_a_fortnight_a_week_and_a_day_before(): void
+    {
+        DB::table('platform_billing_settings')->delete();
+        BillingSettings::flush();
+
+        $this->assertSame([30, 14, 7, 1], BillingSettings::reminderDays());
+    }
+
+    /** @return array<string, array{0: mixed, 1: string}> */
+    public static function reminderDayInputs(): array
+    {
+        return [
+            'spaces and any order' => ['7, 30,14', '30,14,7'],
+            'a repeated day' => ['7,7,1', '7,1'],
+            'one day' => ['5', '5'],
+            'a list of whole numbers' => [[1, 30, 14], '30,14,1'],
+            'numbers as strings in a list' => [['14', '2'], '14,2'],
+            'empty means none' => ['', ''],
+            'only spaces means none' => ['  ', ''],
+            'an empty list means none' => [[], ''],
+            // An empty text field reaches setMany() as null: Laravel turns
+            // empty strings in a request into null before the controller.
+            'null means none' => [null, ''],
+            'the edges' => ['120,1', '120,1'],
+            'eight days' => ['1,2,3,4,5,6,7,8', '8,7,6,5,4,3,2,1'],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('reminderDayInputs')]
+    public function test_reminder_days_are_normalised(mixed $input, string $stored): void
+    {
+        BillingSettings::set('reminder_days', $input, 42);
+        BillingSettings::flush();
+
+        $this->assertSame($stored, BillingSettings::get('reminder_days'));
+        $this->assertSame(
+            $stored === '' ? [] : array_map('intval', explode(',', $stored)),
+            BillingSettings::reminderDays()
+        );
+    }
+
+    public function test_no_reminder_days_means_no_reminders(): void
+    {
+        BillingSettings::set('reminder_days', '', 42);
+
+        $this->assertSame([], BillingSettings::reminderDays());
+    }
+
+    public function test_a_stored_reminder_days_before_row_is_ignored(): void
+    {
+        DB::table('platform_billing_settings')->delete();
+        DB::table('platform_billing_settings')->insert([
+            'setting_key' => 'reminder_days_before',
+            'setting_value' => '3',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        BillingSettings::flush();
+
+        $this->assertArrayNotHasKey('reminder_days_before', BillingSettings::all());
+        $this->assertSame([30, 14, 7, 1], BillingSettings::reminderDays());
     }
 
     /** @return array<string, array{0: string, 1: mixed}> */
@@ -99,8 +166,26 @@ final class BillingSettingsTest extends TestCase
         return [
             'unknown key' => ['no_such_setting', 1],
             'switch not a yes or no' => ['automation_enabled', 'maybe'],
-            'reminder below range' => ['reminder_days_before', -1],
-            'reminder above range' => ['reminder_days_before', 61],
+            'the removed single reminder day' => ['reminder_days_before', 7],
+            'reminder day zero' => ['reminder_days', '0'],
+            'reminder day above range' => ['reminder_days', '121'],
+            'reminder day negative' => ['reminder_days', '7,-1'],
+            'reminder day a fraction' => ['reminder_days', '7.5'],
+            'reminder day words' => ['reminder_days', 'a week'],
+            'reminder days with an empty entry' => ['reminder_days', '7,,1'],
+            'reminder days with a trailing comma' => ['reminder_days', '7,1,'],
+            'reminder days separated by spaces only' => ['reminder_days', '7 1'],
+            'nine reminder days' => ['reminder_days', '1,2,3,4,5,6,7,8,9'],
+            'reminder days a number not a list' => ['reminder_days', 7],
+            'reminder days a list with a fraction' => ['reminder_days', [7, 1.5]],
+            'reminder days a list with a zero' => ['reminder_days', [7, 0]],
+            'reminder days a list with a nested list' => ['reminder_days', [[7]]],
+            'reminder days a list with a boolean' => ['reminder_days', [true]],
+            'reminder days a list with a key' => ['reminder_days', ['a' => 7]],
+            'reminder days a yes' => ['reminder_days', true],
+            'longest card wait zero' => ['card_retry_max_days_late', 0],
+            'longest card wait above range' => ['card_retry_max_days_late', 181],
+            'longest card wait words' => ['card_retry_max_days_late', 'thirty'],
             'final warning zero' => ['final_warning_days_late', 0],
             'final warning above range' => ['final_warning_days_late', 181],
             'suspend above range' => ['suspend_days_late', 366],

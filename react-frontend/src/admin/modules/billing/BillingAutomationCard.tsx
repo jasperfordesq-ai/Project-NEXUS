@@ -31,15 +31,18 @@ type OverLimitAction = 'none' | 'pause';
 /** GET /v2/admin/super/billing/settings */
 interface BillingAutomationSettings {
   automation_enabled: boolean;
-  reminder_days_before: number;
+  /** Days before the paid-until date, largest first, e.g. "30,14,7,1"; "" sends none. */
+  reminder_days: string;
   final_warning_days_late: number;
   suspend_days_late: number;
+  /** A card payer Stripe is still retrying is paused once this many days late. */
+  card_retry_max_days_late: number;
   limit_warning_percent: number;
   over_limit_action: OverLimitAction;
   over_limit_grace_days: number;
 }
 
-type NumberKey = Exclude<keyof BillingAutomationSettings, 'automation_enabled' | 'over_limit_action'>;
+type NumberKey = Exclude<keyof BillingAutomationSettings, 'automation_enabled' | 'over_limit_action' | 'reminder_days'>;
 
 /** One entry of GET /v2/admin/super/billing/standing/preview */
 interface PreviewEntry {
@@ -54,9 +57,9 @@ interface PreviewEntry {
 type Draft = Omit<BillingAutomationSettings, NumberKey> & Record<NumberKey, string>;
 
 const NUMBER_KEYS: NumberKey[] = [
-  'reminder_days_before',
   'final_warning_days_late',
   'suspend_days_late',
+  'card_retry_max_days_late',
   'limit_warning_percent',
   'over_limit_grace_days',
 ];
@@ -71,9 +74,10 @@ function toDraft(settings: BillingAutomationSettings): Draft {
   return {
     automation_enabled: settings.automation_enabled,
     over_limit_action: settings.over_limit_action,
-    reminder_days_before: String(settings.reminder_days_before),
+    reminder_days: settings.reminder_days,
     final_warning_days_late: String(settings.final_warning_days_late),
     suspend_days_late: String(settings.suspend_days_late),
+    card_retry_max_days_late: String(settings.card_retry_max_days_late),
     limit_warning_percent: String(settings.limit_warning_percent),
     over_limit_grace_days: String(settings.over_limit_grace_days),
   };
@@ -88,6 +92,9 @@ function changes(saved: BillingAutomationSettings, draft: Draft): Record<string,
   const out: Record<string, unknown> = {};
   if (draft.automation_enabled !== saved.automation_enabled) out.automation_enabled = draft.automation_enabled;
   if (draft.over_limit_action !== saved.over_limit_action) out.over_limit_action = draft.over_limit_action;
+  // Sent exactly as typed: the server normalises it ("7, 30,14" → "30,14,7")
+  // or refuses it in its own words.
+  if (draft.reminder_days !== saved.reminder_days) out.reminder_days = draft.reminder_days;
   for (const key of NUMBER_KEYS) {
     const typed = draft[key].trim();
     if (typed === String(saved[key])) continue;
@@ -224,13 +231,10 @@ export function BillingAutomationCard({ onWarningPercent }: BillingAutomationCar
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Input
-                label={t('automation.reminder_days_before')}
+                label={t('automation.reminder_days')}
                 description={t('automation.reminder_days_help')}
-                type="number"
-                min={0}
-                max={60}
-                value={draft.reminder_days_before}
-                onValueChange={setNumber('reminder_days_before')}
+                value={draft.reminder_days}
+                onValueChange={(value) => setDraft((current) => (current ? { ...current, reminder_days: value } : current))}
               />
               <Input
                 label={t('automation.final_warning_days_late')}
@@ -247,6 +251,15 @@ export function BillingAutomationCard({ onWarningPercent }: BillingAutomationCar
                 max={365}
                 value={draft.suspend_days_late}
                 onValueChange={setNumber('suspend_days_late')}
+              />
+              <Input
+                label={t('automation.card_retry_max_days_late')}
+                description={t('automation.card_retry_help')}
+                type="number"
+                min={1}
+                max={180}
+                value={draft.card_retry_max_days_late}
+                onValueChange={setNumber('card_retry_max_days_late')}
               />
               <Input
                 label={t('automation.limit_warning_percent')}
