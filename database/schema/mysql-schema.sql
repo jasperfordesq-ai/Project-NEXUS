@@ -19183,6 +19183,29 @@ CREATE TABLE `tenant_badge_overrides` (
   KEY `idx_tbo_tenant` (`tenant_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `tenant_billing_standing`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `tenant_billing_standing` (
+  `tenant_id` int(11) NOT NULL,
+  `payer` enum('platform_card','platform_invoice','parent','not_billed') DEFAULT NULL,
+  `paid_until` date DEFAULT NULL,
+  `suspended_at` timestamp NULL DEFAULT NULL,
+  `suspended_by_user_id` int(10) unsigned DEFAULT NULL,
+  `suspension_source` enum('auto','manual') DEFAULT NULL,
+  `suspension_note` varchar(500) DEFAULT NULL,
+  `exempt` tinyint(1) NOT NULL DEFAULT 0,
+  `exempt_reason` varchar(500) DEFAULT NULL,
+  `exempt_by_user_id` int(10) unsigned DEFAULT NULL,
+  `exempt_at` timestamp NULL DEFAULT NULL,
+  `last_notice_stage` varchar(30) DEFAULT NULL,
+  `last_notice_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`tenant_id`),
+  KEY `idx_tbs_suspended_at` (`suspended_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `tenant_consent_overrides`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
