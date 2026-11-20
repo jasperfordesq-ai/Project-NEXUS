@@ -854,6 +854,21 @@ and the SEO overview stay in the admin panel (owner, 15 November 2026). Controls
 *inside* pages that stay (the footer badge switch, the global super admin switch
 on a user, permanent purge) keep their own checks and are only relabelled.
 
+**Pausing a community for non-payment (20 November 2026).** "Paused" is its own
+state, recorded in `tenant_billing_standing`; it is not `tenants.is_active`. A
+paused community's member side is closed for everyone, its own admins included,
+and its admins keep the admin panel so they can find out why. Only the platform
+team can pause, restore or exempt a community, from the Billing control page:
+`POST /v2/admin/super/billing/standing/{suspend,restore,exempt}`, each starting
+with `requireGodPlatformAdmin()` and pinned in
+`AdminSuperControllerPlatformTeamLockTest`. A pause on a community also closes
+every community below it; an exemption keeps a community, and everything below
+it, open. A community's admin may read its own standing
+(`GET /v2/admin/billing/standing`, `requireAdmin()`) and nothing else.
+🔴 A parent community's manager cannot yet pause or restore the communities
+below it. That is planned as its own step, through
+`SuperPanelAccess::canManageTenant()` (below only), and is not built.
+
 **Adding a page to the panel.** Mount it in `PlatformTeamRoutes.tsx`, add it to
 `PlatformTeamSidebar.tsx` in the zone that matches what the page acts on ("The
 whole platform" or "This community"), start each of its endpoints with
