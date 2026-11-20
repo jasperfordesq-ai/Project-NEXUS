@@ -57,6 +57,7 @@ final class MatchReasonText
         'For your offer' => 'for_offer',
         'For your skill' => 'for_skill',
         'For something you would like help with' => 'for_wanted_skill',
+        'For help you have given before' => 'for_experience',
     ];
 
     /**

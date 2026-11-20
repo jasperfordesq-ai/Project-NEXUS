@@ -29,5 +29,6 @@
   "for_offer": "Do do thairiscint: {{title}}",
   "for_skill": "Do do scil: {{title}}",
   "for_wanted_skill": "Do rud ar mhaith leat cabhair leis: {{title}}",
+  "for_experience": "As cabhair a thug tú roimhe seo: {{title}}",
   "two_way": "Malartú frithpháirteach: tairgeann tusa “{{you}}” agus tairgeann siadsan “{{they}}”"
 }

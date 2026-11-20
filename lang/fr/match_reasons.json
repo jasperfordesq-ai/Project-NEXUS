@@ -29,5 +29,6 @@
   "for_offer": "Pour votre offre : {{title}}",
   "for_skill": "Pour votre compétence : {{title}}",
   "for_wanted_skill": "Pour une aide que vous aimeriez recevoir : {{title}}",
+  "for_experience": "Pour une aide que vous avez déjà apportée : {{title}}",
   "two_way": "Échange réciproque : vous proposez « {{you}} » et l'autre personne propose « {{they}} »"
 }

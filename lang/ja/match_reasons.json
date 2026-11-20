@@ -29,5 +29,6 @@
   "for_offer": "あなたの提供: {{title}}",
   "for_skill": "あなたのスキル: {{title}}",
   "for_wanted_skill": "手伝ってほしいこと: {{title}}",
+  "for_experience": "以前に提供した手助けに基づく: {{title}}",
   "two_way": "お互いに助け合えます: あなたは「{{you}}」を、相手は「{{they}}」を提供"
 }

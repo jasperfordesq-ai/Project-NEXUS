@@ -601,7 +601,14 @@ class SmartMatchingEngine
             $meta['has_active_listings'] = false;
             $meta['matched_from_skills'] = $skillStandIns !== [];
         }
-        $userListings = array_merge($userListings, $skillStandIns);
+        // ... and so does help the member has actually given: a completed
+        // exchange says "I can do this" more reliably than a list of skills,
+        // and many members who help regularly never fill that list in.
+        $userListings = array_merge(
+            $userListings,
+            $skillStandIns,
+            $this->experienceListings($userId, array_merge($userListings, $skillStandIns))
+        );
         if (empty($userListings)) {
             $coldStart = $this->getColdStartMatches($userId, $userLat, $userLon, $locationApproximate, $gates, $maxDistance, $limit);
             // Cold-start items are browsing suggestions, not real matches, so
@@ -849,6 +856,15 @@ class SmartMatchingEngine
                     $candidate['distance_km'] = $best['distance'];
                     $candidate['matched_listing'] = $bestListing['title'];
                     $candidate['matched_from_skill'] = !empty($bestListing['from_profile_skills']);
+                    // How good the member says they are at the skill this match
+                    // is for, and whether other members have endorsed it.
+                    $skillEvidence = (float) ($bestListing['skill_evidence'] ?? 0.0);
+                    if ($skillEvidence != 0.0) {
+                        $candidate['match_score'] = max(0.0, min(100.0, (float) $candidate['match_score'] + $skillEvidence));
+                        if (isset($candidate['score_breakdown']['adjustments']) && is_array($candidate['score_breakdown']['adjustments'])) {
+                            $candidate['score_breakdown']['adjustments']['skill_evidence'] = $skillEvidence;
+                        }
+                    }
                     $candidate['match_type'] = $best['type'];
                     if (!empty($best['exchange'])) {
                         // The two listings that make this a two-way match.
@@ -1574,10 +1590,11 @@ class SmartMatchingEngine
         $tenantId = (int) TenantContext::getId();
         $give = [];
         $want = [];
+        $proficiency = []; // lower-cased skill name => what the member says of it
 
         try {
             $rows = DB::select(
-                "SELECT skill_name, is_offering, is_requesting FROM user_skills WHERE tenant_id = ? AND user_id = ?",
+                "SELECT skill_name, proficiency, is_offering, is_requesting FROM user_skills WHERE tenant_id = ? AND user_id = ?",
                 [$tenantId, $userId]
             );
         } catch (\Throwable $e) {
@@ -1596,11 +1613,13 @@ class SmartMatchingEngine
             }
             if ($offering) {
                 $give[] = $name;
+                $proficiency[mb_strtolower($name)] = strtolower((string) ($row->proficiency ?? ''));
             }
             if ($requesting) {
                 $want[] = $name;
             }
         }
+        $evidence = $this->skillEvidence($tenantId, $userId, $proficiency);
 
         if ($give === [] && $want === []) {
             $give = CrossModuleMatchingService::skillNames((string) ($userData['skills'] ?? ''));
@@ -1635,7 +1654,140 @@ class SmartMatchingEngine
                     'service_type' => 'physical_only',
                     'created_at' => null,
                     'from_profile_skills' => true,
+                    // Only what the member can DO is strengthened by evidence.
+                    'skill_evidence' => $type === 'offer' ? ($evidence[$key] ?? 0.0) : 0.0,
                 ];
+            }
+        }
+
+        return $listings;
+    }
+
+    /** Points for what a member says of a skill; "intermediate" is the default and adds nothing. */
+    private const PROFICIENCY_POINTS = ['beginner' => -2.0, 'advanced' => 2.0, 'expert' => 3.0];
+
+    /** Points per endorsement of a skill by another member, and the most they add. */
+    private const ENDORSEMENT_POINTS = 1.5;
+    private const ENDORSEMENT_POINTS_MAX = 4.0;
+
+    /**
+     * What is known about each skill a member offers beyond its name: how
+     * good they say they are, and how many other members have endorsed it.
+     * Returned as points added to a match made on that skill.
+     *
+     * Until 20 Nov 2026 an expert whose skill several members had endorsed
+     * was matched exactly as strongly as a self-declared beginner.
+     *
+     * @param array<string, string> $proficiency lower-cased skill name => proficiency
+     * @return array<string, float> lower-cased skill name => points
+     */
+    private function skillEvidence(int $tenantId, int $userId, array $proficiency): array
+    {
+        if ($proficiency === []) {
+            return [];
+        }
+
+        $endorsements = [];
+        try {
+            $rows = DB::select(
+                "SELECT LOWER(skill_name) AS skill, COUNT(DISTINCT endorser_id) AS cnt
+                 FROM skill_endorsements
+                 WHERE tenant_id = ? AND endorsed_id = ? AND endorser_id <> ?
+                 GROUP BY LOWER(skill_name)",
+                [$tenantId, $userId, $userId]
+            );
+            foreach ($rows as $row) {
+                $endorsements[(string) $row->skill] = (int) $row->cnt;
+            }
+        } catch (\Throwable $e) {
+            Log::warning('[SmartMatchingEngine] skill endorsements unavailable', ['user_id' => $userId, 'error' => $e->getMessage()]);
+        }
+
+        $evidence = [];
+        foreach ($proficiency as $skill => $level) {
+            $points = (self::PROFICIENCY_POINTS[$level] ?? 0.0)
+                + min(self::ENDORSEMENT_POINTS_MAX, self::ENDORSEMENT_POINTS * ($endorsements[$skill] ?? 0));
+            if ($points != 0.0) {
+                $evidence[$skill] = $points;
+            }
+        }
+
+        return $evidence;
+    }
+
+    /** Past exchanges read for what a member has shown they can do, and how far back. */
+    private const EXPERIENCE_STAND_INS = 6;
+    private const EXPERIENCE_MONTHS = 24;
+
+    /**
+     * Stand-in offers built from help the member has actually GIVEN: the
+     * listings of exchanges they completed as the helper in the last two
+     * years, unless the person they helped rated it 1 or 2.
+     *
+     * Who helped depends on the listing: on an offer it is the listing's
+     * owner (the exchange's provider); on a request it is the member who
+     * answered it (the exchange's requester). Like a profile skill, a
+     * stand-in carries id 0, is never stored and is never shown to anyone
+     * else: it only decides which requests this member is shown.
+     *
+     * @param array<int, array<string, mixed>> $already listings and skills the member already has
+     * @return array<int, array<string, mixed>>
+     */
+    private function experienceListings(int $userId, array $already): array
+    {
+        $tenantId = (int) TenantContext::getId();
+
+        try {
+            $rows = DB::select(
+                "SELECT l.title, MAX(COALESCE(er.completed_at, er.created_at)) AS last_done
+                 FROM exchange_requests er
+                 JOIN listings l ON l.id = er.listing_id AND l.tenant_id = er.tenant_id
+                 WHERE er.tenant_id = ? AND er.status = 'completed' AND er.reversed_at IS NULL
+                   AND COALESCE(er.completed_at, er.created_at) >= DATE_SUB(NOW(), INTERVAL " . self::EXPERIENCE_MONTHS . " MONTH)
+                   AND (
+                       (l.type = 'offer' AND er.provider_id = ?
+                            AND (er.requester_rating IS NULL OR er.requester_rating > 2))
+                    OR (l.type = 'request' AND er.requester_id = ?
+                            AND (er.provider_rating IS NULL OR er.provider_rating > 2))
+                   )
+                 GROUP BY l.title
+                 ORDER BY last_done DESC
+                 LIMIT " . (self::EXPERIENCE_STAND_INS * 2),
+                [$tenantId, $userId, $userId]
+            );
+        } catch (\Throwable $e) {
+            Log::warning('[SmartMatchingEngine] past exchanges unavailable', ['user_id' => $userId, 'error' => $e->getMessage()]);
+            return [];
+        }
+
+        $seen = [];
+        foreach ($already as $listing) {
+            $seen[mb_strtolower(trim((string) ($listing['title'] ?? '')))] = true;
+        }
+
+        $listings = [];
+        foreach ($rows as $row) {
+            $title = trim((string) ($row->title ?? ''));
+            $key = mb_strtolower($title);
+            if ($title === '' || isset($seen[$key])) {
+                continue;
+            }
+            $seen[$key] = true;
+            $listings[] = [
+                'id' => 0,
+                'user_id' => $userId,
+                'tenant_id' => $tenantId,
+                'type' => 'offer',
+                'title' => mb_substr($title, 0, 200),
+                'description' => '',
+                'category_id' => null,
+                'category_name' => null,
+                'service_type' => 'physical_only',
+                'created_at' => null,
+                'from_experience' => true,
+            ];
+            if (count($listings) >= self::EXPERIENCE_STAND_INS) {
+                break;
             }
         }
 
@@ -1680,12 +1832,15 @@ class SmartMatchingEngine
 
         $title = $short((string) ($myListing['title'] ?? ''));
         $fromSkill = !empty($myListing['from_profile_skills']);
-        if ($title === '' || (!$fromSkill && !$severalToMatchOn)) {
+        $fromExperience = !empty($myListing['from_experience']);
+        if ($title === '' || (!$fromSkill && !$fromExperience && !$severalToMatchOn)) {
             return array_values($reasons);
         }
 
         $isOffer = ($myListing['type'] ?? '') === 'offer';
-        if ($fromSkill) {
+        if ($fromExperience) {
+            $lead = 'For help you have given before: ';
+        } elseif ($fromSkill) {
             $lead = $isOffer ? 'For your skill: ' : 'For something you would like help with: ';
         } else {
             $lead = $isOffer ? 'For your offer: ' : 'For your request: ';

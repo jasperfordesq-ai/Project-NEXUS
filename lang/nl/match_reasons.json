@@ -29,5 +29,6 @@
   "for_offer": "Voor je aanbod: {{title}}",
   "for_skill": "Voor je vaardigheid: {{title}}",
   "for_wanted_skill": "Voor iets waarbij je hulp wilt: {{title}}",
+  "for_experience": "Voor hulp die je eerder hebt gegeven: {{title}}",
   "two_way": "Wederzijdse ruil: jij biedt “{{you}}” aan en de ander biedt “{{they}}” aan"
 }

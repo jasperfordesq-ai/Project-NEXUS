@@ -29,5 +29,6 @@
   "for_offer": "Para tu oferta: {{title}}",
   "for_skill": "Por tu habilidad: {{title}}",
   "for_wanted_skill": "Por algo con lo que te gustaría recibir ayuda: {{title}}",
+  "for_experience": "Por una ayuda que ya has prestado: {{title}}",
   "two_way": "Intercambio mutuo: tú ofreces «{{you}}» y la otra persona ofrece «{{they}}»"
 }

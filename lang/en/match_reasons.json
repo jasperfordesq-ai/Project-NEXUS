@@ -29,5 +29,6 @@
   "for_offer": "For your offer: {{title}}",
   "for_skill": "For your skill: {{title}}",
   "for_wanted_skill": "For something you would like help with: {{title}}",
+  "for_experience": "For help you have given before: {{title}}",
   "two_way": "Two-way match: you offer “{{you}}” and they offer “{{they}}”"
 }
