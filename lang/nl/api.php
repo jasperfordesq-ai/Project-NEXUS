@@ -1136,6 +1136,7 @@ return [
     'invalid_webhook_secret' => 'Ongeldig webhookgeheim',
     'webhook_auth_not_configured' => 'Webhook-verificatie niet geconfigureerd',
     'community_not_found_or_inactive' => 'We kunnen die gemeenschap niet vinden, of ze is op dit moment niet beschikbaar. Controleer het webadres.',
+    'community_paused' => 'Deze gemeenschap is gepauzeerd.',
     'tenant_inactive' => 'Huurder is inactief',
     'ideation_feature_disabled' => 'De module Idee-uitdagingen is niet ingeschakeld voor deze community',
     'job_vacancies_feature_disabled' => 'De module Vacatures is niet ingeschakeld voor deze community',

@@ -1136,6 +1136,7 @@ return [
     'invalid_webhook_secret' => 'سر الرد التلقائي على الويب غير صالح',
     'webhook_auth_not_configured' => 'لم يتم تكوين مصادقة Webhook',
     'community_not_found_or_inactive' => 'لا نجد هذا المجتمع، أو أنه غير متاح حاليًا. يُرجى التحقق من عنوان الموقع.',
+    'community_paused' => 'هذا المجتمع متوقف مؤقتًا.',
     'tenant_inactive' => 'المستأجر غير نشط',
     'ideation_feature_disabled' => 'وحدة تحديات التفكير غير ممكّنة لهذا المجتمع',
     'job_vacancies_feature_disabled' => 'وحدة الوظائف الشاغرة غير ممكّنة لهذا المجتمع',

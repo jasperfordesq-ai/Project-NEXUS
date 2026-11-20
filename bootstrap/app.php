@@ -775,6 +775,11 @@ $app = Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\ResolveTenant::class,
             \App\Http\Middleware\BrowserRefreshCookie::class,
             \App\Http\Middleware\CheckMaintenanceMode::class,
+            // Closes the member side of a community paused for non-payment.
+            // After ResolveTenant (it needs the community) and before sign-in:
+            // it closes the member API for everyone and leaves the admin API
+            // to that API's own gates.
+            \App\Http\Middleware\CheckBillingLock::class,
             // The server half of the mobile force-update lever. Sits high in the
             // stack on purpose: a build too old to be trusted should be refused
             // before it can authenticate, resolve anything, or mutate data. It acts

@@ -1205,6 +1205,7 @@ return [
     'invalid_webhook_secret' => 'Rún cuaille gréasáin neamhbhailí',
     'webhook_auth_not_configured' => 'Níl fíordheimhniú Webhook cumraithe',
     'community_not_found_or_inactive' => 'Ní féidir linn an pobal sin a aimsiú, nó níl sé ar fáil faoi láthair. Seiceáil an seoladh gréasáin, le do thoil.',
+    'community_paused' => 'Tá an pobal seo curtha ar sos.',
     'tenant_inactive' => 'Tá an tionónta neamhghníomhach',
     'ideation_feature_disabled' => 'Níl modúl Ideation Challenges cumasaithe don phobal seo',
     'job_vacancies_feature_disabled' => 'Níl an modúl Folúntais Poist cumasaithe don phobal seo',

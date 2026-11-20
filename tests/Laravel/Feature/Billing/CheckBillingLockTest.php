@@ -1,0 +1,214 @@
+<?php
+// Copyright © 2024–2026 Jasper Ford
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Author: Jasper Ford
+// See NOTICE file for attribution and acknowledgements.
+
+declare(strict_types=1);
+
+namespace Tests\Laravel\Feature\Billing;
+
+use App\Core\TenantContext;
+use App\Http\Middleware\CheckBillingLock;
+use App\Models\User;
+use App\Services\BillingStandingService;
+use App\Support\Billing\BillingLock;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Laravel\Sanctum\Sanctum;
+use Tests\Laravel\TestCase;
+
+/**
+ * A community paused for non-payment: its member side is closed to everyone,
+ * its admin side and the sign-in pages stay open.
+ *
+ * These go through the real HTTP stack, because the thing being proved is
+ * where the middleware sits and which addresses it lets past.
+ */
+final class CheckBillingLockTest extends TestCase
+{
+    use DatabaseTransactions;
+
+    private int $parent;
+    private int $child;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->parent = $this->makeCommunity('Paused parent', 1, '/1/');
+        $this->child = $this->makeCommunity('Paused child', $this->parent, "/1/{$this->parent}/");
+
+        BillingLock::flush();
+    }
+
+    protected function tearDown(): void
+    {
+        // parent::tearDown() rolls the transaction back; it must always run.
+        try {
+            BillingLock::flush();
+        } finally {
+            parent::tearDown();
+        }
+    }
+
+    private function makeCommunity(string $name, int $parentId, string $parentPath): int
+    {
+        $id = (int) DB::table('tenants')->insertGetId([
+            'name' => $name,
+            'slug' => 'paused-' . bin2hex(random_bytes(5)),
+            'is_active' => 1,
+            'parent_id' => $parentId,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('tenants')->where('id', $id)->update(['path' => "{$parentPath}{$id}/"]);
+
+        return $id;
+    }
+
+    /** @param array<string, mixed> $attributes */
+    private function signInTo(int $tenantId, array $attributes = []): User
+    {
+        $this->testTenantId = $tenantId;
+
+        $user = User::factory()->forTenant($tenantId)->create(array_merge([
+            'status' => 'active',
+            'is_approved' => true,
+        ], $attributes));
+        Sanctum::actingAs($user, ['*']);
+        TenantContext::setById($tenantId);
+
+        return $user;
+    }
+
+    public function test_member_api_is_closed_for_a_paused_community(): void
+    {
+        BillingStandingService::suspend($this->child, null, 'manual');
+        $this->signInTo($this->child);
+
+        $response = $this->apiGet('/v2/listings');
+
+        $response->assertStatus(403);
+        $response->assertJsonPath('code', CheckBillingLock::CODE);
+        $response->assertJsonPath('success', false);
+        $this->assertSame('COMMUNITY_PAUSED', CheckBillingLock::CODE);
+    }
+
+    public function test_admin_api_stays_open_for_a_paused_community(): void
+    {
+        BillingStandingService::suspend($this->child, null, 'manual');
+        $this->signInTo($this->child, ['role' => 'admin']);
+
+        $response = $this->apiGet('/v2/admin/users');
+
+        $this->assertNotSame(CheckBillingLock::CODE, $response->json('code'));
+        $response->assertStatus(200);
+    }
+
+    public function test_a_flag_only_admin_reaches_the_admin_api(): void
+    {
+        BillingStandingService::suspend($this->child, null, 'manual');
+        $this->signInTo($this->child, ['role' => 'member', 'is_tenant_super_admin' => true]);
+
+        $response = $this->apiGet('/v2/admin/users');
+
+        $this->assertNotSame(CheckBillingLock::CODE, $response->json('code'));
+        $response->assertStatus(200);
+    }
+
+    public function test_sign_in_bootstrap_and_who_am_i_stay_open(): void
+    {
+        BillingStandingService::suspend($this->child, null, 'manual');
+        $this->signInTo($this->child);
+
+        $bootstrap = $this->apiGet('/v2/tenant/bootstrap');
+        $this->assertNotSame(CheckBillingLock::CODE, $bootstrap->json('code'));
+        $bootstrap->assertStatus(200);
+
+        $me = $this->apiGet('/v2/users/me');
+        $this->assertNotSame(CheckBillingLock::CODE, $me->json('code'));
+        $me->assertStatus(200);
+
+        $login = $this->apiPost('/auth/login', ['email' => 'nobody@example.org', 'password' => 'wrong-password']);
+        $this->assertNotSame(CheckBillingLock::CODE, $login->json('code'));
+        $this->assertNotSame(403, $login->getStatusCode());
+    }
+
+    public function test_who_am_i_write_is_closed(): void
+    {
+        BillingStandingService::suspend($this->child, null, 'manual');
+        $this->signInTo($this->child);
+
+        $response = $this->apiPut('/v2/users/me', ['bio' => 'still here']);
+
+        $response->assertStatus(403);
+        $response->assertJsonPath('code', CheckBillingLock::CODE);
+    }
+
+    public function test_an_address_that_only_starts_like_who_am_i_is_closed(): void
+    {
+        BillingStandingService::suspend($this->child, null, 'manual');
+        $this->signInTo($this->child);
+
+        $response = $this->apiGet('/v2/users/me/listings');
+
+        $response->assertStatus(403);
+        $response->assertJsonPath('code', CheckBillingLock::CODE);
+    }
+
+    public function test_a_child_of_a_paused_parent_is_closed(): void
+    {
+        BillingStandingService::suspend($this->parent, null, 'auto');
+        $this->signInTo($this->child);
+
+        $response = $this->apiGet('/v2/listings');
+
+        $response->assertStatus(403);
+        $response->assertJsonPath('code', CheckBillingLock::CODE);
+    }
+
+    public function test_an_open_community_is_untouched(): void
+    {
+        BillingStandingService::suspend($this->child, null, 'manual');
+        $this->signInTo($this->parent);
+
+        $response = $this->apiGet('/v2/listings');
+
+        $this->assertNotSame(CheckBillingLock::CODE, $response->json('code'));
+        $this->assertNotSame(403, $response->getStatusCode());
+    }
+
+    public function test_a_restored_community_opens_again(): void
+    {
+        BillingStandingService::suspend($this->child, null, 'manual');
+        BillingStandingService::restore($this->child, null);
+        $this->signInTo($this->child);
+
+        $response = $this->apiGet('/v2/listings');
+
+        $this->assertNotSame(CheckBillingLock::CODE, $response->json('code'));
+    }
+
+    public function test_a_failing_check_lets_the_request_through_and_logs(): void
+    {
+        TenantContext::setById($this->child);
+        Log::shouldReceive('error')->once();
+
+        $middleware = new class extends CheckBillingLock {
+            protected function isLocked(int $tenantId): bool
+            {
+                throw new \RuntimeException('standing table unreadable');
+            }
+        };
+
+        $response = $middleware->handle(
+            Request::create('/api/v2/listings', 'GET'),
+            static fn () => response()->json(['ok' => true], 200)
+        );
+
+        $this->assertSame(200, $response->getStatusCode());
+    }
+}

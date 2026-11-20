@@ -1136,6 +1136,7 @@ return [
     'invalid_webhook_secret' => '無効な Webhook シークレット',
     'webhook_auth_not_configured' => 'Webhook 認証が構成されていません',
     'community_not_found_or_inactive' => 'このコミュニティが見つからないか、現在ご利用いただけません。ウェブアドレスをご確認ください。',
+    'community_paused' => 'このコミュニティは一時停止中です。',
     'tenant_inactive' => 'テナントは非アクティブです',
     'ideation_feature_disabled' => 'このコミュニティではアイデア チャレンジ モジュールが有効になっていません',
     'job_vacancies_feature_disabled' => 'このコミュニティでは求人モジュールが有効になっていません',

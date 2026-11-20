@@ -1136,6 +1136,7 @@ return [
     'invalid_webhook_secret' => 'Nieprawidłowy sekret webhooka',
     'webhook_auth_not_configured' => 'Nie skonfigurowano uwierzytelniania webhooka',
     'community_not_found_or_inactive' => 'Nie możemy znaleźć tej społeczności albo jest ona teraz niedostępna. Sprawdź adres strony.',
+    'community_paused' => 'Ta społeczność jest wstrzymana.',
     'tenant_inactive' => 'Najemca jest nieaktywny',
     'ideation_feature_disabled' => 'Moduł Wyzwania Ideacji nie jest włączony dla tej społeczności',
     'job_vacancies_feature_disabled' => 'Moduł Oferty pracy nie jest włączony dla tej społeczności',

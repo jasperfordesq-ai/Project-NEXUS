@@ -1205,6 +1205,7 @@ return [
     'invalid_webhook_secret' => 'Secreto de webhook no válido',
     'webhook_auth_not_configured' => 'Autenticación de webhook no configurada',
     'community_not_found_or_inactive' => 'No encontramos esa comunidad, o no está disponible en este momento. Comprueba la dirección web.',
+    'community_paused' => 'Esta comunidad está en pausa.',
     'tenant_inactive' => 'El inquilino está inactivo.',
     'ideation_feature_disabled' => 'El módulo Desafíos de ideación no está habilitado para esta comunidad',
     'job_vacancies_feature_disabled' => 'El módulo de Ofertas de Empleo no está habilitado para esta comunidad',

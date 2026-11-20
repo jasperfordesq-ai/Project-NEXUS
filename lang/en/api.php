@@ -2167,6 +2167,7 @@ return [
 
     // Tenant
     'community_not_found_or_inactive'      => 'We can\'t find that community, or it isn\'t available right now. Please check the web address.',
+    'community_paused'                     => 'This community is paused.',
     'tenant_inactive'                      => 'Tenant is inactive',
 
     // Feature gates
