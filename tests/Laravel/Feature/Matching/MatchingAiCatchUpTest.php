@@ -7,6 +7,7 @@
 namespace Tests\Laravel\Feature\Matching;
 
 use App\Jobs\DiscoverMatchesForListingJob;
+use App\Jobs\EnrichListingForMatchingJob;
 use App\Jobs\ReadTextForMatchingJob;
 use App\Models\Listing;
 use App\Models\User;
@@ -44,6 +45,11 @@ class MatchingAiCatchUpTest extends TestCase
             'user_id' => $member->id, 'tenant_id' => $this->testTenantId, 'skill_name' => 'Zzyx unicycle repair',
             'proficiency' => 'intermediate', 'is_offering' => 1, 'is_requesting' => 0,
         ]);
+        // Saving a listing queues its AI reading and match search, and in tests
+        // the queue runs them at once: on an empty database (CI) the search
+        // records "looked at" and the catch-up rightly skips it. Hold them
+        // here; each test fakes the bus again to record only its own run.
+        Bus::fake([EnrichListingForMatchingJob::class, DiscoverMatchesForListingJob::class]);
         $listing = Listing::factory()->forTenant($this->testTenantId)->create([
             'user_id' => $member->id, 'type' => 'request', 'status' => 'active', 'moderation_status' => 'approved',
             'title' => 'Zzyx harp needs tuning',
