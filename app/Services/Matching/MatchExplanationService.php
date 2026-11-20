@@ -201,37 +201,16 @@ class MatchExplanationService
             ],
         ];
 
-        try {
-            $response = AIServiceFactory::chatWithFallback($messages, [
-                'temperature' => 0.3,
-                'max_tokens' => 900,
-            ]);
-
-            $content = (string) ($response['content'] ?? '');
-            if ($content === '') {
-                return $empty;
-            }
-
-            // Providers sometimes wrap JSON in code fences or prose — extract
-            // the outermost array.
-            $start = strpos($content, '[');
-            $end = strrpos($content, ']');
-            if ($start === false || $end === false || $end <= $start) {
-                return $empty;
-            }
-            $decoded = json_decode(substr($content, $start, $end - $start + 1), true);
-            if (!is_array($decoded)) {
-                return $empty;
-            }
-
-            return [
-                'entries' => $decoded,
-                'tokens_in' => (int) ($response['tokens_input'] ?? 0),
-                'tokens_out' => (int) ($response['tokens_output'] ?? 0),
-            ];
-        } catch (\Throwable $e) {
-            Log::warning('[MatchExplanationService] LLM call failed: ' . $e->getMessage());
+        // Through the one client, which adapts to the community's model.
+        $answer = app(MatchAiClient::class)->askJson($messages, 900, 'array');
+        if ($answer === null) {
             return $empty;
         }
+
+        return [
+            'entries' => $answer['data'],
+            'tokens_in' => $answer['tokens_in'],
+            'tokens_out' => $answer['tokens_out'],
+        ];
     }
 }

@@ -170,6 +170,30 @@ class MatchingAiDiscoveryTest extends TestCase
         $this->assertSame(2, $stored['s'][TextReadingService::key('Zzyx unicycle repair')] ?? null);
     }
 
+    public function test_a_small_model_the_community_runs_itself_is_shown_much_less_at_a_time(): void
+    {
+        // A self-hosted model reads only a few thousand words at once and
+        // silently drops the rest: 120 listings would be mostly ignored.
+        $this->aiSwitch(true);
+        DB::table('ai_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'ai_provider'],
+            ['setting_value' => 'ollama', 'updated_at' => now()]
+        );
+        $request = $this->listing($this->member(), 'request', 'Zzyx harp needs tuning');
+        $other = $this->member();
+        foreach (range(1, MatchDiscoveryService::MAX_CANDIDATES_SMALL + 5) as $n) {
+            $this->listing($other, 'offer', "Zzyx offer number {$n}");
+        }
+        $service = $this->fake([]);
+
+        $service->discover($this->testTenantId, $request->id);
+
+        $listings = array_filter($service->lastItems, fn ($item) => $item['kind'] === 'listing');
+        $skills = array_filter($service->lastItems, fn ($item) => $item['kind'] === 'skill');
+        $this->assertCount(MatchDiscoveryService::MAX_CANDIDATES_SMALL, $listings);
+        $this->assertLessThanOrEqual(MatchDiscoveryService::MAX_SKILLS_SMALL, count($skills));
+    }
+
     public function test_a_listing_is_asked_about_once_until_its_words_change_or_two_weeks_pass(): void
     {
         $this->aiSwitch(true);

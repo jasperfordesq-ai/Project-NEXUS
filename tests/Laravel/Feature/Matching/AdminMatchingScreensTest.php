@@ -351,6 +351,58 @@ class AdminMatchingScreensTest extends TestCase
         $this->assertFalse($this->storedConfig()['ai']['discovery']);
     }
 
+    public function test_the_page_is_told_which_model_matching_uses_and_what_the_ai_has_done(): void
+    {
+        $set = fn (string $key, string $value) => DB::table('ai_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => $key],
+            ['setting_value' => $value, 'updated_at' => now()]
+        );
+        $set('ai_enabled', 'true');
+        $set('ai_provider', 'anthropic');
+        $set('claude_model', 'claude-sonnet-5-5');
+        DB::table('ai_settings')->where('tenant_id', $this->testTenantId)->where('setting_key', 'openai_api_key')->delete();
+
+        $owner = $this->member();
+        $read = $this->listing($owner);
+        $this->listing($owner);
+        \Illuminate\Support\Facades\Cache::flush();
+        DB::table('listing_match_enrichments')->where('tenant_id', $this->testTenantId)->delete();
+        DB::table('listing_match_discoveries')->where('tenant_id', $this->testTenantId)->delete();
+        DB::table('match_text_readings')->where('tenant_id', $this->testTenantId)->delete();
+        DB::table('listing_match_enrichments')->insert([
+            'tenant_id' => $this->testTenantId, 'listing_id' => $read->id, 'content_hash' => str_repeat('a', 64),
+            'terms' => '[]', 'concepts' => '[]', 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        DB::table('listing_match_discoveries')->insert([
+            'tenant_id' => $this->testTenantId, 'listing_id' => $read->id, 'content_hash' => str_repeat('a', 64),
+            'fits' => '{"l":{},"s":{}}', 'considered' => 3, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        DB::table('match_text_readings')->insert([
+            'tenant_id' => $this->testTenantId, 'text_hash' => str_repeat('b', 64), 'source' => 'skill',
+            'terms' => '[]', 'concepts' => '[]', 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $this->cacheRow($this->member(), $read, 30.00, ['ai_rerank_delta' => -15.0]);
+        Sanctum::actingAs($this->admin());
+
+        $data = $this->apiGet('/v2/admin/matching/config')->assertStatus(200)->json('data');
+
+        $this->assertSame('anthropic', $data['ai']['provider']);
+        $this->assertSame('claude-sonnet-5-5', $data['ai']['model']);
+        $this->assertFalse($data['ai']['semantic_available'],
+            'The "similar meaning" figures need an OpenAI key; this community has none');
+        $status = $data['ai_status'];
+        $this->assertSame(1, $status['listings_read']);
+        $this->assertSame(1, $status['listings_searched']);
+        $this->assertGreaterThanOrEqual(2, $status['listings_active']);
+        $this->assertSame(1, $status['texts_read']);
+        $this->assertSame(1, $status['poor_fits']);
+        $this->assertFalse($status['paused']);
+
+        // The provider refused a request: the catch-up is paused, and the page says so.
+        \Illuminate\Support\Facades\Cache::put(\App\Services\Matching\MatchDiscoveryService::backoffKey($this->testTenantId), 1, now()->addHour());
+        $this->assertTrue($this->apiGet('/v2/admin/matching/config')->json('data.ai_status.paused'));
+    }
+
     public function test_update_config_saves_valid_settings_and_keeps_what_it_does_not_manage(): void
     {
         // A community that still has the old approval flag and tuned

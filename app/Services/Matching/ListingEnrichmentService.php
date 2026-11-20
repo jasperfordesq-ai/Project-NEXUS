@@ -193,7 +193,8 @@ class ListingEnrichmentService
         return array_map(fn ($row) => (int) $row->id, $rows);
     }
 
-    private static function backoffKey(int $tenantId): string
+    /** The cache key that pauses this part for a community after its provider failed. */
+    public static function backoffKey(int $tenantId): string
     {
         return "listing_enrichment_backoff:{$tenantId}";
     }
@@ -295,32 +296,17 @@ class ListingEnrichmentService
             ],
         ];
 
-        try {
-            $response = AIServiceFactory::chatWithFallback($messages, [
-                'temperature' => 0.0,
-                'max_tokens' => 300,
-            ]);
-        } catch (\Throwable $e) {
-            Log::info('[ListingEnrichmentService] AI request failed: ' . $e->getMessage());
-            return null;
-        }
-
-        $content = (string) ($response['content'] ?? '');
-        $start = strpos($content, '{');
-        $end = strrpos($content, '}');
-        if ($start === false || $end === false || $end <= $start) {
-            return null;
-        }
-        $decoded = json_decode(substr($content, $start, $end - $start + 1), true);
-        if (!is_array($decoded)) {
+        // Through the one client, which adapts to the community's model.
+        $answer = app(MatchAiClient::class)->askJson($messages, 300);
+        if ($answer === null) {
             return null;
         }
 
         return [
-            'terms' => $decoded['terms'] ?? [],
-            'concepts' => $decoded['concepts'] ?? [],
-            'provider' => (string) ($response['provider'] ?? ''),
-            'model' => (string) ($response['model'] ?? ''),
+            'terms' => $answer['data']['terms'] ?? [],
+            'concepts' => $answer['data']['concepts'] ?? [],
+            'provider' => $answer['provider'],
+            'model' => $answer['model'],
         ];
     }
 

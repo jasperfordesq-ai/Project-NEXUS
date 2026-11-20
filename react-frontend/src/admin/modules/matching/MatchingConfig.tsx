@@ -76,6 +76,24 @@ const DEFAULT_AI: Omit<MatchingAiConfig, 'available'> = {
   alert_check: true,
 };
 
+/** The providers a community can choose in AI settings, as they call themselves. */
+const AI_PROVIDER_NAMES: Record<string, string> = {
+  openai: 'OpenAI',
+  anthropic: 'Anthropic',
+  gemini: 'Google Gemini',
+  ollama: 'Ollama',
+};
+
+/** What the server tells the page about the AI and the page never changes. */
+function readOnlyAi(ai?: MatchingAiConfig) {
+  return {
+    available: ai?.available ?? false,
+    ...(ai?.provider !== undefined ? { provider: ai.provider } : {}),
+    ...(ai?.model !== undefined ? { model: ai.model } : {}),
+    ...(ai?.semantic_available !== undefined ? { semantic_available: ai.semantic_available } : {}),
+  };
+}
+
 /**
  * The parts of the AI layer that each call the community's own AI provider,
  * and so each have their own switch.
@@ -406,7 +424,10 @@ export function MatchingConfig() {
       enabled: prev.enabled,
       engine_version: prev.engine_version ?? 2,
       ...(prev.adjustments ? { adjustments: prev.adjustments } : {}),
-      ai: { ...DEFAULT_AI, available: prev.ai?.available ?? false },
+      // Which provider and model, and what the AI has done, are facts about
+      // the community, not settings: a reset leaves them on the page.
+      ai: { ...DEFAULT_AI, ...readOnlyAi(prev.ai) },
+      ...(prev.ai_status ? { ai_status: prev.ai_status } : {}),
     }));
     setDirty(true);
     setResetModalOpen(false);
@@ -696,11 +717,53 @@ export function MatchingConfig() {
                 />
               </div>
               <Separator />
+              {config.ai?.available !== false && config.ai?.provider && (
+                <>
+                  <div className="space-y-1" data-testid="matching-ai-status">
+                    <p className="text-sm font-medium">{t('matching.ai_status_title')}</p>
+                    <p className="text-xs text-muted">
+                      {t('matching.ai_status_model', {
+                        provider: AI_PROVIDER_NAMES[config.ai.provider] ?? config.ai.provider,
+                        model: config.ai.model || '—',
+                      })}
+                    </p>
+                    {config.ai_status && (
+                      <ul className="list-disc ps-5 text-xs text-muted">
+                        <li>
+                          {t('matching.ai_status_listings_read', {
+                            done: config.ai_status.listings_read,
+                            total: config.ai_status.listings_active,
+                          })}
+                        </li>
+                        <li>
+                          {t('matching.ai_status_listings_searched', {
+                            done: config.ai_status.listings_searched,
+                            total: config.ai_status.listings_active,
+                          })}
+                        </li>
+                        <li>{t('matching.ai_status_texts_read', { number: config.ai_status.texts_read })}</li>
+                        <li>{t('matching.ai_status_poor_fits', { number: config.ai_status.poor_fits })}</li>
+                      </ul>
+                    )}
+                    {config.ai_status?.paused && (
+                      <div className="flex items-start gap-2 pt-1" role="status">
+                        <AlertTriangle size={14} className="mt-0.5 shrink-0 text-warning" aria-hidden="true" />
+                        <p className="text-xs font-medium">{t('matching.ai_status_paused')}</p>
+                      </div>
+                    )}
+                  </div>
+                  <Separator />
+                </>
+              )}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div>
                     <p className="text-sm font-medium">{t('matching.ai_semantic_matching')}</p>
-                    <p className="text-xs text-muted">{t('matching.ai_semantic_matching_desc')}</p>
+                    <p className="text-xs text-muted">
+                      {config.ai?.available !== false && config.ai?.semantic_available === false
+                        ? t('matching.ai_semantic_needs_openai')
+                        : t('matching.ai_semantic_matching_desc')}
+                    </p>
                   </div>
                   {config.ai?.available === false && (
                     <Tooltip content={t('matching.ai_configure_provider_first')}>
@@ -713,7 +776,7 @@ export function MatchingConfig() {
                 <Switch
                   isSelected={config.ai?.semantic_signal ?? false}
                   onValueChange={(val) => updateAi('semantic_signal', val)}
-                  isDisabled={config.ai?.available === false}
+                  isDisabled={config.ai?.available === false || config.ai?.semantic_available === false}
                   aria-label={t('matching.ai_semantic_matching')}
                 />
               </div>

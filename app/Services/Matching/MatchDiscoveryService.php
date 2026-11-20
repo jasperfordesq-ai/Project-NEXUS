@@ -43,6 +43,10 @@ class MatchDiscoveryService
     public const MAX_CANDIDATES = 120;
     public const MAX_SKILLS = 80;
 
+    /** ... and for a small model the community runs itself ({@see MatchAiClient::profile()}). */
+    public const MAX_CANDIDATES_SMALL = 30;
+    public const MAX_SKILLS_SMALL = 20;
+
     /** Fits kept for one listing. */
     public const MAX_FITS = 12;
 
@@ -276,8 +280,12 @@ class MatchDiscoveryService
              LIMIT 400",
             [$tenantId, $opposite, $ownerId]
         );
-        if (count($rows) > self::MAX_CANDIDATES) {
-            $rows = $this->mostAlike($rows, $sourceText);
+        // How much one request carries depends on the model the community chose.
+        $small = app(MatchAiClient::class)->profile()['small'];
+        $maxListings = $small ? self::MAX_CANDIDATES_SMALL : self::MAX_CANDIDATES;
+        $maxSkills = $small ? self::MAX_SKILLS_SMALL : self::MAX_SKILLS;
+        if (count($rows) > $maxListings) {
+            $rows = $this->mostAlike($rows, $sourceText, $maxListings);
         }
 
         // A request needs what members can do; an offer, what members want.
@@ -316,7 +324,7 @@ class MatchDiscoveryService
             if ($name === '' || isset($seen[$key])) {
                 continue;
             }
-            if (count($seen) >= self::MAX_SKILLS) {
+            if (count($seen) >= $maxSkills) {
                 break;
             }
             $seen[$key] = true;
@@ -335,7 +343,7 @@ class MatchDiscoveryService
      * @param array<int, object> $rows newest first
      * @return array<int, object>
      */
-    private function mostAlike(array $rows, string $sourceText): array
+    private function mostAlike(array $rows, string $sourceText, int $keep): array
     {
         $wanted = array_flip(KeywordExtractor::extract($sourceText));
         $ranked = [];
@@ -350,7 +358,7 @@ class MatchDiscoveryService
         }
         usort($ranked, fn ($a, $b) => [$b[1], $a[2]] <=> [$a[1], $b[2]]);
 
-        return array_map(fn ($entry) => $entry[0], array_slice($ranked, 0, self::MAX_CANDIDATES));
+        return array_map(fn ($entry) => $entry[0], array_slice($ranked, 0, $keep));
     }
 
     /**
@@ -386,7 +394,8 @@ class MatchDiscoveryService
         return $out;
     }
 
-    private static function backoffKey(int $tenantId): string
+    /** The cache key that pauses this part for a community after its provider failed. */
+    public static function backoffKey(int $tenantId): string
     {
         return "match_discovery_backoff:{$tenantId}";
     }
@@ -430,31 +439,16 @@ class MatchDiscoveryService
             ],
         ];
 
-        try {
-            $response = AIServiceFactory::chatWithFallback($messages, [
-                'temperature' => 0.0,
-                'max_tokens' => 400,
-            ]);
-        } catch (\Throwable $e) {
-            Log::info('[MatchDiscoveryService] AI request failed: ' . $e->getMessage());
-            return null;
-        }
-
-        $content = (string) ($response['content'] ?? '');
-        $start = strpos($content, '{');
-        $end = strrpos($content, '}');
-        if ($start === false || $end === false || $end <= $start) {
-            return null;
-        }
-        $decoded = json_decode(substr($content, $start, $end - $start + 1), true);
-        if (!is_array($decoded)) {
+        // Through the one client, which adapts to the community's model.
+        $answer = app(MatchAiClient::class)->askJson($messages, 400);
+        if ($answer === null) {
             return null;
         }
 
         return [
-            'fits' => $decoded['fits'] ?? [],
-            'provider' => (string) ($response['provider'] ?? ''),
-            'model' => (string) ($response['model'] ?? ''),
+            'fits' => $answer['data']['fits'] ?? [],
+            'provider' => $answer['provider'],
+            'model' => $answer['model'],
         ];
     }
 }

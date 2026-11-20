@@ -286,6 +286,8 @@ class AdminMatchingController extends BaseApiController
         $config = $this->smartMatchingEngine->getConfig();
         $weights = $config['weights'] ?? [];
         $proximity = $config['proximity'] ?? [];
+        $aiProfile = app(\App\Services\Matching\MatchAiClient::class)->profile();
+        $aiCatchUp = app(\App\Services\Matching\MatchAiCatchUpService::class);
 
         // 🔴 `broker_approval_enabled` is deliberately NOT returned (and not
         // written by updateConfig()). Nothing in the matching engine has ever
@@ -349,7 +351,15 @@ class AdminMatchingController extends BaseApiController
                 // Whether the AI layer can actually run for this tenant
                 // (keys + cost limits) — read-only status for the admin UI.
                 'available' => \App\Services\AI\AIServiceFactory::isEnabled(),
+                // Read-only: the provider and model this community chose in
+                // AI settings, which every part of the AI layer uses, and
+                // whether the embedding figures can be made for it at all.
+                'provider' => $aiProfile['provider'],
+                'model' => $aiProfile['model'],
+                'semantic_available' => $aiCatchUp->semanticAvailable($this->getTenantId()),
             ],
+            // Read-only counts of what the AI has done for matching here.
+            'ai_status' => $aiCatchUp->status($this->getTenantId()),
         ]);
     }
 

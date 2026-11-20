@@ -42,6 +42,8 @@ class MatchAlertCheckService
     private const SOURCE_CHARS = 600;
     private const ITEM_CHARS = 200;
 
+    private float $spent = 0.0;
+
     /**
      * Of the members due an alert for this listing, those the AI says
      * should not be sent one.
@@ -81,7 +83,12 @@ class MatchAlertCheckService
                         self::SOURCE_CHARS
                     ),
                 ];
-                $reply = $this->callLlm($source, $items);
+                $asked = microtime(true);
+                try {
+                    $reply = $this->callLlm($source, $items);
+                } finally {
+                    $this->spent += microtime(true) - $asked;
+                }
                 foreach ((array) ($reply['not_a_fit'] ?? []) as $number) {
                     $memberId = is_numeric($number) ? ($members[(int) $number] ?? null) : null;
                     if ($memberId !== null && !isset($held[$memberId])) {
@@ -100,6 +107,12 @@ class MatchAlertCheckService
 
             return [];
         }
+    }
+
+    /** Seconds this instance has spent waiting for the provider. */
+    public function secondsSpent(): float
+    {
+        return $this->spent;
     }
 
     /** Whether this community has its AI provider check match alerts. */
@@ -200,24 +213,9 @@ class MatchAlertCheckService
             ],
         ];
 
-        try {
-            $response = AIServiceFactory::chatWithFallback($messages, [
-                'temperature' => 0.0,
-                'max_tokens' => 200,
-            ]);
-        } catch (\Throwable $e) {
-            Log::info('[MatchAlertCheckService] AI request failed: ' . $e->getMessage());
-            return null;
-        }
+        // Through the one client, which adapts to the community's model.
+        $answer = app(MatchAiClient::class)->askJson($messages, 200);
 
-        $content = (string) ($response['content'] ?? '');
-        $start = strpos($content, '{');
-        $end = strrpos($content, '}');
-        if ($start === false || $end === false || $end <= $start) {
-            return null;
-        }
-        $decoded = json_decode(substr($content, $start, $end - $start + 1), true);
-
-        return is_array($decoded) ? ['not_a_fit' => $decoded['not_a_fit'] ?? []] : null;
+        return $answer === null ? null : ['not_a_fit' => $answer['data']['not_a_fit'] ?? []];
     }
 }

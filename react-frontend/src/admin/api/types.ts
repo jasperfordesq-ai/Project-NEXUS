@@ -499,6 +499,21 @@ export interface MatchingAiConfig {
   alert_check: boolean;
   /** Read-only — whether the tenant's AI keys/limits allow the AI layer */
   available: boolean;
+  /** Read-only — the provider and model the community chose in AI settings */
+  provider?: string;
+  model?: string;
+  /** Read-only — the embedding figures need an OpenAI key of the community's own */
+  semantic_available?: boolean;
+}
+
+/** Read-only counts of what the AI has done for a community's matching */
+export interface MatchingAiStatus {
+  listings_active: number;
+  listings_read: number;
+  listings_searched: number;
+  texts_read: number;
+  poor_fits: number;
+  paused: boolean;
 }
 
 export interface SmartMatchingConfig {
@@ -524,6 +539,8 @@ export interface SmartMatchingConfig {
   pillars?: MatchingPillarWeights;
   adjustments?: MatchingAdjustments;
   ai?: MatchingAiConfig;
+  /** Read-only — never sent back */
+  ai_status?: MatchingAiStatus;
 }
 
 export interface MatchingOverviewStats {

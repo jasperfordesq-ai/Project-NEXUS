@@ -242,7 +242,8 @@ class TextReadingService
         return app(ListingEnrichmentService::class)->readText($text, $source);
     }
 
-    private static function backoffKey(int $tenantId): string
+    /** The cache key that pauses this part for a community after its provider failed. */
+    public static function backoffKey(int $tenantId): string
     {
         return "match_text_reading_backoff:{$tenantId}";
     }

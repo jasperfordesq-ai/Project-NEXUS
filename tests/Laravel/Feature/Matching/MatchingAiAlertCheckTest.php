@@ -196,6 +196,31 @@ class MatchingAiAlertCheckTest extends TestCase
         $this->assertSame(1, $this->alertsFor($this->me));
     }
 
+    public function test_a_slow_model_cannot_hold_up_the_alert_run(): void
+    {
+        // A model the community runs itself can take minutes to answer. Once
+        // the run has spent its time on the AI, the rest go out unchecked.
+        $this->aStrongMatchWithANewListing();
+        $second = Listing::factory()->forTenant($this->testTenantId)->create([
+            'user_id' => $this->member()->id, 'type' => 'request', 'status' => 'active', 'moderation_status' => 'approved',
+            'category_id' => $this->new->category_id, 'title' => 'Hedge trimming wanted',
+            'description' => 'The hedge at the front of my garden needs trimming.',
+            'latitude' => 51.5000, 'longitude' => -0.1200, 'service_type' => 'physical_only',
+            'created_at' => now()->addSecond(),
+        ]);
+        Cache::flush();
+        $fake = $this->useAi(['not_a_fit' => [1]]);
+        $fake->slow = true;
+        $this->aiSwitch(true);
+
+        app(MatchNotificationService::class)->notifyForNewListings();
+
+        $this->assertSame(1, $fake->calls, 'After a slow answer the AI was asked again for the next listing');
+        $told = DB::table('match_notification_sent')->where('matched_user_id', $this->me->id)->pluck('listing_id')->all();
+        $this->assertSame([$second->id], array_map('intval', $told),
+            'The first was held by the AI; the second went out unchecked rather than waiting');
+    }
+
     public function test_a_member_the_ai_picked_for_a_new_listing_is_on_the_alert_shortlist(): void
     {
         // More members point the right way than the run considers for one
@@ -240,10 +265,17 @@ class FakeMatchAlertCheckService extends MatchAlertCheckService
     /** @var array{not_a_fit: int[]}|null null = the provider failed */
     public ?array $reply = null;
     public int $calls = 0;
+    /** Pretend every answer takes longer than a whole run allows. */
+    public bool $slow = false;
     /** @var array<string, mixed> */
     public array $lastSource = [];
     /** @var array<int, array{n: int, text: string}> */
     public array $lastItems = [];
+
+    public function secondsSpent(): float
+    {
+        return $this->slow && $this->calls > 0 ? 9999.0 : parent::secondsSpent();
+    }
 
     protected function callLlm(array $source, array $items): ?array
     {

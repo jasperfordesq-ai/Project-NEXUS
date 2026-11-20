@@ -73,7 +73,7 @@ class OpenAIProvider extends BaseProvider
             $headers[] = 'OpenAI-Organization: ' . $this->config['org_id'];
         }
 
-        $response = $this->request('chat/completions', $data, $headers);
+        $response = $this->requestAdapted((string) $model, $data, $headers);
 
         $choice = $response['choices'][0] ?? [];
         $msg = $choice['message'] ?? [];
@@ -106,6 +106,81 @@ class OpenAIProvider extends BaseProvider
             'finish_reason' => $finishReason,
             'provider' => 'openai',
         ];
+    }
+
+    /**
+     * What each model has refused, learned from its own 400 answers and kept
+     * for the life of the process: model => ['max_tokens' => true, 'temperature' => true].
+     *
+     * A community types the model it wants (Admin > AI settings), so the
+     * list of models cannot be known here. Some OpenAI models take
+     * `max_completion_tokens` in place of `max_tokens`, and some take only
+     * their default temperature; both say so in a 400.
+     *
+     * @var array<string, array<string, true>>
+     */
+    private static array $refused = [];
+
+    /** Forget what was learned about models (tests). */
+    public static function forgetWhatModelsRefuse(): void
+    {
+        self::$refused = [];
+    }
+
+    /**
+     * Send a chat request in the form this model takes. A model that refuses
+     * `max_tokens` or `temperature` is asked again without it, once for each,
+     * and that is remembered. Any other error is passed on unchanged.
+     *
+     * @param array<string, mixed> $data
+     * @param string[] $headers
+     * @return array<string, mixed>
+     */
+    private function requestAdapted(string $model, array $data, array $headers): array
+    {
+        for ($attempt = 0; ; $attempt++) {
+            $body = $data;
+            if (isset(self::$refused[$model]['max_tokens']) && isset($body['max_tokens'])) {
+                $body['max_completion_tokens'] = $body['max_tokens'];
+                unset($body['max_tokens']);
+            }
+            if (isset(self::$refused[$model]['temperature'])) {
+                unset($body['temperature'], $body['top_p']);
+            }
+
+            try {
+                return $this->request('chat/completions', $body, $headers);
+            } catch (\Exception $e) {
+                $refusal = $attempt < 2 ? self::parameterRefused($e->getMessage()) : null;
+                if ($refusal === null || isset(self::$refused[$model][$refusal])) {
+                    throw $e;
+                }
+                self::$refused[$model][$refusal] = true;
+                \Illuminate\Support\Facades\Log::info("OpenAI model {$model} does not take {$refusal}; asking again without it.");
+            }
+        }
+    }
+
+    /** Which of the two parameters a 400 answer says this model will not take, if either. */
+    private static function parameterRefused(string $message): ?string
+    {
+        if (!str_contains($message, '(400)')) {
+            return null;
+        }
+        $says = fn (string $needle): bool => stripos($message, $needle) !== false;
+        $refuses = $says('unsupported') || $says('not supported') || $says('does not support') || $says('only the default');
+        if (!$refuses) {
+            return null;
+        }
+        // "max_tokens ... use max_completion_tokens instead" names both; the one refused is max_tokens.
+        if ($says("'max_tokens'") || ($says('max_tokens') && $says('max_completion_tokens'))) {
+            return 'max_tokens';
+        }
+        if ($says('temperature') || $says('top_p')) {
+            return 'temperature';
+        }
+
+        return null;
     }
 
     /**

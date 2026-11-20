@@ -461,6 +461,39 @@ describe('MatchingConfig', () => {
     });
   });
 
+  it('says which provider and model matching uses, what the AI has done, and when it is paused', async () => {
+    await renderLoaded(
+      liveConfig({
+        ai: {
+          semantic_signal: true, llm_explanations: true, explanation_top_n: 5, available: true,
+          provider: 'anthropic', model: 'claude-sonnet-5-5', semantic_available: false,
+        },
+        ai_status: { listings_active: 56, listings_read: 50, listings_searched: 20, texts_read: 31, poor_fits: 4, paused: true },
+      })
+    );
+
+    expect(screen.getByText('Provider: Anthropic. Model: claude-sonnet-5-5.')).toBeInTheDocument();
+    expect(screen.getByText('Listings read by the AI: 50 of 56')).toBeInTheDocument();
+    expect(screen.getByText('Listings the AI has looked for matches for: 20 of 56')).toBeInTheDocument();
+    expect(screen.getByText('Skills, volunteering opportunities and events read: 31')).toBeInTheDocument();
+    expect(screen.getByText('Matches the AI marked as a poor fit this week: 4')).toBeInTheDocument();
+    expect(screen.getByText(/Paused for up to an hour/)).toBeInTheDocument();
+    // The embedding figures cannot be made without an OpenAI key: say so
+    // rather than offer a switch that does nothing.
+    expect(screen.getByText(/This one needs an OpenAI key/)).toBeInTheDocument();
+  });
+
+  it('shows no AI status for a community with no AI', async () => {
+    await renderLoaded(
+      liveConfig({
+        ai: { semantic_signal: true, llm_explanations: true, explanation_top_n: 5, available: false, provider: 'gemini', model: '' },
+      })
+    );
+
+    expect(screen.queryByText('What the AI is doing for matching')).not.toBeInTheDocument();
+    expect(screen.queryByText(/This one needs an OpenAI key/)).not.toBeInTheDocument();
+  });
+
   it('shows the three scoring weights on the current method, not the six older ones', async () => {
     await renderLoaded();
 

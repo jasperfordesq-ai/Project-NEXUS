@@ -48,6 +48,13 @@ class MatchNotificationService
     /** A listing is considered "new" for alerts for this long after posting. */
     private const NEW_LISTING_WINDOW_HOURS = 24;
 
+    /**
+     * The most one run waits on the AI's check of alerts. A slow model (one
+     * a community runs itself can take minutes) must not hold up the run:
+     * past this, the remaining alerts go out as the engine decided.
+     */
+    private const ALERT_CHECK_SECONDS_PER_RUN = 120.0;
+
     /** Members the engine is asked about per new listing. */
     private const RECIPIENTS_PER_LISTING = 40;
 
@@ -106,6 +113,7 @@ class MatchNotificationService
 
         $sent = 0;
         $computations = 0;
+        $alertCheck = app(MatchAlertCheckService::class);
         /** @var array<int, array<int, array<string, mixed>>> $matchesByMember listing id => match */
         $matchesByMember = [];
 
@@ -144,9 +152,10 @@ class MatchNotificationService
             // Where the community has AI on, it looks at these before anyone
             // is emailed and may hold the ones it says are plainly a mistake.
             // It can never add an alert, and any failure holds nothing.
-            $held = $due === [] ? [] : app(MatchAlertCheckService::class)->notAFit(
-                $tenantId, $listing, array_map(fn (array $entry): array => $entry['match'], $due)
-            );
+            // ... and only while the run still has time to wait for it.
+            $held = ($due === [] || $alertCheck->secondsSpent() >= self::ALERT_CHECK_SECONDS_PER_RUN)
+                ? []
+                : $alertCheck->notAFit($tenantId, $listing, array_map(fn (array $entry): array => $entry['match'], $due));
             foreach ($due as $memberId => $entry) {
                 if (in_array($memberId, $held, true)) {
                     continue;
