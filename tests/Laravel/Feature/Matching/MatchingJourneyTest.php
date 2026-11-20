@@ -718,6 +718,50 @@ class MatchingJourneyTest extends TestCase
         $this->assertEqualsWithDelta((float) $off['match_score'] + 4.0, (float) $on['match_score'], 0.2);
     }
 
+    public function test_a_match_the_ai_judges_a_poor_fit_drops_out_of_the_members_list(): void
+    {
+        // On live (20 Nov 2026) the AI wrote "has little to do with your
+        // listing" about matches it could move by 5 at most, so they stayed.
+        $category = $this->category();
+        $me = $this->member();
+        $this->listingFor($me, 'offer', $category->id);
+        $theirs = $this->listingFor($this->member(), 'request', $category->id);
+        $this->aiSwitch(true);
+
+        $before = collect($this->matchesFor($me, 'modules=listings&min_score=0')['matches'])->firstWhere('listing_id', $theirs->id);
+        $this->assertNotNull($before);
+
+        DB::table('match_cache')->insert([
+            'user_id' => $me->id, 'listing_id' => $theirs->id, 'tenant_id' => $this->testTenantId,
+            'match_score' => 60, 'match_type' => 'one_way', 'status' => 'new', 'ai_rerank_delta' => -15.0,
+            'created_at' => now(), 'expires_at' => now()->addDays(7),
+        ]);
+
+        $after = collect($this->matchesFor($me, 'modules=listings&min_score=0')['matches'])->firstWhere('listing_id', $theirs->id);
+        $this->assertEqualsWithDelta(-15.0, $after['score_breakdown']['adjustments']['ai_judgement'] ?? 0, 0.01);
+
+        // Asked for with a minimum just under its score before the verdict, it is gone.
+        $floor = max(0, (int) floor((float) $before['match_score']) - 10);
+        $this->assertNotContains(
+            $theirs->id,
+            $this->listingIds($this->matchesFor($me, 'modules=listings&min_score=' . $floor))
+        );
+    }
+
+    public function test_the_stored_match_records_which_of_the_members_listings_it_is_for(): void
+    {
+        $category = $this->category();
+        $me = $this->member();
+        $mine = $this->listingFor($me, 'offer', $category->id);
+        $theirs = $this->listingFor($this->member(), 'request', $category->id);
+
+        app(\App\Services\SmartMatchingEngine::class)->warmUpCache(50);
+
+        $stored = DB::table('match_cache')->where('user_id', $me->id)->where('listing_id', $theirs->id)->value('score_breakdown');
+        $this->assertNotNull($stored, 'The match was not stored at all');
+        $this->assertSame($mine->title, json_decode((string) $stored, true)['matched_listing'] ?? null);
+    }
+
     private function exchange(User $requester, User $provider, Listing $listing, string $status, ?int $requesterRating = null): void
     {
         DB::table('exchange_requests')->insert([

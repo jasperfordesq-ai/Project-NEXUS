@@ -134,6 +134,70 @@ class ListingEnrichmentServiceTest extends TestCase
         $this->assertContains($listing->id, $service->listingsNeedingReading($this->testTenantId, 500));
     }
 
+    public function test_a_reading_made_with_the_earlier_question_is_made_again_once(): void
+    {
+        // The real readings on 20 Nov 2026 tagged kinds of help a listing only
+        // mentioned as examples. The question was changed; readings made with
+        // the old one are redone, whenever they were last touched.
+        $this->aiSwitch(true);
+        $listing = $this->listing('Emergency Credit Grant', 'Credits for members in hardship, e.g. a lift or garden help.');
+        // Creating a listing queues a real reading, which fails here and
+        // pauses the catch-up run; that pause is not what this test is about.
+        Cache::forget('listing_enrichment_backoff:' . $this->testTenantId);
+        DB::table('listing_match_enrichments')->insert([
+            'tenant_id' => $this->testTenantId, 'listing_id' => $listing->id,
+            'content_hash' => hash('sha256', 'the earlier form: sixty-four letters and digits, nothing else'),
+            'terms' => json_encode(['grant']),
+            'concepts' => json_encode(['money', 'transport', 'gardening', 'health']),
+            'created_at' => now(), 'updated_at' => now()->addMinutes(5),
+        ]);
+        $service = $this->fake(['terms' => ['hardship fund'], 'concepts' => ['money']]);
+
+        $this->assertContains($listing->id, $service->listingsNeedingReading($this->testTenantId, 500));
+        $this->assertTrue($service->enrich($this->testTenantId, $listing->id));
+        $this->assertSame(['money'], json_decode(
+            DB::table('listing_match_enrichments')->where('listing_id', $listing->id)->value('concepts'),
+            true
+        ));
+
+        $this->assertNotContains($listing->id, $service->listingsNeedingReading($this->testTenantId, 500));
+        $this->assertFalse($service->enrich($this->testTenantId, $listing->id));
+        $this->assertSame(1, $service->calls, 'Redone once, not on every run');
+    }
+
+    public function test_a_listing_the_ai_has_nothing_to_say_about_is_not_asked_about_again(): void
+    {
+        $this->aiSwitch(true);
+        $listing = $this->listing('Hello', 'Just saying hello.');
+        Cache::forget('listing_enrichment_backoff:' . $this->testTenantId);
+        $service = $this->fake(['terms' => [], 'concepts' => []]);
+
+        $service->enrich($this->testTenantId, $listing->id);
+
+        $this->assertNotContains(
+            $listing->id,
+            $service->listingsNeedingReading($this->testTenantId, 500),
+            'An empty answer was never stored, so the provider was asked again every half hour'
+        );
+        $service->enrich($this->testTenantId, $listing->id);
+        $this->assertSame(1, $service->calls);
+        $this->assertSame([], $service->tokensFor($this->testTenantId, [$listing->id])[$listing->id] ?? []);
+    }
+
+    public function test_no_more_than_three_kinds_of_help_are_kept_for_a_listing(): void
+    {
+        $this->aiSwitch(true);
+        $listing = $this->listing('Emergency Credit Grant');
+        $service = $this->fake(['terms' => ['grant'], 'concepts' => ['money', 'transport', 'gardening', 'health', 'music']]);
+
+        $service->enrich($this->testTenantId, $listing->id);
+
+        $this->assertSame(
+            ['money', 'transport', 'gardening'],
+            json_decode(DB::table('listing_match_enrichments')->where('listing_id', $listing->id)->value('concepts'), true)
+        );
+    }
+
     public function test_a_deleted_listing_loses_its_reading(): void
     {
         $this->aiSwitch(true);

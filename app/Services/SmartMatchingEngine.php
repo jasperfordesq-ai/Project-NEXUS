@@ -11,6 +11,7 @@ use App\Services\Matching\CandidateRetriever;
 use App\Services\Matching\KeywordExtractor;
 use App\Services\Matching\ListingEnrichmentService;
 use App\Services\Matching\MatchApprovalGate;
+use App\Services\Matching\MatchExplanationService;
 use App\Services\Matching\MatchScorer;
 use App\Services\Matching\TenantMatchingContext;
 use Illuminate\Support\Facades\Cache;
@@ -407,8 +408,13 @@ class SmartMatchingEngine
                     // ON DUPLICATE KEY UPDATE deliberately leaves `status` untouched
                     // so a user's interaction state (viewed/contacted/…) survives a re-warm.
                     if ($hasV2Columns) {
+                        // Stored with the listing or skill of the member's that the
+                        // match is for, which the AI explanation is then told.
                         $breakdown = isset($match['score_breakdown']) && is_array($match['score_breakdown'])
-                            ? (json_encode($match['score_breakdown'], JSON_UNESCAPED_UNICODE) ?: null)
+                            ? (json_encode(
+                                $match['score_breakdown'] + ['matched_listing' => (string) ($match['matched_listing'] ?? '')],
+                                JSON_UNESCAPED_UNICODE
+                            ) ?: null)
                             : null;
                         $gateFlags = [];
                         if (($match['service_type'] ?? '') === 'remote_only') {
@@ -1084,7 +1090,9 @@ class SmartMatchingEngine
         }
 
         // The AI's judgement of each cached match (MatchExplanationService),
-        // -5..+5, where the community has AI on. It used to be added into
+        // -15..+5, where the community has AI on: a little up for a better fit
+        // than the score says, far enough down to take a poor one under the
+        // minimum (applied below, after this). It used to be added into
         // match_cache.match_score, which no page reads and the next refresh
         // overwrote.
         $aiJudgement = [];
@@ -1100,7 +1108,10 @@ class SmartMatchingEngine
                         array_merge([$tenantId, $userId], $listingIds)
                     );
                     foreach ($rows as $row) {
-                        $aiJudgement[(int) $row->listing_id] = max(-5.0, min(5.0, (float) $row->ai_rerank_delta));
+                        $aiJudgement[(int) $row->listing_id] = max(
+                            -MatchExplanationService::RERANK_DOWN,
+                            min(MatchExplanationService::RERANK_UP, (float) $row->ai_rerank_delta)
+                        );
                     }
                 }
             } catch (\Throwable $e) {

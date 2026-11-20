@@ -22,8 +22,12 @@ class FakeExplanationService extends MatchExplanationService
         return $this->enabled;
     }
 
+    /** @var array<int, array<string, mixed>> what the service last sent to the provider */
+    public array $lastItems = [];
+
     protected function callLlm(array $items): array
     {
+        $this->lastItems = $items;
         $this->llmCalls++;
         return $this->llmResponse;
     }
@@ -52,7 +56,8 @@ class MatchExplanationServiceTest extends TestCase
             'match_reasons' => json_encode(['Same category: Gardening']),
             'distance_km' => 3.4, 'title' => 'Need hedge trimming',
             'description' => 'Overgrown hedges', 'service_type' => 'physical_only',
-            'my_listing_title' => 'Gardening offered',
+            // The member's listing this match is FOR, as the engine stored it.
+            'score_breakdown' => json_encode(['matched_listing' => 'Gardening offered']),
         ];
     }
 
@@ -94,6 +99,36 @@ class MatchExplanationServiceTest extends TestCase
 
         $this->assertSame(1, $result['explained']);
         $this->assertSame(100, $result['tokens_in']);
+    }
+
+    public function test_the_ai_can_mark_a_poor_match_well_down_but_a_good_one_up_only_a_little(): void
+    {
+        // On live (20 Nov 2026) the AI wrote "has little to do with your
+        // listing" about matches it could only move by 5, so they stayed.
+        $service = new FakeExplanationService();
+        $service->llmResponse = [
+            'entries' => [['listing_id' => 5, 'rerank_delta' => -40, 'explanation' => 'Not about the same thing.']],
+            'tokens_in' => 1, 'tokens_out' => 1,
+        ];
+
+        DB::shouldReceive('select')->once()->andReturn([$this->cacheRow()]);
+        DB::shouldReceive('update')->once()->withArgs(
+            fn ($sql, $bindings) => abs(((float) $bindings[1]) - (-15.0)) < 0.001
+        )->andReturn(1);
+
+        $this->assertSame(1, $service->generateForUser(42)['explained']);
+    }
+
+    public function test_the_ai_is_told_which_of_the_members_listings_the_match_is_for(): void
+    {
+        $service = new FakeExplanationService();
+        $service->llmResponse = ['entries' => [], 'tokens_in' => 0, 'tokens_out' => 0];
+        DB::shouldReceive('select')->once()->andReturn([$this->cacheRow()]);
+        DB::shouldReceive('update')->never();
+
+        $service->generateForUser(42);
+
+        $this->assertSame('Gardening offered', $service->lastItems[0]['searcher_listing'] ?? null);
     }
 
     public function test_provider_failure_leaves_algorithmic_reasons_untouched(): void
