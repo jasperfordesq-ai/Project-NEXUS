@@ -3316,6 +3316,14 @@ Route::post('/v2/admin/super/tenants', [\App\Http\Controllers\Api\AdminSuperCont
 Route::get('/v2/admin/super/tenants/{id}', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantShow']);
 Route::put('/v2/admin/super/tenants/{id}', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantUpdate']);
 Route::post('/v2/admin/super/tenants/{id}/reactivate', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantReactivate']);
+// Branch payments: a parent's manager and the payment standing of the
+// communities below it. Safe in this tier: every one confines itself through
+// BranchPayments (canManageTenant: below only; never a community that pays the
+// platform; never an exempt one). Pinned by BranchPaymentsEndpointsTest.
+Route::get('/v2/admin/super/branch-payments', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPayments']);
+Route::post('/v2/admin/super/branch-payments/{id}/paid-until', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsSetPaidUntil'])->whereNumber('id');
+Route::post('/v2/admin/super/branch-payments/{id}/suspend', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsSuspend'])->whereNumber('id');
+Route::post('/v2/admin/super/branch-payments/{id}/restore', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsRestore'])->whereNumber('id');
 Route::post('/v2/admin/super/tenants/{id}/toggle-hub', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantToggleHub']);
 Route::post('/v2/admin/super/tenants/{id}/move', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantMove']);
 

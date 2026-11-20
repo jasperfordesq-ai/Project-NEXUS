@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\DB;
  * Refusals are `\DomainException` with one of these messages, which callers
  * map to a translated error: `tenant_not_found`,
  * `platform_tenant_not_billable`, `community_is_exempt`,
- * `exempt_reason_required`.
+ * `exempt_reason_required`, `paid_until_invalid`.
  */
 final class BillingStandingService
 {
@@ -158,6 +158,58 @@ final class BillingStandingService
             'standing_restored',
             ['suspended_at' => (string) $row->suspended_at, 'source' => $row->suspension_source ?? null],
             ['suspended_at' => null],
+            $note
+        );
+
+        BillingLock::flush();
+    }
+
+    /**
+     * Record the date a community is paid up to. Null = no date is tracked,
+     * and nothing automatic ever happens to it.
+     *
+     * A date in the past is accepted on purpose: it is how "overdue since"
+     * is recorded. Paying up — a date of today or later — restores a
+     * community the SYSTEM paused. One a person paused stays paused until a
+     * person restores it: they may have had another reason.
+     */
+    public static function setPaidUntil(int $tenantId, ?string $date, ?int $actedBy, ?string $note = null): void
+    {
+        self::requireBillable($tenantId);
+
+        if ($date !== null) {
+            $parsed = \DateTimeImmutable::createFromFormat('!Y-m-d', $date);
+            if ($parsed === false || $parsed->format('Y-m-d') !== $date) {
+                throw new \DomainException('paid_until_invalid');
+            }
+        }
+
+        $row = self::row($tenantId);
+        $current = isset($row->paid_until) ? substr((string) $row->paid_until, 0, 10) : null;
+
+        if ($current === $date) {
+            return;
+        }
+
+        $note = self::cleanNote($note);
+
+        if (
+            $date !== null
+            && isset($row->suspended_at)
+            && ($row->suspension_source ?? null) === 'auto'
+            && $date >= now()->toDateString()
+        ) {
+            self::restore($tenantId, $actedBy, $note);
+        }
+
+        self::write($tenantId, ['paid_until' => $date]);
+
+        TenantBillingService::logAudit(
+            $tenantId,
+            $actedBy,
+            'standing_paid_until_set',
+            ['paid_until' => $current],
+            ['paid_until' => $date],
             $note
         );
 

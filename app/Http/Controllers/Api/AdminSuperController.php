@@ -18,6 +18,7 @@ use App\Services\FederationAuditService;
 use App\Services\FederationFeatureService;
 use App\Services\FederationPartnershipService;
 use App\Services\BillingStandingService;
+use App\Support\Billing\BranchPayments;
 use App\Services\SuperAdminAuditService;
 use App\Services\TenantBillingService;
 use App\Services\TenantHierarchyService;
@@ -3065,6 +3066,100 @@ class AdminSuperController extends BaseApiController
         return $this->respondWithData(['standing' => BillingStandingService::get($tenantId)]);
     }
 
+    // =====================================================================
+    // BRANCH PAYMENTS — a parent's manager and the communities below it
+    // =====================================================================
+    //
+    // Not platform-team-only: any super admin may call these, and
+    // BranchPayments decides, per community, whether THIS caller may act —
+    // below its own community only, never one that pays the platform, never
+    // an exempt one. Pinned at both ends by BranchPaymentsEndpointsTest.
+
+    /** GET /api/v2/admin/super/branch-payments */
+    public function branchPayments(): JsonResponse
+    {
+        $this->requireSuperAdmin();
+
+        return $this->respondWithData(BranchPayments::rows());
+    }
+
+    /** POST /api/v2/admin/super/branch-payments/{id}/paid-until */
+    public function branchPaymentsSetPaidUntil(int $id): JsonResponse
+    {
+        $userId = $this->requireSuperAdmin();
+        if ($refused = $this->branchPaymentsRefusal($id)) {
+            return $refused;
+        }
+
+        $input = $this->getAllInput();
+        $date = $input['paid_until'] ?? null;
+        if ($date !== null && !is_string($date)) {
+            return $this->respondWithError('PAID_UNTIL_INVALID', __('api.billing_standing_paid_until_invalid'), 'paid_until', 422);
+        }
+
+        try {
+            BillingStandingService::setPaidUntil($id, $date, $userId, $this->standingNote($input['note'] ?? null));
+        } catch (\DomainException $e) {
+            return $this->standingRefusal($e);
+        }
+
+        return $this->respondWithData(['standing' => BillingStandingService::get($id)]);
+    }
+
+    /** POST /api/v2/admin/super/branch-payments/{id}/suspend */
+    public function branchPaymentsSuspend(int $id): JsonResponse
+    {
+        $userId = $this->requireSuperAdmin();
+        if ($refused = $this->branchPaymentsRefusal($id)) {
+            return $refused;
+        }
+
+        try {
+            BillingStandingService::suspend($id, $userId, 'manual', $this->standingNote($this->getAllInput()['note'] ?? null));
+        } catch (\DomainException $e) {
+            return $this->standingRefusal($e);
+        }
+
+        return $this->respondWithData(['standing' => BillingStandingService::get($id)]);
+    }
+
+    /** POST /api/v2/admin/super/branch-payments/{id}/restore */
+    public function branchPaymentsRestore(int $id): JsonResponse
+    {
+        $userId = $this->requireSuperAdmin();
+        if ($refused = $this->branchPaymentsRefusal($id)) {
+            return $refused;
+        }
+
+        // Paused only because a community above it is paused: there is nothing
+        // on this community to lift, and the one above may be out of the
+        // caller's reach. Say so, do not answer "restored".
+        $standing = BillingStandingService::get($id);
+        if ($standing['suspended_at'] === null && $standing['locked']) {
+            return $this->respondWithError('PAUSED_FROM_ABOVE', __('api.branch_payments_paused_from_above'), null, 422);
+        }
+
+        try {
+            BillingStandingService::restore($id, $userId, $this->standingNote($this->getAllInput()['note'] ?? null));
+        } catch (\DomainException $e) {
+            return $this->standingRefusal($e);
+        }
+
+        return $this->respondWithData(['standing' => BillingStandingService::get($id)]);
+    }
+
+    /** The refusal for this caller and community as a response, or null. */
+    private function branchPaymentsRefusal(int $id): ?JsonResponse
+    {
+        return match (BranchPayments::refusalFor($id)) {
+            null => null,
+            BranchPayments::PAYS_PLATFORM => $this->respondWithError('PAYS_PLATFORM', __('api.branch_payments_pays_platform'), null, 422),
+            BranchPayments::EXEMPT => $this->respondWithError('EXEMPT', __('api.branch_payments_exempt'), null, 422),
+            // Out of reach, and "does not exist", answer the same way.
+            default => $this->respondWithError(ApiErrorCodes::SUPER_PANEL_ACCESS_DENIED, __('api.super_no_access_tenant'), null, 403),
+        };
+    }
+
     private function standingNote(mixed $value): ?string
     {
         return is_string($value) ? $value : null;
@@ -3083,6 +3178,7 @@ class AdminSuperController extends BaseApiController
             'platform_tenant_not_billable' => ['api.billing_standing_platform_tenant', 'tenant_id'],
             'community_is_exempt' => ['api.billing_standing_community_is_exempt', 'tenant_id'],
             'exempt_reason_required' => ['api.billing_standing_exempt_reason_required', 'reason'],
+            'paid_until_invalid' => ['api.billing_standing_paid_until_invalid', 'paid_until'],
         ];
 
         $code = $e->getMessage();

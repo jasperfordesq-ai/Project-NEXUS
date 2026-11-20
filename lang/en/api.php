@@ -2171,6 +2171,10 @@ return [
     'billing_standing_platform_tenant' => 'The platform\'s own community cannot be paused.',
     'billing_standing_community_is_exempt' => 'This community is exempt. Remove the exemption first.',
     'billing_standing_exempt_reason_required' => 'Give a reason for the exemption.',
+    'branch_payments_pays_platform' => 'This community pays the platform, so only the platform team can change its payment standing.',
+    'branch_payments_exempt' => 'This community is exempt. Only the platform team can change that.',
+    'branch_payments_paused_from_above' => 'This community is paused because a community above it is paused. It can only be restored there.',
+    'billing_standing_paid_until_invalid' => 'Enter the date as year-month-day, for example 2027-01-31.',
     'tenant_inactive'                      => 'Tenant is inactive',
 
     // Feature gates

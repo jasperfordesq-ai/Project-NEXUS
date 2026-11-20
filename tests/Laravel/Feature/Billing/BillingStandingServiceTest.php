@@ -189,6 +189,115 @@ final class BillingStandingServiceTest extends TestCase
         );
     }
 
+    // ── Paid until ──────────────────────────────────────────────────────────
+
+    public function test_the_date_a_community_is_paid_up_to_is_recorded_and_audited(): void
+    {
+        BillingStandingService::setPaidUntil($this->child, '2027-01-31', $this->actor, 'Invoice 14 paid');
+
+        $this->assertSame('2027-01-31', BillingStandingService::get($this->child)['paid_until']);
+
+        $rows = $this->audit($this->child);
+        $this->assertCount(1, $rows);
+        $this->assertSame('standing_paid_until_set', $rows[0]->action);
+        $this->assertSame($this->actor, (int) $rows[0]->acted_by_user_id);
+        $this->assertSame('Invoice 14 paid', $rows[0]->notes);
+        $this->assertSame(['paid_until' => null], json_decode((string) $rows[0]->old_value, true));
+        $this->assertSame(['paid_until' => '2027-01-31'], json_decode((string) $rows[0]->new_value, true));
+    }
+
+    public function test_setting_the_same_date_again_writes_nothing(): void
+    {
+        BillingStandingService::setPaidUntil($this->child, '2027-01-31', $this->actor);
+        BillingStandingService::setPaidUntil($this->child, '2027-01-31', $this->actor);
+
+        $this->assertCount(1, $this->audit($this->child));
+    }
+
+    public function test_clearing_the_date_stops_tracking(): void
+    {
+        BillingStandingService::setPaidUntil($this->child, '2027-01-31', $this->actor);
+        BillingStandingService::setPaidUntil($this->child, null, $this->actor);
+
+        $this->assertNull(BillingStandingService::get($this->child)['paid_until']);
+        $this->assertCount(2, $this->audit($this->child));
+    }
+
+    public function test_a_date_in_the_past_is_accepted(): void
+    {
+        // It is how "overdue" is recorded.
+        BillingStandingService::setPaidUntil($this->child, '2026-09-30', $this->actor);
+
+        $this->assertSame('2026-09-30', BillingStandingService::get($this->child)['paid_until']);
+    }
+
+    /** @return array<string, array{0: string}> */
+    public static function datesThatAreNotDates(): array
+    {
+        return [
+            'words' => ['not-a-date'],
+            'day first' => ['31/01/2027'],
+            'no such day' => ['2027-02-30'],
+            'with a time' => ['2027-01-31 10:00:00'],
+            'empty' => [''],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('datesThatAreNotDates')]
+    public function test_something_that_is_not_a_date_is_refused_and_nothing_is_written(string $date): void
+    {
+        try {
+            BillingStandingService::setPaidUntil($this->child, $date, $this->actor);
+            $this->fail("'{$date}' was accepted as a date.");
+        } catch (\DomainException $e) {
+            $this->assertSame('paid_until_invalid', $e->getMessage());
+        }
+
+        $this->assertCount(0, $this->audit($this->child));
+        $this->assertNull(BillingStandingService::get($this->child)['paid_until']);
+    }
+
+    public function test_the_platform_community_has_no_paid_until_date(): void
+    {
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage('platform_tenant_not_billable');
+
+        BillingStandingService::setPaidUntil(1, '2027-01-31', $this->actor);
+    }
+
+    public function test_paying_up_restores_a_community_the_system_paused(): void
+    {
+        BillingStandingService::suspend($this->child, null, 'auto');
+
+        BillingStandingService::setPaidUntil($this->child, now()->addMonth()->toDateString(), $this->actor);
+
+        $standing = BillingStandingService::get($this->child);
+        $this->assertFalse($standing['locked']);
+        $this->assertNull($standing['suspended_at']);
+        $this->assertSame(
+            ['standing_suspended', 'standing_restored', 'standing_paid_until_set'],
+            array_map(static fn ($r) => $r->action, $this->audit($this->child))
+        );
+    }
+
+    public function test_paying_up_does_not_restore_a_community_a_person_paused(): void
+    {
+        BillingStandingService::suspend($this->child, $this->actor, 'manual');
+
+        BillingStandingService::setPaidUntil($this->child, now()->addMonth()->toDateString(), $this->actor);
+
+        $this->assertTrue(BillingStandingService::get($this->child)['locked']);
+    }
+
+    public function test_a_date_still_in_the_past_does_not_restore_a_community_the_system_paused(): void
+    {
+        BillingStandingService::suspend($this->child, null, 'auto');
+
+        BillingStandingService::setPaidUntil($this->child, now()->subDays(40)->toDateString(), $this->actor);
+
+        $this->assertTrue(BillingStandingService::get($this->child)['locked']);
+    }
+
     public function test_default_payer_by_position(): void
     {
         $this->assertSame('not_billed', BillingStandingService::defaultPayer(1));
