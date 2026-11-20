@@ -70,6 +70,14 @@ function standingState(row: BranchRow): StandingState {
   return 'open';
 }
 
+// How far a community sits below the top of the list, as whole class names so
+// the stylesheet keeps them (inline styles are not allowed in new pages).
+const INDENT = ['pl-0', 'pl-4', 'pl-8', 'pl-12', 'pl-16', 'pl-20'] as const;
+
+function indentFor(depth: number): string {
+  return INDENT[Math.min(INDENT.length - 1, Math.max(0, depth - 1))] ?? INDENT[0];
+}
+
 const STANDING_COLOR: Record<StandingState, ChipColor> = {
   open: 'success',
   paused: 'danger',
@@ -195,7 +203,7 @@ export function BranchPayments() {
                 return (
                   <TableRow key={row.id}>
                     <TableCell>
-                      <span className="text-sm font-medium" style={{ paddingLeft: `${Math.max(0, row.depth - 1) * 16}px` }}>
+                      <span className={`text-sm font-medium ${indentFor(row.depth)}`}>
                         {row.name}
                       </span>
                     </TableCell>
