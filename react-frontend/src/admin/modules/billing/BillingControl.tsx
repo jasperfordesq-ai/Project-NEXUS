@@ -19,12 +19,27 @@ import { BillingDevelopmentNotice } from './BillingDevelopmentNotice';
 
 /**
  * BillingControl
- * God-only billing dashboard — manage tenant subscriptions, custom pricing, * discounts, pause/resume, grace periods, and CSV export.
+ * Platform team billing dashboard — every community's plan and price, who it
+ * pays, and whether it is paused for non-payment or exempt; assign a plan,
+ * pause, restore, exempt, and export a CSV.
+ *
+ * 🔴 The types below are the SERVER's shape, key for key
+ * (TenantBillingService::getBillingSnapshot, BillingStandingService::get).
+ * There is no mapping layer on purpose. Until 20 Nov 2026 this file declared
+ * the shape it wished for (tenant_id, tenant_name, current_plan_name,
+ * is_over_limit …) and assigned the response to it unchecked: every name,
+ * plan and price was blank and every button posted `tenant_id: undefined`.
+ * tests/Laravel/Feature/Billing/BillingSnapshotContractTest.php now pins every
+ * key read here to a real response. Rename a key there and here together.
+ *
+ * "Pause billing" and "Set grace period" were removed from this screen on the
+ * same day: they only ever wrote a note. Pausing a community for non-payment
+ * is the standing column and its actions.
  */
 
 
 // ---------------------------------------------------------------------------
-// Types
+// Types — the server's shape
 // ---------------------------------------------------------------------------
 
 interface EffectivePrice {
@@ -35,19 +50,13 @@ interface EffectivePrice {
   nonprofit: boolean;
 }
 
-interface TenantSnapshot {
-  tenant_id: number;
-  tenant_name: string;
-  depth: number;
-  own_user_count: number;
-  subtree_user_count: number;
-  current_plan_id: number | null;
-  current_plan_name: string | null;
-  current_plan_user_limit: number | null;
-  suggested_plan_id: number | null;
-  suggested_plan_name: string | null;
-  is_over_limit: boolean;
-  // new fields
+interface CurrentPlan {
+  id: number;
+  name: string;
+  slug: string;
+  max_users: number | null;
+  price_monthly: number;
+  price_yearly: number;
   custom_price_monthly: number | null;
   custom_price_yearly: number | null;
   discount_percentage: number;
@@ -55,17 +64,56 @@ interface TenantSnapshot {
   grace_period_ends_at: string | null;
   is_paused: boolean;
   nonprofit_verified: boolean;
-  is_in_grace_period: boolean;
-  grace_days_remaining: number;
+  expires_at: string | null;
   effective_price: EffectivePrice;
 }
 
+type Payer = 'platform_card' | 'platform_invoice' | 'parent' | 'not_billed';
+
+interface Standing {
+  tenant_id: number;
+  payer: Payer;
+  payer_is_default: boolean;
+  paid_until: string | null;
+  suspended_at: string | null;
+  suspension_source: 'auto' | 'manual' | null;
+  suspension_note: string | null;
+  exempt: boolean;
+  exempt_reason: string | null;
+  locked: boolean;
+  locked_by_tenant_id: number | null;
+}
+
+interface TenantSnapshot {
+  id: number;
+  name: string;
+  slug: string;
+  depth: number;
+  parent_id: number | null;
+  allows_subtenants: boolean;
+  own_user_count: number;
+  subtree_user_count: number;
+  current_plan: CurrentPlan | null;
+  suggested_plan: string;
+  over_limit: boolean;
+  is_in_grace_period: boolean;
+  grace_days_remaining: number;
+  standing: Standing;
+}
+
+/** A row of GET /v2/admin/plans. Prices arrive as the database's strings. */
 interface PlanItem {
   id: number;
   name: string;
   slug: string;
-  user_limit: number | null;
+  max_users: number | null;
+  price_monthly: number | string | null;
+  price_yearly: number | string | null;
 }
+
+type StandingState = 'open' | 'paused' | 'paused_from_above' | 'exempt';
+type StandingDialog = { row: TenantSnapshot; kind: 'pause' | 'exempt' } | null;
+type ChipColor = 'success' | 'warning' | 'danger' | 'default' | 'primary';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -85,6 +133,21 @@ const formatUserCount = (row: TenantSnapshot): string => {
     return `${row.own_user_count} (${row.subtree_user_count})`;
   }
   return String(row.own_user_count);
+};
+
+/** Exempt wins: an exempt community is never paused, whatever is above it. */
+function standingState(row: TenantSnapshot): StandingState {
+  if (row.standing.exempt) return 'exempt';
+  if (row.standing.suspended_at !== null) return 'paused';
+  if (row.standing.locked) return 'paused_from_above';
+  return 'open';
+}
+
+const STANDING_COLOR: Record<StandingState, ChipColor> = {
+  open: 'success',
+  paused: 'danger',
+  paused_from_above: 'warning',
+  exempt: 'primary',
 };
 
 // ---------------------------------------------------------------------------
@@ -121,14 +184,10 @@ export function BillingControl() {
   const [nonprofitVerified, setNonprofitVerified] = useState(false);
   const [assigning, setAssigning] = useState(false);
 
-  // ---- grace period modal ----
-  const { isOpen: isGraceOpen, onOpen: onGraceOpen, onClose: onGraceClose } = useDisclosure();
-  const [graceTenant, setGraceTenant] = useState<TenantSnapshot | null>(null);
-  const [graceDays, setGraceDays] = useState('30');
-  const [settingGrace, setSettingGrace] = useState(false);
-
-  // ---- pause/resume ----
-  const [pausingId, setPausingId] = useState<number | null>(null);
+  // ---- pause / exempt dialog, and the row an action is running on ----
+  const [standingDialog, setStandingDialog] = useState<StandingDialog>(null);
+  const [standingText, setStandingText] = useState('');
+  const [standingBusyId, setStandingBusyId] = useState<number | null>(null);
 
   // ---------------------------------------------------------------------------
   // Data fetching
@@ -166,15 +225,16 @@ export function BillingControl() {
   // ---------------------------------------------------------------------------
 
   const handleOpenAssign = (tenant: TenantSnapshot) => {
+    const plan = tenant.current_plan;
     setSelectedTenant(tenant);
-    setSelectedPlanId(tenant.current_plan_id ? String(tenant.current_plan_id) : '');
+    setSelectedPlanId(plan ? String(plan.id) : '');
     setExpiresAt('');
     setNotes('');
-    setCustomPriceMonthly(tenant.custom_price_monthly !== null ? String(tenant.custom_price_monthly) : '');
-    setCustomPriceYearly(tenant.custom_price_yearly !== null ? String(tenant.custom_price_yearly) : '');
-    setDiscountPct(String(tenant.discount_percentage ?? 0));
-    setDiscountReason(tenant.discount_reason ?? '');
-    setNonprofitVerified(tenant.nonprofit_verified ?? false);
+    setCustomPriceMonthly(plan && plan.custom_price_monthly !== null ? String(plan.custom_price_monthly) : '');
+    setCustomPriceYearly(plan && plan.custom_price_yearly !== null ? String(plan.custom_price_yearly) : '');
+    setDiscountPct(String(plan?.discount_percentage ?? 0));
+    setDiscountReason(plan?.discount_reason ?? '');
+    setNonprofitVerified(plan?.nonprofit_verified ?? false);
     void fetchPlans();
     onAssignOpen();
   };
@@ -183,7 +243,7 @@ export function BillingControl() {
     if (!selectedTenant || !selectedPlanId) return;
     setAssigning(true);
     const response = await api.post('/v2/admin/super/billing/assign-plan', {
-      tenant_id: selectedTenant.tenant_id,
+      tenant_id: selectedTenant.id,
       pay_plan_id: Number(selectedPlanId),
       expires_at: expiresAt || null,
       notes: notes || null,
@@ -204,72 +264,70 @@ export function BillingControl() {
   };
 
   // ---------------------------------------------------------------------------
-  // Pause / Resume handlers
+  // Standing: pause, restore, exempt
   // ---------------------------------------------------------------------------
 
-  const handlePause = async (tenant: TenantSnapshot) => {
-    setPausingId(tenant.tenant_id);
-    const endpoint = tenant.is_paused
-      ? '/v2/admin/super/billing/resume'
-      : '/v2/admin/super/billing/pause';
-    const response = await api.post(endpoint, { tenant_id: tenant.tenant_id });
+  /** One place every standing action goes through, so each reports the same way. */
+  const sendStanding = async (
+    row: TenantSnapshot,
+    endpoint: 'suspend' | 'restore' | 'exempt',
+    body: Record<string, unknown>,
+    doneKey: string,
+  ): Promise<boolean> => {
+    setStandingBusyId(row.id);
+    const response = await api.post(`/v2/admin/super/billing/standing/${endpoint}`, { tenant_id: row.id, ...body });
+    setStandingBusyId(null);
+
     if (response.success) {
-      toast.success(tenant.is_paused ? t('billing.resume_billing') : t('billing.pause_billing'));
+      toast.success(t(doneKey));
       void fetchSnapshot();
-    } else {
-      toast.error(t('billing.failed_to_assign'));
+      return true;
     }
-    setPausingId(null);
+
+    // The server explains its own refusals (exempt, the platform's own
+    // community …) in the reader's language: show that, not a generic line.
+    toast.error(response.error || t('billing.standing_failed'));
+    return false;
   };
 
-  // ---------------------------------------------------------------------------
-  // Grace period handlers
-  // ---------------------------------------------------------------------------
-
-  const handleOpenGrace = (tenant: TenantSnapshot) => {
-    setGraceTenant(tenant);
-    setGraceDays('30');
-    onGraceOpen();
+  const openStandingDialog = (row: TenantSnapshot, kind: 'pause' | 'exempt') => {
+    setStandingText('');
+    setStandingDialog({ row, kind });
   };
 
-  const handleSetGrace = async () => {
-    if (!graceTenant) return;
-    const days = Math.max(1, Math.min(365, Number(graceDays) || 30));
-    setSettingGrace(true);
-    const response = await api.post('/v2/admin/super/billing/grace-period', {
-      tenant_id: graceTenant.tenant_id,
-      days,
-    });
-    if (response.success) {
-      toast.success(t('billing.set_grace_period'));
-      onGraceClose();
-      void fetchSnapshot();
-    } else {
-      toast.error(t('billing.failed_to_assign'));
-    }
-    setSettingGrace(false);
+  const closeStandingDialog = () => {
+    setStandingDialog(null);
+    setStandingText('');
+  };
+
+  const confirmStandingDialog = async () => {
+    if (!standingDialog) return;
+    const text = standingText.trim();
+    const { row, kind } = standingDialog;
+
+    const done = kind === 'pause'
+      ? await sendStanding(row, 'suspend', text ? { note: text } : {}, 'billing.done_paused')
+      : await sendStanding(row, 'exempt', { exempt: true, reason: text }, 'billing.done_exempted');
+
+    if (done) closeStandingDialog();
   };
 
   // ---------------------------------------------------------------------------
   // Plan chip rendering
   // ---------------------------------------------------------------------------
 
-  type ChipColor = 'success' | 'warning' | 'danger' | 'default' | 'primary';
-
   const getPlanChipColor = (row: TenantSnapshot): ChipColor => {
-    if (row.is_paused) return 'primary';
-    if (!row.current_plan_id) return 'default';
+    if (!row.current_plan) return 'default';
     if (row.is_in_grace_period) return 'danger';
-    if (row.is_over_limit) return 'warning';
+    if (row.over_limit) return 'warning';
     return 'success';
   };
 
   const getPlanChipLabel = (row: TenantSnapshot): string => {
-    if (row.is_paused) return t('billing.paused');
-    if (!row.current_plan_name) return t('billing.status_no_plan');
+    if (!row.current_plan) return t('billing.status_no_plan');
     if (row.is_in_grace_period) return t('billing.in_grace_period');
-    if (row.is_over_limit) return t('billing.over_limit');
-    return row.current_plan_name;
+    if (row.over_limit) return t('billing.over_limit');
+    return row.current_plan.name;
   };
 
   // ---------------------------------------------------------------------------
@@ -294,6 +352,9 @@ export function BillingControl() {
   // ---------------------------------------------------------------------------
   // Render
   // ---------------------------------------------------------------------------
+
+  const selectedPlan = plans.find((p) => String(p.id) === selectedPlanId);
+  const exemptNeedsReason = standingDialog?.kind === 'exempt' && standingText.trim() === '';
 
   return (
     <div className="space-y-6">
@@ -330,112 +391,150 @@ export function BillingControl() {
               <TableColumn>{t('billing.col_users')}</TableColumn>
               <TableColumn>{t('billing.col_current_plan')}</TableColumn>
               <TableColumn>{t('billing.col_effective_price')}</TableColumn>
-              <TableColumn>{t('billing.col_status')}</TableColumn>
+              <TableColumn>{t('billing.col_pays')}</TableColumn>
+              <TableColumn>{t('billing.col_standing')}</TableColumn>
               {isGod
                 ? <TableColumn>{t('billing.col_actions')}</TableColumn>
                 : <TableColumn>{''}</TableColumn>
               }
             </TableHeader>
             <TableBody emptyContent={t('billing.failed_to_load')} items={snapshot}>
-              {(row) => (
-                <TableRow key={row.tenant_id}>
-                  {/* Tenant name with depth indent */}
-                  <TableCell>
-                    <span
-                      className="text-sm font-medium"
-                      style={{ paddingLeft: `${row.depth * 16}px` }}
-                    >
-                      {row.is_over_limit && !row.is_in_grace_period && (
-                        <AlertTriangle size={14} className="inline mr-1 text-warning-soft-foreground" />
-                      )}
-                      {row.tenant_name}
-                    </span>
-                  </TableCell>
+              {(row) => {
+                const price = row.current_plan?.effective_price ?? null;
+                const state = standingState(row);
+                const busy = standingBusyId === row.id;
 
-                  {/* Users: own + subtree total */}
-                  <TableCell>
-                    <span className="text-sm text-muted">
-                      {formatUserCount(row)}
-                    </span>
-                  </TableCell>
-
-                  {/* Plan chip */}
-                  <TableCell>
-                    <Chip
-                      size="sm"
-                      variant="soft"
-                      color={getPlanChipColor(row)}
-                    >
-                      {getPlanChipLabel(row)}
-                    </Chip>
-                  </TableCell>
-
-                  {/* Effective price */}
-                  <TableCell>
-                    <div className="flex items-center gap-1 flex-wrap">
-                      <span className="text-sm text-foreground">
-                        {row.effective_price
-                          ? `${formatEur(row.effective_price.yearly)}/${t('billing.yearly_suffix')}`
-                          : '—'
-                        }
+                return (
+                  <TableRow key={row.id}>
+                    {/* Community name with depth indent */}
+                    <TableCell>
+                      <span
+                        className="text-sm font-medium"
+                        style={{ paddingLeft: `${row.depth * 16}px` }}
+                      >
+                        {row.over_limit && !row.is_in_grace_period && (
+                          <AlertTriangle size={14} className="inline mr-1 text-warning-soft-foreground" aria-hidden="true" />
+                        )}
+                        {row.name}
                       </span>
-                      {row.effective_price?.has_custom || row.effective_price?.discount_pct > 0 ? (
-                        <Chip size="sm" variant="soft" className="text-xs">
-                          {t('billing.custom_badge')}
-                        </Chip>
-                      ) : null}
-                      {row.effective_price?.nonprofit && (
-                        <Leaf size={12} className="text-success-soft-foreground" aria-label={t('billing.nonprofit_verified')} />
-                      )}
-                    </div>
-                  </TableCell>
+                    </TableCell>
 
-                  {/* Status */}
-                  <TableCell>
-                    <span className="text-sm text-muted">
-                      {row.is_paused
-                        ? t('billing.paused')
-                        : row.is_in_grace_period
-                          ? t('billing.in_grace_period')
-                          : row.current_plan_id
-                            ? t('billing.status_ok')
-                            : t('billing.status_no_plan')
-                      }
-                    </span>
-                  </TableCell>
+                    {/* Users: own + subtree total */}
+                    <TableCell>
+                      <span className="text-sm text-muted">
+                        {formatUserCount(row)}
+                      </span>
+                    </TableCell>
 
-                  {/* Actions */}
-                  <TableCell>
-                    {isGod ? (
+                    {/* Plan chip */}
+                    <TableCell>
+                      <Chip
+                        size="sm"
+                        variant="soft"
+                        color={getPlanChipColor(row)}
+                      >
+                        {getPlanChipLabel(row)}
+                      </Chip>
+                    </TableCell>
+
+                    {/* Effective price */}
+                    <TableCell>
                       <div className="flex items-center gap-1 flex-wrap">
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onPress={() => handleOpenAssign(row)}
-                        >
-                          {t('billing.assign_plan')}
-                        </Button>
-                        <Button
-                          size="sm"
-                          color={row.is_paused ? 'success' : 'warning'}
-                          variant={row.is_paused ? 'secondary' : 'tertiary'}
-                          isLoading={pausingId === row.tenant_id}
-                          onPress={() => void handlePause(row)}
-                        >
-                          {row.is_paused ? t('billing.resume_billing') : t('billing.pause_billing')}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="tertiary"
-                          onPress={() => handleOpenGrace(row)}
-                        >
-                          {t('billing.set_grace_period')}
-                        </Button>
+                        <span className="text-sm text-foreground">
+                          {price
+                            ? `${formatEur(price.yearly)}/${t('billing.yearly_suffix')}`
+                            : '—'
+                          }
+                        </span>
+                        {price && (price.has_custom || price.discount_pct > 0) ? (
+                          <Chip size="sm" variant="soft" className="text-xs">
+                            {t('billing.custom_badge')}
+                          </Chip>
+                        ) : null}
+                        {price?.nonprofit && (
+                          <Leaf size={12} className="text-success-soft-foreground" aria-label={t('billing.nonprofit_verified')} />
+                        )}
                       </div>
-                    ) : null}
-                  </TableCell>
-                </TableRow>
-              )}
+                    </TableCell>
+
+                    {/* Who it pays */}
+                    <TableCell>
+                      <span className="text-sm text-muted">
+                        {t(`billing.payer_${row.standing.payer}`)}
+                      </span>
+                    </TableCell>
+
+                    {/* Standing */}
+                    <TableCell>
+                      <Chip size="sm" variant="soft" color={STANDING_COLOR[state]}>
+                        {t(`billing.standing_${state}`)}
+                      </Chip>
+                    </TableCell>
+
+                    {/* Actions */}
+                    <TableCell>
+                      {isGod ? (
+                        <div className="flex items-center gap-1 flex-wrap">
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onPress={() => handleOpenAssign(row)}
+                          >
+                            {t('billing.assign_plan')}
+                          </Button>
+
+                          {state === 'open' ? (
+                            <Button
+                              size="sm"
+                              color="warning"
+                              variant="tertiary"
+                              isDisabled={busy}
+                              onPress={() => openStandingDialog(row, 'pause')}
+                            >
+                              {t('billing.pause_community')}
+                            </Button>
+                          ) : null}
+
+                          {/* Only where this community itself is paused. One
+                              paused from above is restored on the community
+                              above, or opened here by exempting it. */}
+                          {state === 'paused' ? (
+                            <Button
+                              size="sm"
+                              color="success"
+                              variant="secondary"
+                              isLoading={busy}
+                              onPress={() => void sendStanding(row, 'restore', {}, 'billing.done_restored')}
+                            >
+                              {t('billing.restore_community')}
+                            </Button>
+                          ) : null}
+
+                          {state === 'exempt' ? (
+                            <Button
+                              size="sm"
+                              variant="tertiary"
+                              isLoading={busy}
+                              onPress={() => void sendStanding(row, 'exempt', { exempt: false }, 'billing.done_exemption_removed')}
+                            >
+                              {t('billing.remove_exemption')}
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="tertiary"
+                              isDisabled={busy}
+                              onPress={() => openStandingDialog(row, 'exempt')}
+                            >
+                              {t('billing.exempt_community')}
+                            </Button>
+                          )}
+                        </div>
+                      ) : null}
+                    </TableCell>
+                  </TableRow>
+                );
+              }}
             </TableBody>
           </Table>
         </CardBody>
@@ -450,7 +549,7 @@ export function BillingControl() {
             {t('billing.assign_plan_title')}
             {selectedTenant && (
               <span className="text-muted text-sm font-normal ml-2">
-                — {selectedTenant.tenant_name}
+                — {selectedTenant.name}
               </span>
             )}
           </ModalHeader>
@@ -490,17 +589,15 @@ export function BillingControl() {
                   onValueChange={setNotes}
                 />
 
+                {/* The placeholder is the plan's own price: what applies when
+                    this is left empty. It used to show the plan's user limit. */}
                 <Input
                   label={t('billing.custom_price_monthly')}
                   type="number"
                   min={0}
                   value={customPriceMonthly}
                   onValueChange={setCustomPriceMonthly}
-                  placeholder={
-                    selectedPlanId && plans.length > 0
-                      ? String(plans.find((p) => String(p.id) === selectedPlanId)?.user_limit ?? '')
-                      : ''
-                  }
+                  placeholder={selectedPlan?.price_monthly != null ? String(selectedPlan.price_monthly) : ''}
                   startContent={<span className="text-muted text-sm">€</span>}
                 />
 
@@ -510,6 +607,7 @@ export function BillingControl() {
                   min={0}
                   value={customPriceYearly}
                   onValueChange={setCustomPriceYearly}
+                  placeholder={selectedPlan?.price_yearly != null ? String(selectedPlan.price_yearly) : ''}
                   startContent={<span className="text-muted text-sm">€</span>}
                 />
 
@@ -560,42 +658,43 @@ export function BillingControl() {
       </Modal>
 
       {/* ------------------------------------------------------------------ */}
-      {/* Grace Period Modal                                                   */}
+      {/* Pause / Exempt dialog                                                */}
       {/* ------------------------------------------------------------------ */}
-      <Modal isOpen={isGraceOpen} onClose={onGraceClose} size="sm">
+      <Modal isOpen={standingDialog !== null} onClose={closeStandingDialog} size="md">
         <ModalContent>
           <ModalHeader>
-            {t('billing.grace_period_modal_title')}
-            {graceTenant && (
+            {standingDialog?.kind === 'exempt' ? t('billing.exempt_modal_title') : t('billing.pause_modal_title')}
+            {standingDialog && (
               <span className="text-muted text-sm font-normal ml-2">
-                — {graceTenant.tenant_name}
+                — {standingDialog.row.name}
               </span>
             )}
           </ModalHeader>
           <ModalBody>
             <div className="flex flex-col gap-3">
-              <p className="text-sm text-muted">{t('billing.grace_period_desc')}</p>
+              <p className="text-sm text-muted">
+                {standingDialog?.kind === 'exempt' ? t('billing.exempt_modal_body') : t('billing.pause_modal_body')}
+              </p>
               <Input
-                label={t('billing.grace_days')}
-                type="number"
-                min={1}
-                max={365}
-                value={graceDays}
-                onValueChange={setGraceDays}
+                label={standingDialog?.kind === 'exempt' ? t('billing.exempt_reason_label') : t('billing.pause_note_label')}
+                value={standingText}
+                onValueChange={setStandingText}
+                maxLength={500}
+                isRequired={standingDialog?.kind === 'exempt'}
               />
             </div>
           </ModalBody>
           <ModalFooter>
-            <Button variant="tertiary" onPress={onGraceClose} isDisabled={settingGrace}>
+            <Button variant="tertiary" onPress={closeStandingDialog} isDisabled={standingBusyId !== null}>
               {t('billing.cancel')}
             </Button>
             <Button
-              variant="secondary"
-              onPress={() => void handleSetGrace()}
-              isLoading={settingGrace}
-              isDisabled={!graceDays}
+              color={standingDialog?.kind === 'exempt' ? 'primary' : 'warning'}
+              onPress={() => void confirmStandingDialog()}
+              isLoading={standingBusyId !== null}
+              isDisabled={exemptNeedsReason}
             >
-              {t('billing.set_grace_period')}
+              {standingDialog?.kind === 'exempt' ? t('billing.exempt_modal_title') : t('billing.pause_modal_title')}
             </Button>
           </ModalFooter>
         </ModalContent>

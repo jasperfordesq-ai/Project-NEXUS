@@ -201,7 +201,7 @@ class TenantBillingService
                     tpa.discount_percentage, tpa.discount_reason,
                     tpa.grace_period_ends_at, tpa.is_paused, tpa.nonprofit_verified,
                     tpa.expires_at,
-                    pp.name AS plan_name, pp.slug AS plan_slug,
+                    pp.id AS plan_id, pp.name AS plan_name, pp.slug AS plan_slug,
                     pp.max_users, pp.price_monthly, pp.price_yearly
              FROM tenant_plan_assignments tpa
              INNER JOIN pay_plans pp ON pp.id = tpa.pay_plan_id
@@ -212,6 +212,9 @@ class TenantBillingService
         $planMap = [];
         foreach ($assignments as $row) {
             $assignmentArr = [
+                // The Billing control screen opens "Assign plan" on the
+                // community's current plan, so it has to be told which it is.
+                'id'                    => (int) $row->plan_id,
                 'name'                  => $row->plan_name,
                 'slug'                  => $row->plan_slug,
                 'max_users'             => $row->max_users !== null ? (int) $row->max_users : null,

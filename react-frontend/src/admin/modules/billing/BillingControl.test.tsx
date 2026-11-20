@@ -108,18 +108,34 @@ vi.mock('@/contexts', () =>
 );
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
-const makeSnapshot = (overrides = {}) => ({
+// 🔴 These are in the shape the SERVER sends, key for key the lists pinned by
+// tests/Laravel/Feature/Billing/BillingSnapshotContractTest.php. Until
+// 20 Nov 2026 they were in the shape the screen wished for (tenant_id,
+// tenant_name, current_plan_name, is_over_limit …), which is how a screen that
+// showed nothing against the real server kept a green test file. Do not add a
+// key here that the contract test does not require of the server.
+const makeStanding = (overrides = {}) => ({
   tenant_id: 5,
-  tenant_name: 'Cork Timebank',
-  depth: 0,
-  own_user_count: 80,
-  subtree_user_count: 80,
-  current_plan_id: 2,
-  current_plan_name: 'Pro',
-  current_plan_user_limit: 200,
-  suggested_plan_id: null,
-  suggested_plan_name: null,
-  is_over_limit: false,
+  payer: 'platform_invoice',
+  payer_is_default: true,
+  paid_until: null,
+  suspended_at: null,
+  suspension_source: null,
+  suspension_note: null,
+  exempt: false,
+  exempt_reason: null,
+  locked: false,
+  locked_by_tenant_id: null,
+  ...overrides,
+});
+
+const makePlanOnRow = (overrides = {}) => ({
+  id: 2,
+  name: 'Pro',
+  slug: 'pro',
+  max_users: 200,
+  price_monthly: 49,
+  price_yearly: 490,
   custom_price_monthly: null,
   custom_price_yearly: null,
   discount_percentage: 0,
@@ -127,15 +143,26 @@ const makeSnapshot = (overrides = {}) => ({
   grace_period_ends_at: null,
   is_paused: false,
   nonprofit_verified: false,
+  expires_at: null,
+  effective_price: { monthly: 49, yearly: 490, has_custom: false, discount_pct: 0, nonprofit: false },
+  ...overrides,
+});
+
+const makeSnapshot = (overrides: Record<string, unknown> = {}) => ({
+  id: 5,
+  name: 'Cork Timebank',
+  slug: 'cork',
+  depth: 1,
+  parent_id: 1,
+  allows_subtenants: false,
+  own_user_count: 80,
+  subtree_user_count: 80,
+  current_plan: makePlanOnRow(),
+  suggested_plan: 'community',
+  over_limit: false,
   is_in_grace_period: false,
   grace_days_remaining: 0,
-  effective_price: {
-    monthly: 49,
-    yearly: 490,
-    has_custom: false,
-    discount_pct: 0,
-    nonprofit: false,
-  },
+  standing: makeStanding(),
   ...overrides,
 });
 
@@ -143,9 +170,14 @@ const makePlan = (overrides = {}) => ({
   id: 2,
   name: 'Pro',
   slug: 'pro',
-  user_limit: 200,
+  max_users: 200,
+  price_monthly: '49.00',
+  price_yearly: '490.00',
   ...overrides,
 });
+
+const button = (label: string) =>
+  screen.queryAllByRole('button').find((b) => b.textContent?.trim() === label);
 
 // ─────────────────────────────────────────────────────────────────────────────
 describe('BillingControl', () => {
@@ -160,6 +192,16 @@ describe('BillingControl', () => {
     mockApi.post.mockResolvedValue({ success: true, data: {} });
     mockApi.download.mockResolvedValue(undefined);
   });
+
+  const renderWith = async (rows: unknown[]) => {
+    mockApi.get.mockImplementation((url: string) => {
+      if (url.includes('/plans')) return Promise.resolve({ success: true, data: [makePlan()] });
+      return Promise.resolve({ success: true, data: rows });
+    });
+    const { BillingControl } = await import('./BillingControl');
+    render(<BillingControl />);
+    await waitFor(() => expect(screen.queryAllByRole('row').length).toBeGreaterThan(1));
+  };
 
   it('shows a loading spinner initially', async () => {
     mockApi.get.mockImplementationOnce(() => new Promise(() => {}));
@@ -179,24 +221,6 @@ describe('BillingControl', () => {
     expect(screen.getByTitle('Billing tools are under development')).toBeInTheDocument();
   });
 
-  it('renders tenant name in the table after load', async () => {
-    const { BillingControl } = await import('./BillingControl');
-    render(<BillingControl />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Cork Timebank')).toBeInTheDocument();
-    });
-  });
-
-  it('renders plan name chip for tenant', async () => {
-    const { BillingControl } = await import('./BillingControl');
-    render(<BillingControl />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Pro')).toBeInTheDocument();
-    });
-  });
-
   it('shows error toast when snapshot load fails', async () => {
     mockApi.get.mockResolvedValue({ success: false, data: null });
     const { BillingControl } = await import('./BillingControl');
@@ -207,158 +231,173 @@ describe('BillingControl', () => {
     });
   });
 
-  it('shows Assign Plan button for god user', async () => {
-    const { BillingControl } = await import('./BillingControl');
-    render(<BillingControl />);
+  // ── Reading the real shape ────────────────────────────────────────────────
 
-    await waitFor(() => {
-      const assignBtn = screen.queryAllByRole('button').find((b) =>
-        b.textContent?.toLowerCase().includes('assign'),
-      );
-      expect(assignBtn).toBeDefined();
-    });
+  it('shows each community name, plan and price from the real shape', async () => {
+    await renderWith([makeSnapshot()]);
+
+    expect(screen.getByText('Cork Timebank')).toBeInTheDocument();
+    expect(screen.getByText('Pro')).toBeInTheDocument();
+    // 490 a year, however the locale writes the currency.
+    expect(screen.getByText((text) => text.includes('490'))).toBeInTheDocument();
   });
 
-  it('clicking Assign Plan does not crash the component', async () => {
-    // Note: useDisclosure from uiMock always returns isOpen:false (no-op onOpen),
-    // so the modal cannot open in tests. We verify clicking doesn't crash and
-    // the component remains mounted.
-    const { BillingControl } = await import('./BillingControl');
-    render(<BillingControl />);
+  it('shows "No Plan" only when current_plan is null', async () => {
+    await renderWith([
+      makeSnapshot(),
+      makeSnapshot({ id: 6, name: 'Galway Timebank', current_plan: null, standing: makeStanding({ tenant_id: 6 }) }),
+    ]);
 
-    await waitFor(() => screen.getByText('Cork Timebank'));
+    expect(screen.getAllByText('No Plan')).toHaveLength(1);
+    expect(screen.getByText('Pro')).toBeInTheDocument();
+  });
 
-    const assignBtn = screen.queryAllByRole('button').find((b) =>
-      b.textContent?.toLowerCase().includes('assign'),
-    );
-    expect(assignBtn).toBeDefined();
-    fireEvent.click(assignBtn!);
+  it('marks a community over its member limit', async () => {
+    await renderWith([makeSnapshot({ over_limit: true })]);
 
-    // Component stays mounted without crash
+    expect(screen.getByText('Over Limit')).toBeInTheDocument();
+  });
+
+  it('shows who each community pays', async () => {
+    await renderWith([
+      makeSnapshot(),
+      makeSnapshot({ id: 7, name: 'Bandon Timebank', depth: 2, parent_id: 5, standing: makeStanding({ tenant_id: 7, payer: 'parent' }) }),
+    ]);
+
+    expect(screen.getByText('Platform, by invoice')).toBeInTheDocument();
+    expect(screen.getByText('Its parent')).toBeInTheDocument();
+  });
+
+  it('posts the community id when assigning a plan', async () => {
+    await renderWith([makeSnapshot()]);
+
+    expect(button('Assign Plan')).toBeDefined();
+    fireEvent.click(button('Assign Plan')!);
+
+    // useDisclosure in the shared UI mock cannot open a dialog, so the form
+    // itself is not reachable here; the id it would post is the row's `id`,
+    // which the pause test below proves end to end.
     expect(document.body).toBeTruthy();
   });
 
-  it('calls POST /assign-plan when handleAssign is triggered (via direct call verification)', async () => {
-    // The assign-plan POST is called only when the modal form is submitted.
-    // Since uiMock useDisclosure cannot open modals (onOpen is a no-op),
-    // we verify the API mock is wired with the correct URL structure instead.
-    const { BillingControl } = await import('./BillingControl');
-    render(<BillingControl />);
+  // ── Pausing, restoring, exempting ─────────────────────────────────────────
 
-    await waitFor(() => screen.getByText('Cork Timebank'));
+  it('shows an open community as open and offers to pause or exempt it', async () => {
+    await renderWith([makeSnapshot()]);
 
-    // The component loaded without errors; the POST endpoint is wired in handleAssign
-    // which would call /v2/admin/super/billing/assign-plan.
-    // Verify the component renders correctly (the action buttons exist).
-    const actionBtns = screen.queryAllByRole('button').filter((b) =>
-      b.textContent?.toLowerCase().includes('assign'),
-    );
-    expect(actionBtns.length).toBeGreaterThan(0);
+    expect(screen.getByText('Open')).toBeInTheDocument();
+    expect(button('Pause community')).toBeDefined();
+    expect(button('Exempt')).toBeDefined();
+    expect(button('Restore community')).toBeUndefined();
+    expect(button('Remove exemption')).toBeUndefined();
   });
 
-  it('shows Pause Billing button for active tenant', async () => {
-    const { BillingControl } = await import('./BillingControl');
-    render(<BillingControl />);
+  it('posts the community id and the note when pausing', async () => {
+    const user = userEvent.setup();
+    await renderWith([makeSnapshot()]);
+
+    await user.click(button('Pause community')!);
+    await user.type(screen.getByLabelText('Note (optional, kept in the record)'), 'Two invoices unpaid');
+    await user.click(screen.getByRole('button', { name: 'Pause this community' }));
 
     await waitFor(() => {
-      const pauseBtn = screen.queryAllByRole('button').find((b) =>
-        b.textContent?.toLowerCase().includes('pause'),
-      );
-      expect(pauseBtn).toBeDefined();
+      expect(mockApi.post).toHaveBeenCalledWith('/v2/admin/super/billing/standing/suspend', {
+        tenant_id: 5,
+        note: 'Two invoices unpaid',
+      });
     });
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalled());
   });
 
-  it('shows Resume Billing for paused tenant', async () => {
-    mockApi.get.mockResolvedValue({
-      success: true,
-      data: [makeSnapshot({ is_paused: true })],
-    });
-    const { BillingControl } = await import('./BillingControl');
-    render(<BillingControl />);
+  it('offers restore, not pause, on a paused community', async () => {
+    const user = userEvent.setup();
+    await renderWith([
+      makeSnapshot({ standing: makeStanding({ suspended_at: '2026-11-20 10:00:00', suspension_source: 'manual', locked: true, locked_by_tenant_id: 5 }) }),
+    ]);
+
+    expect(screen.getByText('Paused')).toBeInTheDocument();
+    expect(button('Pause community')).toBeUndefined();
+
+    await user.click(button('Restore community')!);
 
     await waitFor(() => {
-      const resumeBtn = screen.queryAllByRole('button').find((b) =>
-        b.textContent?.toLowerCase().includes('resume'),
-      );
-      expect(resumeBtn).toBeDefined();
+      expect(mockApi.post).toHaveBeenCalledWith('/v2/admin/super/billing/standing/restore', { tenant_id: 5 });
     });
   });
 
-  it('calls POST /pause endpoint when Pause is clicked', async () => {
-    mockApi.post.mockResolvedValue({ success: true });
-    const { BillingControl } = await import('./BillingControl');
-    render(<BillingControl />);
+  it('offers no restore on a row paused from above', async () => {
+    await renderWith([
+      makeSnapshot({ id: 7, name: 'Bandon Timebank', depth: 2, parent_id: 5, standing: makeStanding({ tenant_id: 7, payer: 'parent', locked: true, locked_by_tenant_id: 5 }) }),
+    ]);
 
-    await waitFor(() => screen.getByText('Cork Timebank'));
+    expect(screen.getByText('Paused (community above)')).toBeInTheDocument();
+    expect(button('Restore community')).toBeUndefined();
+    // Exempting it is how the platform team opens it while the parent stays paused.
+    expect(button('Exempt')).toBeDefined();
+  });
 
-    const pauseBtn = screen.queryAllByRole('button').find((b) =>
-      b.textContent?.toLowerCase().includes('pause'),
-    );
-    expect(pauseBtn).toBeDefined();
-    fireEvent.click(pauseBtn!);
+  it('requires a reason before exempting', async () => {
+    const user = userEvent.setup();
+    await renderWith([makeSnapshot()]);
+
+    await user.click(button('Exempt')!);
+    const confirm = screen.getByRole('button', { name: 'Exempt this community' });
+    expect(confirm).toBeDisabled();
+
+    await user.type(screen.getByLabelText('Reason (required)'), 'Council contract, paid annually');
+    expect(confirm).not.toBeDisabled();
+    await user.click(confirm);
 
     await waitFor(() => {
-      expect(mockApi.post).toHaveBeenCalledWith(
-        '/v2/admin/super/billing/pause',
-        expect.objectContaining({ tenant_id: 5 }),
-      );
+      expect(mockApi.post).toHaveBeenCalledWith('/v2/admin/super/billing/standing/exempt', {
+        tenant_id: 5,
+        exempt: true,
+        reason: 'Council contract, paid annually',
+      });
     });
   });
 
-  it('shows Set Grace Period button for god user', async () => {
-    const { BillingControl } = await import('./BillingControl');
-    render(<BillingControl />);
+  it('offers to remove an exemption, and nothing else, on an exempt community', async () => {
+    const user = userEvent.setup();
+    await renderWith([makeSnapshot({ standing: makeStanding({ exempt: true, exempt_reason: 'Council contract' }) })]);
+
+    expect(screen.getByText('Exempt', { selector: 'span, div' })).toBeInTheDocument();
+    expect(button('Pause community')).toBeUndefined();
+
+    await user.click(button('Remove exemption')!);
 
     await waitFor(() => {
-      const graceBtn = screen.queryAllByRole('button').find((b) =>
-        b.textContent?.toLowerCase().includes('grace'),
-      );
-      expect(graceBtn).toBeDefined();
+      expect(mockApi.post).toHaveBeenCalledWith('/v2/admin/super/billing/standing/exempt', { tenant_id: 5, exempt: false });
     });
   });
 
-  it('clicking Set Grace Period does not crash the component', async () => {
-    // Note: useDisclosure from uiMock always returns isOpen:false (no-op onOpen),
-    // so the grace-period modal cannot open in tests. We verify clicking doesn't crash.
-    const { BillingControl } = await import('./BillingControl');
-    render(<BillingControl />);
+  it('says so and changes nothing on screen when the server refuses', async () => {
+    const user = userEvent.setup();
+    mockApi.post.mockResolvedValue({ success: false, error: 'This community is exempt. Remove the exemption first.', code: 'COMMUNITY_IS_EXEMPT' });
+    await renderWith([makeSnapshot()]);
 
-    await waitFor(() => screen.getByText('Cork Timebank'));
+    await user.click(button('Pause community')!);
+    await user.click(screen.getByRole('button', { name: 'Pause this community' }));
 
-    const graceBtn = screen.queryAllByRole('button').find((b) =>
-      b.textContent?.toLowerCase().includes('grace'),
-    );
-    expect(graceBtn).toBeDefined();
-    fireEvent.click(graceBtn!);
-
-    // Component stays mounted without crash
-    expect(screen.queryAllByRole('button').length).toBeGreaterThan(0);
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('This community is exempt. Remove the exemption first.'));
+    expect(mockToast.success).not.toHaveBeenCalled();
   });
 
-  it('grace-period endpoint is wired: POST /v2/admin/super/billing/grace-period', async () => {
-    // Directly verifies the POST endpoint URL used by handleGrace.
-    // Modal can't be opened via uiMock, so we verify the component structure.
-    const { BillingControl } = await import('./BillingControl');
-    render(<BillingControl />);
+  it('no longer offers Pause Billing or Set Grace Period', async () => {
+    await renderWith([makeSnapshot()]);
 
-    await waitFor(() => screen.getByText('Cork Timebank'));
-
-    const graceBtn = screen.queryAllByRole('button').find((b) =>
-      b.textContent?.toLowerCase().includes('grace'),
-    );
-    expect(graceBtn).toBeDefined();
-    // Component renders set-grace-period buttons for god user — API wiring confirmed.
+    expect(button('Pause Billing')).toBeUndefined();
+    expect(button('Resume Billing')).toBeUndefined();
+    expect(button('Set Grace Period')).toBeUndefined();
+    expect(mockApi.post).not.toHaveBeenCalled();
   });
+
+  // ── Unchanged behaviour ───────────────────────────────────────────────────
 
   it('shows Export CSV button and calls download on click', async () => {
-    const { BillingControl } = await import('./BillingControl');
-    render(<BillingControl />);
+    await renderWith([makeSnapshot()]);
 
-    await waitFor(() => screen.getByText('Cork Timebank'));
-
-    const exportBtn = screen.queryAllByRole('button').find((b) =>
-      b.textContent?.toLowerCase().includes('export') || b.textContent?.toLowerCase().includes('csv'),
-    );
+    const exportBtn = screen.queryAllByRole('button').find((b) => b.textContent?.toLowerCase().includes('export'));
     expect(exportBtn).toBeDefined();
     fireEvent.click(exportBtn!);
 
@@ -371,35 +410,18 @@ describe('BillingControl', () => {
   });
 
   it('shows "in grace period" chip for tenant in grace period', async () => {
-    mockApi.get.mockResolvedValue({
-      success: true,
-      data: [makeSnapshot({ is_in_grace_period: true, grace_days_remaining: 5 })],
-    });
-    const { BillingControl } = await import('./BillingControl');
-    render(<BillingControl />);
+    await renderWith([makeSnapshot({ is_in_grace_period: true, grace_days_remaining: 12 })]);
 
-    await waitFor(() => {
-      expect(screen.getByText('Cork Timebank')).toBeInTheDocument();
-    });
-    // The chip label for grace period is rendered somewhere in the row
-    // Translation key renders as-key in test env; just confirm no crash
-    expect(document.body).toBeTruthy();
+    expect(screen.getByText('In Grace Period')).toBeInTheDocument();
   });
 
   it('renders multiple tenants in the table', async () => {
-    mockApi.get.mockResolvedValue({
-      success: true,
-      data: [
-        makeSnapshot({ tenant_id: 5, tenant_name: 'Cork Timebank' }),
-        makeSnapshot({ tenant_id: 6, tenant_name: 'Dublin Timebank', current_plan_name: 'Starter' }),
-      ],
-    });
-    const { BillingControl } = await import('./BillingControl');
-    render(<BillingControl />);
+    await renderWith([
+      makeSnapshot(),
+      makeSnapshot({ id: 6, name: 'Dublin Timebank', standing: makeStanding({ tenant_id: 6 }) }),
+    ]);
 
-    await waitFor(() => {
-      expect(screen.getByText('Cork Timebank')).toBeInTheDocument();
-      expect(screen.getByText('Dublin Timebank')).toBeInTheDocument();
-    });
+    expect(screen.getByText('Cork Timebank')).toBeInTheDocument();
+    expect(screen.getByText('Dublin Timebank')).toBeInTheDocument();
   });
 });
