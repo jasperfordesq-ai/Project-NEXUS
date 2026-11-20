@@ -340,6 +340,12 @@ class AdminMatchingController extends BaseApiController
                 'semantic_signal' => (bool) ($config['ai']['semantic_signal'] ?? true),
                 'llm_explanations' => (bool) ($config['ai']['llm_explanations'] ?? true),
                 'explanation_top_n' => (int) ($config['ai']['explanation_top_n'] ?? 5),
+                // One switch for each part that calls the community's AI
+                // provider (and so costs its own key).
+                'listing_enrichment' => (bool) ($config['ai']['listing_enrichment'] ?? true),
+                'wider_reading' => (bool) ($config['ai']['wider_reading'] ?? true),
+                'discovery' => (bool) ($config['ai']['discovery'] ?? true),
+                'alert_check' => (bool) ($config['ai']['alert_check'] ?? true),
                 // Whether the AI layer can actually run for this tenant
                 // (keys + cost limits) — read-only status for the admin UI.
                 'available' => \App\Services\AI\AIServiceFactory::isEnabled(),
@@ -514,6 +520,10 @@ class AdminMatchingController extends BaseApiController
                 'semantic_signal' => (bool) ($input['ai']['semantic_signal'] ?? $existing['ai']['semantic_signal'] ?? true),
                 'llm_explanations' => (bool) ($input['ai']['llm_explanations'] ?? $existing['ai']['llm_explanations'] ?? true),
                 'explanation_top_n' => max(1, min(10, (int) ($input['ai']['explanation_top_n'] ?? $existing['ai']['explanation_top_n'] ?? 5))),
+                'listing_enrichment' => (bool) ($input['ai']['listing_enrichment'] ?? $existing['ai']['listing_enrichment'] ?? true),
+                'wider_reading' => (bool) ($input['ai']['wider_reading'] ?? $existing['ai']['wider_reading'] ?? true),
+                'discovery' => (bool) ($input['ai']['discovery'] ?? $existing['ai']['discovery'] ?? true),
+                'alert_check' => (bool) ($input['ai']['alert_check'] ?? $existing['ai']['alert_check'] ?? true),
             ]),
             'pillars' => [
                 'relevance' => max(0.0, min(1.0, (float) ($input['pillars']['relevance'] ?? $existing['pillars']['relevance'] ?? 0.45))),

@@ -6,11 +6,13 @@
 
 namespace App\Observers;
 
+use App\Jobs\DiscoverMatchesForListingJob;
 use App\Jobs\EnrichListingForMatchingJob;
 use App\Models\Listing;
 use App\Observers\Concerns\IndexesEmbeddings;
 use App\Services\FeedActivityService;
 use App\Services\Matching\ListingEnrichmentService;
+use App\Services\Matching\MatchDiscoveryService;
 use App\Services\SearchService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -85,6 +87,7 @@ class ListingObserver
 
         try {
             app(ListingEnrichmentService::class)->forget((int) $listing->tenant_id, (int) $listing->id);
+            app(MatchDiscoveryService::class)->forget((int) $listing->tenant_id, (int) $listing->id);
         } catch (\Throwable $e) {
             Log::info('ListingObserver: could not remove the matching reading', ['listing_id' => $listing->id]);
         }
@@ -101,6 +104,9 @@ class ListingObserver
             if ($tenantId > 0 && (int) $listing->id > 0
                 && \App\Services\AI\AIServiceFactory::isEnabledForTenant($tenantId)) {
                 EnrichListingForMatchingJob::dispatch($tenantId, (int) $listing->id);
+                // ... and its look for listings and skills that fit this one
+                // (MatchDiscoveryService). Each job checks its own switch.
+                DiscoverMatchesForListingJob::dispatch($tenantId, (int) $listing->id);
             }
         } catch (\Throwable $e) {
             Log::info('ListingObserver: matching reading not queued', ['listing_id' => $listing->id, 'error' => $e->getMessage()]);

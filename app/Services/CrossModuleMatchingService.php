@@ -12,7 +12,9 @@ use Illuminate\Support\Facades\Log;
 use App\Support\UserDisplayName;
 use App\Support\Matching\MatchReasonText;
 use App\Services\Matching\KeywordExtractor;
+use App\Services\Matching\ListingEnrichmentService;
 use App\Services\Matching\MatchConcepts;
+use App\Services\Matching\TextReadingService;
 use App\Services\Translation\TaxonomyNameLocalizer;
 
 /**
@@ -396,13 +398,21 @@ class CrossModuleMatchingService
 
             $opportunities = $query->orderByDesc('opp.id')->limit(200)->get();
 
+            // Where the community has AI on, what the AI read each
+            // opportunity to be about is added to its own words.
+            $oppText = fn ($opp): string => TextReadingService::opportunityText($opp->title, $opp->skills_needed, $opp->description);
+            $read = $this->textReadings($tenantId, $opportunities->map($oppText)->all());
+
             $matches = [];
             foreach ($opportunities as $opp) {
                 $needed = KeywordExtractor::extract(implode(' ', self::skillNames((string) ($opp->skills_needed ?? ''))));
                 $skillShare = $needed !== []
                     ? count(array_intersect($needed, $memberKeywords)) / count($needed)
                     : 0.0;
-                $wording = KeywordExtractor::extract(($opp->title ?? '') . ' ' . ($opp->description ?? ''));
+                $wording = array_merge(
+                    KeywordExtractor::extract(($opp->title ?? '') . ' ' . ($opp->description ?? '')),
+                    $read[$oppText($opp)] ?? []
+                );
                 [$kindsShared, $wordsShared] = self::overlap($wording, $memberKeywords);
 
                 if ($skillShare <= 0.0 && $kindsShared === 0 && $wordsShared < 2) {
@@ -510,6 +520,8 @@ class CrossModuleMatchingService
 
             $userCategoryIds = $this->getUserCategoryIds($userId, $tenantId);
             $interests = $this->getMemberInterestKeywords($userId, $tenantId);
+            $eventText = fn (array $event): string => TextReadingService::eventText($event['title'] ?? '', $event['description'] ?? '');
+            $read = $this->textReadings($tenantId, array_map($eventText, $events));
 
             $matches = [];
             foreach ($events as $event) {
@@ -526,7 +538,10 @@ class CrossModuleMatchingService
                 $categoryHit = !empty($event['category_id'])
                     && in_array((int) $event['category_id'], $userCategoryIds, true);
                 [$kindsShared, $wordsShared] = self::overlap(
-                    KeywordExtractor::extract(($event['title'] ?? '') . ' ' . ($event['description'] ?? '')),
+                    array_merge(
+                        KeywordExtractor::extract(($event['title'] ?? '') . ' ' . ($event['description'] ?? '')),
+                        $read[$eventText($event)] ?? []
+                    ),
                     $interests
                 );
 
@@ -649,6 +664,7 @@ class CrossModuleMatchingService
                     $keywords[] = $keyword;
                 }
             }
+            $keywords = array_merge($keywords, $this->memberReadings($userId, $tenantId, $skillNames, null));
 
             return array_values(array_unique($keywords));
         } catch (\Throwable $e) {
@@ -667,6 +683,17 @@ class CrossModuleMatchingService
      */
     private function liveListingText(int $userId, int $tenantId, ?string $type): string
     {
+        $text = '';
+        foreach ($this->liveListingsQuery($userId, $tenantId, $type)->limit(10)->get(['title', 'description']) as $row) {
+            $text .= ' ' . ($row->title ?? '') . ' ' . ($row->description ?? '');
+        }
+
+        return $text;
+    }
+
+    /** The member's live listings (approved, not past their expiry date), newest first. */
+    private function liveListingsQuery(int $userId, int $tenantId, ?string $type): \Illuminate\Database\Query\Builder
+    {
         $query = DB::table('listings')
             ->where('tenant_id', $tenantId)
             ->where('user_id', $userId)
@@ -681,12 +708,7 @@ class CrossModuleMatchingService
             $query->where('type', $type);
         }
 
-        $text = '';
-        foreach ($query->orderByDesc('created_at')->limit(10)->get(['title', 'description']) as $row) {
-            $text .= ' ' . ($row->title ?? '') . ' ' . ($row->description ?? '');
-        }
-
-        return $text;
+        return $query->orderByDesc('created_at');
     }
 
     /**
@@ -740,9 +762,73 @@ class CrossModuleMatchingService
             ->where('tenant_id', $tenantId)
             ->value('skills') ?? '');
 
-        return KeywordExtractor::extract(
-            implode(' ', $names) . ' ' . $profileSkills . ' ' . $this->liveListingText($userId, $tenantId, 'offer')
-        );
+        return array_values(array_unique(array_merge(
+            KeywordExtractor::extract(
+                implode(' ', $names) . ' ' . $profileSkills . ' ' . $this->liveListingText($userId, $tenantId, 'offer')
+            ),
+            $this->memberReadings($userId, $tenantId, $names, 'offer')
+        )));
+    }
+
+    /** The community has AI on and lets it read more than listings. */
+    private function widerReadingOn(): bool
+    {
+        try {
+            return \App\Services\AI\AIServiceFactory::isEnabled()
+                && (bool) ($this->smartMatchingEngine->getConfig()['ai']['wider_reading'] ?? true);
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
+    /**
+     * What the AI read these texts to be about (TextReadingService), keyed by
+     * the text. Empty with AI off, when the community switched it off, for a
+     * text never read, and on any failure: matching then runs on the words
+     * alone, as it always has.
+     *
+     * @param array<int, mixed> $texts
+     * @return array<string, string[]>
+     */
+    private function textReadings(int $tenantId, array $texts): array
+    {
+        $texts = array_values(array_filter($texts, fn ($text) => is_string($text) && trim($text) !== ''));
+        if ($texts === [] || !$this->widerReadingOn()) {
+            return [];
+        }
+        try {
+            return app(TextReadingService::class)->tokensFor($tenantId, $texts);
+        } catch (\Throwable $e) {
+            Log::debug('[CrossModuleMatching] text readings unavailable: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * What the AI read the member's skills and live listings to be about.
+     *
+     * @param array<int, mixed> $skillNames
+     * @return string[]
+     */
+    private function memberReadings(int $userId, int $tenantId, array $skillNames, ?string $listingType): array
+    {
+        if (!$this->widerReadingOn()) {
+            return [];
+        }
+        $tokens = [];
+        foreach ($this->textReadings($tenantId, $skillNames) as $read) {
+            $tokens = array_merge($tokens, $read);
+        }
+        try {
+            $ids = $this->liveListingsQuery($userId, $tenantId, $listingType)->limit(10)->pluck('id')->all();
+            foreach (app(ListingEnrichmentService::class)->tokensFor($tenantId, array_map('intval', $ids)) as $read) {
+                $tokens = array_merge($tokens, $read);
+            }
+        } catch (\Throwable $e) {
+            Log::debug('[CrossModuleMatching] listing readings unavailable: ' . $e->getMessage());
+        }
+
+        return $tokens;
     }
 
     /**

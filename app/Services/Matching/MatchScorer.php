@@ -479,6 +479,17 @@ final class MatchScorer
         return $wording;
     }
 
+    /**
+     * The cosine that maps to a given 0–1 semantic figure: how a judgement
+     * that is already on that scale (MatchDiscoveryService) is handed to
+     * score() beside real embedding cosines.
+     */
+    public static function cosineFor(float $mapped): float
+    {
+        return self::SEMANTIC_COSINE_MIN
+            + max(0.0, min(1.0, $mapped)) * (self::SEMANTIC_COSINE_MAX - self::SEMANTIC_COSINE_MIN);
+    }
+
     /** An embedding cosine on the 0–1 scale the semantic signal uses. */
     private function mapCosine(float $cosine): float
     {

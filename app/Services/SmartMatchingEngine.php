@@ -11,9 +11,11 @@ use App\Services\Matching\CandidateRetriever;
 use App\Services\Matching\KeywordExtractor;
 use App\Services\Matching\ListingEnrichmentService;
 use App\Services\Matching\MatchApprovalGate;
+use App\Services\Matching\MatchDiscoveryService;
 use App\Services\Matching\MatchExplanationService;
 use App\Services\Matching\MatchScorer;
 use App\Services\Matching\TenantMatchingContext;
+use App\Services\Matching\TextReadingService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -182,6 +184,15 @@ class SmartMatchingEngine
                 'explanation_top_n' => 5,
                 // The AI reads each listing once (ListingEnrichmentService).
                 'listing_enrichment' => true,
+                // ... and profile skills, past help, volunteering
+                // opportunities and events (TextReadingService).
+                'wider_reading' => true,
+                // The AI is shown a listing and the community's open offers
+                // or requests and names the real fits (MatchDiscoveryService).
+                'discovery' => true,
+                // The AI looks at a strong match before the member is
+                // emailed about it (MatchAlertCheckService).
+                'alert_check' => true,
             ],
         ];
 
@@ -778,8 +789,65 @@ class SmartMatchingEngine
             }
         }
 
+        // The same for the member's profile skills and the help they gave
+        // before (TextReadingService): these stand in for listings and have
+        // no id, so their reading is looked up by their text.
+        $textReadings = [];
+        if ($this->aiSwitchedOn() && (bool) ($config['ai']['wider_reading'] ?? true)) {
+            $standInTitles = [];
+            foreach ($userListings as $mine) {
+                if ((int) ($mine['id'] ?? 0) <= 0 && trim((string) ($mine['title'] ?? '')) !== '') {
+                    $standInTitles[] = (string) $mine['title'];
+                }
+            }
+            if ($standInTitles !== []) {
+                try {
+                    $textReadings = app(TextReadingService::class)->tokensFor((int) $tenantId, $standInTitles);
+                } catch (\Throwable $e) {
+                    Log::debug('[SmartMatchingEngine] skill readings unavailable: ' . $e->getMessage());
+                }
+            }
+        }
+
+        // Pairs the AI named a real fit when it was shown one listing and the
+        // community's open listings and skills (MatchDiscoveryService). Used
+        // as the "similar meaning" figure for the pair, so it is weighed with
+        // everything else and every rule below still applies.
+        $discoveries = [];
+        if ($scorer !== null && $this->aiSwitchedOn() && (bool) ($config['ai']['discovery'] ?? true)) {
+            $discoveryIds = array_column($userListings, 'id');
+            foreach ($candidatesByTargetType as $list) {
+                foreach ($list as $cand) {
+                    $discoveryIds[] = (int) ($cand['id'] ?? 0);
+                }
+            }
+            try {
+                $discoveries = app(MatchDiscoveryService::class)->fitsFor((int) $tenantId, $discoveryIds);
+            } catch (\Throwable $e) {
+                Log::debug('[SmartMatchingEngine] AI discoveries unavailable: ' . $e->getMessage());
+            }
+        }
+        $aiFitFor = static function (array $myListing, int $candidateId) use ($discoveries): int {
+            if ($discoveries === []) {
+                return 0;
+            }
+            $myId = (int) ($myListing['id'] ?? 0);
+            if ($myId > 0) {
+                // Found from either listing's side.
+                return max(
+                    $discoveries[$myId]['l'][$candidateId] ?? 0,
+                    $discoveries[$candidateId]['l'][$myId] ?? 0
+                );
+            }
+            if (!empty($myListing['from_profile_skills'])) {
+                return $discoveries[$candidateId]['s'][TextReadingService::key((string) ($myListing['title'] ?? ''))] ?? 0;
+            }
+
+            return 0;
+        };
+
         $listingKeywordCache = [];
-        $extractListingKeywords = function (array $listing) use (&$listingKeywordCache, $readings): array {
+        $extractListingKeywords = function (array $listing) use (&$listingKeywordCache, $readings, $textReadings): array {
             $id = (int) ($listing['id'] ?? 0);
             // A profile skill standing in for a listing has no id; it is
             // scored against every candidate, so its words are kept too.
@@ -792,6 +860,8 @@ class SmartMatchingEngine
             );
             if ($id > 0 && isset($readings[$id])) {
                 $keywords = array_values(array_unique(array_merge($keywords, $readings[$id])));
+            } elseif ($id <= 0 && isset($textReadings[(string) ($listing['title'] ?? '')])) {
+                $keywords = array_values(array_unique(array_merge($keywords, $textReadings[(string) $listing['title']])));
             }
             $listingKeywordCache[$key] = $keywords;
 
@@ -819,7 +889,9 @@ class SmartMatchingEngine
                 $best = null;
                 $bestListing = null;
                 $bestBreakdown = null;
+                $bestAiFit = 0;
                 foreach ($mine as $myListing) {
+                    $aiFit = 0;
                     if ($scorer !== null && $context !== null) {
                         $myPrepared = $myListing;
                         $myPrepared['keywords'] = $extractListingKeywords($myListing);
@@ -828,6 +900,13 @@ class SmartMatchingEngine
 
                         $cosine = null;
                         $listingSim = $semanticByListing[(int) ($myListing['id'] ?? 0)][$candidateId] ?? null;
+                        $aiFit = $aiFitFor($myListing, $candidateId);
+                        if ($aiFit > 0) {
+                            $listingSim = max(
+                                (float) ($listingSim ?? 0.0),
+                                MatchScorer::cosineFor(MatchDiscoveryService::STRENGTH_SIGNAL[$aiFit])
+                            );
+                        }
                         $ownerSim = $profileSimByOwner[(int) ($candidate['user_id'] ?? 0)] ?? null;
                         if ($listingSim !== null || $ownerSim !== null) {
                             $cosine = max((float) ($listingSim ?? 0.0), 0.8 * (float) ($ownerSim ?? 0.0));
@@ -851,6 +930,7 @@ class SmartMatchingEngine
                         $best = $matchResult;
                         $bestListing = $myListing;
                         $bestBreakdown = $breakdown;
+                        $bestAiFit = $aiFit;
                     }
                 }
 
@@ -866,6 +946,8 @@ class SmartMatchingEngine
                     $candidate['distance_km'] = $best['distance'];
                     $candidate['matched_listing'] = $bestListing['title'];
                     $candidate['matched_from_skill'] = !empty($bestListing['from_profile_skills']);
+                    // 1-3 when the community's AI named this pair a real fit, else 0.
+                    $candidate['ai_fit'] = $bestAiFit;
                     // How good the member says they are at the skill this match
                     // is for, and whether other members have endorsed it.
                     $skillEvidence = (float) ($bestListing['skill_evidence'] ?? 0.0);

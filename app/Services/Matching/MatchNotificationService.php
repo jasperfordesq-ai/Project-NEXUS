@@ -117,6 +117,8 @@ class MatchNotificationService
             }
 
             $finished = true;
+            /** @var array<int, array{match: array<string, mixed>, hot: bool}> $due member id => the alert they are due */
+            $due = [];
             foreach ($this->possibleRecipients($tenantId, $listing) as $memberId) {
                 if (!isset($matchesByMember[$memberId])) {
                     if ($computations >= self::COMPUTATIONS_PER_RUN) {
@@ -133,7 +135,23 @@ class MatchNotificationService
                     continue;
                 }
 
-                if ($this->alert($tenantId, $memberId, $match, $hotThreshold)) {
+                $kind = $this->alertDue($memberId, $match, $hotThreshold);
+                if ($kind !== null) {
+                    $due[$memberId] = ['match' => $match, 'hot' => $kind === 'hot'];
+                }
+            }
+
+            // Where the community has AI on, it looks at these before anyone
+            // is emailed and may hold the ones it says are plainly a mistake.
+            // It can never add an alert, and any failure holds nothing.
+            $held = $due === [] ? [] : app(MatchAlertCheckService::class)->notAFit(
+                $tenantId, $listing, array_map(fn (array $entry): array => $entry['match'], $due)
+            );
+            foreach ($due as $memberId => $entry) {
+                if (in_array($memberId, $held, true)) {
+                    continue;
+                }
+                if ($this->alert($tenantId, $memberId, $entry['match'], $entry['hot'])) {
                     $sent++;
                 }
             }
@@ -429,10 +447,25 @@ class MatchNotificationService
         $add(DB::table('users')->where('tenant_id', $tenantId)->whereIn('id', $pool)
             ->selectRaw('id AS user_id, skills')->get(), 'skills');
 
+        // Members whose listing the community's AI named a real fit for this
+        // one (MatchDiscoveryService) go to the front: the AI may have seen
+        // what the words do not show. Empty without AI.
+        $picked = [];
+        try {
+            $found = app(MatchDiscoveryService::class)->fitsFor($tenantId, [(int) $listing->id])[(int) $listing->id]['l'] ?? [];
+            if ($found !== []) {
+                foreach (DB::table('listings')->where('tenant_id', $tenantId)->whereIn('id', array_keys($found))->pluck('user_id') as $ownerId) {
+                    $picked[(int) $ownerId] = true;
+                }
+            }
+        } catch (\Throwable $e) {
+            $picked = [];
+        }
+
         $fit = [];
         foreach ($pool as $position => $memberId) {
             $shared = array_intersect(KeywordExtractor::extract(strip_tags($text[$memberId])), $wanted);
-            $score = 0;
+            $score = isset($picked[$memberId]) ? 100 : 0;
             foreach ($shared as $keyword) {
                 // The same kind of help counts for more than a word in common.
                 $score += KeywordExtractor::isConcept((string) $keyword) ? 3 : 1;
@@ -445,24 +478,37 @@ class MatchNotificationService
     }
 
     /**
-     * Send the hot or mutual alert for one match, if the member asked for it.
+     * Which alert, if any, this match earns the member: a strong ("hot")
+     * match or a two-way ("mutual") one, and only if they asked for it.
      *
      * @param array<string, mixed> $match
+     * @return 'hot'|'mutual'|null
      */
-    private function alert(int $tenantId, int $memberId, array $match, float $hotThreshold): bool
+    private function alertDue(int $memberId, array $match, float $hotThreshold): ?string
     {
         $prefs = MatchingService::getPreferences($memberId);
         if (($prefs['notification_frequency'] ?? 'monthly') === 'never') {
-            return false;
+            return null;
         }
 
+        if ((float) ($match['match_score'] ?? 0) >= $hotThreshold && !empty($prefs['notify_hot_matches'])) {
+            return 'hot';
+        }
+        if (($match['match_type'] ?? '') === 'mutual' && !empty($prefs['notify_mutual_matches'])) {
+            return 'mutual';
+        }
+
+        return null;
+    }
+
+    /**
+     * Send the hot or mutual alert for one match the member is due.
+     *
+     * @param array<string, mixed> $match
+     */
+    private function alert(int $tenantId, int $memberId, array $match, bool $isHot): bool
+    {
         $score = (float) ($match['match_score'] ?? 0);
-        $isHot = $score >= $hotThreshold && !empty($prefs['notify_hot_matches']);
-        $isMutual = ($match['match_type'] ?? '') === 'mutual' && !empty($prefs['notify_mutual_matches']);
-        if (!$isHot && !$isMutual) {
-            return false;
-        }
-
         $listingId = (int) $match['id'];
         $names = $this->publicNames($tenantId, [(int) ($match['user_id'] ?? 0)]);
         $recipient = DB::table('users')

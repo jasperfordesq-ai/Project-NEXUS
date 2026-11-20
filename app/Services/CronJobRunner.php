@@ -2824,6 +2824,19 @@ class CronJobRunner
                 } catch (\Throwable $e) {
                     echo "   [{$slug}] Listing reading error: " . $e->getMessage() . "\n";
                 }
+
+                // The rest of the AI layer's catch-up: profile skills,
+                // opportunities and events not yet read, and listings the AI
+                // has not yet looked for matches for. A few per run; nothing
+                // for a community with AI off.
+                try {
+                    $owed = app(\App\Services\Matching\MatchAiCatchUpService::class)->queueFor((int) $tenantId);
+                    if ($owed['readings'] + $owed['discoveries'] > 0) {
+                        echo "   [{$slug}] AI catch-up queued: {$owed['readings']} readings, {$owed['discoveries']} match searches\n";
+                    }
+                } catch (\Throwable $e) {
+                    echo "   [{$slug}] AI catch-up error: " . $e->getMessage() . "\n";
+                }
             });
             echo "   Cached $totalCached matches across all tenants.\n";
         } catch (\Throwable $e) {

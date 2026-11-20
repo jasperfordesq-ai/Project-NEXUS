@@ -321,6 +321,36 @@ class AdminMatchingScreensTest extends TestCase
         $this->assertFalse($stored['ai']['semantic_signal']);
     }
 
+    public function test_the_page_reads_and_saves_a_switch_for_each_part_of_the_ai_layer(): void
+    {
+        // Each part costs the community's own AI key, so each has its own switch.
+        $switches = ['listing_enrichment', 'wider_reading', 'discovery', 'alert_check'];
+        Sanctum::actingAs($this->admin());
+
+        $shown = $this->apiGet('/v2/admin/matching/config')->assertStatus(200)->json('data.ai');
+        foreach ($switches as $switch) {
+            $this->assertTrue($shown[$switch] ?? null, "{$switch} is on until a community turns it off");
+        }
+
+        $this->apiPut('/v2/admin/matching/config', [
+            'enabled' => true, 'max_distance_km' => 50, 'min_match_score' => 40, 'hot_match_threshold' => 80,
+            'ai' => ['wider_reading' => false, 'discovery' => false, 'alert_check' => false, 'listing_enrichment' => false],
+        ])->assertStatus(200);
+
+        $stored = $this->storedConfig();
+        $shown = $this->apiGet('/v2/admin/matching/config')->assertStatus(200)->json('data.ai');
+        foreach ($switches as $switch) {
+            $this->assertFalse($stored['ai'][$switch] ?? null, "{$switch} was not saved");
+            $this->assertFalse($shown[$switch] ?? null, "{$switch} is not shown as off");
+        }
+
+        // A save that does not mention them leaves them as they are.
+        $this->apiPut('/v2/admin/matching/config', [
+            'enabled' => true, 'max_distance_km' => 50, 'min_match_score' => 40, 'hot_match_threshold' => 80,
+        ])->assertStatus(200);
+        $this->assertFalse($this->storedConfig()['ai']['discovery']);
+    }
+
     public function test_update_config_saves_valid_settings_and_keeps_what_it_does_not_manage(): void
     {
         // A community that still has the old approval flag and tuned

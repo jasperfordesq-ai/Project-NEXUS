@@ -489,6 +489,14 @@ export interface MatchingAiConfig {
   semantic_signal: boolean;
   llm_explanations: boolean;
   explanation_top_n: number;
+  /** The AI reads each listing for matching */
+  listing_enrichment: boolean;
+  /** ... and profile skills, volunteering opportunities and events */
+  wider_reading: boolean;
+  /** The AI looks for matches the engine missed */
+  discovery: boolean;
+  /** The AI looks at a strong match before the member is emailed */
+  alert_check: boolean;
   /** Read-only — whether the tenant's AI keys/limits allow the AI layer */
   available: boolean;
 }

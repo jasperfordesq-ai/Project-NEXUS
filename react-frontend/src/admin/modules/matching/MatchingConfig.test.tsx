@@ -433,6 +433,34 @@ describe('MatchingConfig', () => {
     expect(screen.queryByLabelText(/broker approval/i)).not.toBeInTheDocument();
   });
 
+  it('has a switch for each part of the AI layer, and sends the one turned off', async () => {
+    // Each part calls the community's own AI provider, so each can be
+    // switched off separately (20 Nov 2026).
+    await renderLoaded();
+
+    const labels = [
+      'AI reads each listing',
+      'AI reads skills, volunteering and events',
+      'AI looks for matches the engine missed',
+      'AI checks a match before the email',
+    ];
+    for (const label of labels) {
+      expect(screen.getAllByLabelText(label).length).toBeGreaterThan(0);
+    }
+
+    fireEvent.click(screen.getAllByLabelText('AI looks for matches the engine missed')[0]!);
+    await waitFor(() => expect(saveButton()).not.toBeDisabled());
+    fireEvent.click(saveButton());
+
+    await waitFor(() => expect(mockAdminMatching.updateConfig).toHaveBeenCalledTimes(1));
+    expect(sentPayload().ai).toMatchObject({
+      discovery: false,
+      listing_enrichment: true,
+      wider_reading: true,
+      alert_check: true,
+    });
+  });
+
   it('shows the three scoring weights on the current method, not the six older ones', async () => {
     await renderLoaded();
 

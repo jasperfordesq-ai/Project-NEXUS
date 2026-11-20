@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { Card, CardBody, CardHeader, Input, Button, Spinner, Switch, Select, SelectItem, Tooltip, Chip, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@/components/ui';
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { Fragment, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Slider } from '@/components/ui';
 import { Separator } from '@/components/ui';
@@ -70,7 +70,22 @@ const DEFAULT_AI: Omit<MatchingAiConfig, 'available'> = {
   semantic_signal: true,
   llm_explanations: true,
   explanation_top_n: 5,
+  listing_enrichment: true,
+  wider_reading: true,
+  discovery: true,
+  alert_check: true,
 };
+
+/**
+ * The parts of the AI layer that each call the community's own AI provider,
+ * and so each have their own switch.
+ */
+const AI_PART_SWITCHES = [
+  { key: 'listing_enrichment', label: 'matching.ai_listing_reading', desc: 'matching.ai_listing_reading_desc' },
+  { key: 'wider_reading', label: 'matching.ai_wider_reading', desc: 'matching.ai_wider_reading_desc' },
+  { key: 'discovery', label: 'matching.ai_discovery', desc: 'matching.ai_discovery_desc' },
+  { key: 'alert_check', label: 'matching.ai_alert_check', desc: 'matching.ai_alert_check_desc' },
+] as const;
 
 const DEFAULT_CONFIG: SmartMatchingConfig = {
   category_weight: 0.25,
@@ -725,6 +740,23 @@ export function MatchingConfig() {
                 />
               </div>
               <Separator />
+              {AI_PART_SWITCHES.map((part) => (
+                <Fragment key={part.key}>
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-sm font-medium">{t(part.label)}</p>
+                      <p className="text-xs text-muted">{t(part.desc)}</p>
+                    </div>
+                    <Switch
+                      isSelected={config.ai?.[part.key] ?? DEFAULT_AI[part.key]}
+                      onValueChange={(val) => updateAi(part.key, val)}
+                      isDisabled={config.ai?.available === false}
+                      aria-label={t(part.label)}
+                    />
+                  </div>
+                  <Separator />
+                </Fragment>
+              ))}
               <Input
                 type="number"
                 label={t('matching.label_explanation_top_n')}
