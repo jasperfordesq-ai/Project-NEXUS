@@ -150,19 +150,121 @@ final class BillingAutomationMemberLimitTest extends TestCase
         $this->assertCount(2, $this->mailTo($this->platformMember));
     }
 
-    public function test_dropping_back_clears_the_stage_and_rising_again_tells_people_again(): void
+    public function test_dropping_just_under_keeps_the_stage_and_rising_again_tells_nobody(): void
     {
+        // Was: "dropping back clears the stage and rising again tells people
+        // again" — which mailed everyone each time a community hovered at its
+        // limit. 99% is not clearly below the line.
         $this->addActiveMembers($this->community, 101);
         BillingAutomationService::run($this->today);
 
         $this->retire($this->community, 2);
         $this->assertSame([], $this->actionsFor(BillingAutomationService::run($this->today), $this->community));
         $row = $this->standingRow($this->community);
-        $this->assertSame('approaching', $row->limit_notice_stage);
-        $this->assertNull($row->over_limit_since);
+        $this->assertSame('over', $row->limit_notice_stage);
+        $this->assertNull($row->over_limit_since, 'Not over any more: the days over start again.');
 
         $this->addActiveMembers($this->community, 2);
-        $this->assertSame(['member_limit:over'], $this->actionsFor(BillingAutomationService::run($this->day(1)), $this->community));
+        $this->assertSame([], $this->actionsFor(BillingAutomationService::run($this->day(1)), $this->community));
+        $this->assertCount(1, $this->mailTo($this->admin));
+    }
+
+    public function test_hovering_at_the_limit_sends_the_over_notice_once(): void
+    {
+        $this->addActiveMembers($this->community, 101);
+        $this->assertSame(['member_limit:over'], $this->actionsFor(BillingAutomationService::run($this->today), $this->community));
+
+        for ($day = 1; $day <= 6; $day++) {
+            if ($day % 2 === 1) {
+                $this->retire($this->community, 1);
+            } else {
+                $this->addActiveMembers($this->community, 1);
+            }
+            $this->assertSame([], $this->actionsFor(BillingAutomationService::preview($this->day($day)), $this->community), "Preview day {$day}.");
+            $this->assertSame([], $this->actionsFor(BillingAutomationService::run($this->day($day)), $this->community), "Day {$day}.");
+        }
+
+        $this->assertCount(1, $this->mailTo($this->admin));
+    }
+
+    public function test_hovering_at_the_warning_percent_sends_the_approaching_notice_once(): void
+    {
+        $this->addActiveMembers($this->community, 80);
+        $this->assertSame(['member_limit:approaching'], $this->actionsFor(BillingAutomationService::run($this->today), $this->community));
+
+        for ($day = 1; $day <= 6; $day++) {
+            if ($day % 2 === 1) {
+                $this->retire($this->community, 1);
+            } else {
+                $this->addActiveMembers($this->community, 1);
+            }
+            $this->assertSame([], $this->actionsFor(BillingAutomationService::run($this->day($day)), $this->community), "Day {$day}.");
+        }
+
+        $this->assertCount(1, $this->mailTo($this->admin));
+    }
+
+    public function test_a_genuine_recovery_then_going_over_a_month_later_tells_people_again(): void
+    {
+        $this->addActiveMembers($this->community, 101);
+        $this->assertSame(['member_limit:over'], $this->actionsFor(BillingAutomationService::run($this->today), $this->community));
+
+        $this->retire($this->community, 11); // 90%
+        $this->assertSame([], $this->actionsFor(BillingAutomationService::run($this->day(1)), $this->community));
+        $this->assertSame([], $this->actionsFor(BillingAutomationService::run($this->day(31)), $this->community));
+        $this->assertSame('approaching', $this->standingRow($this->community)->limit_notice_stage, 'Clearly below, and a month since the notice.');
+
+        $this->addActiveMembers($this->community, 11); // 101%
+        $this->assertSame(['member_limit:over'], $this->actionsFor(BillingAutomationService::preview($this->day(40)), $this->community));
+        $this->assertSame(['member_limit:over'], $this->actionsFor(BillingAutomationService::run($this->day(40)), $this->community));
+        $this->assertCount(2, $this->mailTo($this->admin));
+    }
+
+    public function test_a_person_restoring_an_over_limit_pause_gets_the_full_grace_again(): void
+    {
+        BillingSettings::set('over_limit_action', 'pause', null);
+        $this->addActiveMembers($this->community, 101);
+        $this->standing($this->community, ['over_limit_since' => $this->today->subDays(29)->toDateString(), 'limit_notice_stage' => 'over']);
+
+        $this->assertSame(['member_limit:suspend'], $this->actionsFor(BillingAutomationService::run($this->day(1)), $this->community));
+        $this->assertTrue(BillingLock::isLocked($this->community));
+
+        // The platform team lifts it on day 1.
+        $actor = (int) DB::table('users')->where('email', $this->platformMember)->value('id');
+        $this->travelTo($this->day(1)->setTime(10, 0));
+        try {
+            BillingStandingService::restore($this->community, $actor, 'Agreed to move package next month');
+        } finally {
+            $this->travelBack();
+        }
+        $this->assertSame($this->day(1)->toDateString(), substr((string) $this->standingRow($this->community)->over_limit_since, 0, 10));
+        $this->assertFalse(BillingLock::isLocked($this->community));
+        $mailBefore = DB::table('email_log')->count();
+
+        $this->assertSame([], $this->actionsFor(BillingAutomationService::preview($this->day(2)), $this->community));
+        $this->assertSame([], $this->actionsFor(BillingAutomationService::run($this->day(2)), $this->community));
+        $this->assertFalse(BillingLock::isLocked($this->community), 'Not overruled the next morning.');
+        $this->assertSame($mailBefore, DB::table('email_log')->count(), 'Nobody is mailed again.');
+
+        $this->assertSame([], $this->actionsFor(BillingAutomationService::run($this->day(30)), $this->community));
+        $this->assertFalse(BillingLock::isLocked($this->community));
+        $this->assertSame($mailBefore, DB::table('email_log')->count());
+
+        // A full 30 days after the lift, still over: paused again.
+        $this->assertSame(['member_limit:suspend'], $this->actionsFor(BillingAutomationService::run($this->day(31)), $this->community));
+        $this->assertTrue(BillingLock::isLocked($this->community));
+    }
+
+    public function test_the_check_reopening_a_community_back_under_does_not_restart_anything(): void
+    {
+        BillingSettings::set('over_limit_action', 'pause', null);
+        $this->addActiveMembers($this->community, 101);
+        BillingStandingService::suspend($this->community, null, 'auto', null, 'over_limit');
+        $this->standing($this->community, ['over_limit_since' => $this->today->subDays(40)->toDateString(), 'limit_notice_stage' => 'over']);
+
+        $this->retire($this->community, 1);
+        $this->assertSame(['member_limit:restore'], $this->actionsFor(BillingAutomationService::run($this->today), $this->community));
+        $this->assertNull($this->standingRow($this->community)->over_limit_since, 'The system lifting it clears the days over, as before.');
     }
 
     public function test_warn_only_never_pauses(): void

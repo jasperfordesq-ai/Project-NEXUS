@@ -153,6 +153,12 @@ final class BillingStandingService
 
     /**
      * Lift a suspension. `$actedBy` null = the system.
+     *
+     * A PERSON lifting a pause for being over the member limit restarts that
+     * limit's grace period from today: otherwise the daily check, still
+     * counting from the first day over, would pause it again next morning.
+     * The check lifting its own pause (back under the limit) clears the days
+     * over itself, so it is not affected.
      */
     public static function restore(int $tenantId, ?int $actedBy, ?string $note = null): void
     {
@@ -165,13 +171,18 @@ final class BillingStandingService
 
         $note = self::cleanNote($note);
 
-        self::write($tenantId, [
+        $values = [
             'suspended_at' => null,
             'suspended_by_user_id' => null,
             'suspension_source' => null,
             'suspension_note' => null,
             'suspension_reason' => null,
-        ]);
+        ];
+        if ($actedBy !== null && ($row->suspension_reason ?? null) === 'over_limit' && isset($row->over_limit_since)) {
+            $values['over_limit_since'] = now()->toDateString();
+        }
+
+        self::write($tenantId, $values);
 
         TenantBillingService::logAudit(
             $tenantId,

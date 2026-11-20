@@ -106,24 +106,130 @@ final class BillingAutomationPaymentTest extends TestCase
         $this->assertCount(0, $this->mailTo($this->childMember), 'Members are never told.');
     }
 
-    public function test_a_missed_day_catches_up_with_the_highest_stage_only(): void
+    /**
+     * Run the check for one day and prove the preview said the same thing
+     * beforehand. Returns the actions for the community.
+     *
+     * @return list<string>
+     */
+    private function previewThenRun(int $tenantId, CarbonImmutable $day): array
     {
-        $this->standing($this->child, ['paid_until' => $this->day(-10)->toDateString()]);
+        $previewed = $this->actionsFor(BillingAutomationService::preview($day), $tenantId);
+        $done = $this->actionsFor(BillingAutomationService::run($day), $tenantId);
+        $this->assertSame($previewed, $done, 'The preview for ' . $day->toDateString() . ' did not match the run.');
 
-        $this->assertSame(['payment:final_warning'], $this->actionsFor(BillingAutomationService::run($this->today), $this->child));
-
-        $this->assertCount(1, $this->mailTo($this->childAdmin));
-        $this->assertSame('final_warning', $this->standingRow($this->child)->last_notice_stage);
+        return $done;
     }
 
-    public function test_a_community_long_overdue_is_paused_on_the_first_run(): void
+    public function test_a_missed_day_sends_only_the_next_stage(): void
     {
-        $this->standing($this->child, ['paid_until' => $this->day(-30)->toDateString()]);
+        // Was: "catches up with the highest stage only" (a final warning with
+        // no "now due" before it). A run now moves one stage at a time.
+        $this->standing($this->child, ['paid_until' => $this->day(-10)->toDateString()]);
 
-        $outcome = BillingAutomationService::run($this->today);
+        $this->assertSame(['payment:due'], $this->actionsFor(BillingAutomationService::run($this->today), $this->child));
 
-        $this->assertSame(['payment:suspend'], $this->actionsFor($outcome, $this->child));
-        $this->assertSame('non_payment', BillingStandingService::get($this->child)['suspension_reason']);
+        $this->assertCount(1, $this->mailTo($this->childAdmin));
+        $this->assertSame('due', $this->standingRow($this->child)->last_notice_stage);
+    }
+
+    public function test_a_community_long_overdue_is_never_paused_without_a_final_warning_first(): void
+    {
+        // Was: "is paused on the first run". 200 days late, nothing recorded:
+        // the first run after the check is switched on.
+        $this->standing($this->child, ['paid_until' => $this->day(-200)->toDateString()]);
+
+        $this->assertSame(['payment:due'], $this->previewThenRun($this->child, $this->today), 'The reminder is skipped once the date has passed.');
+        $this->assertFalse(BillingLock::isLocked($this->child));
+        $adminMail = $this->mailTo($this->childAdmin);
+        $this->assertCount(1, $adminMail);
+        $this->assertStringContainsString('is now due', (string) $adminMail[0]->subject);
+
+        $this->assertSame([], $this->previewThenRun($this->child, $this->day(1)), 'Nothing new the next day.');
+        $this->assertSame([], $this->previewThenRun($this->child, $this->day(5)));
+
+        $this->assertSame(['payment:final_warning'], $this->previewThenRun($this->child, $this->day(7)));
+        $this->assertFalse(BillingLock::isLocked($this->child));
+        // The final warning names the day the pause can really come, not a
+        // date long gone.
+        $final = $this->mailTo($this->childAdmin)[1];
+        $this->assertStringContainsString($this->day(14)->toDateString(), (string) $final->subject);
+
+        $this->assertSame([], $this->previewThenRun($this->child, $this->day(8)), 'Not paused the day after the final warning.');
+        $this->assertFalse(BillingLock::isLocked($this->child));
+        $this->assertSame([], $this->previewThenRun($this->child, $this->day(13)));
+        $this->assertFalse(BillingLock::isLocked($this->child));
+
+        $this->assertSame(['payment:suspend'], $this->previewThenRun($this->child, $this->day(14)));
+        $standing = BillingStandingService::get($this->child);
+        $this->assertTrue($standing['locked']);
+        $this->assertSame('non_payment', $standing['suspension_reason']);
+        $this->assertCount(3, $this->mailTo($this->childAdmin), 'Due, final warning, paused: nothing more.');
+    }
+
+    public function test_followed_day_by_day_the_stages_fall_on_the_design_days_and_the_preview_agrees(): void
+    {
+        $this->standing($this->child, ['paid_until' => $this->today->toDateString()]);
+
+        $expected = [-7 => 'payment:reminder', 1 => 'payment:due', 7 => 'payment:final_warning', 14 => 'payment:suspend'];
+        for ($offset = -9; $offset <= 16; $offset++) {
+            $want = isset($expected[$offset]) ? [$expected[$offset]] : [];
+            $this->assertSame($want, $this->previewThenRun($this->child, $this->day($offset)), "Day {$offset}.");
+        }
+        $this->assertTrue(BillingLock::isLocked($this->child));
+    }
+
+    public function test_a_scheduler_down_for_30_days_does_not_pause_on_the_first_run_back(): void
+    {
+        $this->standing($this->child, ['paid_until' => $this->today->toDateString()]);
+
+        $this->assertSame(['payment:reminder'], $this->previewThenRun($this->child, $this->day(-7)));
+        $this->assertSame(['payment:due'], $this->previewThenRun($this->child, $this->day(1)));
+
+        // No runs from day 2 to day 30. Back on day 31: 31 days late, but the
+        // final warning has not been sent yet.
+        $this->assertSame(['payment:final_warning'], $this->previewThenRun($this->child, $this->day(31)));
+        $this->assertFalse(BillingLock::isLocked($this->child));
+
+        $this->assertSame([], $this->previewThenRun($this->child, $this->day(37)));
+        $this->assertFalse(BillingLock::isLocked($this->child));
+        $this->assertSame(['payment:suspend'], $this->previewThenRun($this->child, $this->day(38)));
+        $this->assertTrue(BillingLock::isLocked($this->child));
+    }
+
+    public function test_a_scheduler_down_after_the_final_warning_pauses_on_the_first_run_back(): void
+    {
+        $this->standing($this->child, ['paid_until' => $this->today->toDateString()]);
+
+        $this->previewThenRun($this->child, $this->day(-7));
+        $this->previewThenRun($this->child, $this->day(1));
+        $this->assertSame(['payment:final_warning'], $this->previewThenRun($this->child, $this->day(7)));
+
+        // Down from day 8 to day 30: the final warning has stood long enough.
+        $this->assertSame(['payment:suspend'], $this->previewThenRun($this->child, $this->day(31)));
+        $this->assertTrue(BillingLock::isLocked($this->child));
+    }
+
+    public function test_a_card_payer_gets_no_reminder_before_an_automatic_renewal(): void
+    {
+        $this->standing($this->direct, ['paid_until' => $this->day(3)->toDateString(), 'payer' => 'platform_card']);
+        $admin = $this->person($this->direct, ['role' => 'admin']);
+
+        $this->assertSame([], $this->actionsFor(BillingAutomationService::preview($this->today), $this->direct));
+        $this->assertSame([], $this->actionsFor(BillingAutomationService::run($this->today), $this->direct));
+        $this->assertNull($this->standingRow($this->direct)->last_notice_stage);
+        $this->assertCount(0, $this->mailTo($admin));
+    }
+
+    public function test_a_card_payer_whose_payment_failed_still_goes_through_due_final_warning_and_pause(): void
+    {
+        $this->standing($this->direct, ['paid_until' => $this->today->toDateString(), 'payer' => 'platform_card']);
+
+        $this->assertSame([], $this->previewThenRun($this->direct, $this->day(-7)), 'No reminder for a card.');
+        $this->assertSame(['payment:due'], $this->previewThenRun($this->direct, $this->day(1)));
+        $this->assertSame(['payment:final_warning'], $this->previewThenRun($this->direct, $this->day(7)));
+        $this->assertSame(['payment:suspend'], $this->previewThenRun($this->direct, $this->day(14)));
+        $this->assertTrue(BillingLock::isLocked($this->direct));
     }
 
     public function test_switched_off_nothing_is_sent_or_paused_and_the_preview_says_what_would_happen(): void
@@ -135,7 +241,8 @@ final class BillingAutomationPaymentTest extends TestCase
         $this->standing($this->direct, ['paid_until' => $this->day(3)->toDateString()]);
 
         $preview = BillingAutomationService::preview($this->today);
-        $this->assertSame(['payment:suspend'], $this->actionsFor($preview, $this->child));
+        // 30 days late with nothing sent yet: "now due" first, never a pause.
+        $this->assertSame(['payment:due'], $this->actionsFor($preview, $this->child));
         $this->assertSame(['payment:reminder'], $this->actionsFor($preview, $this->direct));
 
         $this->assertSame([], BillingAutomationService::run($this->today));
@@ -150,10 +257,13 @@ final class BillingAutomationPaymentTest extends TestCase
     {
         $this->standing($this->child, ['paid_until' => $this->day(-30)->toDateString()]);
 
+        // A final warning that has stood long enough: the preview lists the pause.
+        $this->standing($this->child, ['last_notice_stage' => 'final_warning', 'last_notice_at' => $this->day(-10)->toDateTimeString()]);
+
         $this->assertSame(['payment:suspend'], $this->actionsFor(BillingAutomationService::preview($this->today), $this->child));
 
         $this->assertFalse(BillingLock::isLocked($this->child));
-        $this->assertNull($this->standingRow($this->child)->last_notice_stage);
+        $this->assertSame('final_warning', $this->standingRow($this->child)->last_notice_stage, 'The preview records nothing.');
         $this->assertCount(0, $this->mailTo($this->childAdmin));
     }
 
@@ -198,7 +308,12 @@ final class BillingAutomationPaymentTest extends TestCase
 
     public function test_marking_paid_resets_the_stages_and_restores_an_automatic_pause(): void
     {
-        $this->standing($this->child, ['paid_until' => $this->day(-30)->toDateString()]);
+        // A final warning sent ten days ago: today's run pauses.
+        $this->standing($this->child, [
+            'paid_until' => $this->day(-30)->toDateString(),
+            'last_notice_stage' => 'final_warning',
+            'last_notice_at' => $this->day(-10)->toDateTimeString(),
+        ]);
         BillingAutomationService::run($this->today);
         $this->assertTrue(BillingLock::isLocked($this->child));
 

@@ -24,10 +24,15 @@ use Illuminate\Support\Facades\Log;
  *   `not_billed`, not the platform's own. A reminder before the date, "due"
  *   the day after it, a final warning, then an automatic pause for
  *   non-payment. Each stage is sent once per paid-until date
- *   (`last_notice_stage`); a missed day sends only the highest stage due.
+ *   (`last_notice_stage`). A run moves at most one stage, with the normal
+ *   schedule's spacing between them, so nothing is paused without a final
+ *   warning that has stood its time (see paymentStep()). Card payers get no
+ *   reminder: their card renews by itself.
  * - Member limit: for a community on a STANDARD package with a member limit,
  *   not exempt. Active members (signed in within 90 days, the whole branch)
- *   against the limit: approaching, reached, over. Going over only warns,
+ *   against the limit: approaching, reached, over. A stage is told at most
+ *   once a month, and the recorded stage drops only when clearly below its
+ *   line, so hovering at a line does not mail people daily. Going over only warns,
  *   unless the platform team chose "pause after N days over"; a community
  *   paused for that is opened again when it is back under, on a bigger
  *   package, or no longer has a limit.
@@ -46,6 +51,15 @@ final class BillingAutomationService
     private const PAYMENT_STAGES = ['reminder' => 1, 'due' => 2, 'final_warning' => 3, 'suspend' => 4];
 
     private const LIMIT_STAGES = ['approaching' => 1, 'reached' => 2, 'over' => 3];
+
+    /** A member-limit stage is not told again within this many days. */
+    private const LIMIT_NOTICE_HOLD_DAYS = 30;
+
+    /** Below this percent a community has clearly left "reached" / "over". */
+    private const LIMIT_LEAVE_REACHED_PERCENT = 95;
+
+    /** Points under the warning percent to have clearly left "approaching". */
+    private const LIMIT_LEAVE_MARGIN = 5;
 
     /**
      * Apply the check for "today". Returns what was done.
@@ -193,12 +207,19 @@ final class BillingAutomationService
 
             try {
                 $row = $standing[$id] ?? null;
-                foreach (self::paymentClock($id, (string) $tenant->name, $row, $settings, $today, $act) as $entry) {
+                $paymentRecorded = null;
+                foreach (self::paymentClock($id, (string) $tenant->name, $row, $settings, $today, $act, $paymentRecorded) as $entry) {
                     $outcome[] = $entry;
                 }
 
                 if ($act) {
                     $row = DB::table('tenant_billing_standing')->where('tenant_id', $id)->first();
+                } elseif ($row !== null && $paymentRecorded !== null) {
+                    // The preview records nothing; the member-limit clock
+                    // must still see what the run would have recorded.
+                    $row = clone $row;
+                    $row->last_notice_stage = $paymentRecorded;
+                    $row->last_notice_at = self::stamp($today);
                 }
 
                 foreach (self::limitClock($id, (string) $tenant->name, $row, $limits[$id] ?? null, $settings, $today, $act) as $entry) {
@@ -217,10 +238,14 @@ final class BillingAutomationService
     }
 
     /**
+     * `$recordedStage` is set to the stage this run records (or would
+     * record, in a preview), so the member-limit clock after it sees the same
+     * state in a preview as in a run.
+     *
      * @param array<string, int|bool|string> $settings
      * @return list<array{tenant_id:int, tenant_name:string, clock:string, action:string, detail:array<string, mixed>}>
      */
-    private static function paymentClock(int $id, string $name, ?object $row, array $settings, CarbonImmutable $today, bool $act): array
+    private static function paymentClock(int $id, string $name, ?object $row, array $settings, CarbonImmutable $today, bool $act, ?string &$recordedStage = null): array
     {
         if ($row === null || $row->paid_until === null || !empty($row->exempt)) {
             return [];
@@ -231,27 +256,37 @@ final class BillingAutomationService
             return [];
         }
 
-        $stage = self::paymentStage($row, $settings, $today);
-        $recorded = self::PAYMENT_STAGES[(string) $row->last_notice_stage] ?? 0;
-        if ($stage === null || self::PAYMENT_STAGES[$stage] <= $recorded) {
+        $recordedRank = self::PAYMENT_STAGES[(string) $row->last_notice_stage] ?? 0;
+        if ($recordedRank > 0 && self::noticeDay($row->last_notice_at) === null) {
+            // A stage with no date (written by hand): the waiting starts
+            // today, so the next stage is never sent without its gap.
+            if ($act) {
+                BillingStandingService::recordCheckState($id, ['last_notice_at' => self::stamp($today)]);
+            }
+
             return [];
         }
+
+        $step = self::paymentStep($row, (string) $payer, $settings, $today);
+        if ($step === null) {
+            return [];
+        }
+        $stage = $step['stage'];
 
         $paidUntil = CarbonImmutable::parse(substr((string) $row->paid_until, 0, 10));
         $facts = [
             'paid_until' => $paidUntil->toDateString(),
             'days_late' => max(0, (int) $paidUntil->diffInDays($today, false)),
-            'pause_date' => $paidUntil->addDays((int) $settings['suspend_days_late'])->toDateString(),
+            'pause_date' => self::pauseDate($stage, $paidUntil, $settings, $today)->toDateString(),
         ];
 
-        $alreadyPaused = $row->suspended_at !== null;
-
+        $recordedStage = $stage;
         if ($act) {
             // Recorded first: a notice is sent once even if the mail fails.
-            BillingStandingService::recordCheckState($id, ['last_notice_stage' => $stage, 'last_notice_at' => now()]);
+            BillingStandingService::recordCheckState($id, ['last_notice_stage' => $stage, 'last_notice_at' => self::stamp($today)]);
         }
 
-        if ($stage === 'suspend' && $alreadyPaused) {
+        if ($step['silent']) {
             // Paused already, for whatever reason: never paused twice, and
             // nobody is told it again. The stage is still recorded, so a
             // person who lifts that pause is not overruled next morning.
@@ -303,6 +338,128 @@ final class BillingAutomationService
     }
 
     /**
+     * The one payment stage this run takes, or null.
+     *
+     * Never more than one stage beyond the one recorded, and never sooner
+     * than the normal schedule spaces them: the final warning comes
+     * `final_warning_days_late` − 1 days after "now due" (due is normally the
+     * first late day), the pause `suspend_days_late` − `final_warning_days_late`
+     * days after the final warning. So a community long overdue, or one the
+     * check meets for the first time, is told before it is paused, and a
+     * community followed day by day gets exactly the design's days.
+     *
+     * The reminder is skipped once the date has passed, and always for a
+     * card payer: its card renews by itself, and Stripe moves the date.
+     *
+     * A community already paused that is late enough to be paused records
+     * the pause stage silently: it is closed already, and a person who lifts
+     * that pause is not overruled next morning.
+     *
+     * @param array<string, int|bool|string> $settings
+     * @return array{stage:string, silent:bool}|null
+     */
+    private static function paymentStep(object $row, string $payer, array $settings, CarbonImmutable $today): ?array
+    {
+        $byDate = self::paymentStage($row, $settings, $today);
+        if ($byDate === null) {
+            return null;
+        }
+
+        $dateRank = self::PAYMENT_STAGES[$byDate];
+        $recorded = self::PAYMENT_STAGES[(string) $row->last_notice_stage] ?? 0;
+        if ($dateRank <= $recorded) {
+            return null;
+        }
+
+        if ($row->suspended_at !== null && $byDate === 'suspend') {
+            return ['stage' => 'suspend', 'silent' => true];
+        }
+
+        $next = $recorded + 1;
+        if ($next === self::PAYMENT_STAGES['reminder'] && ($dateRank > $next || $payer === 'platform_card')) {
+            if ($dateRank === $next) {
+                return null;
+            }
+            $next = self::PAYMENT_STAGES['due'];
+        }
+
+        if ($next >= self::PAYMENT_STAGES['final_warning']) {
+            $since = self::noticeDay($row->last_notice_at);
+            [$toFinal, $toPause] = self::gaps($settings);
+            $gap = $next === self::PAYMENT_STAGES['final_warning'] ? $toFinal : $toPause;
+            if ($since === null || $since->addDays($gap)->greaterThan($today)) {
+                return null;
+            }
+        }
+
+        $names = array_flip(self::PAYMENT_STAGES);
+
+        return ['stage' => $names[$next], 'silent' => false];
+    }
+
+    /**
+     * Days from "now due" to the final warning, and from the final warning to
+     * the pause, as the normal schedule spaces them. At least one day each.
+     *
+     * @param array<string, int|bool|string> $settings
+     * @return array{0:int, 1:int}
+     */
+    private static function gaps(array $settings): array
+    {
+        $final = (int) $settings['final_warning_days_late'];
+        $suspend = (int) $settings['suspend_days_late'];
+
+        return [max(1, $final - 1), max(1, $suspend - $final)];
+    }
+
+    /**
+     * The earliest day the pause can come once this stage is sent, so a
+     * notice never names a pause date already gone.
+     *
+     * @param array<string, int|bool|string> $settings
+     */
+    private static function pauseDate(string $stage, CarbonImmutable $paidUntil, array $settings, CarbonImmutable $today): CarbonImmutable
+    {
+        if ($stage === 'suspend') {
+            return $today;
+        }
+
+        [$toFinal, $toPause] = self::gaps($settings);
+
+        if ($stage === 'final_warning') {
+            $finalOn = $today;
+        } else {
+            $dueOn = $stage === 'due' ? $today : $paidUntil->addDay();
+            $finalOn = self::later($paidUntil->addDays((int) $settings['final_warning_days_late']), $dueOn->addDays($toFinal));
+        }
+
+        return self::later($paidUntil->addDays((int) $settings['suspend_days_late']), $finalOn->addDays($toPause));
+    }
+
+    private static function later(CarbonImmutable $a, CarbonImmutable $b): CarbonImmutable
+    {
+        return $a->greaterThan($b) ? $a : $b;
+    }
+
+    /**
+     * When a notice is recorded: the check's "today" at the wall clock's
+     * time, so the gaps between stages count the check's days.
+     */
+    private static function stamp(CarbonImmutable $today): string
+    {
+        return $today->toDateString() . ' ' . now()->format('H:i:s');
+    }
+
+    private static function noticeDay(mixed $value): ?CarbonImmutable
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return CarbonImmutable::parse(substr((string) $value, 0, 10));
+    }
+
+    /**
      * @param array{plan_name:string, max_users:int}|null $limit
      * @param array<string, int|bool|string> $settings
      * @return list<array{tenant_id:int, tenant_name:string, clock:string, action:string, detail:array<string, mixed>}>
@@ -344,9 +501,21 @@ final class BillingAutomationService
             return self::lift($id, $name, $row, $today, $act, $facts);
         }
 
-        $recordedStage = $row?->limit_notice_stage;
-        $recorded = self::LIMIT_STAGES[(string) $recordedStage] ?? 0;
+        $recorded = self::LIMIT_STAGES[(string) $row?->limit_notice_stage] ?? 0;
         $current = $stage === null ? 0 : self::LIMIT_STAGES[$stage];
+
+        // Up is immediate and tells people. Down needs both a month since
+        // the last notice and being clearly below the line, so a community
+        // hovering at a line is told once, not every time it crosses it.
+        $newRecorded = $recorded;
+        if ($current > $recorded) {
+            $newRecorded = $current;
+        } elseif ($current < $recorded) {
+            $lastNotice = self::noticeDay($row?->limit_notice_at);
+            if ($lastNotice === null || !$lastNotice->addDays(self::LIMIT_NOTICE_HOLD_DAYS)->greaterThan($today)) {
+                $newRecorded = self::heldLimitRank($recorded, $active, $max, (int) $settings['limit_warning_percent']);
+            }
+        }
 
         $overSince = $row?->over_limit_since !== null ? CarbonImmutable::parse(substr((string) $row->over_limit_since, 0, 10)) : null;
         if ($stage === 'over' && $overSince === null) {
@@ -374,12 +543,11 @@ final class BillingAutomationService
             if ($stage !== 'over' && $row?->over_limit_since !== null) {
                 $state['over_limit_since'] = null;
             }
-            if ($current !== $recorded) {
-                // Up: a notice is due. Down: the stage that still applies, so
-                // rising again tells people again.
-                $state['limit_notice_stage'] = $stage;
-                if ($current > $recorded) {
-                    $state['limit_notice_at'] = now();
+            if ($newRecorded !== $recorded) {
+                $names = array_flip(self::LIMIT_STAGES);
+                $state['limit_notice_stage'] = $names[$newRecorded] ?? null;
+                if ($newRecorded > $recorded) {
+                    $state['limit_notice_at'] = self::stamp($today);
                 }
             }
             BillingStandingService::recordCheckState($id, $state);
@@ -408,22 +576,39 @@ final class BillingAutomationService
     }
 
     /**
+     * The member-limit stage to keep on record once the community has dropped
+     * below the recorded one: it leaves "reached"/"over" only below 95%, and
+     * "approaching" only below the warning percent less 5.
+     */
+    private static function heldLimitRank(int $recorded, int $active, int $max, int $warningPercent): int
+    {
+        if ($recorded >= self::LIMIT_STAGES['reached'] && $active * 100 >= self::LIMIT_LEAVE_REACHED_PERCENT * $max) {
+            return $recorded;
+        }
+        if ($active * 100 >= ($warningPercent - self::LIMIT_LEAVE_MARGIN) * $max) {
+            return self::LIMIT_STAGES['approaching'];
+        }
+
+        return 0;
+    }
+
+    /**
      * Open a community paused for being over its limit, now that it is not.
      *
-     * Unless its payment is late enough to be paused for that instead: then
-     * it stays paused, and the pause is recorded as for non-payment, so that
-     * paying up is what opens it.
+     * Unless the payment clock has reached its pause stage for the current
+     * paid-until date (it runs first, and records that stage silently for a
+     * community already paused): then it stays paused, and the pause is
+     * recorded as for non-payment, so that paying up is what opens it.
      *
      * @param array<string, mixed> $facts
      * @return list<array{tenant_id:int, tenant_name:string, clock:string, action:string, detail:array<string, mixed>}>
      */
     private static function lift(int $id, string $name, object $row, CarbonImmutable $today, bool $act, array $facts): array
     {
-        $settings = BillingSettings::all();
         $payer = $row->payer ?? BillingStandingService::defaultPayer($id);
         $paymentPause = $row->paid_until !== null
             && $payer !== 'not_billed'
-            && self::paymentStage($row, $settings, $today) === 'suspend';
+            && ($row->last_notice_stage ?? null) === 'suspend';
 
         if ($act) {
             BillingStandingService::recordCheckState($id, ['over_limit_since' => null]);

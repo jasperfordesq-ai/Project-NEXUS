@@ -149,7 +149,9 @@ final class BillingAutomationEndpointsTest extends TestCase
         $this->assertNotNull($entry, 'The late community is on the list.');
         $this->assertSame(self::PREVIEW_ENTRY_KEYS, array_keys($entry));
         $this->assertSame('payment', $entry['clock']);
-        $this->assertSame('suspend', $entry['action']);
+        // 40 days late but never told: the check's first step is "now due",
+        // never a pause (it used to list 'suspend', which run() no longer does).
+        $this->assertSame('due', $entry['action']);
         $this->assertSame('Automation endpoint community', $entry['tenant_name']);
 
         $this->assertFalse(BillingLock::isLocked($this->community), 'The preview pauses nobody.');
