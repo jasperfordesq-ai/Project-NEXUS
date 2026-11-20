@@ -212,6 +212,10 @@ describe('AchievementsPage', () => {
     const banner = await screen.findByTestId('badge-unlocked');
     expect(banner).toHaveTextContent('Helper');
     expect(banner).not.toHaveTextContent('First Post');
+    // Real words, not the name of a wording key: the banner once asked for
+    // `badge_unlocked` at the top of the feed wording, where no such key is.
+    expect(banner).toHaveTextContent('Badge unlocked: Helper');
+    expect(banner).not.toHaveTextContent('badge_unlocked');
     localStorage.removeItem('nexus_badges_seen_2_1');
   });
 

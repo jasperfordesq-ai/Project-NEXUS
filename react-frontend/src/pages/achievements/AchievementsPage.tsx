@@ -1688,7 +1688,7 @@ export function AchievementsPage() {
               <Trophy className="size-5" />
             </span>
             <p className="font-display text-lg font-semibold text-accent-soft-foreground">
-              {t('badge_unlocked', { ns: 'feed' })}: {newBadgeNames.join(', ')}
+              {t('card.milestone.badge_unlocked', { ns: 'feed' })}: {newBadgeNames.join(', ')}
             </p>
           </div>
         </GlassCard>
