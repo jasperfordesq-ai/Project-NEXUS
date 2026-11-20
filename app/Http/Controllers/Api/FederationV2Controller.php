@@ -27,6 +27,7 @@ use App\Services\FederationPartnershipService;
 use App\Services\FederationSearchService;
 use App\Services\MessageService;
 use App\Services\SafeguardingInteractionPolicy;
+use App\Support\Billing\BillingLock;
 use App\Support\Federation\FederatedMemberName;
 use App\Support\UserDisplayName;
 
@@ -160,6 +161,9 @@ class FederationV2Controller extends BaseApiController
             if ($partnerId <= 0 || $partnerId === $tenantId) {
                 continue;
             }
+            if ($this->partnerIsPausedForNonPayment($partnerId)) {
+                continue;
+            }
             if ($this->federationFeatureService->isOperationAllowed($operation, $partnerId)['allowed'] ?? false) {
                 $allowed[] = $partnerId;
             }
@@ -175,11 +179,27 @@ class FederationV2Controller extends BaseApiController
      */
     private function partnerTenantAllowsOperation(string $operation, int $partnerTenantId): bool
     {
-        if ($partnerTenantId <= 0) {
+        if ($partnerTenantId <= 0 || $this->partnerIsPausedForNonPayment($partnerTenantId)) {
             return false;
         }
 
         return (bool) ($this->federationFeatureService->isOperationAllowed($operation, $partnerTenantId)['allowed'] ?? false);
+    }
+
+    /**
+     * A community paused for non-payment (itself, or a community above it)
+     * is hidden from every other community on this installation, the same
+     * way a partner that switched federation off is: its members, listings,
+     * events, groups and reviews drop out, and it cannot be messaged or paid.
+     *
+     * Both partner gates above go through here, so every internal federated
+     * read and write in this controller sees the same answer. Fails open:
+     * a broken payment-standing check must not empty the federation pages of
+     * every community, and BillingLock logs the failure at error.
+     */
+    private function partnerIsPausedForNonPayment(int $partnerTenantId): bool
+    {
+        return BillingLock::isLockedFailOpen($partnerTenantId, 'FederationV2Controller');
     }
 
     /**

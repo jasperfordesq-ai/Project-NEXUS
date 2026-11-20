@@ -10,11 +10,13 @@ use App\Core\TenantContext;
 use App\Core\ImageUploader;
 use App\Exceptions\SafeguardingPolicyException;
 use App\Http\Controllers\Api\Concerns\InteractsWithPodcasts;
+use App\Http\Middleware\CheckBillingLock;
 use App\Models\PodcastEpisode;
 use App\Models\PodcastShow;
 use App\Services\PodcastConfigurationService;
 use App\Services\PodcastCreationReceiptService;
 use App\Services\PodcastService;
+use App\Support\Billing\BillingLock;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -122,10 +124,13 @@ class PodcastController extends BaseApiController
             ->header('Content-Type', 'application/rss+xml; charset=UTF-8');
     }
 
-    public function rssForTenant(int $tenantId, string $showSlug): Response
+    public function rssForTenant(int $tenantId, string $showSlug): Response|JsonResponse
     {
         if (!TenantContext::setById($tenantId)) {
             abort(404);
+        }
+        if ($paused = $this->pausedCommunityResponse($tenantId)) {
+            return $paused;
         }
         $this->ensurePodcastsFeature();
 
@@ -629,6 +634,9 @@ class PodcastController extends BaseApiController
         if (!TenantContext::setById($tenantId)) {
             return $this->respondWithError('RESOURCE_NOT_FOUND', __('api_controllers_2.podcasts.episode_not_found'), null, 404);
         }
+        if ($paused = $this->pausedCommunityResponse($tenantId)) {
+            return $paused;
+        }
         $this->ensurePodcastsFeature();
         $episode = PodcastEpisode::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
@@ -694,6 +702,9 @@ class PodcastController extends BaseApiController
         if (!TenantContext::setById($tenantId)) {
             return $this->respondWithError('RESOURCE_NOT_FOUND', __('api_controllers_2.podcasts.episode_not_found'), null, 404);
         }
+        if ($paused = $this->pausedCommunityResponse($tenantId)) {
+            return $paused;
+        }
         $this->ensurePodcastsFeature();
 
         if (!PodcastConfigurationService::get(PodcastConfigurationService::CONFIG_ENABLE_TRANSCRIPTS)) {
@@ -716,6 +727,9 @@ class PodcastController extends BaseApiController
         if (!TenantContext::setById($tenantId)) {
             return $this->respondWithError('RESOURCE_NOT_FOUND', __('api_controllers_2.podcasts.episode_not_found'), null, 404);
         }
+        if ($paused = $this->pausedCommunityResponse($tenantId)) {
+            return $paused;
+        }
         $this->ensurePodcastsFeature();
 
         if (!PodcastConfigurationService::get(PodcastConfigurationService::CONFIG_ENABLE_CHAPTERS)) {
@@ -737,6 +751,28 @@ class PodcastController extends BaseApiController
             'version' => '1.2.0',
             'chapters' => $chapters,
         ])->header('Cache-Control', 'public, max-age=300');
+    }
+
+    /**
+     * The four public distribution routes (feed, audio, transcript, chapters)
+     * name their community in the URL and switch to it themselves, so the
+     * CheckBillingLock middleware has already checked whichever community's
+     * address the request came in on — not the one being served. A podcast
+     * app subscribed to a paused community's feed must stop getting it, and
+     * so must its audio. 503 with a day's Retry-After tells a feed reader
+     * "come back later", not "this is gone".
+     *
+     * Fails open (logged at error by BillingLock): a broken payment-standing
+     * check must not take every community's podcasts down.
+     */
+    private function pausedCommunityResponse(int $tenantId): ?JsonResponse
+    {
+        if (!BillingLock::isLockedFailOpen($tenantId, 'PodcastController')) {
+            return null;
+        }
+
+        return $this->respondWithError(CheckBillingLock::CODE, __('api.community_paused'), null, 503)
+            ->header('Retry-After', '86400');
     }
 
     private function podcastValidationError(\InvalidArgumentException $e): JsonResponse
