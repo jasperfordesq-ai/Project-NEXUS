@@ -2,11 +2,11 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2886,
-  "api_route_rows": 2851,
-  "distinct_api_paths": 2380,
+  "total_registered_routes": 2888,
+  "api_route_rows": 2853,
+  "distinct_api_paths": 2382,
   "route_source_fingerprint": {
-    "digest": "b75c252e19b2483850feeba363eacbf1c730656a320c57397d05b014a6add675",
+    "digest": "1af0ce9b567df70a80a323f31781f323dcbf8d0b52c8791427548eb8b24945be",
     "files": [
       {
         "file": "routes/api-marketplace-admin.php",
@@ -18,7 +18,7 @@
       },
       {
         "file": "routes/api.php",
-        "sha256": "2d321722baf77aad99b8e18707c2e1925b1e26d23c95f163624c3494b32d8c5c"
+        "sha256": "274db76c4cdcee38d74a0067b7d66ea917e6079354914d9b8c65d53d867af03c"
       },
       {
         "file": "routes/channels.php",
@@ -2367,6 +2367,12 @@
     ],
     "/api/v2/admin/matching/stats": [
       "GET"
+    ],
+    "/api/v2/admin/matching/unmet-needs": [
+      "GET"
+    ],
+    "/api/v2/admin/matching/unmet-needs/summary": [
+      "POST"
     ],
     "/api/v2/admin/member-premium/connect/dashboard-link": [
       "POST"
