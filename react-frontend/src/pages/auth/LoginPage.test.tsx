@@ -63,6 +63,8 @@ let conditionalAutofillEnabled = true;
 let passkeyAuthenticationEnabled = true;
 let tenantContextTenant: { id: number; name: string; slug: string; tagline: null } | null = { id: 2, name: 'Test Tenant', slug: 'test', tagline: null };
 let tenantContextSlug: string | null = 'test';
+// Which pages the community has switched off. Anything not listed is on.
+let modulesOff: string[] = [];
 
 vi.mock('@/contexts', () => ({
   useAuth: () => ({ ...authDefaults, ...authOverrides }),
@@ -74,7 +76,7 @@ vi.mock('@/contexts', () => ({
     authenticationConfig: { 'passkeys.conditional_autofill': conditionalAutofillEnabled },
     isLoading: false,
     hasFeature: vi.fn((feature: string) => feature !== 'biometric_login' || passkeyAuthenticationEnabled),
-    hasModule: vi.fn(() => true),
+    hasModule: vi.fn((module: string) => !modulesOff.includes(module)),
   }),
   useToast: () => mockToast,
 
@@ -102,7 +104,7 @@ vi.mock('@/contexts/TenantContext', () => ({
     authenticationConfig: { 'passkeys.conditional_autofill': conditionalAutofillEnabled },
     isLoading: false,
     hasFeature: vi.fn((feature: string) => feature !== 'biometric_login' || passkeyAuthenticationEnabled),
-    hasModule: vi.fn(() => true),
+    hasModule: vi.fn((module: string) => !modulesOff.includes(module)),
   }),
 }));
 
@@ -202,6 +204,7 @@ describe('LoginPage — Passkey/WebAuthn functionality', () => {
     passkeyAuthenticationEnabled = true;
     tenantContextTenant = { id: 2, name: 'Test Tenant', slug: 'test', tagline: null };
     tenantContextSlug = 'test';
+    modulesOff = [];
     vi.mocked(tokenManager.getSessionGeneration).mockReturnValue('test-session');
     vi.mocked(tokenManager.runIfSessionCurrent).mockImplementation(async (_expected, commit) => commit());
     vi.mocked(api.get).mockResolvedValue({ success: true, data: [] });
@@ -563,7 +566,28 @@ describe('LoginPage — Passkey/WebAuthn functionality', () => {
   });
 
   // ─── 8. Successful passkey login navigates to dashboard ────────────────────
+  // Owner, 20 Nov 2026: a member with nowhere else to go lands on the dashboard.
   it('navigates to dashboard on successful passkey login', async () => {
+    mockLoginWithBiometric.mockResolvedValue({ success: true });
+    const user = userEvent.setup();
+
+    render(<LoginPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Sign in with a passkey')).toBeDefined();
+    });
+
+    await user.click(screen.getByText('Sign in with a passkey'));
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/test/dashboard', { replace: true });
+    });
+  });
+
+  // The feed was the landing page from 5 Apr 2026 because a community can
+  // switch its dashboard off. That community must still land somewhere real.
+  it('navigates to the feed when the community has switched its dashboard off', async () => {
+    modulesOff = ['dashboard'];
     mockLoginWithBiometric.mockResolvedValue({ success: true });
     const user = userEvent.setup();
 
@@ -578,6 +602,7 @@ describe('LoginPage — Passkey/WebAuthn functionality', () => {
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('/test/feed', { replace: true });
     });
+    expect(mockNavigate).not.toHaveBeenCalledWith('/test/dashboard', expect.anything());
   });
 
   // ─── Email links survive sign-in (lib/auth-return.ts) ─────────────────────
@@ -596,13 +621,13 @@ describe('LoginPage — Passkey/WebAuthn functionality', () => {
       await user.click(screen.getByText('Sign in with a passkey'));
     }
 
-    it('follows ?next= from an email link instead of the feed', async () => {
+    it('follows ?next= from an email link instead of the dashboard', async () => {
       mockLocation.search = '?next=%2Ftest%2Fexchanges%2F42%3Ftab%3Dchat';
       await signInWithPasskey();
       await waitFor(() => {
         expect(mockNavigate).toHaveBeenCalledWith('/test/exchanges/42?tab=chat', { replace: true });
       });
-      // Used, then forgotten, so a later ordinary sign-in goes to the feed.
+      // Used, then forgotten, so a later ordinary sign-in goes to the dashboard.
       expect(sessionStorage.getItem('nexus_auth_return')).toBeNull();
     });
 
@@ -622,11 +647,11 @@ describe('LoginPage — Passkey/WebAuthn functionality', () => {
       });
     });
 
-    it('refuses an off-site ?next= and goes to the feed', async () => {
+    it('refuses an off-site ?next= and goes to the dashboard', async () => {
       mockLocation.search = '?next=https%3A%2F%2Fevil.test%2Fphish';
       await signInWithPasskey();
       await waitFor(() => {
-        expect(mockNavigate).toHaveBeenCalledWith('/test/feed', { replace: true });
+        expect(mockNavigate).toHaveBeenCalledWith('/test/dashboard', { replace: true });
       });
       expect(mockNavigate).not.toHaveBeenCalledWith(expect.stringContaining('evil'), expect.anything());
     });

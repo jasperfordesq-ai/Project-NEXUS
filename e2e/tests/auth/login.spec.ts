@@ -116,7 +116,7 @@ test.describe('Authentication - Login', () => {
 
       await loginPage.login(email!, password!);
 
-      // The app redirects to the post-login landing (default /feed) and persists a JWT.
+      // The app redirects to the post-login landing (default /dashboard; /feed where the dashboard is off) and persists a JWT.
       expect(page.url()).toMatch(/\/(dashboard|home|feed)(\/|$|\?)/);
       expect(page.url()).not.toContain('/login');
       expect(await loginPage.isLoggedIn()).toBeTruthy();

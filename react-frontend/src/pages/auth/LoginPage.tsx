@@ -89,7 +89,7 @@ export function LoginPage() {
     twoFactorTrustDeviceAllowed,
     twoFactorTrustedDeviceDays,
   } = useAuth();
-  const { tenant, branding, tenantSlug, tenantPath, authenticationConfig, hasFeature, isLoading: tenantLoading } = useTenant();
+  const { tenant, branding, tenantSlug, tenantPath, authenticationConfig, hasFeature, hasModule, isLoading: tenantLoading } = useTenant();
   const toast = useToast();
   const [searchParams] = useSearchParams();
 
@@ -152,7 +152,14 @@ export function LoginPage() {
   // destination arrives in router state, in ?next= (email links, session
   // expiry), or from storage when Google / SSO / two-step setup sent the member
   // back here — see lib/auth-return.ts.
-  const defaultDestination = tenantPath('/feed');
+  //
+  // With nowhere else to go, a member lands on their dashboard (owner,
+  // 20 Nov 2026) — the same place Google / SSO sign-in, registration and
+  // onboarding already finish. It was the feed from 5 Apr 2026 because a
+  // community can switch the dashboard off; that case alone still gets the feed.
+  const defaultDestination = tenantPath(
+    !hasModule('dashboard') && hasModule('feed') ? '/feed' : '/dashboard',
+  );
   const from = resolveAuthReturn(location.state, location.search, defaultDestination);
   const explicitDestination = explicitAuthReturn(location.state, location.search);
 
