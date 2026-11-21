@@ -486,4 +486,20 @@ final class BranchPlansEndpointsTest extends TestCase
         $this->assertSame($this->sibling, $response->json('data.hub_id'));
         $this->assertSame(0, $response->json('data.hubs.0.children_paying'));
     }
+
+    public function test_a_platform_account_based_in_a_leaf_community_lands_on_the_first_hub_in_the_picker(): void
+    {
+        // The grandchild has no children and may not have any, so it is not
+        // a hub: the page opens on the first hub the picker lists, never on
+        // a community the picker does not offer.
+        $this->signInTo($this->grandchild, ['role' => 'admin', 'is_super_admin' => true]);
+
+        $response = $this->apiGet('/v2/admin/super/branch-plans');
+        $response->assertStatus(200);
+
+        $hubIds = array_column($response->json('data.hubs'), 'id');
+        $this->assertNotContains($this->grandchild, $hubIds, 'precondition: the leaf is not a hub');
+        $this->assertNotSame([], $hubIds);
+        $this->assertSame($hubIds[0], $response->json('data.hub_id'));
+    }
 }

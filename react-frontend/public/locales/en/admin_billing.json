@@ -160,12 +160,12 @@
     "col_current_plan": "Current Plan",
     "col_effective_price": "Effective Price",
     "col_status": "Status",
-    "col_tenant": "Tenant",
+    "col_tenant": "Community",
     "col_users": "Users",
     "contact_support": "Contact Support",
-    "control_desc": "Control.",
-    "control_title": "Control",
-    "custom_badge": "Custom Badge",
+    "control_desc": "Every community’s plan, price and payment standing, and what happens when one goes over its member number.",
+    "control_title": "Billing control",
+    "custom_badge": "Special price",
     "custom_price_monthly": "Custom Price Monthly",
     "custom_price_yearly": "Custom Price Yearly",
     "discount_pct": "Discount Pct",
@@ -246,13 +246,15 @@
     "done_restored": "Community restored",
     "done_exempted": "Community exempted",
     "done_exemption_removed": "Exemption removed",
-    "standing_failed": "That could not be done. Nothing was changed."
+    "standing_failed": "That could not be done. Nothing was changed.",
+    "table_scrolls": "This table is wider than the screen: scroll sideways inside it to see every column.",
+    "more_actions_for": "More actions for {{name}}"
   },
   "paused_banner": {
     "inherited": "This community is paused because the community above it is paused. Paused since {{date}}.",
-    "limit_approaching": "This community has {{used}} active members, {{percent}}% of its package's limit of {{max}}.",
-    "limit_over": "This community has {{used}} active members, more than its package's limit of {{max}}. A bigger package may be needed.",
-    "limit_reached": "This community has reached its package's limit of {{max}} active members.",
+    "limit_approaching": "This community has {{used}} active members, {{percent}}% of its plan's limit of {{max}}.",
+    "limit_over": "This community has {{used}} active members, more than its plan's limit of {{max}}. A bigger plan may be needed.",
+    "limit_reached": "This community has reached its plan's limit of {{max}} active members.",
     "overdue": "Payment for this community is {{days}} days overdue. Please bring it up to date so that the community is not paused.",
     "own_parent": "This community is paused. Members cannot use it until payment is brought up to date with {{payee}}. Paused since {{date}}.",
     "own_platform": "This community is paused. Members cannot use it until payment is brought up to date with the platform team. Paused since {{date}}.",
@@ -280,7 +282,7 @@
     "clock_member_limit": "Member limit",
     "clock_payment": "Payment",
     "final_warning_days_late": "Final warning: days late",
-    "limit_warning_percent": "Member-limit warning at this percentage of the package",
+    "limit_warning_percent": "Member-limit warning at this percentage of the plan",
     "load_failed": "The settings could not be loaded.",
     "off_note": "Switched off. Nothing is sent and no community is paused. The list below shows what would happen.",
     "on_note": "Switched on. Every morning, reminders and warnings are emailed, and communities are paused when the rules below say so.",
@@ -296,7 +298,12 @@
     "saved": "Settings saved",
     "suspend_days_late": "Pause: days late",
     "switch_label": "Run the automatic checks every morning",
-    "title": "Automatic checks"
+    "title": "Automatic checks",
+    "action_member_limit_move_up": "Would be moved up to {{plan}}",
+    "action_member_limit_needs_decision": "Needs a decision: {{reason}}",
+    "decision_no_plan_fits": "no plan offered to it is big enough",
+    "decision_custom_price": "it has a specially agreed price",
+    "decision_card_subscription": "it pays by card, so the platform team moves it by hand"
   },
   "control": {
     "amount_invalid": "Enter the amount as a plain number with at most two decimal places.",
@@ -383,6 +390,8 @@
     "summary_upgrade_one": "Move up after {{count}} day",
     "summary_upgrade_other": "Move up after {{count}} days",
     "upgrade_by_hand": "Move up (platform team does this one by hand)",
-    "what_happens": "What happens"
+    "what_happens": "What happens",
+    "move_on": "Move up on {{date}}",
+    "follow_default_card": "Follow the default (currently: Warn only — a move is done by the platform team)"
   }
 }

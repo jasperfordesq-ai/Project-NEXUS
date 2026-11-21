@@ -1022,7 +1022,7 @@
     "active_member_note": "Een actief lid is iemand die in de afgelopen {{days}} dagen heeft ingelogd.",
     "limit_over_warn_only": "Voor de leden is er niets veranderd. Zet haar over naar een pakket dat past.",
     "limit_over_will_pause": "Als zij op <strong>{{date}}</strong> nog boven de limiet zit, wordt zij automatisch gepauzeerd tot zij weer onder de limiet zit of naar een groter pakket overstapt.",
-    "limit_over_joining_closed": "De leden kunnen haar gewoon blijven gebruiken, maar nieuwe leden kunnen pas lid worden als zij weer onder de limiet zit of naar een groter pakket overstapt.",
+    "limit_joining_closed_now": "Vanaf nu kunnen nieuwe leden pas lid worden als zij weer onder de limiet zit of naar een groter pakket overstapt. De leden kunnen haar gewoon blijven gebruiken.",
     "limit_over_will_move_up": "Als zij op <strong>{{date}}</strong> nog boven de limiet zit, wordt zij automatisch overgezet naar het pakket <strong>{{plan}}</strong>, het kleinste dat past.",
     "limit_over_needs_decision": "Zij kan niet automatisch naar een groter pakket worden overgezet. Wie haar facturering beheert, moet een passend pakket kiezen.",
     "limit_over_will_move_up_priced": "Als zij op <strong>{{date}}</strong> nog boven de limiet zit, wordt zij automatisch overgezet naar het pakket <strong>{{plan}}</strong> ({{price}}), het kleinste dat past.",

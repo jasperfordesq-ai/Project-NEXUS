@@ -1022,7 +1022,7 @@
     "active_member_note": "アクティブメンバーとは、過去{{days}}日以内にサインインした人のことです。",
     "limit_over_warn_only": "メンバーへの影響はまだありません。合ったパッケージへの変更をお願いします。",
     "limit_over_will_pause": "<strong>{{date}}</strong>の時点でまだ上限を超えている場合は、上限を下回るか、より大きなパッケージに変更するまで自動的に一時停止されます。",
-    "limit_over_joining_closed": "メンバーはこれまでどおり利用できますが、上限を下回るか、より大きなパッケージに変更するまで、新しいメンバーは参加できません。",
+    "limit_joining_closed_now": "今後は、上限を下回るか、より大きなパッケージに変更するまで、新しいメンバーは参加できません。メンバーはこれまでどおり利用できます。",
     "limit_over_will_move_up": "<strong>{{date}}</strong>の時点でまだ上限を超えている場合は、条件に合う最小のパッケージ「<strong>{{plan}}</strong>」に自動的に変更されます。",
     "limit_over_needs_decision": "より大きなパッケージへ自動的に変更することはできません。請求を担当する方が、合ったパッケージを選んでください。",
     "limit_over_will_move_up_priced": "<strong>{{date}}</strong>の時点でまだ上限を超えている場合は、条件に合う最小のパッケージ「<strong>{{plan}}</strong>」（{{price}}）に自動的に変更されます。",

@@ -147,12 +147,12 @@
     "col_current_plan": "Piano attuale",
     "col_effective_price": "Prezzo effettivo",
     "col_status": "Stato",
-    "col_tenant": "Inquilino",
+    "col_tenant": "Comunità",
     "col_users": "Utenti",
     "contact_support": "Contatta l'assistenza",
-    "control_desc": "Controllo.",
-    "control_title": "Controllo",
-    "custom_badge": "Distintivo personalizzato",
+    "control_desc": "Il piano, il prezzo e la situazione dei pagamenti di ogni comunità, e cosa succede quando una supera il suo numero di membri.",
+    "control_title": "Controllo della fatturazione",
+    "custom_badge": "Prezzo speciale",
     "custom_price_monthly": "Prezzo personalizzato mensile",
     "custom_price_yearly": "Prezzo personalizzato annuale",
     "discount_pct": "Sconto percentuale",
@@ -247,13 +247,15 @@
     "done_restored": "Comunità ripristinata",
     "done_exempted": "Comunità esentata",
     "done_exemption_removed": "Esenzione rimossa",
-    "standing_failed": "Non è stato possibile. Non è stato modificato nulla."
+    "standing_failed": "Non è stato possibile. Non è stato modificato nulla.",
+    "table_scrolls": "Questa tabella è più larga dello schermo: scorrila lateralmente per vedere tutte le colonne.",
+    "more_actions_for": "Altre azioni per {{name}}"
   },
   "paused_banner": {
     "inherited": "Questa comunità è in pausa perché la comunità da cui dipende è in pausa. In pausa dal {{date}}.",
-    "limit_approaching": "Questa comunità ha {{used}} membri attivi, il {{percent}}% del limite del suo pacchetto ({{max}}).",
-    "limit_over": "Questa comunità ha {{used}} membri attivi, più del limite del suo pacchetto ({{max}}). Potrebbe servire un pacchetto più grande.",
-    "limit_reached": "Questa comunità ha raggiunto il limite del suo pacchetto: {{max}} membri attivi.",
+    "limit_approaching": "Questa comunità ha {{used}} membri attivi, il {{percent}}% del limite del suo piano ({{max}}).",
+    "limit_over": "Questa comunità ha {{used}} membri attivi, più del limite del suo piano ({{max}}). Potrebbe servire un piano più grande.",
+    "limit_reached": "Questa comunità ha raggiunto il limite del suo piano: {{max}} membri attivi.",
     "overdue": "Il pagamento di questa comunità è in ritardo di {{days}} giorni. Mettilo in regola perché la comunità non venga messa in pausa.",
     "own_parent": "Questa comunità è in pausa. I membri non potranno usarla finché il pagamento a {{payee}} non sarà in regola. In pausa dal {{date}}.",
     "own_platform": "Questa comunità è in pausa. I membri non potranno usarla finché il pagamento al team della piattaforma non sarà in regola. In pausa dal {{date}}.",
@@ -281,7 +283,7 @@
     "clock_member_limit": "Limite di membri",
     "clock_payment": "Pagamento",
     "final_warning_days_late": "Ultimo avviso: giorni di ritardo",
-    "limit_warning_percent": "Avviso sul limite di membri a questa percentuale del pacchetto",
+    "limit_warning_percent": "Avviso sul limite di membri a questa percentuale del piano",
     "load_failed": "Non è stato possibile caricare le impostazioni.",
     "off_note": "Disattivati. Non viene inviato nulla e nessuna comunità viene messa in pausa. L’elenco qui sotto mostra cosa succederebbe.",
     "on_note": "Attivati. Ogni mattina vengono inviati via e-mail promemoria e avvisi, e le comunità vengono messe in pausa quando lo prevedono le regole qui sotto.",
@@ -297,7 +299,12 @@
     "saved": "Impostazioni salvate",
     "suspend_days_late": "Pausa: giorni di ritardo",
     "switch_label": "Esegui i controlli automatici ogni mattina",
-    "title": "Controlli automatici"
+    "title": "Controlli automatici",
+    "action_member_limit_move_up": "Passerebbe al piano {{plan}}",
+    "action_member_limit_needs_decision": "Serve una decisione: {{reason}}",
+    "decision_no_plan_fits": "nessun piano offerto è abbastanza grande",
+    "decision_custom_price": "ha un prezzo concordato appositamente",
+    "decision_card_subscription": "paga con carta, quindi il team della piattaforma la sposta a mano"
   },
   "control": {
     "amount_invalid": "Inserisci l’importo come numero semplice con al massimo due decimali.",
@@ -387,6 +394,8 @@
     "summary_upgrade_one": "Piano superiore dopo {{count}} giorno",
     "summary_upgrade_other": "Piano superiore dopo {{count}} giorni",
     "upgrade_by_hand": "Piano superiore (lo fa a mano il team della piattaforma)",
-    "what_happens": "Cosa succede"
+    "what_happens": "Cosa succede",
+    "move_on": "Passaggio al piano superiore il {{date}}",
+    "follow_default_card": "Segui il valore predefinito (attuale: Solo avvisare — il cambio di piano lo fa il team della piattaforma)"
   }
 }

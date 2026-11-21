@@ -756,7 +756,7 @@ admin** (`is_super_admin`: platform-wide) → **god** (`is_god` **and**
   `GodPlatformRoute` and `PlatformOnlyRoute` **no longer exist** — do not look
   for them or restore them; a platform-team-only page goes in the panel.
   🔴 **The super admin panel has no platform tier in the browser any more**
-  (owner, 15 Nov 2026: "Yes, move it"): it shows the same seven branch pages (Branch payments was added 20 Nov 2026) to a
+  (owner, 15 Nov 2026: "Yes, move it"): it shows the same eight branch pages (Branch payments was added 20 Nov 2026, Branch plans 21 Nov 2026) to a
   global super admin and to a tenant super admin, and its platform-wide
   screens (federation controls, platform billing and revenue, provisioning
   queue, pilot inquiries, platform capabilities, translation key, regional

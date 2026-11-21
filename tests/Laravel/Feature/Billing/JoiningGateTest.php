@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Tests\Laravel\Feature\Billing;
 
+use App\Services\BillingAutomationService;
 use App\Services\BillingStandingService;
 use App\Services\TenantBillingService;
 use App\Support\Billing\BillingLock;
@@ -28,6 +29,7 @@ use Tests\Laravel\TestCase;
 final class JoiningGateTest extends TestCase
 {
     use DatabaseTransactions;
+    use TellsCommunityOfMemberLimit;
 
     private int $hub;
     private int $child;
@@ -214,6 +216,8 @@ final class JoiningGateTest extends TestCase
         $this->assertNull(JoiningGate::closedBy($this->child), 'a rule change is seen at once');
 
         BillingStandingService::setOverLimitRule($this->child, 'block_joining', null, $actor);
+        $this->assertNull(JoiningGate::closedBy($this->child), 'a new rule is not in force for the door until the community is told');
+        $this->tellCommunityOfMemberLimit($this->child);
         $this->assertNotNull(JoiningGate::closedBy($this->child));
 
         BillingStandingService::setExempt($this->child, true, $actor, 'Pilot');
@@ -246,7 +250,7 @@ final class JoiningGateTest extends TestCase
         $this->assignPlan($this->child, $this->makePlan(3));
         $this->standing($this->hub, ['children_over_limit_action' => 'block_joining']);
         $this->addActiveMembers($this->child, 3);
-        JoiningGate::flush();
+        $this->tellCommunityOfMemberLimit($this->child);
 
         $this->assertSame($this->child, JoiningGate::closedBy($this->child)['tenant_id'] ?? null);
     }
@@ -301,6 +305,78 @@ final class JoiningGateTest extends TestCase
         $this->assertNotNull(JoiningGate::closedBy($this->sibling, $this->makeCommunity('Gate outsider', 1, '/1/')));
     }
 
+    // ------------------------------------------------------------- told first
+
+    public function test_the_door_is_not_shut_before_the_community_is_told(): void
+    {
+        $this->assignPlan($this->child, $this->makePlan(3));
+        $this->standing($this->child, ['over_limit_action' => 'block_joining', 'exempt' => 0]);
+        $this->addActiveMembers($this->child, 3);
+
+        $this->assertNull(JoiningGate::closedBy($this->child), 'at its number but never told: open');
+        $this->assertNull(JoiningGate::roomLeft($this->child), 'no cap applies before the community is told');
+
+        $this->tellCommunityOfMemberLimit($this->child, 'approaching');
+        $this->assertNull(JoiningGate::closedBy($this->child), 'told only that it is close: open');
+
+        $this->tellCommunityOfMemberLimit($this->child, 'reached');
+        $this->standing($this->child, ['limit_notice_at' => null]);
+        JoiningGate::flush();
+        $this->assertNull(JoiningGate::closedBy($this->child), 'a stage with no notice sent: open');
+
+        $this->tellCommunityOfMemberLimit($this->child, 'reached');
+        $this->assertNotNull(JoiningGate::closedBy($this->child), 'told it is at its number: shut');
+
+        $this->tellCommunityOfMemberLimit($this->child, 'over');
+        $this->assertNotNull(JoiningGate::closedBy($this->child), 'told it is over: shut');
+    }
+
+    public function test_a_change_of_terms_opens_the_door_until_the_next_notice(): void
+    {
+        // The hub lowers the member number of the plan its child is on, under
+        // the child's members. The child has not been told under the new
+        // terms, so its door stays open until the next daily run tells it.
+        $this->standInAcceptingMailProvider();
+        $plan = $this->makePlan(3);
+        $this->assignPlan($this->child, $plan);
+        $this->standing($this->child, ['over_limit_action' => 'block_joining', 'exempt' => 0]);
+        $this->addActiveMembers($this->child, 3);
+        $this->tellCommunityOfMemberLimit($this->child);
+        $this->assertNotNull(JoiningGate::closedBy($this->child), 'precondition: told and shut');
+
+        DB::table('hub_plan_terms')->insert([
+            'hub_tenant_id' => $this->hub, 'pay_plan_id' => $plan, 'max_users' => 2,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+        PlanTerms::flush();
+        JoiningGate::flush();
+        $this->assertSame(2, BillingAutomationService::watchedLimit($this->child)['max_users'] ?? null, 'precondition: the number the hub set applies');
+
+        $this->assertNull(JoiningGate::closedBy($this->child), 'new terms, not yet told: open');
+
+        BillingAutomationService::run();
+        JoiningGate::flush();
+
+        $this->assertSame(['tenant_id' => $this->child, 'active' => 3, 'max' => 2], JoiningGate::closedBy($this->child), 'told under the new terms: shut');
+    }
+
+    public function test_switching_the_checks_on_shuts_no_door_before_the_first_run(): void
+    {
+        $this->standInAcceptingMailProvider();
+        BillingSettings::set('automation_enabled', false, null);
+        $this->cap($this->child, 3, 'block_joining');
+        $this->addActiveMembers($this->child, 3);
+
+        BillingSettings::setMany(['automation_enabled' => true], null);
+        JoiningGate::flush();
+        $this->assertNull(JoiningGate::closedBy($this->child), 'switched on, first run not yet made: open');
+
+        BillingAutomationService::run();
+        JoiningGate::flush();
+
+        $this->assertNotNull(JoiningGate::closedBy($this->child), 'the first run told it: shut');
+    }
+
     // ------------------------------------------------------------------ helpers
 
     /** Put a community on a standard plan of $max members with $rule as its own rule. */
@@ -308,7 +384,8 @@ final class JoiningGateTest extends TestCase
     {
         $this->assignPlan($tenantId, $this->makePlan($max));
         $this->standing($tenantId, ['over_limit_action' => $rule, 'exempt' => 0]);
-        JoiningGate::flush();
+        // As a real run leaves it once the community has been told.
+        $this->tellCommunityOfMemberLimit($tenantId);
     }
 
     private function makeCommunity(string $name, int $parentId, string $parentPath, bool $hub = false): int

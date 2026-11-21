@@ -362,7 +362,7 @@
     "plan_name_placeholder": "ad esempio, Comunità",
     "plan_description_placeholder": "Descrivi a chi è rivolto questo piano e cosa lo rende adatto a loro.",
     "annual_price_description": "In genere circa il 17% di sconto sulla tariffa mensile",
-    "tier_level_description": "0 = gratuito, 1 = base, 2 = partner, 3 = rete",
+    "tier_level_description": "Un numero intero usato solo per ordinare i piani, dal più piccolo al più grande.",
     "leave_blank_unlimited": "Lascia vuoto per illimitato",
     "max_users_description": "Membri attivi ammessi su questo piano",
     "selling_points": "Punti di vendita",

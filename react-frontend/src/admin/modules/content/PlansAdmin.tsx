@@ -302,11 +302,15 @@ export function PlansAdmin() {
           } : {})}
         />
       ) : (
+        // Wider than a laptop screen: the buttons stay pinned in view while
+        // the rest scrolls, and a phone gets one card per plan.
         <DataTable
           columns={columns}
           data={data}
           searchPlaceholder={t('content.search_plans')}
           onRefresh={fetchData}
+          stickyActions
+          mobileCards
         />
       )}
 

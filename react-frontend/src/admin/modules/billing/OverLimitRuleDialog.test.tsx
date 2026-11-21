@@ -117,7 +117,8 @@ describe('OverLimitRuleDialog', () => {
     render(<OverLimitRuleDialog target={target()} onClose={vi.fn()} onSave={vi.fn()} />);
 
     expect(optionLabels()).toEqual([
-      'Follow the default (currently: Pause the community)',
+      // The default here is the platform's, and the dialog says whose it is.
+      'Follow the platform default (currently: Pause the community)',
       'Warn only',
       'Stop new members joining',
       'Pause the community',
@@ -198,5 +199,37 @@ describe('OverLimitRuleDialog', () => {
     render(<OverLimitRuleDialog target={null} onClose={vi.fn()} onSave={vi.fn()} />);
 
     expect(screen.queryByLabelText('What happens')).not.toBeInTheDocument();
+  });
+
+  it('names a default of "move up" as warn only for a card payer, as the table does', () => {
+    render(<OverLimitRuleDialog
+      target={target({ upgradeAllowed: false }, { action: 'upgrade', effective_action: 'none', action_source: 'hub' })}
+      onClose={vi.fn()}
+      onSave={vi.fn()}
+    />);
+
+    expect(optionLabels()[0]).toBe('Follow the default (currently: Warn only — a move is done by the platform team)');
+    expect(optionLabels()).not.toContain('Move up to the next plan');
+    // The explanation under the select is warn only's, not a promise of a move.
+    expect(screen.getByText('The community’s admins are warned by email. Nothing else happens.')).toBeInTheDocument();
+  });
+
+  it('says when the automatic checks are off, and nothing while they are on', () => {
+    const note = 'The platform’s automatic checks are switched off, so nothing here acts until the platform team switches them on. You can still set the rule now.';
+    const { unmount } = render(<OverLimitRuleDialog target={target({}, { automation_enabled: false })} onClose={vi.fn()} onSave={vi.fn()} />);
+    expect(screen.getByText(note)).toBeInTheDocument();
+    unmount();
+
+    render(<OverLimitRuleDialog target={target({}, { automation_enabled: true })} onClose={vi.fn()} onSave={vi.fn()} />);
+    expect(screen.queryByText(note)).not.toBeInTheDocument();
+  });
+});
+
+describe('OverLimitSummary dates', () => {
+  it('names the day of a pending move up', () => {
+    render(<OverLimitSummary rule={makeState({ action: 'upgrade', effective_action: 'upgrade', acts_on: '2026-12-21' })} />);
+
+    expect(screen.getByText((text) => text.startsWith('Move up on '))).toBeInTheDocument();
+    expect(screen.queryByText((text) => text.startsWith('Pause on '))).not.toBeInTheDocument();
   });
 });

@@ -38,6 +38,9 @@ const SEGMENT_LABEL_KEYS: Record<string, string> = {
   kiss: 'breadcrumbs.kiss',
   'regional-analytics': 'breadcrumbs.regional_analytics',
   subscriptions: 'breadcrumbs.subscriptions',
+  // The page titles, so the trail names each page as its heading does.
+  'branch-payments': 'branch_payments.title',
+  'branch-plans': 'branch_plans.title',
 };
 
 export function SuperAdminBreadcrumbs() {

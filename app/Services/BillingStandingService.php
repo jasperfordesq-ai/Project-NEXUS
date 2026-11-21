@@ -557,11 +557,14 @@ final class BillingStandingService
         self::requireBillable($tenantId);
         self::requireValidRule($action, $graceDays);
 
-        if (OverLimitRule::refusalFor($tenantId, $action) !== null) {
+        $current = OverLimitRule::own($tenantId);
+
+        // Only SETTING "move up" on a card payer is refused. A value already
+        // stored (from before it paid by card) may be saved again, or its days
+        // changed; it is still followed as warn only.
+        if ($action !== $current['action'] && OverLimitRule::refusalFor($tenantId, $action) !== null) {
             throw new \DomainException('over_limit_rule_not_allowed');
         }
-
-        $current = OverLimitRule::own($tenantId);
         $next = ['action' => $action, 'grace_days' => $graceDays];
         if ($current === $next) {
             return;

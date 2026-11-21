@@ -177,7 +177,7 @@ final class BillingStandingNotifier
      */
     public static function limitReached(int $tenantId, array $facts): array
     {
-        return self::limitNotice($tenantId, $facts, 'limit_reached', true, self::ruleLine($facts), 'warning');
+        return self::limitNotice($tenantId, $facts, 'limit_reached', true, self::ruleLine($facts, true), 'warning');
     }
 
     /**
@@ -186,7 +186,8 @@ final class BillingStandingNotifier
      *
      * - `none`: nothing more — unless "move up" was chosen and it pays by
      *   card (`rule_action` `upgrade`), when a person must move it;
-     * - `block_joining`: new members cannot join until it is back under;
+     * - `block_joining`: from now on new members cannot join until it is
+     *   back under (the "reached" notice says the same);
      * - `pause`: paused on `pause_date` if still over;
      * - `upgrade`: moved to `move_plan` on `move_date` if still over, with
      *   its price (`move_price_monthly` / `move_price_yearly`, in
@@ -206,7 +207,7 @@ final class BillingStandingNotifier
 
         $closing = match ($rule) {
             'pause' => [self::KEY . 'limit_over_will_pause', ['date' => (string) $pauseDate]],
-            'block_joining' => [self::KEY . 'limit_over_joining_closed', []],
+            'block_joining' => [self::KEY . 'limit_joining_closed_now', []],
             'upgrade' => isset($facts['move_plan'], $facts['move_date'])
                 ? self::moveUpLine($facts)
                 : [self::KEY . 'limit_over_needs_decision', []],
@@ -387,12 +388,26 @@ final class BillingStandingNotifier
      * @param array<string, int|string|null> $facts
      * @return array{0:string, 1:array<string, string>}|null
      */
-    private static function ruleLine(array $facts): ?array
+    private static function ruleLine(array $facts, bool $atTheNumber = false): ?array
     {
         $days = (string) ($facts['grace_days'] ?? '');
 
+        // "Move up" promises an automatic move only when the check knows one
+        // will happen: not when no plan fits, the price was specially agreed
+        // (`move_decision`), or it pays by card (followed as warn only). The
+        // same condition the "over" notice uses.
+        $rule = $facts['rule'] ?? null;
+        $moveNeedsDecision = ($rule === 'upgrade' && isset($facts['move_decision']))
+            || ($rule !== 'upgrade' && ($facts['rule_action'] ?? null) === 'upgrade');
+        if ($moveNeedsDecision) {
+            return [self::KEY . 'limit_over_needs_decision', []];
+        }
+
         return match ($facts['rule'] ?? null) {
-            'block_joining' => [self::KEY . 'limit_rule_block_joining', []],
+            // At its number the door is shut from now on (JoiningGate).
+            'block_joining' => $atTheNumber
+                ? [self::KEY . 'limit_joining_closed_now', []]
+                : [self::KEY . 'limit_rule_block_joining', []],
             'pause' => [self::KEY . 'limit_rule_pause', ['days' => $days]],
             'upgrade' => [self::KEY . 'limit_rule_upgrade', ['days' => $days]],
             default => null,

@@ -147,12 +147,12 @@
     "col_current_plan": "Huidig abonnement",
     "col_effective_price": "Effectieve prijs",
     "col_status": "Status",
-    "col_tenant": "Huurder",
+    "col_tenant": "Community",
     "col_users": "Gebruikers",
     "contact_support": "Neem contact op met ondersteuning",
-    "control_desc": "Controle.",
-    "control_title": "Controle",
-    "custom_badge": "Aangepaste badge",
+    "control_desc": "Het plan, de prijs en de betaalstatus van elke community, en wat er gebeurt als een community haar ledenaantal overschrijdt.",
+    "control_title": "Factuurbeheer",
+    "custom_badge": "Speciale prijs",
     "custom_price_monthly": "Aangepaste prijs maandelijks",
     "custom_price_yearly": "Aangepaste prijs per jaar",
     "discount_pct": "Korting st",
@@ -246,13 +246,15 @@
     "done_restored": "Gemeenschap hersteld",
     "done_exempted": "Gemeenschap vrijgesteld",
     "done_exemption_removed": "Vrijstelling opgeheven",
-    "standing_failed": "Dat is niet gelukt. Er is niets gewijzigd."
+    "standing_failed": "Dat is niet gelukt. Er is niets gewijzigd.",
+    "table_scrolls": "Deze tabel is breder dan het scherm: scrol er zijwaarts in om alle kolommen te zien.",
+    "more_actions_for": "Meer acties voor {{name}}"
   },
   "paused_banner": {
     "inherited": "Deze gemeenschap is gepauzeerd omdat de bovenliggende gemeenschap is gepauzeerd. Gepauzeerd sinds {{date}}.",
-    "limit_approaching": "Deze community heeft {{used}} actieve leden, {{percent}}% van de limiet van haar pakket ({{max}}).",
-    "limit_over": "Deze community heeft {{used}} actieve leden, meer dan de limiet van haar pakket ({{max}}). Misschien is een groter pakket nodig.",
-    "limit_reached": "Deze community heeft de limiet van haar pakket bereikt: {{max}} actieve leden.",
+    "limit_approaching": "Deze community heeft {{used}} actieve leden, {{percent}}% van de limiet van haar plan ({{max}}).",
+    "limit_over": "Deze community heeft {{used}} actieve leden, meer dan de limiet van haar plan ({{max}}). Misschien is een groter plan nodig.",
+    "limit_reached": "Deze community heeft de limiet van haar plan bereikt: {{max}} actieve leden.",
     "overdue": "De betaling voor deze community is {{days}} dagen te laat. Breng haar bij, zodat de community niet wordt gepauzeerd.",
     "own_parent": "Deze gemeenschap is gepauzeerd. Leden kunnen haar pas weer gebruiken als de betaling aan {{payee}} is bijgewerkt. Gepauzeerd sinds {{date}}.",
     "own_platform": "Deze gemeenschap is gepauzeerd. Leden kunnen haar pas weer gebruiken als de betaling aan het platformteam is bijgewerkt. Gepauzeerd sinds {{date}}.",
@@ -280,7 +282,7 @@
     "clock_member_limit": "Ledenlimiet",
     "clock_payment": "Betaling",
     "final_warning_days_late": "Laatste waarschuwing: dagen te laat",
-    "limit_warning_percent": "Waarschuwing ledenlimiet bij dit percentage van het pakket",
+    "limit_warning_percent": "Waarschuwing ledenlimiet bij dit percentage van het plan",
     "load_failed": "De instellingen konden niet worden geladen.",
     "off_note": "Uitgeschakeld. Er wordt niets verstuurd en geen enkele community wordt gepauzeerd. De lijst hieronder laat zien wat er zou gebeuren.",
     "on_note": "Ingeschakeld. Elke ochtend worden herinneringen en waarschuwingen gemaild, en communities worden gepauzeerd wanneer de regels hieronder dat zeggen.",
@@ -296,7 +298,12 @@
     "saved": "Instellingen opgeslagen",
     "suspend_days_late": "Pauze: dagen te laat",
     "switch_label": "De automatische controles elke ochtend uitvoeren",
-    "title": "Automatische controles"
+    "title": "Automatische controles",
+    "action_member_limit_move_up": "Zou overstappen naar {{plan}}",
+    "action_member_limit_needs_decision": "Er is een beslissing nodig: {{reason}}",
+    "decision_no_plan_fits": "geen aangeboden plan is groot genoeg",
+    "decision_custom_price": "er geldt een speciaal afgesproken prijs",
+    "decision_card_subscription": "ze betaalt per kaart, dus het platformteam zet haar met de hand over"
   },
   "control": {
     "amount_invalid": "Voer het bedrag in als een gewoon getal met hoogstens twee decimalen.",
@@ -383,6 +390,8 @@
     "summary_upgrade_one": "Groter plan na {{count}} dag",
     "summary_upgrade_other": "Groter plan na {{count}} dagen",
     "upgrade_by_hand": "Groter plan (doet het platformteam met de hand)",
-    "what_happens": "Wat er gebeurt"
+    "what_happens": "Wat er gebeurt",
+    "move_on": "Overstap naar een groter plan op {{date}}",
+    "follow_default_card": "De standaard volgen (nu: Alleen waarschuwen — een overstap doet het platformteam)"
   }
 }

@@ -667,7 +667,7 @@
     "plan_name_placeholder": "par exemple, Communauté",
     "plan_description_placeholder": "Décrivez à qui s’adresse ce plan et en quoi il lui convient.",
     "annual_price_description": "Généralement environ 17 % de réduction sur le tarif mensuel",
-    "tier_level_description": "0 = gratuit, 1 = basique, 2 = partenaire, 3 = réseau",
+    "tier_level_description": "Un nombre entier qui sert uniquement à ordonner les formules, de la plus petite à la plus grande.",
     "leave_blank_unlimited": "Laisser vide pour illimité",
     "max_users_description": "Membres actifs autorisés sur ce plan",
     "selling_points": "Points de vente",

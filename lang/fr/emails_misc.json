@@ -1022,7 +1022,7 @@
     "active_member_note": "Un membre actif est une personne qui s’est connectée au cours des {{days}} derniers jours.",
     "limit_over_warn_only": "Rien n’a changé pour ses membres. Merci de passer à un forfait adapté.",
     "limit_over_will_pause": "Si elle dépasse encore la limite le <strong>{{date}}</strong>, elle sera mise en pause automatiquement jusqu’à ce qu’elle repasse sous la limite ou change pour un forfait plus grand.",
-    "limit_over_joining_closed": "Ses membres peuvent continuer à l’utiliser normalement, mais aucun nouveau membre ne peut la rejoindre tant qu’elle n’est pas repassée sous la limite ou passée à un forfait plus grand.",
+    "limit_joining_closed_now": "Dès maintenant, aucun nouveau membre ne peut la rejoindre tant qu’elle n’est pas repassée sous la limite ou passée à un forfait plus grand. Ses membres peuvent continuer à l’utiliser normalement.",
     "limit_over_will_move_up": "Si elle dépasse encore la limite le <strong>{{date}}</strong>, elle passera automatiquement au forfait <strong>{{plan}}</strong>, le plus petit qui convient.",
     "limit_over_needs_decision": "Elle ne peut pas passer automatiquement à un forfait plus grand. La personne qui s’occupe de sa facturation doit choisir un forfait adapté.",
     "limit_over_will_move_up_priced": "Si elle dépasse encore la limite le <strong>{{date}}</strong>, elle passera automatiquement au forfait <strong>{{plan}}</strong> ({{price}}), le plus petit qui convient.",

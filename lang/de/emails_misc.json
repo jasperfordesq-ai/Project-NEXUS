@@ -1022,7 +1022,7 @@
     "active_member_note": "Ein aktives Mitglied ist eine Person, die sich in den letzten {{days}} Tagen angemeldet hat.",
     "limit_over_warn_only": "Für die Mitglieder hat sich nichts geändert. Bitte wechseln Sie zu einem passenden Paket.",
     "limit_over_will_pause": "Liegt sie am <strong>{{date}}</strong> noch über dem Limit, wird sie automatisch pausiert, bis sie wieder unter dem Limit liegt oder zu einem größeren Paket wechselt.",
-    "limit_over_joining_closed": "Die Mitglieder können sie weiterhin wie gewohnt nutzen, aber neue Mitglieder können erst wieder beitreten, wenn sie unter dem Limit liegt oder zu einem größeren Paket wechselt.",
+    "limit_joining_closed_now": "Ab sofort können neue Mitglieder erst wieder beitreten, wenn sie unter dem Limit liegt oder zu einem größeren Paket wechselt. Die Mitglieder können sie weiterhin wie gewohnt nutzen.",
     "limit_over_will_move_up": "Liegt sie am <strong>{{date}}</strong> noch über dem Limit, wechselt sie automatisch zum Paket <strong>{{plan}}</strong>, dem kleinsten, das passt.",
     "limit_over_needs_decision": "Sie kann nicht automatisch zu einem größeren Paket wechseln. Wer sich um ihre Abrechnung kümmert, muss ein passendes Paket auswählen.",
     "limit_over_will_move_up_priced": "Liegt sie am <strong>{{date}}</strong> noch über dem Limit, wechselt sie automatisch zum Paket <strong>{{plan}}</strong> ({{price}}), dem kleinsten, das passt.",

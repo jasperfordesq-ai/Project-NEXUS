@@ -485,7 +485,7 @@
     "plan_name_placeholder": "np. Wspólnota",
     "plan_description_placeholder": "Opisz, dla kogo jest przeznaczony ten plan i dlaczego jest dla niego odpowiedni.",
     "annual_price_description": "Zwykle około 17% zniżki od stawki miesięcznej",
-    "tier_level_description": "0 = bezpłatny, 1 = podstawowy, 2 = partnerski, 3 = sieciowy",
+    "tier_level_description": "Liczba całkowita służąca tylko do ułożenia planów w kolejności, od najmniejszego.",
     "leave_blank_unlimited": "Pozostaw puste dla nieograniczonej liczby",
     "max_users_description": "Aktywni członkowie dozwoleni w tym planie",
     "selling_points": "Punkty sprzedaży",

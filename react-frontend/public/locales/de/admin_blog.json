@@ -478,7 +478,7 @@
     "plan_name_placeholder": "z. B. Gemeinschaft",
     "plan_description_placeholder": "Beschreiben Sie, für wen dieser Plan gedacht ist und warum er für sie geeignet ist.",
     "annual_price_description": "In der Regel etwa 17 % Ermäßigung auf die Monatsrate",
-    "tier_level_description": "0 = kostenlos, 1 = einfach, 2 = Partner, 3 = Netzwerk",
+    "tier_level_description": "Eine ganze Zahl, die nur die Reihenfolge der Pläne festlegt, der kleinste zuerst.",
     "leave_blank_unlimited": "Für unbegrenzte Zeit leer lassen",
     "max_users_description": "Aktive Mitglieder sind bei diesem Plan erlaubt",
     "selling_points": "Verkaufsargumente",

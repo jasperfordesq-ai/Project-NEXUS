@@ -14,14 +14,14 @@
  * under `over_limit_rule`.
  *
  * 🔴 The types are the server's shape (App\Support\Billing\OverLimitRule::for()
- * plus own_action / own_grace_days / acts_on). The screen decides nothing: a
+ * plus own_action / own_grace_days / acts_on / automation_enabled). The screen decides nothing: a
  * refusal (RULE_NOT_ALLOWED, EXEMPT …) is the server's, shown as sent by the
  * page that saves.
  */
 
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Select, SelectItem } from '@/components/ui';
+import { Alert, Button, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Select, SelectItem } from '@/components/ui';
 import { formatDate } from '@/lib/helpers';
 
 export type OverLimitAction = 'none' | 'block_joining' | 'pause' | 'upgrade';
@@ -43,8 +43,13 @@ export interface OverLimitState extends OverLimitRule {
   /** Null = the community follows a default. */
   own_action: string | null;
   own_grace_days: number | null;
-  /** YYYY-MM-DD it will be paused under its present state; null when nothing is scheduled. */
+  /**
+   * YYYY-MM-DD it will be paused, or moved up, under its present state (which
+   * one: `effective_action`); null when nothing is scheduled.
+   */
   acts_on: string | null;
+  /** False while the platform's automatic checks are off: nothing in the rule acts. */
+  automation_enabled?: boolean;
 }
 
 /** What a save sends: null for either means "follow the default". */
@@ -118,15 +123,18 @@ export function OverLimitSummary({ rule }: { rule: OverLimitState | null }) {
       ? t('over_limit_rule.source_platform')
       : null;
 
+  // The date of whatever comes: a pause, or a move up to a bigger plan.
+  const actsOn = rule.acts_on
+    ? t(rule.effective_action === 'upgrade' ? 'over_limit_rule.move_on' : 'over_limit_rule.pause_on', { date: formatDate(rule.acts_on) })
+    : null;
+
+  // Wraps between words only, never inside one; a modest minimum width so
+  // the cell neither starves its neighbours nor is starved by them.
   return (
-    <div data-testid="over-limit-summary" className="flex flex-col gap-0.5">
-      <span className="text-sm whitespace-nowrap">{main}</span>
+    <div data-testid="over-limit-summary" className="flex min-w-36 flex-col gap-0.5 break-normal">
+      <span className="text-sm">{main}</span>
       {source ? <span className="text-xs text-muted">{source}</span> : null}
-      {rule.acts_on ? (
-        <span className="text-xs text-warning whitespace-nowrap">
-          {t('over_limit_rule.pause_on', { date: formatDate(rule.acts_on) })}
-        </span>
-      ) : null}
+      {actsOn ? <span className="text-xs text-warning">{actsOn}</span> : null}
     </div>
   );
 }
@@ -249,6 +257,19 @@ export function OverLimitRuleDialog({ target, onClose, onSave }: OverLimitRuleDi
   const inheritedAction = following && isOverLimitAction(state.action) ? state.action : null;
   const defaultDays = state.own_grace_days === null ? state.grace_days : null;
 
+  // Name the default as the table does: a card payer is never moved
+  // automatically, so a default of "move up" is warn only for it; and say
+  // whose default it is when it is the platform's.
+  let followLabel = t('over_limit_rule.follow_default');
+  if (inheritedAction === 'upgrade' && !target.upgradeAllowed) {
+    followLabel = t('over_limit_rule.follow_default_card');
+  } else if (inheritedAction) {
+    followLabel = t(
+      state.action_source === 'platform' ? 'over_limit_rule.follow_platform_current' : 'over_limit_rule.follow_default_current',
+      { rule: overLimitLabel(t, inheritedAction) },
+    );
+  }
+
   const save = async () => {
     const parsed = parseGraceDays(days);
     if (parsed === 'invalid') {
@@ -265,22 +286,24 @@ export function OverLimitRuleDialog({ target, onClose, onSave }: OverLimitRuleDi
   return (
     <Modal isOpen onClose={onClose} size="md">
       <ModalContent>
-        <ModalHeader>
+        {/* Room on the right for the close button, so a long name never runs under it. */}
+        <ModalHeader className="pr-10">
           {t('over_limit_rule.open_dialog')}
           <span className="text-muted text-sm font-normal ml-2">— {target.name}</span>
         </ModalHeader>
         <ModalBody>
           <div className="flex flex-col gap-3">
+            {state.automation_enabled === false ? (
+              <Alert color="warning" title={t('over_limit_rule.automation_off_note')} />
+            ) : null}
             <p className="text-sm text-muted">{t('over_limit_rule.dialog_help')}</p>
             <OverLimitRuleFields
               action={action}
               onActionChange={setAction}
               days={days}
               onDaysChange={setDays}
-              followLabel={inheritedAction
-                ? t('over_limit_rule.follow_default_current', { rule: overLimitLabel(t, inheritedAction) })
-                : t('over_limit_rule.follow_default')}
-              inheritedAction={inheritedAction}
+              followLabel={followLabel}
+              inheritedAction={inheritedAction === 'upgrade' && !target.upgradeAllowed ? 'none' : inheritedAction}
               defaultDays={defaultDays}
               allowUpgrade={target.upgradeAllowed}
               daysError={daysError}

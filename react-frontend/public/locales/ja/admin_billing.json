@@ -147,12 +147,12 @@
     "col_current_plan": "現在の計画",
     "col_effective_price": "実効価格",
     "col_status": "ステータス",
-    "col_tenant": "テナント",
+    "col_tenant": "コミュニティ",
     "col_users": "ユーザー",
     "contact_support": "サポートに連絡する",
-    "control_desc": "コントロール。",
-    "control_title": "制御",
-    "custom_badge": "カスタムバッジ",
+    "control_desc": "各コミュニティのプラン、料金、支払い状況と、メンバー数の上限を超えたときに何が起こるか。",
+    "control_title": "請求管理",
+    "custom_badge": "特別料金",
     "custom_price_monthly": "月額カスタム価格",
     "custom_price_yearly": "年間カスタム価格",
     "discount_pct": "割引率",
@@ -246,13 +246,15 @@
     "done_restored": "コミュニティを再開しました",
     "done_exempted": "コミュニティを対象外にしました",
     "done_exemption_removed": "対象外を解除しました",
-    "standing_failed": "実行できませんでした。変更はありません。"
+    "standing_failed": "実行できませんでした。変更はありません。",
+    "table_scrolls": "この表は画面より横に広いため、表の中を横にスクロールするとすべての列を表示できます。",
+    "more_actions_for": "{{name}} のその他の操作"
   },
   "paused_banner": {
     "inherited": "上位のコミュニティが一時停止中のため、このコミュニティも一時停止中です。{{date}}から停止中です。",
-    "limit_approaching": "このコミュニティのアクティブメンバーは {{used}} 人で、パッケージの上限 {{max}} 人の {{percent}}% です。",
-    "limit_over": "このコミュニティのアクティブメンバーは {{used}} 人で、パッケージの上限 {{max}} 人を超えています。より大きなパッケージが必要かもしれません。",
-    "limit_reached": "このコミュニティはパッケージの上限であるアクティブメンバー {{max}} 人に達しました。",
+    "limit_approaching": "このコミュニティのアクティブメンバーは {{used}} 人で、プランの上限 {{max}} 人の {{percent}}% です。",
+    "limit_over": "このコミュニティのアクティブメンバーは {{used}} 人で、プランの上限 {{max}} 人を超えています。より大きなプランが必要かもしれません。",
+    "limit_reached": "このコミュニティはプランの上限であるアクティブメンバー {{max}} 人に達しました。",
     "overdue": "このコミュニティの支払いは {{days}} 日遅れています。コミュニティが一時停止されないよう、支払いを済ませてください。",
     "own_parent": "このコミュニティは一時停止中です。{{payee}}へのお支払いが最新の状態になるまで、メンバーは利用できません。{{date}}から停止中です。",
     "own_platform": "このコミュニティは一時停止中です。プラットフォームチームへのお支払いが最新の状態になるまで、メンバーは利用できません。{{date}}から停止中です。",
@@ -280,7 +282,7 @@
     "clock_member_limit": "メンバー上限",
     "clock_payment": "支払い",
     "final_warning_days_late": "最終警告：遅延日数",
-    "limit_warning_percent": "パッケージのこの割合でメンバー上限の警告を出す",
+    "limit_warning_percent": "プランのこの割合でメンバー上限の警告を出す",
     "load_failed": "設定を読み込めませんでした。",
     "off_note": "オフです。何も送信されず、どのコミュニティも一時停止されません。下の一覧は、実行された場合に何が起こるかを示しています。",
     "on_note": "オンです。毎朝、リマインダーと警告がメールで送信され、下のルールに当てはまるコミュニティは一時停止されます。",
@@ -296,7 +298,12 @@
     "saved": "設定を保存しました",
     "suspend_days_late": "一時停止：遅延日数",
     "switch_label": "毎朝、自動チェックを実行する",
-    "title": "自動チェック"
+    "title": "自動チェック",
+    "action_member_limit_move_up": "{{plan}} に移行されます",
+    "action_member_limit_needs_decision": "判断が必要です: {{reason}}",
+    "decision_no_plan_fits": "提供されているプランに十分な大きさのものがありません",
+    "decision_custom_price": "個別に合意した料金が設定されています",
+    "decision_card_subscription": "カード払いのため、プラットフォームチームが手作業で移行します"
   },
   "control": {
     "amount_invalid": "金額は小数点以下2桁までの数値で入力してください。",
@@ -383,6 +390,8 @@
     "summary_upgrade_one": "{{count}} 日後に上位プランへ",
     "summary_upgrade_other": "{{count}} 日後に上位プランへ",
     "upgrade_by_hand": "上位プランへ（プラットフォームチームが手作業で行います）",
-    "what_happens": "起きること"
+    "what_happens": "起きること",
+    "move_on": "{{date}} に上位プランへ移行",
+    "follow_default_card": "既定値に従う（現在: 警告のみ — プランの移行はプラットフォームチームが行います）"
   }
 }

@@ -147,12 +147,12 @@
     "col_current_plan": "Aktualny plan",
     "col_effective_price": "Efektywna cena",
     "col_status": "Stan",
-    "col_tenant": "Najemca",
+    "col_tenant": "Społeczność",
     "col_users": "Użytkownicy",
     "contact_support": "Skontaktuj się z pomocą techniczną",
-    "control_desc": "Kontrola.",
-    "control_title": "Kontrola",
-    "custom_badge": "Odznaka niestandardowa",
+    "control_desc": "Plan, cena i stan płatności każdej społeczności oraz to, co się dzieje, gdy któraś przekroczy swoją liczbę członków.",
+    "control_title": "Kontrola rozliczeń",
+    "custom_badge": "Cena specjalna",
     "custom_price_monthly": "Cena niestandardowa miesięcznie",
     "custom_price_yearly": "Cena niestandardowa rocznie",
     "discount_pct": "Rabat proc",
@@ -248,13 +248,15 @@
     "done_restored": "Społeczność przywrócona",
     "done_exempted": "Społeczność zwolniona",
     "done_exemption_removed": "Zwolnienie usunięte",
-    "standing_failed": "Nie udało się tego zrobić. Nic nie zostało zmienione."
+    "standing_failed": "Nie udało się tego zrobić. Nic nie zostało zmienione.",
+    "table_scrolls": "Ta tabela jest szersza niż ekran: przewiń ją w bok, aby zobaczyć wszystkie kolumny.",
+    "more_actions_for": "Więcej działań dla {{name}}"
   },
   "paused_banner": {
     "inherited": "Ta społeczność jest wstrzymana, ponieważ społeczność nadrzędna jest wstrzymana. Wstrzymana od {{date}}.",
-    "limit_approaching": "Ta społeczność ma {{used}} aktywnych członków, {{percent}}% limitu swojego pakietu ({{max}}).",
-    "limit_over": "Ta społeczność ma {{used}} aktywnych członków, więcej niż limit jej pakietu ({{max}}). Może być potrzebny większy pakiet.",
-    "limit_reached": "Ta społeczność osiągnęła limit swojego pakietu: {{max}} aktywnych członków.",
+    "limit_approaching": "Ta społeczność ma {{used}} aktywnych członków, {{percent}}% limitu swojego planu ({{max}}).",
+    "limit_over": "Ta społeczność ma {{used}} aktywnych członków, więcej niż limit jej planu ({{max}}). Może być potrzebny większy plan.",
+    "limit_reached": "Ta społeczność osiągnęła limit swojego planu: {{max}} aktywnych członków.",
     "overdue": "Płatność za tę społeczność jest opóźniona o {{days}} dni. Ureguluj ją, aby społeczność nie została wstrzymana.",
     "own_parent": "Ta społeczność jest wstrzymana. Członkowie nie mogą z niej korzystać, dopóki płatność na rzecz {{payee}} nie zostanie uregulowana. Wstrzymana od {{date}}.",
     "own_platform": "Ta społeczność jest wstrzymana. Członkowie nie mogą z niej korzystać, dopóki płatność na rzecz zespołu platformy nie zostanie uregulowana. Wstrzymana od {{date}}.",
@@ -282,7 +284,7 @@
     "clock_member_limit": "Limit członków",
     "clock_payment": "Płatność",
     "final_warning_days_late": "Ostatnie ostrzeżenie: dni opóźnienia",
-    "limit_warning_percent": "Ostrzeżenie o limicie członków przy tym procencie pakietu",
+    "limit_warning_percent": "Ostrzeżenie o limicie członków przy tym procencie planu",
     "load_failed": "Nie udało się wczytać ustawień.",
     "off_note": "Wyłączone. Nic nie jest wysyłane i żadna społeczność nie jest wstrzymywana. Lista poniżej pokazuje, co by się stało.",
     "on_note": "Włączone. Każdego ranka wysyłane są e-mailem przypomnienia i ostrzeżenia, a społeczności są wstrzymywane, gdy tak stanowią poniższe zasady.",
@@ -298,7 +300,12 @@
     "saved": "Ustawienia zapisane",
     "suspend_days_late": "Wstrzymanie: dni opóźnienia",
     "switch_label": "Uruchamiaj automatyczne kontrole każdego ranka",
-    "title": "Automatyczne kontrole"
+    "title": "Automatyczne kontrole",
+    "action_member_limit_move_up": "Zostałaby przeniesiona na plan {{plan}}",
+    "action_member_limit_needs_decision": "Potrzebna decyzja: {{reason}}",
+    "decision_no_plan_fits": "żaden oferowany plan nie jest wystarczająco duży",
+    "decision_custom_price": "ma specjalnie uzgodnioną cenę",
+    "decision_card_subscription": "płaci kartą, więc zespół platformy przenosi ją ręcznie"
   },
   "control": {
     "amount_invalid": "Wpisz kwotę jako zwykłą liczbę z najwyżej dwoma miejscami po przecinku.",
@@ -391,6 +398,8 @@
     "summary_upgrade_one": "Wyższy plan po {{count}} dniu",
     "summary_upgrade_other": "Wyższy plan po {{count}} dnia",
     "upgrade_by_hand": "Wyższy plan (zespół platformy robi to ręcznie)",
-    "what_happens": "Co się dzieje"
+    "what_happens": "Co się dzieje",
+    "move_on": "Przejście na większy plan {{date}}",
+    "follow_default_card": "Stosuj wartość domyślną (obecnie: Tylko ostrzegaj — zmianę planu wykonuje zespół platformy)"
   }
 }

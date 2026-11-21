@@ -374,7 +374,7 @@
     "plan_name_placeholder": "e.g., Community",
     "plan_description_placeholder": "Describe who this plan is for and what makes it suitable for them.",
     "annual_price_description": "Typically around 17% off the monthly rate",
-    "tier_level_description": "0 = free, 1 = basic, 2 = partner, 3 = network",
+    "tier_level_description": "A whole number used only to put the plans in order, smallest first.",
     "leave_blank_unlimited": "Leave blank for unlimited",
     "max_users_description": "Active members allowed on this plan",
     "selling_points": "Selling Points",

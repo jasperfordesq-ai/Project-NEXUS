@@ -140,7 +140,9 @@ describe('RevenueDashboard — god user', () => {
 
   it('renders plan breakdown rows', async () => {
     render(<RevenueDashboard />);
-    await waitFor(() => expect(screen.getByText('Community')).toBeInTheDocument());
+    // "Community" is also the recent-changes column heading: look past it.
+    const planCells = () => screen.queryAllByText('Community').filter((el) => el.closest('th') === null);
+    await waitFor(() => expect(planCells()).toHaveLength(1));
     expect(screen.getByText('Pro')).toBeInTheDocument();
   });
 
@@ -196,7 +198,8 @@ describe('RevenueDashboard — god user', () => {
     });
     render(<RevenueDashboard />);
     await waitFor(() => expect(screen.getByText('12')).toBeInTheDocument());
-    // Community/Pro should not appear
-    expect(screen.queryByText('Community')).toBeNull();
+    // Community/Pro should not appear as plans ("Community" is also the
+    // recent-changes column heading).
+    expect(screen.queryAllByText('Community').filter((el) => el.closest('th') === null)).toHaveLength(0);
   });
 });

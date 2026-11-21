@@ -480,7 +480,7 @@
     "plan_name_placeholder": "por exemplo, Comunidade",
     "plan_description_placeholder": "Descreva a quem se destina este plano e o que o torna adequado para eles.",
     "annual_price_description": "Normalmente cerca de 17% de desconto na taxa mensal",
-    "tier_level_description": "0 = gratuito, 1 = básico, 2 = parceiro, 3 = rede",
+    "tier_level_description": "Um número inteiro usado apenas para ordenar os planos, do mais pequeno para o maior.",
     "leave_blank_unlimited": "Deixe em branco para ilimitado",
     "max_users_description": "Membros ativos permitidos neste plano",
     "selling_points": "Pontos de venda",

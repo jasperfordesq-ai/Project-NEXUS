@@ -46,7 +46,6 @@ const inlineStyleExceptionGroups = [
   {
     reason: 'Data-derived hierarchy depth requires a runtime logical indentation value.',
     files: {
-      'src/admin/modules/billing/BillingControl.tsx': 1,
       'src/admin/modules/super/TenantHierarchy.tsx': 1,
       'src/pages/groups/tabs/GroupWikiTab.tsx': 1,
       'src/pages/resources/ResourcesPage.tsx': 1,

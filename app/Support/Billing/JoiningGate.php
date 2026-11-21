@@ -12,6 +12,7 @@ use App\Services\BillingAutomationService;
 use App\Services\BillingStandingService;
 use App\Services\TenantBillingService;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -31,13 +32,18 @@ use Illuminate\Support\Facades\Log;
  *     active standard plan whose member number, as it applies to the
  *     community, is a positive number);
  *   - its active members (TenantBillingService::getSubtreeActiveMemberCount(),
- *     the one member number used everywhere) are at or over that number.
+ *     the one member number used everywhere) are at or over that number;
+ *   - the daily check has told its admins, under the terms in force now,
+ *     that it is at or over that number (toldUnderPresentTerms()). Warning
+ *     comes first: a hub lowering a member number, a rule changed to
+ *     `block_joining`, a smaller plan or the checks being switched on shut
+ *     nothing until the next run has sent the fresh notice.
  *
  * Members of a child count towards its parent's number, so a parent's rule
  * shuts its children's doors; a sibling's never does. Tenant 1 never shuts a
  * door and is never shut.
  *
- * Open again by itself when the count drops or the plan grows. Existing members
+ * Open again by itself when the count drops or the terms change. Existing members
  * are never touched: this only answers "may a NEW member come to exist here".
  * The billing pause is a separate thing (BillingLock) and refuses sign-ups on
  * its own.
@@ -267,7 +273,8 @@ final class JoiningGate
             return ['exempt' => true, 'cap' => null];
         }
 
-        if (OverLimitRule::for($tenantId)['effective_action'] !== 'block_joining') {
+        $rule = OverLimitRule::for($tenantId);
+        if ($rule['effective_action'] !== 'block_joining') {
             return ['exempt' => false, 'cap' => null];
         }
 
@@ -277,11 +284,45 @@ final class JoiningGate
             return ['exempt' => false, 'cap' => null];
         }
 
+        // Warning first (DESIGN 6.4): the door shuts only once its admins
+        // have been told, under the terms in force now, that it is at or
+        // over its number.
+        if (!self::toldUnderPresentTerms($tenantId, $rule, $limit)) {
+            return ['exempt' => false, 'cap' => null];
+        }
+
         return ['exempt' => false, 'cap' => [
             'tenant_id' => $tenantId,
             'active' => TenantBillingService::getSubtreeActiveMemberCount($tenantId),
             'max' => (int) $limit['max_users'],
         ]];
+    }
+
+    /**
+     * Whether the daily check has told this community, under the terms in
+     * force now, that it is at (`reached`) or over (`over`) its member
+     * number: the terms key it recorded is the one it would build today
+     * (the same OverLimitRule::termsKey(), so a changed rule, day count,
+     * plan or member number, or a hub's change to it, all read as "not told
+     * yet"), and the notice was really sent (`limit_notice_at`; the check
+     * records `reached` and `over` for this rule only once the mailer
+     * accepted them). Switching the checks on empties the stage, so nobody
+     * is shut before the first run has told them.
+     *
+     * @param array{action:string, effective_action:string, grace_days:int} $rule
+     * @param array{plan_id:int, plan_name:string, max_users:int} $limit
+     */
+    private static function toldUnderPresentTerms(int $tenantId, array $rule, array $limit): bool
+    {
+        $row = DB::table('tenant_billing_standing')
+            ->where('tenant_id', $tenantId)
+            ->first(['limit_terms_key', 'limit_notice_stage', 'limit_notice_at']);
+
+        if ($row === null || $row->limit_notice_at === null || !in_array($row->limit_notice_stage, ['reached', 'over'], true)) {
+            return false;
+        }
+
+        return $row->limit_terms_key === OverLimitRule::termsKey($tenantId, $limit, $rule);
     }
 
     private static function reportCacheFailure(\Throwable $e): void

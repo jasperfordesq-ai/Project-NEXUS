@@ -56,6 +56,8 @@ final class BillingSnapshotContractTest extends TestCase
     private const REQUIRED_RULE_KEYS = [
         'action', 'effective_action', 'grace_days', 'action_source', 'days_source',
         'own_action', 'own_grace_days', 'acts_on',
+        // Final fix wave A3: whether anything in the rule acts at all.
+        'automation_enabled',
     ];
 
     /** Read off `last_payment` when a community has one. */

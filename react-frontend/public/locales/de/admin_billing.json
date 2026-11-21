@@ -147,12 +147,12 @@
     "col_current_plan": "Aktueller Plan",
     "col_effective_price": "Effektiver Preis",
     "col_status": "Status",
-    "col_tenant": "Mieter",
+    "col_tenant": "Community",
     "col_users": "Benutzer",
     "contact_support": "Kontaktieren Sie den Support",
-    "control_desc": "Kontrolle.",
-    "control_title": "Kontrolle",
-    "custom_badge": "Benutzerdefiniertes Abzeichen",
+    "control_desc": "Plan, Preis und Zahlungsstand jeder Community und was geschieht, wenn eine ihre Mitgliederzahl überschreitet.",
+    "control_title": "Abrechnungssteuerung",
+    "custom_badge": "Sonderpreis",
     "custom_price_monthly": "Individueller Preis monatlich",
     "custom_price_yearly": "Individueller Preis jährlich",
     "discount_pct": "Rabatt-Pkt",
@@ -246,13 +246,15 @@
     "done_restored": "Community wiederhergestellt",
     "done_exempted": "Community ausgenommen",
     "done_exemption_removed": "Ausnahme aufgehoben",
-    "standing_failed": "Das war nicht möglich. Es wurde nichts geändert."
+    "standing_failed": "Das war nicht möglich. Es wurde nichts geändert.",
+    "table_scrolls": "Diese Tabelle ist breiter als der Bildschirm: Scrollen Sie darin seitlich, um alle Spalten zu sehen.",
+    "more_actions_for": "Weitere Aktionen für {{name}}"
   },
   "paused_banner": {
     "inherited": "Diese Community ist pausiert, weil die übergeordnete Community pausiert ist. Pausiert seit {{date}}.",
-    "limit_approaching": "Diese Community hat {{used}} aktive Mitglieder, {{percent}} % des Limits ihres Pakets von {{max}}.",
-    "limit_over": "Diese Community hat {{used}} aktive Mitglieder, mehr als das Limit ihres Pakets von {{max}}. Möglicherweise ist ein größeres Paket nötig.",
-    "limit_reached": "Diese Community hat das Limit ihres Pakets von {{max}} aktiven Mitgliedern erreicht.",
+    "limit_approaching": "Diese Community hat {{used}} aktive Mitglieder, {{percent}} % des Limits ihres Plans von {{max}}.",
+    "limit_over": "Diese Community hat {{used}} aktive Mitglieder, mehr als das Limit ihres Plans von {{max}}. Möglicherweise ist ein größerer Plan nötig.",
+    "limit_reached": "Diese Community hat das Limit ihres Plans von {{max}} aktiven Mitgliedern erreicht.",
     "overdue": "Die Zahlung für diese Community ist seit {{days}} Tagen überfällig. Bitte bringen Sie sie auf den neuesten Stand, damit die Community nicht pausiert wird.",
     "own_parent": "Diese Community ist pausiert. Mitglieder können sie erst wieder nutzen, wenn die Zahlung an {{payee}} auf dem aktuellen Stand ist. Pausiert seit {{date}}.",
     "own_platform": "Diese Community ist pausiert. Mitglieder können sie erst wieder nutzen, wenn die Zahlung an das Plattform-Team auf dem aktuellen Stand ist. Pausiert seit {{date}}.",
@@ -280,7 +282,7 @@
     "clock_member_limit": "Mitgliederlimit",
     "clock_payment": "Zahlung",
     "final_warning_days_late": "Letzte Warnung: Tage im Verzug",
-    "limit_warning_percent": "Warnung zum Mitgliederlimit bei diesem Prozentsatz des Pakets",
+    "limit_warning_percent": "Warnung zum Mitgliederlimit bei diesem Prozentsatz des Plans",
     "load_failed": "Die Einstellungen konnten nicht geladen werden.",
     "off_note": "Ausgeschaltet. Es wird nichts verschickt und keine Community pausiert. Die Liste unten zeigt, was passieren würde.",
     "on_note": "Eingeschaltet. Jeden Morgen werden Erinnerungen und Warnungen per E-Mail verschickt, und Communities werden pausiert, wenn die Regeln unten das vorsehen.",
@@ -296,7 +298,12 @@
     "saved": "Einstellungen gespeichert",
     "suspend_days_late": "Pause: Tage im Verzug",
     "switch_label": "Die automatischen Prüfungen jeden Morgen ausführen",
-    "title": "Automatische Prüfungen"
+    "title": "Automatische Prüfungen",
+    "action_member_limit_move_up": "Würde auf {{plan}} hochgestuft",
+    "action_member_limit_needs_decision": "Entscheidung nötig: {{reason}}",
+    "decision_no_plan_fits": "kein angebotener Plan ist groß genug",
+    "decision_custom_price": "es gilt ein eigens vereinbarter Preis",
+    "decision_card_subscription": "es zahlt per Karte, daher stuft das Plattform-Team es von Hand hoch"
   },
   "control": {
     "amount_invalid": "Geben Sie den Betrag als einfache Zahl mit höchstens zwei Nachkommastellen ein.",
@@ -383,6 +390,8 @@
     "summary_upgrade_one": "Hochstufen nach {{count}} Tag",
     "summary_upgrade_other": "Hochstufen nach {{count}} Tagen",
     "upgrade_by_hand": "Hochstufen (erledigt das Plattform-Team von Hand)",
-    "what_happens": "Was passiert"
+    "what_happens": "Was passiert",
+    "move_on": "Hochstufung am {{date}}",
+    "follow_default_card": "Dem Standard folgen (derzeit: Nur warnen – eine Hochstufung nimmt das Plattform-Team vor)"
   }
 }

@@ -20,6 +20,9 @@ vi.mock('@/components/ui', async () => {
   const base = (await import('@/test/uiMock')).uiMock as Record<string, unknown>;
   // Wires a Radio to its group, as in PayerDialog.test.tsx.
   const RadioContext = createContext<{ value: string; onValueChange: (v: string) => void }>({ value: '', onValueChange: () => {} });
+  // Wires a row's actions menu: each item is a button that reports its key, as
+  // the real menu's onAction does.
+  const MenuContext = createContext<(key: string) => void>(() => {});
 
   const tableOverrides: Record<string, unknown> = {
     RadioGroup: ({ value, onValueChange, children, label }: { value: string; onValueChange: (v: string) => void; children?: React.ReactNode; label?: React.ReactNode }) => (
@@ -52,6 +55,17 @@ vi.mock('@/components/ui', async () => {
       );
     },
     SelectItem: ({ children, id }: { children?: React.ReactNode; id?: string }) => <option value={id}>{children}</option>,
+    Dropdown: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+    DropdownTrigger: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
+    DropdownMenu: ({ children, onAction }: { children?: React.ReactNode; onAction?: (key: string) => void }) => (
+      <MenuContext.Provider value={(key) => onAction?.(key)}>
+        <div role="menu">{children}</div>
+      </MenuContext.Provider>
+    ),
+    DropdownItem: ({ children, id }: { children?: React.ReactNode; id?: string }) => {
+      const act = useContext(MenuContext);
+      return <button type="button" role="menuitem" onClick={() => act(String(id))}>{children}</button>;
+    },
     TableBody: ({ items, children, emptyContent }: {
       items?: unknown[];
       children?: ((item: unknown) => React.ReactNode) | React.ReactNode;
@@ -205,8 +219,9 @@ const makePlan = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
+// A row's action: the button in view, or an item of its actions menu.
 const button = (label: string) =>
-  screen.queryAllByRole('button').find((b) => b.textContent?.trim() === label);
+  [...screen.queryAllByRole('button'), ...screen.queryAllByRole('menuitem')].find((b) => b.textContent?.trim() === label);
 
 // ─────────────────────────────────────────────────────────────────────────────
 describe('BranchPayments', () => {
@@ -413,7 +428,7 @@ describe('BranchPayments', () => {
       makeRow({ id: 8, name: 'Kinsale Timebank', can_act: false, cannot_act_reason: 'pays_platform' }),
     ]);
 
-    expect(screen.getAllByRole('button').filter((b) => b.textContent?.trim() === 'Change plan')).toHaveLength(1);
+    expect(screen.getAllByRole('menuitem').filter((b) => b.textContent?.trim() === 'Change plan')).toHaveLength(1);
   });
 
   it('lists the plans the community can be put on, marks and preselects its current one, and saves the choice', async () => {
@@ -508,7 +523,7 @@ describe('BranchPayments', () => {
     render(<BranchPayments />);
     await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
 
-    const changeButtons = () => screen.getAllByRole('button').filter((b) => b.textContent?.trim() === 'Change plan');
+    const changeButtons = () => screen.getAllByRole('menuitem').filter((b) => b.textContent?.trim() === 'Change plan');
     await user.click(changeButtons()[0]!);
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
     await user.click(changeButtons()[1]!);
@@ -555,7 +570,40 @@ describe('BranchPayments', () => {
       makeRow({ id: 8, name: 'Kinsale Timebank', can_act: false, cannot_act_reason: 'pays_platform' }),
     ]);
 
-    expect(screen.getAllByRole('button').filter((b) => b.textContent?.trim() === 'Over-limit rule')).toHaveLength(1);
+    expect(screen.getAllByRole('menuitem').filter((b) => b.textContent?.trim() === 'Over-limit rule')).toHaveLength(1);
+  });
+
+  it('names the day a pending move up comes, as it names a pause', async () => {
+    await renderWith([makeRow({ over_limit: makeOverLimit({ action: 'upgrade', effective_action: 'upgrade', acts_on: '2026-12-21' }) })]);
+
+    const line = screen.getByText((text) => text.startsWith('Move up on '));
+    expect(line).toHaveTextContent(formatDate('2026-12-21'));
+    expect(screen.queryByText((text) => text.startsWith('Pause on '))).not.toBeInTheDocument();
+  });
+
+  it('says at the top, and in the rule dialog, when the automatic checks are off', async () => {
+    const user = userEvent.setup();
+    await renderWith([makeRow({ over_limit: makeOverLimit({ automation_enabled: false }) })]);
+
+    const note = 'The platform’s automatic checks are switched off, so nothing here acts until the platform team switches them on. You can still set the rule now.';
+    expect(screen.getAllByText(note)).toHaveLength(1);
+
+    await user.click(button('Over-limit rule')!);
+    expect(screen.getAllByText(note)).toHaveLength(2);
+  });
+
+  it('says nothing about the checks while they are on', async () => {
+    await renderWith([makeRow({ over_limit: makeOverLimit({ automation_enabled: true }) })]);
+
+    expect(screen.queryByText((text) => text.includes('automatic checks are switched off'))).not.toBeInTheDocument();
+  });
+
+  it('keeps one action in view and gathers the rest in a menu', async () => {
+    await renderWith([makeRow({ standing: makeStanding({ suspended_at: '2026-11-01 08:00:00' }) })]);
+
+    expect(screen.getByRole('button', { name: 'Set paid-until date' })).toBeInTheDocument();
+    const items = screen.getAllByRole('menuitem').map((b) => b.textContent?.trim());
+    expect(items).toEqual(['Change plan', 'Over-limit rule', 'Restore community']);
   });
 
   it('opens on the community’s own rule and posts the choice', async () => {

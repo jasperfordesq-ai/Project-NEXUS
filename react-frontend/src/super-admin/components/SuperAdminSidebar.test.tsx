@@ -6,6 +6,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
+import { render as rtlRender } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 
 vi.mock('@/contexts', () =>
   createMockContexts({
@@ -226,4 +228,33 @@ describe('SuperAdminSidebar — collapsed', () => {
   // without pointer-event simulation via @testing-library/user-event + a
   // real FocusScope environment. Nav link hrefs are still asserted via the
   // `to` prop which is always set regardless of collapsed state.
+});
+
+describe('SuperAdminSidebar — the current page', () => {
+  const renderAt = (pathname: string) =>
+    rtlRender(
+      <MemoryRouter initialEntries={[pathname]}>
+        <SuperAdminSidebar collapsed={false} onToggle={vi.fn()} />
+      </MemoryRouter>
+    );
+
+  const current = () =>
+    Array.from(document.querySelectorAll('a[aria-current="page"]')).map((a) => a.textContent?.trim());
+
+  // Inside the app's routes useLocation() has no community slug, while
+  // tenantPath() adds one: the page must be marked either way.
+  it('marks the current page when the address has no community slug', () => {
+    renderAt('/super-admin/branch-plans');
+    expect(current()).toEqual(['Branch plans']);
+  });
+
+  it('marks the current page when the address carries the community slug', () => {
+    renderAt('/test/super-admin/branch-payments');
+    expect(current()).toEqual(['Branch payments']);
+  });
+
+  it('marks the dashboard only on the dashboard itself', () => {
+    renderAt('/super-admin');
+    expect(current()).toEqual(['Dashboard']);
+  });
 });

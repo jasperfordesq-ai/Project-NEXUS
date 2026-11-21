@@ -166,10 +166,13 @@ final class OverLimitRule
 
     /**
      * The rule as the lists show it: for() plus what is stored on the
-     * community itself, and the day the daily check would pause it.
+     * community itself, the day the daily check would act on it (pause it,
+     * or move it up: the screens tell which by `effective_action`), and
+     * whether the platform's automatic checks are on at all. While they are
+     * off nothing in the rule acts, and the screens must say so.
      *
      * @param int|null $active the community's active members, when the caller has counted them
-     * @return array{action:string, effective_action:string, grace_days:int, action_source:string, days_source:string, own_action:?string, own_grace_days:?int, acts_on:?string}
+     * @return array{action:string, effective_action:string, grace_days:int, action_source:string, days_source:string, own_action:?string, own_grace_days:?int, acts_on:?string, automation_enabled:bool}
      */
     public static function describe(int $tenantId, ?int $active = null): array
     {
@@ -180,6 +183,7 @@ final class OverLimitRule
             'own_action' => $own['action'],
             'own_grace_days' => $own['grace_days'],
             'acts_on' => BillingAutomationService::limitActsOn($tenantId, $rule, $active),
+            'automation_enabled' => (bool) BillingSettings::get('automation_enabled'),
         ];
     }
 

@@ -1170,6 +1170,33 @@ final class BillingAutomationMemberLimitTest extends TestCase
         $this->assertSame(['member_limit:suspend'], $this->actionsFor(BillingAutomationService::run($this->day(31)), $this->community));
     }
 
+    public function test_under_stop_new_members_a_reached_notice_that_fails_to_send_is_not_counted_as_sent(): void
+    {
+        // The "reached" notice is what shuts the door under this rule
+        // (JoiningGate), so it follows the "over" rule: recorded only once
+        // the mailer accepted it. "Approaching" is recorded as before.
+        $this->standing($this->community, ['over_limit_action' => 'block_joining']);
+        $this->addActiveMembers($this->community, 100);
+
+        $this->app->instance(\App\Services\EmailDispatchService::class, new RefusingEmailDispatch());
+        try {
+            $this->assertSame(['member_limit:reached'], $this->actionsFor(BillingAutomationService::run($this->today), $this->community));
+        } finally {
+            $this->app->instance(\App\Services\EmailDispatchService::class, new ProviderAcceptsEmailDispatch());
+        }
+        $row = $this->standingRow($this->community);
+        $this->assertNull($row->limit_notice_stage, 'Not recorded as sent.');
+        $this->assertNull($row->limit_notice_at);
+        $this->assertNull(\App\Support\Billing\JoiningGate::closedBy($this->community), 'Not told, so the door is open.');
+
+        $this->assertSame(['member_limit:reached'], $this->actionsFor(BillingAutomationService::run($this->day(1)), $this->community), 'Due again, and sent.');
+        $row = $this->standingRow($this->community);
+        $this->assertSame('reached', $row->limit_notice_stage);
+        $this->assertNotNull($row->limit_notice_at);
+        \App\Support\Billing\JoiningGate::flush();
+        $this->assertNotNull(\App\Support\Billing\JoiningGate::closedBy($this->community), 'Told, so the door is shut.');
+    }
+
     public function test_the_pause_date_is_the_notice_day_plus_the_days(): void
     {
         $this->pauseAfterThirtyDays();

@@ -49,6 +49,7 @@ use Tests\Laravel\TestCase;
 final class JoiningClosedDoorsTest extends TestCase
 {
     use DatabaseTransactions;
+    use TellsCommunityOfMemberLimit;
 
     private const OPEN_STATES = [
         'below the limit' => ['below'],
@@ -761,8 +762,9 @@ final class JoiningClosedDoorsTest extends TestCase
     /**
      * Cap a community: a standard plan whose member number is its active
      * members now (state `at`), or that plus $room (state `below`); its own
-     * rule `block_joining`, or `pause` for `other_rule`; and the automatic
-     * checks on, except for `switch_off`. Returns the member number.
+     * rule `block_joining`, or `pause` for `other_rule`; the automatic
+     * checks on, except for `switch_off`; and the community told of its
+     * number under those terms. Returns the member number.
      */
     private function limit(int $tenantId, string $state, int $room = 5): int
     {
@@ -798,6 +800,10 @@ final class JoiningClosedDoorsTest extends TestCase
         BillingLock::flush();
         PlanTerms::flush();
         JoiningGate::flush();
+
+        // The door shuts only once the daily check has told the community,
+        // under these terms, that it is at its number: as a real run leaves it.
+        $this->tellCommunityOfMemberLimit($tenantId);
 
         return $max;
     }

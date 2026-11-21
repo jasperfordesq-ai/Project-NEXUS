@@ -997,6 +997,10 @@ shuts a community's door while it, or a community above it, has the
 limit (with the automatic checks on; never tenant 1). The walk upward stops at
 the first exempt community, itself included: an exempt community shields
 itself and everything below it, as for the pause.
+A door is shut only after the daily check has told that community's admins,
+under the terms in force now, that it is at or over its number (its recorded
+terms key matches, and a `reached` or `over` notice was sent and accepted), so
+a change of terms or switching the checks on shuts nothing until the next run.
 Shut doors answer 403 `COMMUNITY_NOT_TAKING_MEMBERS`: the sign-up form, sign-up
 through Google and the like (shown as "closed to sign-ups"), single sign-on
 creating an account, and every account an administrator creates

@@ -3641,8 +3641,13 @@ class AdminSuperController extends BaseApiController
             }
             $hubId = (int) $hubId;
         } else {
+            // The caller's own community only when it is one of the hubs the
+            // picker lists: a platform account based in a leaf community
+            // would otherwise land on a page for a community the picker
+            // does not offer.
             $own = (int) (SuperPanelAccess::getAccess()['tenant_id'] ?? 0);
-            $hubId = BranchPlans::refusalForHub($own) === null ? $own : ($hubs[0]['id'] ?? null);
+            $hubIds = array_column($hubs, 'id');
+            $hubId = in_array($own, $hubIds, true) ? $own : ($hubIds[0] ?? null);
         }
 
         return $this->respondWithData([

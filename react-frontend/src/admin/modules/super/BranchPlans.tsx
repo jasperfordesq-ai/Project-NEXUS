@@ -453,14 +453,17 @@ export function BranchPlans() {
       ) : null}
 
       <Card>
-        <CardHeader className="flex items-center gap-2 pb-0">
+        <CardHeader className="flex flex-row items-center justify-start gap-2 pb-0">
           <Layers size={18} className="text-accent" aria-hidden="true" />
           <span className="font-semibold text-sm">
             {hub ? t('branch_plans.for_hub', { hub: hub.name }) : t('branch_plans.title')}
           </span>
         </CardHeader>
         <CardBody className="p-0">
-          <Table aria-label={t('branch_plans.title')} removeWrapper>
+          {/* Wider than a phone: the table scrolls sideways inside this card,
+              never the page, and says so. */}
+          <p className="px-4 pt-2 text-xs text-muted lg:hidden">{t('admin_billing:billing.table_scrolls')}</p>
+          <Table aria-label={t('branch_plans.title')} removeWrapper classNames={{ table: 'min-w-[860px]' }}>
             <TableHeader>
               <TableColumn>{t('branch_plans.col_plan')}</TableColumn>
               <TableColumn>{t('branch_plans.col_members')}</TableColumn>
@@ -481,7 +484,8 @@ export function BranchPlans() {
                 return (
                   <TableRow key={plan.plan_id}>
                     <TableCell>
-                      <div className="flex flex-col">
+                      {/* Words wrap whole: a plan name never breaks letter by letter. */}
+                      <div className="flex min-w-48 flex-col break-normal">
                         <span className="text-sm font-medium">{plan.name}</span>
                         {plan.description ? (
                           <span className="text-xs text-muted line-clamp-2">{plan.description}</span>
@@ -490,17 +494,17 @@ export function BranchPlans() {
                     </TableCell>
 
                     <TableCell>
-                      <span className="text-sm">{members === null ? t('branch_plans.no_limit') : formatNumber(members)}</span>
+                      <span className="text-sm whitespace-nowrap">{members === null ? t('branch_plans.no_limit') : formatNumber(members)}</span>
                     </TableCell>
 
                     {monthlyOrder.map((field) => (
                       <TableCell key={field}>
-                        <span className="text-sm">{money(plan[field], currencyOf(field)) ?? '—'}</span>
+                        <span className="text-sm whitespace-nowrap">{money(plan[field], currencyOf(field)) ?? '—'}</span>
                       </TableCell>
                     ))}
 
                     <TableCell>
-                      <div className="flex flex-col items-start gap-1">
+                      <div className="flex min-w-32 flex-col items-start gap-1 break-normal">
                         <Switch
                           size="sm"
                           aria-label={t('branch_plans.offered_aria', { plan: plan.name })}
@@ -526,7 +530,7 @@ export function BranchPlans() {
                     </TableCell>
 
                     <TableCell>
-                      <div className="flex items-center gap-1 flex-wrap">
+                      <div className="flex min-w-40 items-center gap-1 flex-wrap">
                         <Button size="sm" variant="secondary" isDisabled={busy} onPress={() => openDialog(plan)}>
                           {t('branch_plans.change')}
                         </Button>

@@ -1022,7 +1022,7 @@
     "active_member_note": "Is éard is ball gníomhach ann ná duine a shínigh isteach le {{days}} lá anuas.",
     "limit_over_warn_only": "Níor athraigh aon rud dá bhaill. Aistrigh é go pacáiste a oireann dó, le do thoil.",
     "limit_over_will_pause": "Má bhíonn sé fós os cionn na teorann ar <strong>{{date}}</strong>, cuirfear ar sos go huathoibríoch é go dtí go mbeidh sé faoin teorainn arís nó go n-aistreoidh sé go pacáiste níos mó.",
-    "limit_over_joining_closed": "Is féidir lena bhaill é a úsáid mar is gnáth fós, ach ní féidir le baill nua dul isteach ann go dtí go mbeidh sé faoin teorainn arís nó go n-aistreoidh sé go pacáiste níos mó.",
+    "limit_joining_closed_now": "As seo amach, ní féidir le baill nua dul isteach ann go dtí go mbeidh sé faoin teorainn arís nó go n-aistreoidh sé go pacáiste níos mó. Is féidir lena bhaill é a úsáid mar is gnáth fós.",
     "limit_over_will_move_up": "Má bhíonn sé fós os cionn na teorann ar <strong>{{date}}</strong>, aistreofar go huathoibríoch é go dtí an pacáiste <strong>{{plan}}</strong>, an ceann is lú a oireann dó.",
     "limit_over_needs_decision": "Ní féidir é a aistriú go pacáiste níos mó go huathoibríoch. Ní mór don duine a bhfuil cúram a bhillála air pacáiste a oireann dó a roghnú.",
     "limit_over_will_move_up_priced": "Má bhíonn sé fós os cionn na teorann ar <strong>{{date}}</strong>, aistreofar go huathoibríoch é go dtí an pacáiste <strong>{{plan}}</strong> ({{price}}), an ceann is lú a oireann dó.",

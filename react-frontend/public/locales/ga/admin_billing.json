@@ -147,12 +147,12 @@
     "col_current_plan": "Plean Reatha",
     "col_effective_price": "Praghas Éifeachtach",
     "col_status": "Stádas",
-    "col_tenant": "Tionónta",
+    "col_tenant": "Pobal",
     "col_users": "Úsáideoirí",
     "contact_support": "Tacaíocht Teagmhála",
-    "control_desc": "Rialú.",
-    "control_title": "Rialú",
-    "custom_badge": "Suaitheantas Saincheaptha",
+    "control_desc": "Plean, praghas agus staid íocaíochta gach pobail, agus cad a tharlaíonn nuair a théann pobal thar a líon ball.",
+    "control_title": "Rialú billeála",
+    "custom_badge": "Praghas speisialta",
     "custom_price_monthly": "Praghas Míosúil Saincheaptha",
     "custom_price_yearly": "Praghas Bliantúil an Chustaim",
     "discount_pct": "Lascaine Pct",
@@ -249,13 +249,15 @@
     "done_restored": "Pobal athchóirithe",
     "done_exempted": "Pobal díolmhaithe anois",
     "done_exemption_removed": "Díolúine bainte",
-    "standing_failed": "Níorbh fhéidir é sin a dhéanamh. Níor athraíodh aon rud."
+    "standing_failed": "Níorbh fhéidir é sin a dhéanamh. Níor athraíodh aon rud.",
+    "table_scrolls": "Tá an tábla seo níos leithne ná an scáileán: scrollaigh ó thaobh go taobh ann chun gach colún a fheiceáil.",
+    "more_actions_for": "Tuilleadh gníomhartha do {{name}}"
   },
   "paused_banner": {
     "inherited": "Tá an pobal seo curtha ar sos toisc go bhfuil an pobal os a chionn curtha ar sos. Ar sos ó {{date}}.",
-    "limit_approaching": "Tá {{used}} ball gníomhach ag an bpobal seo, {{percent}}% de theorainn a phacáiste ({{max}}).",
-    "limit_over": "Tá {{used}} ball gníomhach ag an bpobal seo, níos mó ná teorainn a phacáiste ({{max}}). D’fhéadfadh go mbeadh pacáiste níos mó ag teastáil.",
-    "limit_reached": "Tá teorainn a phacáiste sroichte ag an bpobal seo: {{max}} ball gníomhach.",
+    "limit_approaching": "Tá {{used}} ball gníomhach ag an bpobal seo, {{percent}}% de theorainn a phlean ({{max}}).",
+    "limit_over": "Tá {{used}} ball gníomhach ag an bpobal seo, níos mó ná teorainn a phlean ({{max}}). D’fhéadfadh go mbeadh plean níos mó ag teastáil.",
+    "limit_reached": "Tá teorainn a phlean sroichte ag an bpobal seo: {{max}} ball gníomhach.",
     "overdue": "Tá an íocaíocht don phobal seo {{days}} lá thar téarma. Tabhair cothrom le dáta í le nach gcuirfear an pobal ar sos.",
     "own_parent": "Tá an pobal seo curtha ar sos. Ní féidir le baill é a úsáid go dtí go mbeidh an íocaíocht le {{payee}} cothrom le dáta. Ar sos ó {{date}}.",
     "own_platform": "Tá an pobal seo curtha ar sos. Ní féidir le baill é a úsáid go dtí go mbeidh an íocaíocht le foireann an ardáin cothrom le dáta. Ar sos ó {{date}}.",
@@ -283,7 +285,7 @@
     "clock_member_limit": "Teorainn ball",
     "clock_payment": "Íocaíocht",
     "final_warning_days_late": "Rabhadh deiridh: laethanta déanach",
-    "limit_warning_percent": "Rabhadh faoi theorainn na mball ag an gcéatadán seo den phacáiste",
+    "limit_warning_percent": "Rabhadh faoi theorainn na mball ag an gcéatadán seo den phlean",
     "load_failed": "Níorbh fhéidir na socruithe a lódáil.",
     "off_note": "Múchta. Ní sheoltar aon rud agus ní chuirtear aon phobal ar sos. Taispeánann an liosta thíos cad a tharlódh.",
     "on_note": "Ar siúl. Gach maidin, seoltar meabhrúcháin agus rabhaidh trí ríomhphost, agus cuirtear pobail ar sos nuair a deir na rialacha thíos amhlaidh.",
@@ -299,7 +301,12 @@
     "saved": "Socruithe sábháilte",
     "suspend_days_late": "Sos: laethanta déanach",
     "switch_label": "Rith na seiceálacha uathoibríocha gach maidin",
-    "title": "Seiceálacha uathoibríocha"
+    "title": "Seiceálacha uathoibríocha",
+    "action_member_limit_move_up": "Aistreofaí suas go {{plan}} é",
+    "action_member_limit_needs_decision": "Tá cinneadh ag teastáil: {{reason}}",
+    "decision_no_plan_fits": "níl aon phlean a thairgtear dó mór go leor",
+    "decision_custom_price": "tá praghas speisialta comhaontaithe aige",
+    "decision_card_subscription": "íocann sé le cárta, mar sin aistríonn foireann an ardáin é de láimh"
   },
   "control": {
     "amount_invalid": "Cuir isteach an méid mar ghnáthuimhir le dhá ionad dheachúlacha ar a mhéad.",
@@ -395,6 +402,8 @@
     "summary_upgrade_other": "Suas tar éis {{count}} lá",
     "summary_upgrade_two": "Suas tar éis {{count}} lá",
     "upgrade_by_hand": "Aistrigh suas (déanann foireann an ardáin é seo de láimh)",
-    "what_happens": "Cad a tharlaíonn"
+    "what_happens": "Cad a tharlaíonn",
+    "move_on": "Aistriú suas ar {{date}}",
+    "follow_default_card": "Lean an réamhshocrú (faoi láthair: Rabhadh amháin — is í foireann an ardáin a dhéanann an t-aistriú)"
   }
 }

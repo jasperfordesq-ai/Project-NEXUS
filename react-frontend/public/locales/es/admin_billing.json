@@ -147,12 +147,12 @@
     "col_current_plan": "Plan actual",
     "col_effective_price": "Precio Efectivo",
     "col_status": "Estado",
-    "col_tenant": "inquilino",
+    "col_tenant": "Comunidad",
     "col_users": "Usuarios",
     "contact_support": "Contactar con soporte",
-    "control_desc": "Controlar.",
-    "control_title": "controlar",
-    "custom_badge": "Insignia personalizada",
+    "control_desc": "El plan, el precio y la situación de pago de cada comunidad, y lo que ocurre cuando una supera su número de miembros.",
+    "control_title": "Control de facturación",
+    "custom_badge": "Precio especial",
     "custom_price_monthly": "Precio personalizado mensual",
     "custom_price_yearly": "Precio personalizado anual",
     "discount_pct": "Porcentaje de descuento",
@@ -247,13 +247,15 @@
     "done_restored": "Comunidad restaurada",
     "done_exempted": "Comunidad exenta",
     "done_exemption_removed": "Exención quitada",
-    "standing_failed": "No se pudo hacer. No se cambió nada."
+    "standing_failed": "No se pudo hacer. No se cambió nada.",
+    "table_scrolls": "Esta tabla es más ancha que la pantalla: desplázate de lado dentro de ella para ver todas las columnas.",
+    "more_actions_for": "Más acciones para {{name}}"
   },
   "paused_banner": {
     "inherited": "Esta comunidad está en pausa porque la comunidad de la que depende está en pausa. En pausa desde {{date}}.",
-    "limit_approaching": "Esta comunidad tiene {{used}} miembros activos, el {{percent}} % del límite de su paquete ({{max}}).",
-    "limit_over": "Esta comunidad tiene {{used}} miembros activos, más que el límite de su paquete ({{max}}). Puede que haga falta un paquete mayor.",
-    "limit_reached": "Esta comunidad ha alcanzado el límite de su paquete: {{max}} miembros activos.",
+    "limit_approaching": "Esta comunidad tiene {{used}} miembros activos, el {{percent}} % del límite de su plan ({{max}}).",
+    "limit_over": "Esta comunidad tiene {{used}} miembros activos, más que el límite de su plan ({{max}}). Puede que haga falta un plan mayor.",
+    "limit_reached": "Esta comunidad ha alcanzado el límite de su plan: {{max}} miembros activos.",
     "overdue": "El pago de esta comunidad lleva {{days}} días de retraso. Ponlo al día para que la comunidad no se pause.",
     "own_parent": "Esta comunidad está en pausa. Los miembros no podrán usarla hasta que el pago a {{payee}} esté al día. En pausa desde {{date}}.",
     "own_platform": "Esta comunidad está en pausa. Los miembros no podrán usarla hasta que el pago al equipo de la plataforma esté al día. En pausa desde {{date}}.",
@@ -281,7 +283,7 @@
     "clock_member_limit": "Límite de miembros",
     "clock_payment": "Pago",
     "final_warning_days_late": "Último aviso: días de retraso",
-    "limit_warning_percent": "Aviso del límite de miembros a este porcentaje del paquete",
+    "limit_warning_percent": "Aviso del límite de miembros a este porcentaje del plan",
     "load_failed": "No se pudieron cargar los ajustes.",
     "off_note": "Desactivadas. No se envía nada y no se pausa ninguna comunidad. La lista de abajo muestra lo que pasaría.",
     "on_note": "Activadas. Cada mañana se envían por correo recordatorios y avisos, y las comunidades se pausan cuando lo indican las reglas de abajo.",
@@ -297,7 +299,12 @@
     "saved": "Ajustes guardados",
     "suspend_days_late": "Pausa: días de retraso",
     "switch_label": "Ejecutar las comprobaciones automáticas cada mañana",
-    "title": "Comprobaciones automáticas"
+    "title": "Comprobaciones automáticas",
+    "action_member_limit_move_up": "Se subiría al plan {{plan}}",
+    "action_member_limit_needs_decision": "Necesita una decisión: {{reason}}",
+    "decision_no_plan_fits": "ningún plan que se le ofrece es lo bastante grande",
+    "decision_custom_price": "tiene un precio acordado especialmente",
+    "decision_card_subscription": "paga con tarjeta, así que el equipo de la plataforma lo cambia a mano"
   },
   "control": {
     "amount_invalid": "Escribe el importe como un número simple con dos decimales como máximo.",
@@ -387,6 +394,8 @@
     "summary_upgrade_one": "Subir tras {{count}} día",
     "summary_upgrade_other": "Subir tras {{count}} días",
     "upgrade_by_hand": "Subir de plan (lo hace a mano el equipo de la plataforma)",
-    "what_happens": "Qué ocurre"
+    "what_happens": "Qué ocurre",
+    "move_on": "Subida de plan el {{date}}",
+    "follow_default_card": "Seguir el valor predeterminado (ahora: Solo avisar; el cambio de plan lo hace el equipo de la plataforma)"
   }
 }

@@ -170,7 +170,7 @@ class AdminBillingController extends BaseApiController
         if (!$targetPlan || !(int) ($targetPlan->is_active ?? 0)) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_plan_id'), 'plan_id', 422);
         }
-        $isFreeTarget = ((float) $targetPlan->price_monthly === 0.0 && (float) $targetPlan->price_yearly === 0.0);
+        $isFreeTarget = StripeSubscriptionService::isFreePlan($targetPlan);
 
         // A plan priced for one period only is not sold for the other. Said
         // plainly here, instead of the generic "checkout failed" that the

@@ -151,6 +151,40 @@ describe('BillingAutomationCard', () => {
     )).toBeInTheDocument();
   });
 
+  it('names a pending move up and the plan it goes to', async () => {
+    serve(makeSettings(), [{
+      tenant_id: 8, tenant_name: 'Mallow Timebank', clock: 'member_limit', action: 'move_up',
+      detail: { active_members: 1043, max_users: 1000, move_plan: 'Growth' },
+    }]);
+    await renderCard();
+
+    await waitFor(() => expect(screen.getByText('Would be moved up to Growth')).toBeInTheDocument());
+    expect(screen.queryByText('Another action')).not.toBeInTheDocument();
+  });
+
+  it('says in words why a move needs a decision', async () => {
+    serve(makeSettings(), [
+      { tenant_id: 8, tenant_name: 'Mallow Timebank', clock: 'member_limit', action: 'needs_decision', detail: { decision_reason: 'no_plan_fits' } },
+      { tenant_id: 9, tenant_name: 'Cobh Timebank', clock: 'member_limit', action: 'needs_decision', detail: { decision_reason: 'custom_price' } },
+      { tenant_id: 10, tenant_name: 'Youghal Timebank', clock: 'member_limit', action: 'needs_decision', detail: { decision_reason: 'card_subscription' } },
+    ]);
+    await renderCard();
+
+    await waitFor(() => expect(screen.getByText('Needs a decision: no plan offered to it is big enough')).toBeInTheDocument());
+    expect(screen.getByText('Needs a decision: it has a specially agreed price')).toBeInTheDocument();
+    expect(screen.getByText('Needs a decision: it pays by card, so the platform team moves it by hand')).toBeInTheDocument();
+  });
+
+  it('writes the member figures in the reader’s number format', async () => {
+    serve(makeSettings(), [{
+      tenant_id: 8, tenant_name: 'Mallow Timebank', clock: 'member_limit', action: 'over',
+      detail: { active_members: 1043, max_users: 1000 },
+    }]);
+    await renderCard();
+
+    await waitFor(() => expect(screen.getByText('Over the limit: 1,043 of 1,000 active members')).toBeInTheDocument());
+  });
+
   it('loads the reminder days and the longest wait for Stripe, and no longer shows the single reminder day', async () => {
     serve(makeSettings({ reminder_days: '45,20', card_retry_max_days_late: 21 }), []);
     await renderCard();

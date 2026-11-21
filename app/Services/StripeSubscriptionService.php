@@ -126,6 +126,23 @@ class StripeSubscriptionService
     }
 
     /**
+     * A plan is free only when nothing is charged for it in either currency:
+     * the euro and pound prices, monthly and yearly, all 0 or missing. A plan
+     * priced only in pounds is not free, so checkout must send it to Stripe
+     * rather than activate it directly. One definition for every checkout.
+     */
+    public static function isFreePlan(object $plan): bool
+    {
+        foreach (['price_monthly', 'price_yearly', 'price_monthly_gbp', 'price_yearly_gbp'] as $field) {
+            if ((float) ($plan->{$field} ?? 0) !== 0.0) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * The currency this plan is actually charged in for a community billed in
      * $communityCurrency. A plan with no pound price for that interval (every
      * retired `legacy-…` plan, any custom plan) is charged in euro with its
@@ -533,8 +550,8 @@ class StripeSubscriptionService
         $currency = self::chargeCurrency($plan, $interval, static::billingCurrencyFor($tenantId));
         $priceId = self::planPriceId($plan, $currency, $interval);
 
-        // Free plan — activate directly without Stripe
-        if ((float) $plan->price_monthly === 0.0 && (float) $plan->price_yearly === 0.0) {
+        // Free plan (nothing charged in either currency) — activate directly without Stripe
+        if (self::isFreePlan($plan)) {
             $existing = DB::selectOne(
                 "SELECT id FROM tenant_plan_assignments WHERE tenant_id = ?",
                 [$tenantId]

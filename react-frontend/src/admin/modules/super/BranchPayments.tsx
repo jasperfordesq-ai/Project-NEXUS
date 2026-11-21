@@ -27,7 +27,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Banknote from 'lucide-react/icons/banknote';
-import { Button, Card, CardBody, CardHeader, Chip, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Radio, RadioGroup, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@/components/ui';
+import MoreVertical from 'lucide-react/icons/ellipsis-vertical';
+import { Alert, Button, Card, CardBody, CardHeader, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Radio, RadioGroup, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@/components/ui';
 import { usePageTitle } from '@/hooks';
 import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
@@ -102,7 +103,7 @@ type PlanList = Terms[] | 'loading' | 'failed';
 
 type StandingState = 'open' | 'paused' | 'paused_from_above' | 'exempt';
 type Dialog = { row: BranchRow; kind: 'date' | 'pause' } | null;
-type ChipColor = 'success' | 'warning' | 'danger' | 'primary';
+type ChipColor = 'success' | 'warning' | 'danger' | 'default';
 
 function standingState(row: BranchRow): StandingState {
   if (row.standing.exempt) return 'exempt';
@@ -151,7 +152,8 @@ const STANDING_COLOR: Record<StandingState, ChipColor> = {
   open: 'success',
   paused: 'danger',
   paused_from_above: 'warning',
-  exempt: 'primary',
+  // Neutral: an exemption is not a warning, and the brand colour read as one.
+  exempt: 'default',
 };
 
 export function BranchPayments() {
@@ -302,17 +304,27 @@ export function BranchPayments() {
     );
   }
 
+  // The same switch for every row: the platform's automatic checks.
+  const automationOff = rows[0]?.over_limit?.automation_enabled === false;
+
   return (
     <div className="space-y-6">
       {header}
 
+      {automationOff ? (
+        <Alert color="warning" title={t('admin_billing:over_limit_rule.automation_off_note')} />
+      ) : null}
+
       <Card>
-        <CardHeader className="flex items-center gap-2 pb-0">
+        <CardHeader className="flex flex-row items-center justify-start gap-2 pb-0">
           <Banknote size={18} className="text-accent" aria-hidden="true" />
           <span className="font-semibold text-sm">{t('branch_payments.title')}</span>
         </CardHeader>
         <CardBody className="p-0">
-          <Table aria-label={t('branch_payments.title')} removeWrapper>
+          {/* Wider than a phone, and than many laptops: the table scrolls
+              sideways inside this card, never the page. */}
+          <p className="px-4 pt-2 text-xs text-muted 2xl:hidden">{t('admin_billing:billing.table_scrolls')}</p>
+          <Table aria-label={t('branch_payments.title')} removeWrapper classNames={{ table: 'min-w-[1180px]' }}>
             <TableHeader>
               <TableColumn>{t('branch_payments.col_community')}</TableColumn>
               <TableColumn>{t('admin_billing:billing.col_pays')}</TableColumn>
@@ -329,36 +341,39 @@ export function BranchPayments() {
                 const state = standingState(row);
                 const busy = busyId === row.id;
                 const paysParent = row.standing.payer === 'parent';
+                const canChangePlan = row.plan_change_refusal !== 'card_subscription';
 
                 return (
                   <TableRow key={row.id}>
                     <TableCell>
-                      <span className={`text-sm font-medium ${indentFor(row.depth)}`}>
+                      {/* A block, so every line of a long name is indented and
+                          the hierarchy shows; words wrap whole. */}
+                      <div className={`block min-w-48 break-normal text-sm font-medium ${indentFor(row.depth)}`}>
                         {row.name}
-                      </span>
+                      </div>
                     </TableCell>
 
                     <TableCell>
-                      <span className="text-sm text-muted">
+                      <div className="min-w-36 break-normal text-sm text-muted">
                         {paysParent && row.parent_name ? row.parent_name : t('branch_payments.pays_platform')}
-                      </span>
+                      </div>
                     </TableCell>
 
                     <TableCell>
                       {row.plan ? (
-                        <div className="flex flex-col">
+                        <div className="flex min-w-32 flex-col break-normal">
                           <span className="text-sm">{row.plan.name}</span>
                           {row.plan.terms === 'hub' ? (
                             <span className="text-xs text-muted">{t('branch_payments.plan_hub_terms')}</span>
                           ) : null}
                         </div>
                       ) : (
-                        <span className="text-sm text-muted">{t('branch_payments.no_plan')}</span>
+                        <span className="text-sm text-muted whitespace-nowrap">{t('branch_payments.no_plan')}</span>
                       )}
                     </TableCell>
 
                     <TableCell>
-                      <span className={membersClass(row.members)}>{membersText(row.members)}</span>
+                      <span className={`${membersClass(row.members)} whitespace-nowrap`}>{membersText(row.members)}</span>
                     </TableCell>
 
                     <TableCell>
@@ -366,7 +381,7 @@ export function BranchPayments() {
                     </TableCell>
 
                     <TableCell>
-                      <span className="text-sm text-muted">
+                      <span className="text-sm text-muted whitespace-nowrap">
                         {row.standing.paid_until ? formatDate(row.standing.paid_until) : t('branch_payments.no_date')}
                       </span>
                     </TableCell>
@@ -378,7 +393,7 @@ export function BranchPayments() {
                     </TableCell>
 
                     <TableCell>
-                      <div className="flex flex-col items-start gap-1">
+                      <div className="flex min-w-32 flex-col items-start gap-1 break-normal">
                         <Chip size="sm" variant="soft" color={STANDING_COLOR[state]}>
                           {t(`admin_billing:billing.standing_${state}`)}
                         </Chip>
@@ -390,46 +405,60 @@ export function BranchPayments() {
 
                     <TableCell>
                       {row.can_act ? (
-                        <div className="flex items-center gap-1 flex-wrap">
-                          <Button size="sm" variant="secondary" isDisabled={busy} onPress={() => openDialog(row, 'date')}>
-                            {t('branch_payments.set_date')}
-                          </Button>
-
-                          {row.plan_change_refusal === 'card_subscription' ? (
-                            <span className="text-xs text-muted">{t('branch_payments.plan_card_subscription')}</span>
-                          ) : (
-                            <Button size="sm" variant="secondary" isDisabled={busy} onPress={() => void openPlanDialog(row)}>
-                              {t('branch_payments.change_plan')}
+                        // One action in view and the rest in a menu, as the
+                        // admin lists do: five buttons in a cell were cut off
+                        // at the table's edge.
+                        <div className="flex min-w-52 flex-col items-start gap-1">
+                          <div className="flex items-center gap-1">
+                            <Button size="sm" variant="secondary" isDisabled={busy} onPress={() => openDialog(row, 'date')} className="whitespace-nowrap">
+                              {t('branch_payments.set_date')}
                             </Button>
+                            <Dropdown>
+                              <DropdownTrigger>
+                                <Button
+                                  isIconOnly
+                                  size="sm"
+                                  variant="tertiary"
+                                  aria-label={t('admin_billing:billing.more_actions_for', { name: row.name })}
+                                  isDisabled={busyId !== null}
+                                  isLoading={busy}
+                                >
+                                  <MoreVertical size={16} />
+                                </Button>
+                              </DropdownTrigger>
+                              <DropdownMenu
+                                aria-label={t('admin_billing:billing.more_actions_for', { name: row.name })}
+                                onAction={(key) => {
+                                  if (key === 'plan') void openPlanDialog(row);
+                                  else if (key === 'rule') setRuleRow(row);
+                                  else if (key === 'pause') openDialog(row, 'pause');
+                                  else if (key === 'restore') void send(row, 'restore', {}, 'admin_billing:billing.done_restored');
+                                }}
+                              >
+                                {[
+                                  ...(canChangePlan ? [
+                                    <DropdownItem key="plan" id="plan">{t('branch_payments.change_plan')}</DropdownItem>,
+                                  ] : []),
+                                  <DropdownItem key="rule" id="rule">{t('admin_billing:over_limit_rule.open_dialog')}</DropdownItem>,
+                                  ...(state === 'open' ? [
+                                    <DropdownItem key="pause" id="pause" className="text-warning">{t('admin_billing:billing.pause_community')}</DropdownItem>,
+                                  ] : []),
+                                  // Only where this community itself is paused: one
+                                  // paused from above is restored on the community
+                                  // above it.
+                                  ...(state === 'paused' ? [
+                                    <DropdownItem key="restore" id="restore" className="text-success">{t('admin_billing:billing.restore_community')}</DropdownItem>,
+                                  ] : []),
+                                ]}
+                              </DropdownMenu>
+                            </Dropdown>
+                          </div>
+                          {canChangePlan ? null : (
+                            <span className="text-xs text-muted break-normal">{t('branch_payments.plan_card_subscription')}</span>
                           )}
-
-                          <Button size="sm" variant="tertiary" isDisabled={busy} onPress={() => setRuleRow(row)}>
-                            {t('admin_billing:over_limit_rule.open_dialog')}
-                          </Button>
-
-                          {state === 'open' ? (
-                            <Button size="sm" color="warning" variant="tertiary" isDisabled={busy} onPress={() => openDialog(row, 'pause')}>
-                              {t('admin_billing:billing.pause_community')}
-                            </Button>
-                          ) : null}
-
-                          {/* Only where this community itself is paused. One
-                              paused from above is restored on the community
-                              above it. */}
-                          {state === 'paused' ? (
-                            <Button
-                              size="sm"
-                              color="success"
-                              variant="secondary"
-                              isLoading={busy}
-                              onPress={() => void send(row, 'restore', {}, 'admin_billing:billing.done_restored')}
-                            >
-                              {t('admin_billing:billing.restore_community')}
-                            </Button>
-                          ) : null}
                         </div>
                       ) : (
-                        <span className="text-xs text-muted">
+                        <span className="block min-w-48 text-xs text-muted break-normal">
                           {row.cannot_act_reason === 'exempt'
                             ? t('branch_payments.cannot_exempt')
                             : t('branch_payments.cannot_pays_platform')}
@@ -446,7 +475,7 @@ export function BranchPayments() {
 
       <Modal isOpen={dialog !== null} onClose={closeDialog} size="md">
         <ModalContent>
-          <ModalHeader>
+          <ModalHeader className="pr-10">
             {dialog?.kind === 'pause' ? t('admin_billing:billing.pause_modal_title') : t('branch_payments.set_date')}
             {dialog && (
               <span className="text-muted text-sm font-normal ml-2">— {dialog.row.name}</span>
@@ -497,7 +526,7 @@ export function BranchPayments() {
 
       <Modal isOpen={planRow !== null} onClose={closePlanDialog} size="lg" scrollBehavior="inside">
         <ModalContent>
-          <ModalHeader>
+          <ModalHeader className="pr-10">
             {t('branch_payments.change_plan')}
             {planRow && (
               <span className="text-muted text-sm font-normal ml-2">— {planRow.name}</span>

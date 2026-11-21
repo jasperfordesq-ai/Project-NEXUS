@@ -12,6 +12,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth, useTenant } from '@/contexts';
 import { isPlatformTeamUser } from '@/lib/access';
+import { isOnPanelPath } from '@/lib/panelPath';
 import { ScrollShadow } from '@/components/ui';
 import { Button, Tooltip } from '@/components/ui';
 import Banknote from 'lucide-react/icons/banknote';
@@ -90,13 +91,10 @@ export function SuperAdminSidebar({ collapsed, onToggle }: SuperAdminSidebarProp
     },
   ];
 
-  const isActive = (path: string) => {
-    const target = tenantPath(path);
-    if (path === '/super-admin') {
-      return location.pathname === target || location.pathname === `${target}/`;
-    }
-    return location.pathname === target || location.pathname.startsWith(`${target}/`);
-  };
+  // useLocation() has no community slug inside the app's routes, while
+  // tenantPath() adds one: isOnPanelPath() accepts both forms.
+  const isActive = (path: string) =>
+    isOnPanelPath(location.pathname, path, tenantPath, { exact: path === '/super-admin' });
 
   const renderItem = (item: NavItem) => {
     const active = isActive(item.path);

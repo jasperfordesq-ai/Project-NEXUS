@@ -2,7 +2,6 @@ import { Alert, Card, CardBody, CardHeader, Input, Textarea, Button, Spinner, Ch
 import { useState, useEffect } from 'react';
 
 import { Separator } from '@/components/ui';
-import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import CreditCard from 'lucide-react/icons/credit-card';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import Save from 'lucide-react/icons/save';
@@ -98,6 +97,11 @@ const WHOLE_NUMBER_RULES = [
   { field: 'storage_gb', labelKey: 'content.plan_storage_gb', min: 0 },
   { field: 'emails_per_month', labelKey: 'content.plan_emails_per_month', min: 0 },
 ] as const;
+
+// A field with a currency in front is drawn by the Input wrapper as a bare
+// shell, which on a card read as plain text. The same visible box as the
+// other fields of this form.
+const PRICE_FIELD_SHELL = 'rounded-xl border border-divider bg-[var(--field-background)]';
 
 export function PlanForm() {
   const { t } = useTranslation('admin_content');
@@ -333,7 +337,6 @@ export function PlanForm() {
         <Alert
           color="warning"
           variant="tertiary"
-          startContent={<AlertTriangle aria-hidden="true" className="h-4 w-4" />}
           title={t('content.plan_stripe_warning_title')}
           description={
             <span className="flex flex-col gap-1">
@@ -382,6 +385,7 @@ export function PlanForm() {
                   type="number" min="0" step="0.01"
                   variant="secondary"
                   startContent={<span className="text-muted text-sm">EUR</span>}
+                  classNames={{ inputWrapper: PRICE_FIELD_SHELL }}
                   value={formData.price_monthly}
                   onValueChange={(v) => handleChange('price_monthly', v)}
                 />
@@ -390,6 +394,7 @@ export function PlanForm() {
                   type="number" min="0" step="0.01"
                   variant="secondary"
                   startContent={<span className="text-muted text-sm">EUR</span>}
+                  classNames={{ inputWrapper: PRICE_FIELD_SHELL }}
                   description={t('content.annual_price_description')}
                   value={formData.price_yearly}
                   onValueChange={(v) => handleChange('price_yearly', v)}
@@ -399,6 +404,7 @@ export function PlanForm() {
                   type="number" min="0" step="0.01"
                   variant="secondary"
                   startContent={<span className="text-muted text-sm">EUR</span>}
+                  classNames={{ inputWrapper: PRICE_FIELD_SHELL }}
                   value={formData.setup_fee}
                   onValueChange={(v) => handleChange('setup_fee', v)}
                 />
@@ -409,6 +415,7 @@ export function PlanForm() {
                   type="number" min="0" step="0.01"
                   variant="secondary"
                   startContent={<span className="text-muted text-sm">GBP</span>}
+                  classNames={{ inputWrapper: PRICE_FIELD_SHELL }}
                   placeholder={t('content.plan_gbp_not_sold')}
                   value={formData.price_monthly_gbp}
                   onValueChange={(v) => handleChange('price_monthly_gbp', v)}
@@ -418,6 +425,7 @@ export function PlanForm() {
                   type="number" min="0" step="0.01"
                   variant="secondary"
                   startContent={<span className="text-muted text-sm">GBP</span>}
+                  classNames={{ inputWrapper: PRICE_FIELD_SHELL }}
                   placeholder={t('content.plan_gbp_not_sold')}
                   value={formData.price_yearly_gbp}
                   onValueChange={(v) => handleChange('price_yearly_gbp', v)}
@@ -427,6 +435,7 @@ export function PlanForm() {
                   type="number" min="0" step="0.01"
                   variant="secondary"
                   startContent={<span className="text-muted text-sm">GBP</span>}
+                  classNames={{ inputWrapper: PRICE_FIELD_SHELL }}
                   placeholder={t('content.plan_gbp_not_sold')}
                   value={formData.setup_fee_gbp}
                   onValueChange={(v) => handleChange('setup_fee_gbp', v)}

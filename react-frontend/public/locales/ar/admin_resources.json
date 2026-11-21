@@ -661,7 +661,7 @@
     "plan_name_placeholder": "على سبيل المثال، المجتمع",
     "plan_description_placeholder": "صف لمن هذه الخطة وما الذي يجعلها مناسبة لهم.",
     "annual_price_description": "عادة حوالي 17٪ من السعر الشهري",
-    "tier_level_description": "0 = مجاني، 1 = أساسي، 2 = شريك، 3 = شبكة",
+    "tier_level_description": "رقم صحيح يُستخدم فقط لترتيب الخطط، من الأصغر إلى الأكبر.",
     "leave_blank_unlimited": "اتركه فارغا لعدد غير محدود",
     "max_users_description": "الأعضاء النشطين مسموح بهم في هذه الخطة",
     "selling_points": "نقاط البيع",

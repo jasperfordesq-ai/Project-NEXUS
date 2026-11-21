@@ -203,6 +203,22 @@ final class BillingAutomationMoveUpTest extends TestCase
         $this->assertSame($this->large, $this->planOf($this->community));
     }
 
+    public function test_the_lists_and_the_banner_give_the_day_of_a_pending_move(): void
+    {
+        // describe() and memberLimitState() count from the real today, as the
+        // pause date does: the day of this episode's "over" notice plus the days.
+        $now = CarbonImmutable::parse(now()->toDateString());
+        $this->addActiveMembers($this->community, 11);
+
+        $this->assertSame('upgrade', \App\Support\Billing\OverLimitRule::describe($this->community)['effective_action']);
+        $this->assertSame($now->addDays(10)->toDateString(), \App\Support\Billing\OverLimitRule::describe($this->community)['acts_on'], 'Not warned yet: today plus the days.');
+        $this->assertSame($now->addDays(10)->toDateString(), BillingAutomationService::memberLimitState($this->community)['acts_on']);
+
+        BillingAutomationService::run($now->subDays(3));
+        $this->assertSame($now->addDays(7)->toDateString(), \App\Support\Billing\OverLimitRule::describe($this->community)['acts_on'], 'Counted from the notice.');
+        $this->assertSame($now->addDays(7)->toDateString(), BillingAutomationService::memberLimitState($this->community)['acts_on']);
+    }
+
     public function test_a_community_still_over_after_its_move_starts_a_fresh_episode(): void
     {
         $this->addActiveMembers($this->community, 11);

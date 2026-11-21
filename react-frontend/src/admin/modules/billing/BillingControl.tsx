@@ -77,6 +77,8 @@ interface CurrentPlan {
   max_communities: number | null;
   /** One of the seven standard packages (DESIGN §11), not a retired plan. */
   is_standard: boolean;
+  /** `hub` when the name and member number shown are its hub's version of the plan. */
+  terms?: 'default' | 'hub';
 }
 
 type AssignmentStatus = 'active' | 'trial' | 'expired' | 'cancelled';
@@ -166,15 +168,24 @@ function formatEur(amount: number): string {
   }).format(amount);
 }
 
-const formatUserCount = (row: TenantSnapshot): string => {
-  if (row.subtree_user_count !== row.own_user_count) {
-    return `${row.own_user_count} (${row.subtree_user_count})`;
-  }
-  return String(row.own_user_count);
-};
-
 function formatCount(value: number): string {
   return new Intl.NumberFormat(getFormattingLocale()).format(value);
+}
+
+// In the reader's number format ("1,043 (1,243)"), not raw digits.
+const formatUserCount = (row: TenantSnapshot): string => {
+  if (row.subtree_user_count !== row.own_user_count) {
+    return `${formatCount(row.own_user_count)} (${formatCount(row.subtree_user_count)})`;
+  }
+  return formatCount(row.own_user_count);
+};
+
+// How far a community sits below the top, as whole class names so the
+// stylesheet keeps them (no inline styles).
+const INDENT = ['pl-0', 'pl-4', 'pl-8', 'pl-12', 'pl-16', 'pl-20'] as const;
+
+function indentFor(depth: number): string {
+  return INDENT[Math.min(INDENT.length - 1, Math.max(0, depth))] ?? INDENT[0];
 }
 
 /** `820 / 1,000 (82%)`, or just the active count when nothing limits it. */
@@ -206,7 +217,8 @@ const STANDING_COLOR: Record<StandingState, ChipColor> = {
   open: 'success',
   paused: 'danger',
   paused_from_above: 'warning',
-  exempt: 'primary',
+  // Neutral: an exemption is not a warning, and the brand colour read as one.
+  exempt: 'default',
 };
 
 // ---------------------------------------------------------------------------
@@ -214,7 +226,8 @@ const STANDING_COLOR: Record<StandingState, ChipColor> = {
 // ---------------------------------------------------------------------------
 
 export function BillingControl() {
-  const { t } = useTranslation('admin_billing');
+  // super_admin: "On its hub's terms", worded as on Branch payments.
+  const { t } = useTranslation(['admin_billing', 'super_admin']);
   usePageTitle(t('billing.control_title'));
   const { user } = useAuth();
   const toast = useToast();
@@ -532,12 +545,15 @@ export function BillingControl() {
       <BillingAutomationCard onWarningPercent={setWarningPercent} />
 
       <Card>
-        <CardHeader className="flex items-center gap-2 pb-0">
+        <CardHeader className="flex flex-row items-center justify-start gap-2 pb-0">
           <CreditCard size={18} className="text-accent" />
           <span className="font-semibold text-sm">{t('billing.control_title')}</span>
         </CardHeader>
         <CardBody className="p-0">
-          <Table aria-label={t('billing.control_title')} removeWrapper>
+          {/* Wider than most screens: the table scrolls sideways inside this
+              card, never the page, and says so. */}
+          <p className="px-4 pt-2 text-xs text-muted">{t('billing.table_scrolls')}</p>
+          <Table aria-label={t('billing.control_title')} removeWrapper classNames={{ table: 'min-w-[1500px]' }}>
             <TableHeader>
               <TableColumn>{t('billing.col_tenant')}</TableColumn>
               <TableColumn>{t('billing.col_users')}</TableColumn>
@@ -564,20 +580,17 @@ export function BillingControl() {
                   <TableRow key={row.id}>
                     {/* Community name with depth indent */}
                     <TableCell>
-                      <span
-                        className="inline-block min-w-32 text-sm font-medium"
-                        style={{ paddingLeft: `${row.depth * 16}px` }}
-                      >
+                      <div className={`block min-w-44 break-normal text-sm font-medium ${indentFor(row.depth)}`}>
                         {row.over_limit && !row.is_in_grace_period && (
                           <AlertTriangle size={14} className="inline mr-1 text-warning-soft-foreground" aria-hidden="true" />
                         )}
                         {row.name}
-                      </span>
+                      </div>
                     </TableCell>
 
                     {/* Users: own + subtree total */}
                     <TableCell>
-                      <span className="text-sm text-muted">
+                      <span className="text-sm text-muted whitespace-nowrap">
                         {formatUserCount(row)}
                       </span>
                     </TableCell>
@@ -591,7 +604,7 @@ export function BillingControl() {
 
                     {/* Plan chip */}
                     <TableCell>
-                      <div className="flex items-center gap-1 flex-wrap">
+                      <div className="flex min-w-40 items-center gap-1 flex-wrap break-normal">
                         <Chip
                           size="sm"
                           variant="soft"
@@ -609,6 +622,12 @@ export function BillingControl() {
                           </Chip>
                         ) : null}
                       </div>
+                      {/* The name and member number shown are its hub's version. */}
+                      {row.current_plan?.terms === 'hub' ? (
+                        <span className="mt-1 block text-xs text-muted">
+                          {t('super_admin:branch_payments.plan_hub_terms')}
+                        </span>
+                      ) : null}
                       {suggested ? (
                         <span className="mt-1 block text-xs text-muted">
                           {t('control.suggested', { plan: suggested })}
@@ -619,7 +638,7 @@ export function BillingControl() {
                     {/* Effective price */}
                     <TableCell>
                       <div className="flex items-center gap-1 flex-wrap">
-                        <span className="text-sm text-foreground">
+                        <span className="text-sm text-foreground whitespace-nowrap">
                           {price
                             ? `${formatEur(price.yearly)}/${t('billing.yearly_suffix')}`
                             : '—'
@@ -679,7 +698,9 @@ export function BillingControl() {
                     {/* Actions */}
                     <TableCell>
                       {isGod ? (
-                        <div className="flex items-center gap-1 flex-wrap">
+                        // Wide enough for the buttons to sit in rows, not a
+                        // tall single column.
+                        <div className="flex min-w-[26rem] items-center gap-1 flex-wrap">
                           <Button
                             size="sm"
                             variant="secondary"

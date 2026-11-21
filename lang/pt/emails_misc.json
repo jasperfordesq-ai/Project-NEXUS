@@ -1022,7 +1022,7 @@
     "active_member_note": "Um membro ativo é alguém que entrou na plataforma nos últimos {{days}} dias.",
     "limit_over_warn_only": "Nada mudou para os seus membros. Mude-a para um pacote adequado.",
     "limit_over_will_pause": "Se em <strong>{{date}}</strong> ainda estiver acima do limite, ela será pausada automaticamente até voltar a ficar abaixo do limite ou mudar para um pacote maior.",
-    "limit_over_joining_closed": "Os seus membros podem continuar a usá-la normalmente, mas não podem entrar novos membros até voltar a ficar abaixo do limite ou mudar para um pacote maior.",
+    "limit_joining_closed_now": "A partir de agora, não podem entrar novos membros até voltar a ficar abaixo do limite ou mudar para um pacote maior. Os seus membros podem continuar a usá-la normalmente.",
     "limit_over_will_move_up": "Se em <strong>{{date}}</strong> ainda estiver acima do limite, ela será mudada automaticamente para o pacote <strong>{{plan}}</strong>, o mais pequeno que se adequa.",
     "limit_over_needs_decision": "Não é possível mudá-la automaticamente para um pacote maior. Quem trata da sua faturação tem de escolher um pacote adequado.",
     "limit_over_will_move_up_priced": "Se em <strong>{{date}}</strong> ainda estiver acima do limite, ela será mudada automaticamente para o pacote <strong>{{plan}}</strong> ({{price}}), o mais pequeno que se adequa.",

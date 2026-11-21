@@ -24,7 +24,7 @@ import CalendarClock from 'lucide-react/icons/calendar-clock';
 import { Button, Card, CardBody, CardHeader, Input, Radio, RadioGroup, Spinner, Switch } from '@/components/ui';
 import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
-import { formatDate } from '@/lib/helpers';
+import { formatDate, formatNumber } from '@/lib/helpers';
 import {
   OVER_LIMIT_ACTIONS,
   isOverLimitAction,
@@ -73,7 +73,7 @@ const NUMBER_KEYS: NumberKey[] = [
 /** Every action the check can name, by clock. Anything else is "another action". */
 const KNOWN_ACTIONS: Record<PreviewEntry['clock'], string[]> = {
   payment: ['reminder', 'due', 'final_warning', 'suspend', 'waiting_for_stripe'],
-  member_limit: ['approaching', 'reached', 'over', 'suspend', 'restore'],
+  member_limit: ['approaching', 'reached', 'over', 'suspend', 'restore', 'move_up', 'needs_decision'],
 };
 
 function toDraft(settings: BillingAutomationSettings): Draft {
@@ -110,6 +110,10 @@ function changes(saved: BillingAutomationSettings, draft: Draft): Record<string,
 }
 
 const text = (value: unknown): string => (value === null || value === undefined ? '' : String(value));
+const count = (value: unknown): string => (typeof value === 'number' ? formatNumber(value) : text(value));
+
+/** Why the daily check cannot move a community up by itself (moveOutcome()). */
+const DECISION_REASONS: readonly string[] = ['no_plan_fits', 'custom_price', 'card_subscription'];
 const dateText = (value: unknown): string => (typeof value === 'string' && value !== '' ? formatDate(value) : '');
 
 interface BillingAutomationCardProps {
@@ -199,13 +203,20 @@ export function BillingAutomationCard({ onWarningPercent }: BillingAutomationCar
     if (!known) return t('automation.action_other');
 
     const d = entry.detail ?? {};
+    if (entry.clock === 'member_limit' && entry.action === 'needs_decision') {
+      const reason = DECISION_REASONS.includes(String(d.decision_reason)) ? String(d.decision_reason) : 'no_plan_fits';
+      return t('automation.action_member_limit_needs_decision', { reason: t(`automation.decision_${reason}`) });
+    }
+
     return t(`automation.action_${entry.clock}_${entry.action}`, {
       date: dateText(d.paid_until),
       days: text(d.days_late),
       pause_date: dateText(d.pause_date),
-      used: text(d.active_members),
-      max: text(d.max_users),
+      // Figures in the reader's number format, never raw digits.
+      used: count(d.active_members),
+      max: count(d.max_users),
       percent: text(d.percent),
+      plan: text(d.move_plan),
     });
   };
 
@@ -224,16 +235,21 @@ export function BillingAutomationCard({ onWarningPercent }: BillingAutomationCar
           </div>
         ) : (
           <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-1">
+            {/* Label and its note beside the switch, as the other admin
+                switches are laid out (Translation settings). */}
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col gap-1">
+                <p className="text-sm font-medium">{t('automation.switch_label')}</p>
+                <p className="text-sm text-muted">
+                  {draft.automation_enabled ? t('automation.on_note') : t('automation.off_note')}
+                </p>
+              </div>
               <Switch
+                aria-label={t('automation.switch_label')}
+                className="flex-shrink-0"
                 isSelected={draft.automation_enabled}
                 onValueChange={(value) => setDraft({ ...draft, automation_enabled: value })}
-              >
-                {t('automation.switch_label')}
-              </Switch>
-              <p className="text-sm text-muted">
-                {draft.automation_enabled ? t('automation.on_note') : t('automation.off_note')}
-              </p>
+              />
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -337,7 +353,7 @@ export function BillingAutomationCard({ onWarningPercent }: BillingAutomationCar
                   <span className="text-xs text-muted sm:w-1/6">
                     {entry.clock === 'payment' ? t('automation.clock_payment') : t('automation.clock_member_limit')}
                   </span>
-                  <span className="text-sm">{describe(entry)}</span>
+                  <span className="text-sm break-normal">{describe(entry)}</span>
                 </li>
               ))}
             </ul>

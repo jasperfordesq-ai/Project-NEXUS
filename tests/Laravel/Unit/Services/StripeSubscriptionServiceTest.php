@@ -471,4 +471,22 @@ class StripeSubscriptionServiceTest extends TestCase
 
         StripeSubscriptionService::handleInvoicePaymentFailed($invoice);
     }
+
+    // =========================================================================
+    // isFreePlan
+    // =========================================================================
+
+    public function test_isFreePlan_onlyWhenNothingIsChargedInEitherCurrency(): void
+    {
+        $plan = static fn (array $prices): object => (object) ($prices + [
+            'price_monthly' => 0, 'price_yearly' => 0, 'price_monthly_gbp' => null, 'price_yearly_gbp' => null,
+        ]);
+
+        $this->assertTrue(StripeSubscriptionService::isFreePlan($plan([])));
+        $this->assertTrue(StripeSubscriptionService::isFreePlan($plan(['price_monthly' => '0.00', 'price_yearly_gbp' => 0])));
+        $this->assertFalse(StripeSubscriptionService::isFreePlan($plan(['price_monthly_gbp' => 90])), 'priced only in pounds, monthly');
+        $this->assertFalse(StripeSubscriptionService::isFreePlan($plan(['price_yearly_gbp' => '900.00'])), 'priced only in pounds, yearly');
+        $this->assertFalse(StripeSubscriptionService::isFreePlan($plan(['price_yearly' => 500])));
+        $this->assertFalse(StripeSubscriptionService::isFreePlan($plan(['price_monthly' => 50])));
+    }
 }

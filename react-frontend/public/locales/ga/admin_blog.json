@@ -488,7 +488,7 @@
     "plan_name_placeholder": "e.g., Pobal",
     "plan_description_placeholder": "Déan cur síos ar cé dó a bhfuil an plean seo agus cad a dhéanann oiriúnach dóibh.",
     "annual_price_description": "Go tipiciúil thart ar 17% as an ráta míosúil",
-    "tier_level_description": "0 = saor in aisce, 1 = bunúsach, 2 = comhpháirtí, 3 = líonra",
+    "tier_level_description": "Slánuimhir nach n-úsáidtear ach chun na pleananna a chur in ord, an ceann is lú ar dtús.",
     "leave_blank_unlimited": "Fág bán gan teorainn",
     "max_users_description": "Baill ghníomhacha ceadaithe ar an bplean seo",
     "selling_points": "Pointí Díolacháin",

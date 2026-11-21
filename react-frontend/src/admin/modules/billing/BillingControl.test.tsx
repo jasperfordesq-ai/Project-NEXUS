@@ -299,6 +299,29 @@ describe('BillingControl', () => {
     expect(screen.getByText((text) => text.includes('490'))).toBeInTheDocument();
   });
 
+  it('marks a plan shown on its hub’s terms', async () => {
+    await renderWith([
+      makeSnapshot({ current_plan: makePlanOnRow({ terms: 'hub' }) }),
+      makeSnapshot({ id: 6, name: 'Galway Timebank', current_plan: makePlanOnRow({ terms: 'default' }), standing: makeStanding({ tenant_id: 6 }) }),
+    ]);
+
+    expect(screen.getAllByText('On its hub\'s terms')).toHaveLength(1);
+  });
+
+  it('writes the account counts in the reader’s number format', async () => {
+    await renderWith([makeSnapshot({ own_user_count: 1043, subtree_user_count: 1243 })]);
+
+    expect(screen.getByText('1,043 (1,243)')).toBeInTheDocument();
+  });
+
+  it('is titled Billing control and calls the first column Community', async () => {
+    await renderWith([makeSnapshot()]);
+
+    expect(screen.getAllByText('Billing control').length).toBeGreaterThan(0);
+    expect(screen.getByText('Community')).toBeInTheDocument();
+    expect(screen.queryByText('Tenant')).not.toBeInTheDocument();
+  });
+
   it('shows "No Plan" only when current_plan is null', async () => {
     await renderWith([
       makeSnapshot(),

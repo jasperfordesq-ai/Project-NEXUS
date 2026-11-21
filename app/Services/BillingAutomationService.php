@@ -123,7 +123,7 @@ final class BillingAutomationService
      * follows for it (OverLimitRule effective action) while the automatic
      * checks are on, and `none` while they are off, because then nothing
      * will happen and the banner must not say it will. `acts_on` is the day
-     * it would pause it (limitActsOn()).
+     * it would pause it or move it up (limitActsOn()).
      *
      * @return array{used:int, max:int, percent:int, stage:?string, rule:string, acts_on:?string}|null
      */
@@ -212,14 +212,15 @@ final class BillingAutomationService
 
     /**
      * The day the daily check would pause a community for being over its
-     * member number, under the present state: its rule pauses, it is over a
+     * member number, or move it up (rule `upgrade`, followed as such: not a
+     * card payer), under the present state: its rule pauses or moves, it is over a
      * watched limit now, and its days (counted from the day this episode's
      * "over" notice was sent, or today when none is on record yet) run out
      * on that day. Never a day already gone.
      *
      * The earliest, not a promise, like earliestPauseDate(): a community the
      * check has not yet told it is over is told first and paused later. Null
-     * when no such pause can come: the rule does not pause, the checks are
+     * when no such pause or move can come: the rule neither pauses nor moves, the checks are
      * switched off, no watched limit, not over, exempt, or already paused.
      *
      * @param array{effective_action:string, grace_days:int} $rule OverLimitRule::for()
@@ -227,7 +228,9 @@ final class BillingAutomationService
      */
     public static function limitActsOn(int $tenantId, array $rule, ?int $active = null, ?CarbonInterface $today = null): ?string
     {
-        if ($rule['effective_action'] !== 'pause' || !BillingSettings::get('automation_enabled')) {
+        // A move up comes on the day a pause would (moveStep()), so the same
+        // date serves both; the screens tell them apart by the rule.
+        if (!in_array($rule['effective_action'], ['pause', 'upgrade'], true) || !BillingSettings::get('automation_enabled')) {
             return null;
         }
 
@@ -993,6 +996,23 @@ final class BillingAutomationService
             }
         }
 
+        // Under "stop new members joining" the "reached" notice is what shuts
+        // the door (JoiningGate), so, like "over", it is recorded only once
+        // the mailer accepted it; otherwise it is due again at the next run.
+        $reachedShutsDoor = $rule['effective_action'] === 'block_joining'
+            && $stage === 'reached' && $current > $recorded && !$pausedForLimit;
+
+        // What "move up" will do, for the "approaching" and "reached"
+        // notices: a person must decide when no plan fits, the price was
+        // specially agreed, or it pays by card. The "over" notice already
+        // reads this from the move facts.
+        if ($stage !== null && $stage !== 'over' && $rule['action'] === 'upgrade') {
+            $outcome = self::moveOutcome($id, $limit, $rule, $active);
+            if ($outcome['reason'] !== null || $outcome['target'] === null || $outcome['price'] === null) {
+                $facts['move_decision'] = $outcome['reason'] ?? 'no_plan_fits';
+            }
+        }
+
         $out = [];
 
         if ($act) {
@@ -1014,7 +1034,7 @@ final class BillingAutomationService
                 $state['limit_notice_at'] = null;
                 $state['limit_notice_stage'] = $names[$current] ?? null;
             }
-            if ($newRecorded !== $recorded) {
+            if ($newRecorded !== $recorded && !$reachedShutsDoor) {
                 $names = array_flip(self::LIMIT_STAGES);
                 $state['limit_notice_stage'] = $names[$newRecorded] ?? null;
                 if ($newRecorded > $recorded) {
@@ -1032,7 +1052,20 @@ final class BillingAutomationService
         // A community paused for being over is lifted above once it is not
         // over, so "approaching" and "reached" only reach one that is open.
         if ($stage !== null && $stage !== 'over' && $current > $recorded) {
-            if ($act) {
+            if ($act && $reachedShutsDoor) {
+                $counts = self::tellCounted(fn () => BillingStandingNotifier::limitReached($id, $facts), $id);
+                if (self::reachedSomeone($counts)) {
+                    BillingStandingService::recordCheckState($id, [
+                        'limit_notice_stage' => 'reached',
+                        'limit_notice_at' => self::stamp($today),
+                    ]);
+                } else {
+                    Log::error('[BillingAutomation] the "reached" member-limit notice was not sent; it is due again at the next run', [
+                        'tenant_id' => $id,
+                        'tried' => $counts['tried'] ?? null,
+                    ]);
+                }
+            } elseif ($act) {
                 self::tell(fn () => match ($stage) {
                     'approaching' => BillingStandingNotifier::limitApproaching($id, $facts),
                     default => BillingStandingNotifier::limitReached($id, $facts),

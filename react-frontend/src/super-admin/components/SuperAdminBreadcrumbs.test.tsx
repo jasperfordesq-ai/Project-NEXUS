@@ -155,4 +155,16 @@ describe('SuperAdminBreadcrumbs', () => {
     renderAt('/test/super-admin/platform/billing');
     expect(screen.getAllByRole('listitem').length).toBe(3);
   });
+
+  it('names Branch payments and Branch plans by their titles, not their addresses', () => {
+    renderAt('/test/super-admin/branch-payments');
+    expect(screen.getByText('Branch payments')).toBeInTheDocument();
+    expect(screen.queryByText('branch-payments')).not.toBeInTheDocument();
+  });
+
+  it('names Branch plans by its title', () => {
+    renderAt('/test/super-admin/branch-plans');
+    expect(screen.getByText('Branch plans')).toBeInTheDocument();
+    expect(screen.queryByText('branch-plans')).not.toBeInTheDocument();
+  });
 });

@@ -1022,7 +1022,7 @@
     "active_member_note": "An active member is someone who signed in within the last {{days}} days.",
     "limit_over_warn_only": "Nothing has changed for its members. Please move it to a package that fits.",
     "limit_over_will_pause": "If it is still over the limit on <strong>{{date}}</strong>, it will be paused automatically until it is back under the limit or moves to a bigger package.",
-    "limit_over_joining_closed": "Its members can still use it as normal, but new members cannot join until it is back under the limit or moves to a bigger package.",
+    "limit_joining_closed_now": "From now on, new members cannot join until it is back under the limit or moves to a bigger package. Its members can still use it as normal.",
     "limit_over_will_move_up": "If it is still over the limit on <strong>{{date}}</strong>, it will be moved automatically to the <strong>{{plan}}</strong> package, the smallest that fits.",
     "limit_over_needs_decision": "It cannot be moved to a bigger package automatically. Whoever looks after its billing needs to choose a package that fits.",
     "limit_over_will_move_up_priced": "If it is still over the limit on <strong>{{date}}</strong>, it will be moved automatically to the <strong>{{plan}}</strong> package ({{price}}), the smallest that fits.",

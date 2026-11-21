@@ -146,32 +146,61 @@ final class OverLimitNoticeTest extends TestCase
 
     // ── What the earlier notices say the rule will do ───────────────────────
 
-    /** @return array<string, array{0: string, 1: ?string}> */
+    /** @return array<string, array{0: string, 1: ?string, 2: ?string}> */
     public static function ruleLines(): array
     {
         return [
-            'warn only says nothing more' => ['none', null],
-            'stop new members' => ['block_joining', 'new members will not be able to join'],
-            'pause' => ['pause', 'stays over for 21 days, it will be paused automatically'],
-            'move up' => ['upgrade', 'stays over for 21 days, it will be moved automatically to the smallest package that fits'],
+            'warn only says nothing more' => ['none', null, null],
+            // At its number the door is shut from that moment (JoiningGate),
+            // so "reached" says so plainly; "approaching" names what is to come.
+            'stop new members' => ['block_joining', 'new members will not be able to join', 'From now on, new members cannot join until it is back under the limit'],
+            'pause' => ['pause', 'stays over for 21 days, it will be paused automatically', 'stays over for 21 days, it will be paused automatically'],
+            'move up' => ['upgrade', 'stays over for 21 days, it will be moved automatically to the smallest package that fits', 'stays over for 21 days, it will be moved automatically to the smallest package that fits'],
         ];
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider('ruleLines')]
-    public function test_the_approaching_and_reached_notices_say_what_the_rule_will_do(string $rule, ?string $line): void
+    public function test_the_approaching_and_reached_notices_say_what_the_rule_will_do(string $rule, ?string $approaching, ?string $reached): void
     {
         BillingStandingNotifier::limitApproaching($this->child, $this->facts(['rule' => $rule, 'grace_days' => 21]));
         BillingStandingNotifier::limitReached($this->child, $this->facts(['rule' => $rule, 'grace_days' => 21, 'active_members' => 100]));
 
-        foreach ($this->mailer->to($this->childAdmin) as $mail) {
+        $mail = $this->mailer->to($this->childAdmin);
+        $this->assertCount(2, $mail);
+        foreach ([[$mail[0], $approaching], [$mail[1], $reached]] as [$one, $line]) {
             if ($line === null) {
-                $this->assertStringNotContainsString('stays over for', $mail['body']);
-                $this->assertStringNotContainsString('will not be able to join', $mail['body']);
+                $this->assertStringNotContainsString('stays over for', $one['body']);
+                $this->assertStringNotContainsString('will not be able to join', $one['body']);
+                $this->assertStringNotContainsString('cannot join', $one['body']);
             } else {
-                $this->assertStringContainsString($line, $mail['body']);
+                $this->assertStringContainsString($line, $one['body']);
             }
         }
-        $this->assertCount(2, $this->mailer->to($this->childAdmin));
+    }
+
+    /** @return array<string, array{0: array<string, mixed>}> */
+    public static function moveThatWillNotHappen(): array
+    {
+        return [
+            'no plan fits' => [['rule' => 'upgrade', 'rule_action' => 'upgrade', 'move_decision' => 'no_plan_fits']],
+            'a specially agreed price' => [['rule' => 'upgrade', 'rule_action' => 'upgrade', 'move_decision' => 'custom_price']],
+            'a card payer' => [['rule' => 'none', 'rule_action' => 'upgrade']],
+        ];
+    }
+
+    /** @param array<string, mixed> $extra */
+    #[\PHPUnit\Framework\Attributes\DataProvider('moveThatWillNotHappen')]
+    public function test_the_approaching_and_reached_notices_promise_no_move_that_will_not_happen(array $extra): void
+    {
+        BillingStandingNotifier::limitApproaching($this->child, $this->facts($extra + ['grace_days' => 21]));
+        BillingStandingNotifier::limitReached($this->child, $this->facts($extra + ['grace_days' => 21, 'active_members' => 100]));
+
+        $mail = $this->mailer->to($this->childAdmin);
+        $this->assertCount(2, $mail);
+        foreach ($mail as $one) {
+            $this->assertStringNotContainsString('it will be moved automatically', $one['body']);
+            $this->assertStringContainsString('cannot be moved to a bigger package automatically', $one['body']);
+        }
     }
 
     // ── The "over" notice's closing line ────────────────────────────────────
@@ -291,6 +320,29 @@ final class OverLimitNoticeTest extends TestCase
         $this->assertSame('2027-03-20', $entry['detail']['move_date']);
         $this->assertStringContainsString('<strong>' . $fits['name'] . '</strong> package', $this->body($admin));
         $this->assertFalse(BillingLock::isLocked($this->platformPayer), 'Move up never pauses.');
+    }
+
+    public function test_the_daily_checks_approaching_notice_promises_no_move_for_a_specially_agreed_price(): void
+    {
+        $spark = (int) DB::table('pay_plans')->where('slug', 'spark')->value('id');
+        $sparkMax = (int) DB::table('pay_plans')->where('id', $spark)->value('max_users');
+        DB::table('tenant_plan_assignments')->insert([
+            'tenant_id' => $this->platformPayer, 'pay_plan_id' => $spark, 'status' => 'active', 'custom_price_monthly' => 5,
+        ]);
+        $admin = $this->person($this->platformPayer, ['role' => 'admin']);
+        // At the warning percent, under the member number.
+        $this->addActiveMembers($this->platformPayer, (int) ceil($sparkMax * 0.85));
+        BillingSettings::set('automation_enabled', true, null);
+        BillingStandingService::setOverLimitRule($this->platformPayer, 'upgrade', 10, (int) User::withoutGlobalScopes()->where('email', $this->team)->value('id'));
+
+        $outcome = BillingAutomationService::run(CarbonImmutable::parse('2027-03-10'));
+        $entry = array_values(array_filter($outcome, fn ($e) => $e['tenant_id'] === $this->platformPayer))[0];
+
+        $this->assertSame('approaching', $entry['action']);
+        $this->assertSame('custom_price', $entry['detail']['move_decision']);
+        $body = $this->body($admin);
+        $this->assertStringNotContainsString('it will be moved automatically', $body);
+        $this->assertStringContainsString('cannot be moved to a bigger package automatically', $body);
     }
 
     public function test_the_platform_team_is_told_once_that_a_card_payer_set_to_move_up_needs_moving_by_hand(): void

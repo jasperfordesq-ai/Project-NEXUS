@@ -665,7 +665,7 @@
     "plan_name_placeholder": "bijvoorbeeld Gemeenschap",
     "plan_description_placeholder": "Beschrijf voor wie dit plan bedoeld is en wat het voor hen geschikt maakt.",
     "annual_price_description": "Meestal ongeveer 17% korting op het maandtarief",
-    "tier_level_description": "0 = gratis, 1 = basis, 2 = partner, 3 = netwerk",
+    "tier_level_description": "Een geheel getal dat alleen de volgorde van de plannen bepaalt, het kleinste eerst.",
     "leave_blank_unlimited": "Laat leeg voor onbeperkt",
     "max_users_description": "Actieve leden toegestaan op dit plan",
     "selling_points": "Verkooppunten",

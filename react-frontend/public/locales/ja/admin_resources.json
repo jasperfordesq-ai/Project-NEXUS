@@ -661,7 +661,7 @@
     "plan_name_placeholder": "例: コミュニティ",
     "plan_description_placeholder": "このプランが誰を対象としており、何がその人に適しているのかを説明してください。",
     "annual_price_description": "通常、月額料金から約 17% 割引",
-    "tier_level_description": "0 = 無料、1 = ベーシック、2 = パートナー、3 = ネットワーク",
+    "tier_level_description": "プランの並び順を決めるためだけの整数です（小さいプランから順に）。",
     "leave_blank_unlimited": "無制限の場合は空白のままにします",
     "max_users_description": "このプランで許可されているアクティブなメンバー",
     "selling_points": "セールスポイント",

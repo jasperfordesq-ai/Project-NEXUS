@@ -147,12 +147,12 @@
     "col_current_plan": "Forfait actuel",
     "col_effective_price": "Prix effectif",
     "col_status": "Statut",
-    "col_tenant": "Locataire",
+    "col_tenant": "Communauté",
     "col_users": "Utilisateurs",
     "contact_support": "Contacter l'assistance",
-    "control_desc": "Contrôle.",
-    "control_title": "Contrôle",
-    "custom_badge": "Insigne personnalisé",
+    "control_desc": "La formule, le prix et la situation de paiement de chaque communauté, et ce qui se passe quand l’une dépasse son nombre de membres.",
+    "control_title": "Contrôle de la facturation",
+    "custom_badge": "Prix spécial",
     "custom_price_monthly": "Prix personnalisé mensuel",
     "custom_price_yearly": "Prix personnalisé annuel",
     "discount_pct": "Remise PCT",
@@ -247,7 +247,9 @@
     "done_restored": "Communauté rétablie",
     "done_exempted": "Communauté exemptée",
     "done_exemption_removed": "Exemption retirée",
-    "standing_failed": "Cela n’a pas pu être fait. Rien n’a été modifié."
+    "standing_failed": "Cela n’a pas pu être fait. Rien n’a été modifié.",
+    "table_scrolls": "Ce tableau est plus large que l’écran : faites-le défiler latéralement pour voir toutes les colonnes.",
+    "more_actions_for": "Autres actions pour {{name}}"
   },
   "paused_banner": {
     "inherited": "Cette communauté est en pause parce que la communauté dont elle dépend est en pause. En pause depuis le {{date}}.",
@@ -297,7 +299,12 @@
     "saved": "Réglages enregistrés",
     "suspend_days_late": "Mise en pause : jours de retard",
     "switch_label": "Lancer les vérifications automatiques chaque matin",
-    "title": "Vérifications automatiques"
+    "title": "Vérifications automatiques",
+    "action_member_limit_move_up": "Passerait à la formule {{plan}}",
+    "action_member_limit_needs_decision": "Une décision est nécessaire : {{reason}}",
+    "decision_no_plan_fits": "aucune formule qui lui est proposée n’est assez grande",
+    "decision_custom_price": "elle a un prix convenu spécialement",
+    "decision_card_subscription": "elle paie par carte, donc l’équipe de la plateforme la change à la main"
   },
   "control": {
     "amount_invalid": "Saisissez le montant sous forme de nombre simple, avec deux décimales au maximum.",
@@ -387,6 +394,8 @@
     "summary_upgrade_one": "Formule supérieure après {{count}} jour",
     "summary_upgrade_other": "Formule supérieure après {{count}} jours",
     "upgrade_by_hand": "Formule supérieure (faite à la main par l’équipe de la plateforme)",
-    "what_happens": "Ce qui se passe"
+    "what_happens": "Ce qui se passe",
+    "move_on": "Passage à la formule supérieure le {{date}}",
+    "follow_default_card": "Suivre la valeur par défaut (actuellement : Avertir seulement — un changement de formule est fait par l’équipe de la plateforme)"
   }
 }

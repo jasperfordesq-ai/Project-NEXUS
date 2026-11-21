@@ -50,6 +50,8 @@ final class OverLimitRuleEndpointsTest extends TestCase
     private const RULE_KEYS = [
         'action', 'effective_action', 'grace_days', 'action_source', 'days_source',
         'own_action', 'own_grace_days', 'acts_on',
+        // Final fix wave A3: whether anything in the rule acts at all.
+        'automation_enabled',
     ];
 
     private int $hub;
@@ -246,6 +248,25 @@ final class OverLimitRuleEndpointsTest extends TestCase
         $this->assertSame(0, DB::table('billing_audit_log')->where('tenant_id', $this->child)->count());
     }
 
+    public function test_a_card_payer_keeping_a_stored_move_up_may_change_only_its_days(): void
+    {
+        // "Move up" was stored before the community paid by card. Saving it
+        // again, or changing only its days, is not choosing it.
+        $this->standing($this->child, ['over_limit_action' => 'upgrade', 'over_limit_grace_days' => 10]);
+        $this->assign($this->child, $this->local, ['stripe_subscription_id' => 'sub_ruleep_' . bin2hex(random_bytes(4))]);
+        $this->asManagerOf($this->hub);
+
+        $this->apiPost("/v2/admin/super/branch-payments/{$this->child}/over-limit", ['action' => 'upgrade', 'grace_days' => 20])->assertStatus(200);
+        $this->assertSame(['action' => 'upgrade', 'grace_days' => 20], \App\Support\Billing\OverLimitRule::own($this->child));
+        $this->assertSame('none', \App\Support\Billing\OverLimitRule::for($this->child)['effective_action'], 'Still followed as warn only.');
+
+        // Once it is changed away, choosing it again is refused.
+        $this->apiPost("/v2/admin/super/branch-payments/{$this->child}/over-limit", ['action' => 'pause', 'grace_days' => 20])->assertStatus(200);
+        $again = $this->apiPost("/v2/admin/super/branch-payments/{$this->child}/over-limit", ['action' => 'upgrade', 'grace_days' => 20]);
+        $again->assertStatus(422);
+        $this->assertStringContainsString('RULE_NOT_ALLOWED', (string) $again->getContent());
+    }
+
     public function test_move_up_is_refused_for_a_child_with_a_card_subscription(): void
     {
         $this->assign($this->child, $this->local, ['stripe_subscription_id' => 'sub_ruleep_' . bin2hex(random_bytes(4))]);
@@ -388,11 +409,18 @@ final class OverLimitRuleEndpointsTest extends TestCase
             'action_source' => 'platform', 'days_source' => 'hub',
             'own_action' => null, 'own_grace_days' => null,
             'acts_on' => now()->addDays(12)->toDateString(),
+            'automation_enabled' => true,
         ], $child['over_limit']);
         $this->assertTrue($child['upgrade_allowed']);
 
         $sibling = $rows->firstWhere('id', $this->sibling);
         $this->assertNull($sibling['over_limit']['acts_on'], 'Not over: no day.');
+
+        // Switched off, nothing in the rule acts, and the row says so.
+        BillingSettings::set('automation_enabled', false, null);
+        $off = collect($this->apiGet('/v2/admin/super/branch-payments')->json('data'))->firstWhere('id', $this->child);
+        $this->assertFalse($off['over_limit']['automation_enabled']);
+        $this->assertNull($off['over_limit']['acts_on']);
     }
 
     public function test_the_billing_control_snapshot_carries_the_rule(): void

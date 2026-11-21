@@ -168,4 +168,57 @@ final class CheckoutRefusedForParentPayerTest extends TestCase
         $this->assertSame('billing_interval', $response->json('errors.0.field'));
         $this->assertSame([], $this->stripe->requests);
     }
+
+    public function test_a_plan_priced_only_in_pounds_is_not_activated_as_free(): void
+    {
+        // Euro prices 0, pound prices set: something is charged, so checkout
+        // goes to Stripe instead of activating the plan directly.
+        $pounds = $this->makeCommunity('Checkout pound-only community', 1, '/1/');
+        DB::table('tenants')->where('id', $pounds)->update(['stripe_customer_id' => 'cus_fake_pounds']);
+        DB::table('tenant_settings')->insert([
+            'tenant_id' => $pounds, 'setting_key' => 'general.default_currency', 'setting_value' => 'GBP',
+        ]);
+        $planId = (int) DB::table('pay_plans')->insertGetId([
+            'name' => 'Pound only plan',
+            'slug' => 'pound-only-' . bin2hex(random_bytes(4)),
+            'is_active' => 1,
+            'tier_level' => 3,
+            'price_monthly' => 0,
+            'price_yearly' => 0,
+            'price_monthly_gbp' => 90,
+            'price_yearly_gbp' => 900,
+            'created_at' => now(),
+        ]);
+        $this->asAdminOf($pounds);
+
+        $response = $this->apiPost('/v2/admin/billing/checkout', ['plan_id' => $planId, 'billing_interval' => 'monthly']);
+
+        $this->assertNotTrue($response->json('data.activated'), $response->getContent());
+        $this->assertSame(0, DB::table('tenant_plan_assignments')->where('tenant_id', $pounds)->where('pay_plan_id', $planId)->where('status', 'active')->count(), 'Not activated without Stripe.');
+    }
+
+    public function test_a_plan_with_nothing_charged_in_either_currency_is_still_activated_directly(): void
+    {
+        $community = $this->makeCommunity('Checkout free community', 1, '/1/');
+        // A Stripe customer already on record, so the fake Stripe is asked nothing it does not know.
+        DB::table('tenants')->where('id', $community)->update(['stripe_customer_id' => 'cus_fake_free']);
+        $planId = (int) DB::table('pay_plans')->insertGetId([
+            'name' => 'Free plan',
+            'slug' => 'free-both-' . bin2hex(random_bytes(4)),
+            'is_active' => 1,
+            'tier_level' => 0,
+            'price_monthly' => 0,
+            'price_yearly' => 0,
+            'price_monthly_gbp' => null,
+            'price_yearly_gbp' => 0,
+            'created_at' => now(),
+        ]);
+        $this->asAdminOf($community);
+
+        $response = $this->apiPost('/v2/admin/billing/checkout', ['plan_id' => $planId, 'billing_interval' => 'monthly']);
+
+        $response->assertStatus(200);
+        $this->assertTrue($response->json('data.activated'));
+        $this->assertSame(1, DB::table('tenant_plan_assignments')->where('tenant_id', $community)->where('pay_plan_id', $planId)->where('status', 'active')->count());
+    }
 }
