@@ -1228,6 +1228,7 @@ return [
     'billing_change_card_needs_attention' => 'El último pago con tarjeta no se completó. Corrija la tarjeta en «Administrar pago» antes de cambiar de plan.',
     'billing_change_same_plan' => 'Esta comunidad ya está en ese plan.',
     'billing_change_plan_failed' => 'No se pudo cambiar el plan y no se cobró nada. Inténtelo de nuevo o consulte al equipo de la plataforma.',
+    'plan_has_history' => 'Este plan no se puede eliminar: :count comunidades lo tienen o lo han tenido. Desactívelo en su lugar.',
     'billing_plan_not_sold_monthly' => 'Este plan no se vende con pago mensual. Elige la facturación anual.',
     'billing_plan_not_sold_yearly' => 'Este plan no se vende con pago anual. Elige la facturación mensual.',
     'billing_standing_payment_paid_until_required' => 'Indica la fecha hasta la que cubre este pago.',

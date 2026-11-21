@@ -562,7 +562,8 @@ class AdminBillingController extends BaseApiController
         $tenantId = TenantContext::getId();
         $user     = $this->resolveUser();
 
-        $message  = (string) $this->input('message', '');
+        // A note to people, kept to a size a person would write.
+        $message  = mb_substr(trim((string) $this->input('message', '')), 0, 2000);
 
         // Fetch tenant name
         $tenant = DB::table('tenants')->where('id', $tenantId)->value('name') ?? 'Unknown';
@@ -593,26 +594,45 @@ class AdminBillingController extends BaseApiController
                 ]);
                 $subject = __('emails.billing_upgrade_request.subject', ['tenant' => $tenant]);
 
+                // To the platform team, whoever is on it: the same people the
+                // pause and payment notices go to. It was one person's own
+                // address written into the code.
+                $recipients = DB::table('users')
+                    ->where('status', 'active')
+                    ->whereNotNull('email')
+                    ->where('email', '<>', '')
+                    ->where('is_god', 1)
+                    ->where('is_super_admin', 1)
+                    ->pluck('email')
+                    ->unique()
+                    ->all();
+
                 // Route through the platform Mailer (Postmark via .env) instead
                 // of Laravel's Mail facade — the default Mail mailer is SMTP
                 // and MAIL_USERNAME/PASSWORD are intentionally not set in prod,
                 // so Mail::raw silently failed for this notification.
-                $sent = \App\Services\EmailDispatchService::sendRaw(
-                    'jasper@hour-timebank.ie',
-                    $subject,
-                    nl2br(htmlspecialchars($body, ENT_QUOTES, 'UTF-8')),
-                    null,
-                    null,
-                    null,
-                    'billing',
-                    ['tenant_id' => $tenantId]
-                );
-
-                if (!$sent) {
-                    Log::warning('BillingController: upgrade request email send returned false', ['tenant_id' => $tenantId]);
+                $accepted = 0;
+                foreach ($recipients as $recipient) {
+                    $accepted += \App\Services\EmailDispatchService::sendRaw(
+                        (string) $recipient,
+                        $subject,
+                        nl2br(htmlspecialchars($body, ENT_QUOTES, 'UTF-8')),
+                        null,
+                        null,
+                        null,
+                        'billing',
+                        ['tenant_id' => $tenantId]
+                    ) ? 1 : 0;
                 }
 
-                return $sent;
+                if ($accepted === 0) {
+                    Log::warning('BillingController: upgrade request reached nobody on the platform team', [
+                        'tenant_id' => $tenantId,
+                        'recipients' => count($recipients),
+                    ]);
+                }
+
+                return $accepted > 0;
             });
         } catch (\Throwable $e) {
             Log::warning('BillingController: upgrade request email failed', ['error' => $e->getMessage()]);

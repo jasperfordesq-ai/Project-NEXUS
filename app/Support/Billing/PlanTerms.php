@@ -446,10 +446,21 @@ final class PlanTerms
         // amount, even to a pound community
         // (StripeSubscriptionService::chargeCurrency()): quote it that way,
         // not as "no charge" in pounds.
-        if ($currency === 'gbp'
-            && (float) ($values['price_monthly_gbp'] ?? 0) <= 0
-            && (float) ($values['price_yearly_gbp'] ?? 0) <= 0) {
-            $currency = 'eur';
+        //
+        // On a hub's own terms a pound price of 0 is a price: a hub may charge
+        // a community nothing in pounds, and such a community never pays by
+        // card, so the card rule does not apply to it. It used to be read as
+        // "not sold in pounds" and the community was quoted the euro price.
+        // There, "no pound price" is NULL in both columns.
+        if ($currency === 'gbp') {
+            $monthly = $values['price_monthly_gbp'] ?? null;
+            $yearly = $values['price_yearly_gbp'] ?? null;
+            $noPoundPrice = $hubTenantId !== null
+                ? $monthly === null && $yearly === null
+                : (float) ($monthly ?? 0) <= 0 && (float) ($yearly ?? 0) <= 0;
+            if ($noPoundPrice) {
+                $currency = 'eur';
+            }
         }
 
         $terms = [

@@ -1097,7 +1097,22 @@ class AdminContentController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', __('api.plan_has_active_assignments', ['count' => $activeAssignments->cnt]), 'id', 422);
         }
 
-        DB::delete("DELETE FROM pay_plans WHERE id = ?", [$id]);
+        // Every plan record points at its plan, the ended ones too: they are
+        // the history of what a community was on. Only active records were
+        // counted, so deleting a plan with an expired, cancelled or trial
+        // record behind it ran into the database's own refusal and answered
+        // with a server error. Said plainly instead: switch the plan off.
+        $anyRecord = DB::selectOne("SELECT COUNT(DISTINCT tenant_id) AS cnt FROM tenant_plan_assignments WHERE pay_plan_id = ?", [$id]);
+        if ($anyRecord && (int) $anyRecord->cnt > 0) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.plan_has_history', ['count' => (int) $anyRecord->cnt]), 'id', 422);
+        }
+
+        DB::transaction(static function () use ($id): void {
+            // What hung off the plan and would otherwise be left pointing at nothing.
+            DB::delete("DELETE FROM hub_plan_terms WHERE pay_plan_id = ?", [$id]);
+            DB::delete("DELETE FROM pay_plan_stripe_prices WHERE pay_plan_id = ?", [$id]);
+            DB::delete("DELETE FROM pay_plans WHERE id = ?", [$id]);
+        });
         PlanTerms::flush();
 
         return $this->respondWithData(['deleted' => true]);

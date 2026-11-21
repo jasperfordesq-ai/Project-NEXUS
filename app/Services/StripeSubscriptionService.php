@@ -225,8 +225,6 @@ class StripeSubscriptionService
 
         try {
             $client = StripeService::client();
-            $updates = [];
-            $params = [];
 
             // --- Product ---
             if (empty($plan->stripe_product_id)) {
@@ -235,9 +233,12 @@ class StripeSubscriptionService
                     'description' => $plan->description ?: "Plan: {$plan->name}",
                     'metadata' => ['nexus_plan_id' => (string) $planId],
                 ]);
-                $updates[] = 'stripe_product_id = ?';
-                $params[] = $product->id;
                 $stripeProductId = $product->id;
+                // Saved at once, not after every price exists: if a later
+                // price creation failed, this id was never stored, and the
+                // next sync (or the next checkout) made a second product and
+                // a second set of prices in Stripe.
+                DB::update("UPDATE pay_plans SET stripe_product_id = ?, updated_at = NOW() WHERE id = ?", [$stripeProductId, $planId]);
 
                 Log::info('Stripe product created', ['plan_id' => $planId, 'product_id' => $product->id]);
             } else {
@@ -269,8 +270,12 @@ class StripeSubscriptionService
                             'currency' => $priceCurrency,
                         ],
                     ]);
-                    $updates[] = $columns['price_id'] . ' = ?';
-                    $params[] = $price->id;
+                    // Saved at once, for the same reason as the product id.
+                    // The column name is one of PRICE_COLUMNS' own constants.
+                    DB::update(
+                        "UPDATE pay_plans SET {$columns['price_id']} = ?, updated_at = NOW() WHERE id = ?",
+                        [$price->id, $planId]
+                    );
 
                     Log::info('Stripe price created', [
                         'plan_id' => $planId,
@@ -279,16 +284,6 @@ class StripeSubscriptionService
                         'interval' => $interval,
                     ]);
                 }
-            }
-
-            // Persist Stripe IDs back to pay_plans
-            if (!empty($updates)) {
-                $updates[] = 'updated_at = NOW()';
-                $params[] = $planId;
-                DB::update(
-                    "UPDATE pay_plans SET " . implode(', ', $updates) . " WHERE id = ?",
-                    $params
-                );
             }
         } catch (\Exception $e) {
             Log::error('StripeSubscriptionService::syncPlanToStripe failed', [

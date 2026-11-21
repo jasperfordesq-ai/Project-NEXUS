@@ -1226,6 +1226,7 @@ return [
     'billing_change_card_needs_attention' => 'Le dernier paiement par carte n’a pas abouti. Corrigez la carte avec « Gérer le paiement » avant de changer de formule.',
     'billing_change_same_plan' => 'Cette communauté a déjà cette formule.',
     'billing_change_plan_failed' => 'La formule n’a pas pu être modifiée et rien n’a été prélevé. Réessayez ou adressez-vous à l’équipe de la plateforme.',
+    'plan_has_history' => 'Cette formule ne peut pas être supprimée : :count communautés l’ont, ou l’ont eue. Désactivez-la plutôt.',
     'billing_plan_not_sold_monthly' => 'Ce forfait n’est pas vendu au mois. Choisissez plutôt la facturation annuelle.',
     'billing_plan_not_sold_yearly' => 'Ce forfait n’est pas vendu à l’année. Choisissez plutôt la facturation mensuelle.',
     'billing_standing_paid_until_invalid' => 'Saisissez la date sous la forme année-mois-jour, par exemple 2027-01-31.',

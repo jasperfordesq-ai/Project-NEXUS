@@ -1159,6 +1159,7 @@ return [
     'billing_change_card_needs_attention' => 'Ostatnia płatność kartą nie powiodła się. Zanim zmienisz plan, popraw kartę w opcji „Zarządzaj płatnościami”.',
     'billing_change_same_plan' => 'Ta społeczność ma już ten plan.',
     'billing_change_plan_failed' => 'Nie udało się zmienić planu i nic nie zostało pobrane. Spróbuj ponownie lub zwróć się do zespołu platformy.',
+    'plan_has_history' => 'Tego planu nie można usunąć: korzysta z niego lub korzystało :count społeczności. Zamiast tego go wyłącz.',
     'billing_plan_not_sold_monthly' => 'Ten plan nie jest sprzedawany w rozliczeniu miesięcznym. Wybierz rozliczenie roczne.',
     'billing_plan_not_sold_yearly' => 'Ten plan nie jest sprzedawany w rozliczeniu rocznym. Wybierz rozliczenie miesięczne.',
     'billing_standing_payment_paid_until_required' => 'Wpisz datę, do której ta płatność opłaca społeczność.',

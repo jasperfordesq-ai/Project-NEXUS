@@ -2190,6 +2190,7 @@ return [
     'billing_change_card_needs_attention' => 'The last card payment did not go through. Put the card right with Manage Payment before changing plan.',
     'billing_change_same_plan' => 'This community is already on that plan.',
     'billing_change_plan_failed' => 'The plan could not be changed and nothing was charged. Try again, or ask the platform team.',
+    'plan_has_history' => 'This plan cannot be deleted: :count communities are, or have been, on it. Switch it off instead.',
     'billing_plan_not_sold_monthly' => 'This plan is not sold monthly. Choose yearly billing instead.',
     'billing_plan_not_sold_yearly' => 'This plan is not sold yearly. Choose monthly billing instead.',
     'billing_standing_payment_paid_until_required' => 'Enter the date this payment pays up to.',

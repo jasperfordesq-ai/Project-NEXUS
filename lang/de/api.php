@@ -1228,6 +1228,7 @@ return [
     'billing_change_card_needs_attention' => 'Die letzte Kartenzahlung ist fehlgeschlagen. Bringen Sie die Karte über „Zahlung verwalten“ in Ordnung, bevor Sie den Plan ändern.',
     'billing_change_same_plan' => 'Diese Community nutzt diesen Plan bereits.',
     'billing_change_plan_failed' => 'Der Plan konnte nicht geändert werden, und es wurde nichts abgebucht. Versuchen Sie es erneut oder wenden Sie sich an das Plattform-Team.',
+    'plan_has_history' => 'Dieser Plan kann nicht gelöscht werden: :count Communities nutzen ihn oder haben ihn genutzt. Deaktivieren Sie ihn stattdessen.',
     'billing_plan_not_sold_monthly' => 'Dieser Tarif wird nicht monatlich angeboten. Wählen Sie stattdessen die jährliche Abrechnung.',
     'billing_plan_not_sold_yearly' => 'Dieser Tarif wird nicht jährlich angeboten. Wählen Sie stattdessen die monatliche Abrechnung.',
     'billing_standing_payment_paid_until_required' => 'Geben Sie das Datum ein, bis zu dem diese Zahlung reicht.',

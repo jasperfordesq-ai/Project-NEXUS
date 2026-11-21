@@ -175,7 +175,11 @@ class StripeWebhookController extends BaseApiController
                     default => Log::info("Stripe webhook: unhandled event type {$event->type}"),
                 };
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            // \Throwable, not \Exception: a PHP Error (a type error, a missing
+            // method) is not an Exception. It used to pass this catch by, the
+            // row stayed `processing`, and a redelivery within ten minutes was
+            // answered "received" and dropped, so Stripe stopped retrying.
             // Mark as failed so Stripe retries can be re-processed
             DB::table('stripe_webhook_events')
                 ->where('event_id', $eventId)

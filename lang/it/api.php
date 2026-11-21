@@ -1228,6 +1228,7 @@ return [
     'billing_change_card_needs_attention' => 'L’ultimo pagamento con carta non è andato a buon fine. Sistema la carta con «Gestisci il pagamento» prima di cambiare piano.',
     'billing_change_same_plan' => 'Questa comunità ha già quel piano.',
     'billing_change_plan_failed' => 'Non è stato possibile cambiare il piano e non è stato addebitato nulla. Riprova o rivolgiti al team della piattaforma.',
+    'plan_has_history' => 'Questo piano non può essere eliminato: :count comunità lo hanno, o lo hanno avuto. Disattivalo, invece.',
     'billing_plan_not_sold_monthly' => 'Questo piano non è venduto con pagamento mensile. Scegli invece la fatturazione annuale.',
     'billing_plan_not_sold_yearly' => 'Questo piano non è venduto con pagamento annuale. Scegli invece la fatturazione mensile.',
     'billing_standing_payment_paid_until_required' => 'Inserisci la data fino alla quale questo pagamento copre la comunità.',

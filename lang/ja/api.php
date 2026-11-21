@@ -1159,6 +1159,7 @@ return [
     'billing_change_card_needs_attention' => '前回のカード決済が完了していません。プランを変更する前に、「支払いの管理」でカードを修正してください。',
     'billing_change_same_plan' => 'このコミュニティはすでにそのプランをご利用中です。',
     'billing_change_plan_failed' => 'プランを変更できませんでした。請求は発生していません。もう一度お試しいただくか、プラットフォームチームにお問い合わせください。',
+    'plan_has_history' => 'このプランは削除できません。:count 件のコミュニティが現在または過去に利用しています。代わりに無効にしてください。',
     'billing_plan_not_sold_monthly' => 'このプランは月払いでは販売されていません。代わりに年払いを選んでください。',
     'billing_plan_not_sold_yearly' => 'このプランは年払いでは販売されていません。代わりに月払いを選んでください。',
     'billing_standing_payment_paid_until_required' => 'この支払いでいつまでの分が支払われるか、その日付を入力してください。',

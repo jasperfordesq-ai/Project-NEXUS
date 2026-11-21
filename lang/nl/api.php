@@ -1159,6 +1159,7 @@ return [
     'billing_change_card_needs_attention' => 'De laatste kaartbetaling is niet gelukt. Breng de kaart in orde via ‘Beheer de betaling’ voordat u van plan verandert.',
     'billing_change_same_plan' => 'Deze community heeft dat plan al.',
     'billing_change_plan_failed' => 'Het plan kon niet worden gewijzigd en er is niets afgeschreven. Probeer het opnieuw of neem contact op met het platformteam.',
+    'plan_has_history' => 'Dit plan kan niet worden verwijderd: :count community’s hebben het, of hebben het gehad. Schakel het in plaats daarvan uit.',
     'billing_plan_not_sold_monthly' => 'Dit pakket wordt niet per maand verkocht. Kies in plaats daarvan jaarlijkse facturering.',
     'billing_plan_not_sold_yearly' => 'Dit pakket wordt niet per jaar verkocht. Kies in plaats daarvan maandelijkse facturering.',
     'billing_standing_payment_paid_until_required' => 'Voer de datum in tot wanneer deze betaling de gemeenschap dekt.',
