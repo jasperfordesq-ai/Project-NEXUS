@@ -747,6 +747,144 @@ class StripeSubscriptionService
     }
 
     /**
+     * Change the plan of a community's EXISTING card subscription.
+     *
+     * A checkout always starts a new subscription, so it cannot be how a card
+     * payer changes plan (that was the double charge). This swaps the price on
+     * the subscription Stripe already holds. Stripe works out the difference
+     * for the rest of the current period and puts it on the next invoice
+     * (`create_prorations`, its default): more to pay when moving up, a credit
+     * when moving down. No setup fee is added: that is for a first payment.
+     *
+     * Refusals are \DomainException with a fixed word, which the controller
+     * turns into a sentence: `billing_no_card_subscription` (nothing to
+     * change: use checkout), `billing_card_needs_attention` (the last payment
+     * failed), `billing_same_plan`, `billing_plan_not_sold` (no price for that
+     * period), `billing_currency_mismatch` (Stripe keeps a subscription in one
+     * currency).
+     *
+     * @return array{plan_id:int, plan_name:string, billing_interval:string}
+     */
+    public static function changeSubscriptionPlan(int $tenantId, int $planId, ?string $billingInterval, ?int $actedBy = null): array
+    {
+        $ended = implode("','", TenantBillingService::STRIPE_SUBSCRIPTION_ENDED);
+        $record = DB::selectOne(
+            "SELECT id, pay_plan_id, stripe_subscription_id, stripe_status, billing_interval, status
+             FROM tenant_plan_assignments
+             WHERE tenant_id = ?
+               AND stripe_subscription_id IS NOT NULL AND stripe_subscription_id <> ''
+               AND status <> 'cancelled'
+               AND (stripe_status IS NULL OR stripe_status NOT IN ('{$ended}'))
+             ORDER BY id DESC
+             LIMIT 1",
+            [$tenantId]
+        );
+        if (!$record) {
+            throw new \DomainException('billing_no_card_subscription');
+        }
+        if ($record->stripe_status !== null && !in_array($record->stripe_status, ['active', 'trialing'], true)) {
+            throw new \DomainException('billing_card_needs_attention');
+        }
+
+        $plan = DB::selectOne("SELECT * FROM pay_plans WHERE id = ?", [$planId]);
+        if (!$plan || !(int) ($plan->is_active ?? 0)) {
+            throw new \RuntimeException("Plan {$planId} is not available");
+        }
+
+        $currentInterval = self::knownInterval($record->billing_interval);
+        $interval = self::knownInterval($billingInterval) ?? $currentInterval ?? 'monthly';
+        if ((int) $record->pay_plan_id === $planId && $currentInterval === $interval) {
+            throw new \DomainException('billing_same_plan');
+        }
+
+        $currency = self::chargeCurrency($plan, $interval, static::billingCurrencyFor($tenantId));
+        if (self::planAmount($plan, $currency, $interval) <= 0) {
+            throw new \DomainException('billing_plan_not_sold');
+        }
+
+        $client = StripeService::client();
+        $subscription = $client->subscriptions->retrieve((string) $record->stripe_subscription_id);
+        $item = $subscription->items->data[0] ?? null;
+        if (!is_object($item) || !is_string($item->id ?? null) || $item->id === '') {
+            throw new \RuntimeException('The Stripe subscription has no item to change');
+        }
+
+        // Stripe keeps a subscription in the currency it started in.
+        $subscriptionCurrency = strtolower((string) ($subscription->currency ?? $item->price->currency ?? ''));
+        if ($subscriptionCurrency !== '' && $subscriptionCurrency !== $currency) {
+            throw new \DomainException('billing_currency_mismatch');
+        }
+
+        $priceId = self::planPriceId($plan, $currency, $interval);
+        if ($priceId === null) {
+            static::syncPlanToStripe($planId, $currency);
+            $plan = DB::selectOne("SELECT * FROM pay_plans WHERE id = ?", [$planId]);
+            $priceId = $plan ? self::planPriceId($plan, $currency, $interval) : null;
+            if ($priceId === null) {
+                throw new \RuntimeException("Failed to sync plan {$planId} to Stripe — no {$currency} price created for {$interval}");
+            }
+        }
+
+        $client->subscriptions->update((string) $record->stripe_subscription_id, [
+            'items' => [['id' => $item->id, 'price' => $priceId]],
+            'proration_behavior' => 'create_prorations',
+            'metadata' => [
+                'nexus_tenant_id' => (string) $tenantId,
+                'nexus_plan_id' => (string) $planId,
+                'nexus_billing_interval' => $interval,
+            ],
+        ]);
+
+        // Stripe has changed it. The record is written at once, so the screen
+        // shows the new plan without waiting for Stripe's own update event
+        // (which will then find nothing left to change).
+        $oldPlanId = (int) $record->pay_plan_id;
+        DB::update(
+            "UPDATE tenant_plan_assignments SET pay_plan_id = ?, billing_interval = ?, updated_at = NOW() WHERE id = ? AND tenant_id = ?",
+            [$planId, $interval, $record->id, $tenantId]
+        );
+        TenantBillingService::logAudit(
+            $tenantId,
+            $actedBy,
+            'plan_changed',
+            ['pay_plan_id' => $oldPlanId, 'billing_interval' => $currentInterval],
+            ['pay_plan_id' => $planId, 'billing_interval' => $interval, 'source' => 'card'],
+            'card'
+        );
+        // A new plan is new terms: the days over a member number start again.
+        BillingStandingService::restartLimitClock([$tenantId]);
+        \App\Support\Billing\PlanTerms::flush();
+        \App\Support\Billing\JoiningGate::flush();
+
+        Log::info('Stripe subscription plan changed', [
+            'tenant_id' => $tenantId,
+            'subscription_id' => $record->stripe_subscription_id,
+            'old_plan_id' => $oldPlanId,
+            'new_plan_id' => $planId,
+            'billing_interval' => $interval,
+        ]);
+
+        // Tell the admins. The change is made whatever becomes of the email.
+        if ($oldPlanId !== $planId) {
+            try {
+                $oldPlan = DB::selectOne("SELECT name FROM pay_plans WHERE id = ?", [$oldPlanId]);
+                static::sendTenantAdminEmail(
+                    $tenantId,
+                    ['key' => 'emails_misc.stripe_subscription.plan_changed_subject', 'params' => ['new_plan' => (string) $plan->name]],
+                    ['key' => 'emails_misc.stripe_subscription.plan_changed_title'],
+                    ['key' => 'emails_misc.stripe_subscription.plan_changed_body', 'params' => ['old_plan' => (string) ($oldPlan->name ?? ''), 'new_plan' => (string) $plan->name]],
+                    '/admin/billing',
+                    ['key' => 'emails_misc.stripe_subscription.plan_changed_cta']
+                );
+            } catch (\Throwable $e) {
+                Log::warning('[StripeSubscriptionService] plan change email failed: ' . $e->getMessage());
+            }
+        }
+
+        return ['plan_id' => $planId, 'plan_name' => (string) $plan->name, 'billing_interval' => $interval];
+    }
+
+    /**
      * Create a Stripe Billing Portal Session for a tenant to manage their subscription.
      *
      * @return array{portal_url: string}

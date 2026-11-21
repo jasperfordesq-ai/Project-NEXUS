@@ -3125,6 +3125,7 @@ Route::get('/v2/admin/subscriptions', [\App\Http\Controllers\Api\AdminContentCon
 // Billing — Stripe subscription management
 Route::get('/v2/admin/billing/subscription', [\App\Http\Controllers\Api\AdminBillingController::class, 'getSubscription']);
 Route::post('/v2/admin/billing/checkout', [\App\Http\Controllers\Api\AdminBillingController::class, 'createCheckoutSession']);
+Route::post('/v2/admin/billing/change-plan', [\App\Http\Controllers\Api\AdminBillingController::class, 'changePlan']);
 Route::post('/v2/admin/billing/portal', [\App\Http\Controllers\Api\AdminBillingController::class, 'createPortalSession']);
 Route::get('/v2/admin/billing/invoices', [\App\Http\Controllers\Api\AdminBillingController::class, 'getInvoices']);
 Route::post('/v2/admin/billing/upgrade-request', [\App\Http\Controllers\Api\AdminBillingController::class, 'requestUpgrade']);

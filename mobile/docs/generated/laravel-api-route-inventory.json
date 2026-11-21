@@ -2,11 +2,11 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2911,
-  "api_route_rows": 2876,
-  "distinct_api_paths": 2403,
+  "total_registered_routes": 2912,
+  "api_route_rows": 2877,
+  "distinct_api_paths": 2404,
   "route_source_fingerprint": {
-    "digest": "4877fb39ec467cc64509d6e20977561a5744a472e0822548eb11b988d1657760",
+    "digest": "d21999662c98ebd84b3c40a62b3730e201faf7daa8f724282f266b6053119a19",
     "files": [
       {
         "file": "routes/api-marketplace-admin.php",
@@ -18,7 +18,7 @@
       },
       {
         "file": "routes/api.php",
-        "sha256": "626ce4adead31ebc4bd126e0bcaa315af2cf096b8ab9a52892fb50c940e50644"
+        "sha256": "c33bc78a0df7d779fb583d6cf968129f07c3edd88a8c161a36ab203e03b1406a"
       },
       {
         "file": "routes/channels.php",
@@ -625,6 +625,9 @@
     ],
     "/api/v2/admin/badge-counts": [
       "GET"
+    ],
+    "/api/v2/admin/billing/change-plan": [
+      "POST"
     ],
     "/api/v2/admin/billing/checkout": [
       "POST"

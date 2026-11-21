@@ -288,6 +288,81 @@ class AdminBillingController extends BaseApiController
     }
 
     /**
+     * POST /v2/admin/billing/change-plan
+     *
+     * Change the plan (and, if asked, the period) of the community's EXISTING
+     * card subscription. Body: { plan_id: int, billing_interval?: 'monthly'|'yearly' }.
+     * The same refusals as checkout apply to the plan chosen; the change
+     * itself is StripeSubscriptionService::changeSubscriptionPlan().
+     */
+    public function changePlan(): JsonResponse
+    {
+        $userId = $this->requireAdmin();
+        $tenantId = (int) TenantContext::getId();
+
+        if (BillingStandingService::get($tenantId)['payer'] === 'parent') {
+            return $this->respondWithError('PAYS_PARENT', __('api.billing_checkout_pays_parent'), null, 422);
+        }
+
+        $planId = (int) $this->requireInput('plan_id');
+        $billingInterval = $this->getAllInput()['billing_interval'] ?? null;
+        if ($billingInterval !== null && !in_array($billingInterval, ['monthly', 'yearly'], true)) {
+            return $this->respondWithError(
+                'VALIDATION_ERROR',
+                __('api.billing_interval_invalid', ['monthly' => 'monthly', 'yearly' => 'yearly']),
+                'billing_interval',
+                422
+            );
+        }
+
+        $plan = DB::selectOne("SELECT id, is_active, is_standard, max_users FROM pay_plans WHERE id = ?", [$planId]);
+        if (!$plan || !(int) $plan->is_active || !(int) $plan->is_standard) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_plan_id'), 'plan_id', 422);
+        }
+
+        $planMembers = $plan->max_users !== null ? (int) $plan->max_users : null;
+        if ($planMembers !== null && $planMembers > 0) {
+            $activeMembers = TenantBillingService::getSubtreeActiveMemberCount($tenantId);
+            if ($activeMembers > $planMembers) {
+                return $this->respondWithError(
+                    'PLAN_TOO_SMALL',
+                    __('api.billing_checkout_plan_too_small', ['members' => number_format($activeMembers), 'max' => number_format($planMembers)]),
+                    'plan_id',
+                    422
+                );
+            }
+        }
+
+        if ($this->hasSpecialPrice($tenantId)) {
+            return $this->respondWithError('SPECIAL_PRICE', __('api.billing_checkout_special_price'), null, 422);
+        }
+
+        try {
+            return $this->respondWithData(
+                StripeSubscriptionService::changeSubscriptionPlan($tenantId, $planId, $billingInterval, is_int($userId) ? $userId : null)
+            );
+        } catch (\DomainException $e) {
+            [$code, $message] = match ($e->getMessage()) {
+                'billing_no_card_subscription' => ['NO_CARD_SUBSCRIPTION', __('api.billing_change_no_card_subscription')],
+                'billing_card_needs_attention' => ['CARD_NEEDS_ATTENTION', __('api.billing_change_card_needs_attention')],
+                'billing_same_plan' => ['SAME_PLAN', __('api.billing_change_same_plan')],
+                'billing_plan_not_sold' => ['VALIDATION_ERROR', __('api.billing_plan_not_sold_monthly')],
+                default => ['CHANGE_REFUSED', __('api.billing_change_plan_failed')],
+            };
+
+            return $this->respondWithError($code, $message, null, 422);
+        } catch (\Exception $e) {
+            Log::error('AdminBillingController::changePlan failed', [
+                'tenant_id' => $tenantId,
+                'plan_id' => $planId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->respondWithError('STRIPE_ERROR', __('api.billing_change_plan_failed'), null, 500);
+        }
+    }
+
+    /**
      * Whether the community's plan record in force carries a price the
      * platform team agreed for it: a custom price, a discount, or the
      * non-profit reduction. None of these reaches Stripe.

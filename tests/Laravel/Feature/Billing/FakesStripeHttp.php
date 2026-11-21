@@ -42,6 +42,8 @@ trait FakesStripeHttp
             public ?int $subscriptionPeriodEnd = null;
             /** @var list<array<string, mixed>> The invoices Stripe holds for whichever customer is asked about. */
             public array $invoices = [];
+            /** @var array<string, mixed>|null A whole subscription to answer with (item id, currency), for a change of plan. */
+            public ?array $subscription = null;
             private int $n = 0;
 
             public function request($method, $absUrl, $headers, $params, $hasFile, $apiMode = 'v1')
@@ -77,6 +79,12 @@ trait FakesStripeHttp
                     $list = ['object' => 'list', 'data' => $this->invoices, 'has_more' => false, 'url' => '/v1/invoices'];
 
                     return [json_encode($list), 200, new CaseInsensitiveArray([])];
+                }
+
+                if ($this->subscription !== null && str_starts_with($path, '/v1/subscriptions/') && in_array($method, ['GET', 'POST'], true)) {
+                    $id = substr($path, strlen('/v1/subscriptions/'));
+
+                    return [json_encode(['id' => $id, 'object' => 'subscription'] + $this->subscription), 200, new CaseInsensitiveArray([])];
                 }
 
                 if ($method === 'GET' && str_starts_with($path, '/v1/subscriptions/')) {
@@ -118,6 +126,19 @@ trait FakesStripeHttp
     private function uninstallFakeStripe(): void
     {
         ApiRequestor::setHttpClient(null);
+    }
+
+    /**
+     * Every change made to a subscription, in order.
+     *
+     * @return list<array{id: string, params: array<string, mixed>}>
+     */
+    private function subscriptionUpdates(): array
+    {
+        return array_values(array_map(
+            static fn (array $r): array => ['id' => substr($r['path'], strlen('/v1/subscriptions/')), 'params' => $r['params']],
+            array_filter($this->stripe->requests, static fn (array $r): bool => $r['method'] === 'POST' && str_starts_with($r['path'], '/v1/subscriptions/'))
+        ));
     }
 
     /**
