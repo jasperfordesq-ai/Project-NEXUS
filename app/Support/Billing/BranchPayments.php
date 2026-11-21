@@ -143,6 +143,7 @@ final class BranchPayments
             // when it pays its parent. Never the assignment's custom price or
             // discount, which are the platform team's.
             $plan = PlanTerms::forCommunity($id);
+            $members = self::members($id, $plan['max_users'] ?? null);
 
             $rows[] = [
                 'id' => $id,
@@ -156,10 +157,17 @@ final class BranchPayments
                 'cannot_act_reason' => $refusal,
                 'paused_from_above' => $pausedFromAbove,
                 'plan' => $plan,
-                'members' => self::members($id, $plan['max_users'] ?? null),
+                'members' => $members,
                 // Only the plan-specific reason: a row the caller cannot act
                 // on at all already says why in `cannot_act_reason`.
                 'plan_change_refusal' => $refusal === null ? self::planChangeRefusalFor($id) : null,
+                // The rule for going over the member number, where it comes
+                // from, what is stored on the community itself, and the day
+                // the daily check would pause it.
+                'over_limit' => OverLimitRule::describe($id, $members['active']),
+                // "Move up" is not offered for a card payer: the same rule the
+                // write refuses with.
+                'upgrade_allowed' => OverLimitRule::refusalFor($id, 'upgrade') === null,
             ];
         }
 

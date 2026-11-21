@@ -10,6 +10,7 @@ namespace App\Services;
 
 use App\Support\Billing\BillingLock;
 use App\Support\Billing\BillingSettings;
+use App\Support\Billing\OverLimitRule;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -29,7 +30,9 @@ use Illuminate\Support\Facades\DB;
  * by hand and the payer: `payment_paid_until_required`,
  * `payment_received_on_invalid`, `payment_method_invalid`,
  * `payment_amount_invalid`, `payment_currency_invalid`, `payer_invalid`,
- * `payer_needs_parent`.
+ * `payer_needs_parent`; and for the over-limit rule:
+ * `over_limit_action_invalid`, `over_limit_days_invalid`,
+ * `over_limit_rule_not_allowed`.
  */
 final class BillingStandingService
 {
@@ -163,11 +166,13 @@ final class BillingStandingService
     /**
      * Lift a suspension. `$actedBy` null = the system.
      *
-     * A PERSON lifting a pause for being over the member limit restarts that
-     * limit's grace period from today: otherwise the daily check, still
-     * counting from the first day over, would pause it again next morning.
-     * The check lifting its own pause (back under the limit) clears the days
-     * over itself, so it is not affected.
+     * A PERSON lifting a pause for being over the member limit starts a new
+     * episode: the first day over is cleared, so the next daily check finds
+     * it over afresh, sends a new "over" notice and counts the full days
+     * from that notice. (It used to move the first day over to today, which
+     * let the next pause come with no warning for it.) The check lifting its
+     * own pause (back under the limit) clears the days over itself, so it is
+     * not affected.
      */
     public static function restore(int $tenantId, ?int $actedBy, ?string $note = null): void
     {
@@ -188,7 +193,7 @@ final class BillingStandingService
             'suspension_reason' => null,
         ];
         if ($actedBy !== null && ($row->suspension_reason ?? null) === 'over_limit' && isset($row->over_limit_since)) {
-            $values['over_limit_since'] = now()->toDateString();
+            $values['over_limit_since'] = null;
         }
 
         self::write($tenantId, $values);
@@ -302,6 +307,9 @@ final class BillingStandingService
                 'exempt_by_user_id' => $actedBy,
                 'exempt_at' => now(),
             ]);
+            if (!$wasExempt) {
+                self::restartLimitClock([$tenantId]);
+            }
 
             TenantBillingService::logAudit(
                 $tenantId,
@@ -322,6 +330,9 @@ final class BillingStandingService
                 'exempt_by_user_id' => null,
                 'exempt_at' => null,
             ]);
+            // A count from before the exemption never carries over it: the
+            // first run after starts afresh, with a fresh notice.
+            self::restartLimitClock([$tenantId]);
 
             TenantBillingService::logAudit(
                 $tenantId,
@@ -480,7 +491,8 @@ final class BillingStandingService
      * tree gives it (defaultPayer()).
      *
      * Nothing is locked by who pays, so no lock cache is forgotten, and the
-     * notices and pauses are left as they are. It does decide who may record
+     * payment notices and pauses are left as they are; the member-limit
+     * count starts again (new terms). It does decide who may record
      * the community's payments: a child set to pay the platform leaves its
      * parent's Branch payments page.
      */
@@ -506,6 +518,12 @@ final class BillingStandingService
 
         self::write($tenantId, ['payer' => $payer]);
 
+        // Who it pays decides whose rule and member number it is held to
+        // (its hub's or the platform's): new terms, a fresh count. The daily
+        // check would see it from the terms key too; doing it here keeps the
+        // lists right at once.
+        self::restartLimitClock([$tenantId]);
+
         TenantBillingService::logAudit(
             $tenantId,
             $actedBy,
@@ -517,6 +535,146 @@ final class BillingStandingService
     }
 
     /**
+     * A community's own rule for going over its member number, and the days
+     * over before it acts. Null = follow the default (its hub's for its
+     * children when it pays its hub, else the platform's). The action and the
+     * days are separate: either may follow the default while the other is set.
+     *
+     * Who may call this is the caller's business (the platform team, or a hub
+     * manager through BranchPayments). Refused whoever asks: tenant 1, an
+     * unknown action or day count, and "move up" for a card payer
+     * (OverLimitRule::refusalFor()).
+     *
+     * A change restarts the community's days-over count (DESIGN 6.4): the
+     * next daily check sends a fresh notice under the new rule, and nothing
+     * acts on it the next morning.
+     */
+    public static function setOverLimitRule(int $tenantId, ?string $action, ?int $graceDays, int $actedBy): void
+    {
+        self::requireBillable($tenantId);
+        self::requireValidRule($action, $graceDays);
+
+        if (OverLimitRule::refusalFor($tenantId, $action) !== null) {
+            throw new \DomainException('over_limit_rule_not_allowed');
+        }
+
+        $current = OverLimitRule::own($tenantId);
+        $next = ['action' => $action, 'grace_days' => $graceDays];
+        if ($current === $next) {
+            return;
+        }
+
+        DB::transaction(static function () use ($tenantId, $current, $next, $actedBy): void {
+            self::write($tenantId, ['over_limit_action' => $next['action'], 'over_limit_grace_days' => $next['grace_days']]);
+            self::restartLimitClock([$tenantId]);
+
+            TenantBillingService::logAudit($tenantId, $actedBy, 'standing_over_limit_rule_set', $current, $next, null);
+        });
+    }
+
+    /**
+     * The default a hub sets for the communities that pay it. Null = they
+     * follow the platform's. May be "move up": for a child that pays by card
+     * it resolves to warn only.
+     *
+     * Clears no count here: the daily check sees from each child's terms key
+     * (OverLimitRule::termsKey()) whether this changed the terms it is held
+     * to, and restarts exactly those children with a fresh notice.
+     */
+    public static function setChildrenOverLimitRule(int $hubTenantId, ?string $action, ?int $graceDays, int $actedBy): void
+    {
+        self::requireBillable($hubTenantId);
+        self::requireValidRule($action, $graceDays);
+
+        $current = OverLimitRule::childrenDefault($hubTenantId);
+        $next = ['action' => $action, 'grace_days' => $graceDays];
+        if ($current === $next) {
+            return;
+        }
+
+        DB::transaction(static function () use ($hubTenantId, $current, $next, $actedBy): void {
+            self::write($hubTenantId, [
+                'children_over_limit_action' => $next['action'],
+                'children_over_limit_grace_days' => $next['grace_days'],
+            ]);
+
+            TenantBillingService::logAudit($hubTenantId, $actedBy, 'standing_children_over_limit_rule_set', $current, $next, null);
+        });
+    }
+
+    /**
+     * Every community's member-limit count starts again, as
+     * restartLimitClock() does for a few. Only the member-limit clock's
+     * memory is cleared; the payment clock is not touched.
+     */
+    public static function restartAllLimitClocks(): void
+    {
+        // Every community's member-limit count starts again, except one
+        // paused for being over: it stays paused until a lift condition
+        // holds, as with a terms change. Called when the automatic checks are
+        // switched on, so the first run warns before it pauses anybody: the
+        // screens said nothing would happen while the checks were off.
+        DB::table('tenant_billing_standing')
+            ->where(static function ($q): void {
+                $q->whereNull('suspended_at')
+                    ->orWhereNull('suspension_reason')
+                    ->orWhere('suspension_reason', '<>', 'over_limit');
+            })
+            ->where(static function ($q): void {
+                $q->whereNotNull('over_limit_since')
+                    ->orWhereNotNull('limit_notice_stage')
+                    ->orWhereNotNull('limit_notice_at');
+            })
+            ->update([
+                'over_limit_since' => null,
+                'limit_notice_stage' => null,
+                'limit_notice_at' => null,
+                'updated_at' => now(),
+            ]);
+    }
+
+    /**
+     * The days-over count starts again for these communities, and the next
+     * daily check re-sends the notice for the stage each is at: it finds the
+     * community over, records that day as the first day over, and names a
+     * pause (or a move) the full number of days from then.
+     *
+     * Only the member-limit clock's memory is cleared. A pause is neither
+     * lifted nor made here, and the payment clock is not touched. A community
+     * with no standing row has nothing to restart, and none is made.
+     *
+     * @param list<int> $tenantIds
+     */
+    public static function restartLimitClock(array $tenantIds): void
+    {
+        $ids = array_values(array_unique(array_map('intval', $tenantIds)));
+        if ($ids === []) {
+            return;
+        }
+
+        foreach (array_chunk($ids, 500) as $chunk) {
+            DB::table('tenant_billing_standing')
+                ->whereIn('tenant_id', $chunk)
+                ->update([
+                    'over_limit_since' => null,
+                    'limit_notice_stage' => null,
+                    'limit_notice_at' => null,
+                    'updated_at' => now(),
+                ]);
+        }
+    }
+
+    private static function requireValidRule(mixed $action, mixed $graceDays): void
+    {
+        if (!OverLimitRule::isValidAction($action)) {
+            throw new \DomainException('over_limit_action_invalid');
+        }
+        if (!OverLimitRule::isValidDays($graceDays)) {
+            throw new \DomainException('over_limit_days_invalid');
+        }
+    }
+
+    /**
      * The daily check's own memory for a community: which notice it sent last
      * and since when it has been over its member limit. Not a change in
      * standing, so not audited (the notices themselves are in the mail log).
@@ -525,7 +683,7 @@ final class BillingStandingService
      */
     public static function recordCheckState(int $tenantId, array $values): void
     {
-        $allowed = ['last_notice_stage', 'last_notice_at', 'over_limit_since', 'limit_notice_stage', 'limit_notice_at'];
+        $allowed = ['last_notice_stage', 'last_notice_at', 'over_limit_since', 'limit_notice_stage', 'limit_notice_at', 'limit_terms_key'];
         $unknown = array_diff(array_keys($values), $allowed);
         if ($unknown !== []) {
             throw new \InvalidArgumentException('Not check state: ' . implode(', ', $unknown));

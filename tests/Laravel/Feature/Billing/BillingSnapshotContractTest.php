@@ -46,6 +46,16 @@ final class BillingSnapshotContractTest extends TestCase
         // Stage 6: the earliest automatic pause date and the newest payment
         // recorded by hand.
         'pause_on', 'last_payment',
+        // Hub plans Stage 4: the rule for going over the member number.
+        // `over_limit_rule`, not `over_limit`: that key stays the true/false
+        // "over its limit now" flag above.
+        'over_limit_rule', 'upgrade_allowed',
+    ];
+
+    /** Read off `over_limit_rule`, key for key (same as a Branch payments row's `over_limit`). */
+    private const REQUIRED_RULE_KEYS = [
+        'action', 'effective_action', 'grace_days', 'action_source', 'days_source',
+        'own_action', 'own_grace_days', 'acts_on',
     ];
 
     /** Read off `last_payment` when a community has one. */
@@ -177,6 +187,9 @@ final class BillingSnapshotContractTest extends TestCase
             foreach (self::REQUIRED_STANDING_KEYS as $key) {
                 $this->assertArrayHasKey($key, $row['standing'], "row.standing.{$key}");
             }
+            $this->assertSame(self::REQUIRED_RULE_KEYS, array_keys($row['over_limit_rule']));
+            $this->assertIsBool($row['over_limit']);
+            $this->assertIsBool($row['upgrade_allowed']);
         }
 
         $this->assertSame('Contract with plan', $withPlan['name']);

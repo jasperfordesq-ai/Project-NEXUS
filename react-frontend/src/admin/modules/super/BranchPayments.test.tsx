@@ -8,6 +8,7 @@ import React, { createContext, useContext } from 'react';
 import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 import userEvent from '@testing-library/user-event';
+import { formatDate } from '@/lib/helpers';
 
 // ─── UI mock ──────────────────────────────────────────────────────────────────
 // BillingControl uses HeroUI Table with `items` prop + render-function children
@@ -39,6 +40,18 @@ vi.mock('@/components/ui', async () => {
         </div>
       );
     },
+    Select: ({ children, label, selectedKeys, onSelectionChange }: {
+      children?: React.ReactNode; label?: string;
+      selectedKeys?: Iterable<string>; onSelectionChange?: (keys: Set<string>) => void;
+    }) => {
+      const keys = selectedKeys ? Array.from(selectedKeys) : [];
+      return (
+        <select aria-label={label} value={keys[0] ?? ''} onChange={(e) => onSelectionChange?.(new Set([e.target.value]))}>
+          {children}
+        </select>
+      );
+    },
+    SelectItem: ({ children, id }: { children?: React.ReactNode; id?: string }) => <option value={id}>{children}</option>,
     TableBody: ({ items, children, emptyContent }: {
       items?: unknown[];
       children?: ((item: unknown) => React.ReactNode) | React.ReactNode;
@@ -143,6 +156,19 @@ const makeStanding = (overrides = {}) => ({
   ...overrides,
 });
 
+// OverLimitRule::for() plus what the community stores itself and its pause date.
+const makeOverLimit = (overrides: Record<string, unknown> = {}) => ({
+  action: 'pause',
+  effective_action: 'pause',
+  grace_days: 30,
+  action_source: 'platform',
+  days_source: 'platform',
+  own_action: null,
+  own_grace_days: null,
+  acts_on: null,
+  ...overrides,
+});
+
 const makeRow = (overrides: Record<string, unknown> = {}) => ({
   id: 7,
   name: 'Bandon Timebank',
@@ -157,6 +183,8 @@ const makeRow = (overrides: Record<string, unknown> = {}) => ({
   plan: null,
   members: { active: 61, max: null, percent: null },
   plan_change_refusal: null,
+  over_limit: makeOverLimit(),
+  upgrade_allowed: true,
   ...overrides,
 });
 
@@ -491,5 +519,78 @@ describe('BranchPayments', () => {
 
     expect(screen.queryByRole('radio', { name: /Spark/ })).not.toBeInTheDocument();
     expect(screen.getByRole('radio', { name: /Community/ })).toBeInTheDocument();
+  });
+  // ─── What happens when a community goes over its member number ──────────────
+  const ruleSelect = () => screen.getByLabelText('What happens') as HTMLSelectElement;
+
+  it('shows the rule that applies, its days and where it comes from', async () => {
+    await renderWith([
+      makeRow({ over_limit: makeOverLimit({ action_source: 'hub' }) }),
+      makeRow({ id: 8, name: 'Kinsale Timebank', over_limit: makeOverLimit({ action: 'block_joining', effective_action: 'block_joining', action_source: 'community' }) }),
+    ]);
+
+    expect(screen.getByRole('columnheader', { name: 'If over' })).toBeInTheDocument();
+    expect(screen.getByText('Pause after 30 days')).toBeInTheDocument();
+    expect(screen.getByText('hub default')).toBeInTheDocument();
+    expect(screen.getByText('Stop joining')).toBeInTheDocument();
+  });
+
+  it('names the day a community over its number will be paused', async () => {
+    await renderWith([makeRow({ over_limit: makeOverLimit({ acts_on: '2026-12-21' }) })]);
+
+    const line = screen.getByText((text) => text.startsWith('Pause on '));
+    expect(line).toHaveTextContent(formatDate('2026-12-21'));
+    expect(line.className).toContain('text-warning');
+  });
+
+  it('says the platform team moves a card payer up by hand', async () => {
+    await renderWith([makeRow({ over_limit: makeOverLimit({ action: 'upgrade', effective_action: 'none' }) })]);
+
+    expect(screen.getByText('Move up (platform team does this one by hand)')).toBeInTheDocument();
+  });
+
+  it('offers the over-limit rule only where the manager may act', async () => {
+    await renderWith([
+      makeRow(),
+      makeRow({ id: 8, name: 'Kinsale Timebank', can_act: false, cannot_act_reason: 'pays_platform' }),
+    ]);
+
+    expect(screen.getAllByRole('button').filter((b) => b.textContent?.trim() === 'Over-limit rule')).toHaveLength(1);
+  });
+
+  it('opens on the community’s own rule and posts the choice', async () => {
+    const user = userEvent.setup();
+    await renderWith([makeRow({ over_limit: makeOverLimit({ own_action: 'pause', own_grace_days: 14, action_source: 'community', grace_days: 14, days_source: 'community' }) })]);
+
+    await user.click(button('Over-limit rule')!);
+    expect(ruleSelect().value).toBe('pause');
+    expect((screen.getByLabelText('After how many days over') as HTMLInputElement).value).toBe('14');
+
+    fireEvent.change(ruleSelect(), { target: { value: 'block_joining' } });
+    await user.click(screen.getByRole('button', { name: 'Save rule' }));
+
+    await waitFor(() => expect(mockApi.post).toHaveBeenCalledWith('/v2/admin/super/branch-payments/7/over-limit', { action: 'block_joining', grace_days: 14 }));
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('Over-limit rule saved'));
+  });
+
+  it('leaves out moving up when the server says it is not allowed', async () => {
+    const user = userEvent.setup();
+    await renderWith([makeRow({ upgrade_allowed: false })]);
+
+    await user.click(button('Over-limit rule')!);
+
+    expect(Array.from(ruleSelect().options).map((o) => o.textContent)).not.toContain('Move up to the next plan');
+  });
+
+  it('shows the server’s refusal of a rule as sent', async () => {
+    const user = userEvent.setup();
+    mockApi.post.mockResolvedValue({ success: false, error: 'This rule cannot be set here.', code: 'RULE_NOT_ALLOWED' });
+    await renderWith([makeRow()]);
+
+    await user.click(button('Over-limit rule')!);
+    await user.click(screen.getByRole('button', { name: 'Save rule' }));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('This rule cannot be set here.'));
+    expect(mockToast.success).not.toHaveBeenCalled();
   });
 });

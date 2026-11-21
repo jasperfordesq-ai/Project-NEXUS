@@ -160,35 +160,76 @@ final class BillingStandingNotifier
     }
 
     /**
-     * @param array<string, int|string|null> $facts active_members, max_users, plan_name, window_days
+     * Close to the limit. The admins and whoever the community pays (DESIGN
+     * 6.5), with what its rule will do if it goes over.
+     *
+     * @param array<string, int|string|null> $facts active_members, max_users, plan_name, window_days, rule?, grace_days?
      */
     public static function limitApproaching(int $tenantId, array $facts): int
     {
-        return self::limitNotice($tenantId, $facts, 'limit_approaching', false, null, 'default');
+        return self::limitNotice($tenantId, $facts, 'limit_approaching', true, self::ruleLine($facts), 'default');
     }
 
     /**
-     * @param array<string, int|string|null> $facts active_members, max_users, plan_name, window_days
+     * @param array<string, int|string|null> $facts active_members, max_users, plan_name, window_days, rule?, grace_days?
      */
     public static function limitReached(int $tenantId, array $facts): int
     {
-        return self::limitNotice($tenantId, $facts, 'limit_reached', true, null, 'warning');
+        return self::limitNotice($tenantId, $facts, 'limit_reached', true, self::ruleLine($facts), 'warning');
     }
 
     /**
-     * Over the limit. With a `pause_date` the community will be paused on it
-     * if still over; without one, going over only warns.
+     * Over the limit. The closing line says what the community's rule will
+     * do (`rule`, the action the daily check follows):
      *
-     * @param array<string, int|string|null> $facts active_members, max_users, plan_name, window_days, pause_date?
+     * - `none`: nothing more — unless "move up" was chosen and it pays by
+     *   card (`rule_action` `upgrade`), when a person must move it;
+     * - `block_joining`: new members cannot join until it is back under;
+     * - `pause`: paused on `pause_date` if still over;
+     * - `upgrade`: moved to `move_plan` on `move_date` if still over, or a
+     *   person must decide when no plan fits (no `move_plan`).
+     *
+     * Without `rule` (a caller from before the rules existed): a
+     * `pause_date` means pause, else warn only.
+     *
+     * @param array<string, int|string|null> $facts active_members, max_users, plan_name, window_days, rule?, rule_action?, pause_date?, move_date?, move_plan?
      */
     public static function limitOver(int $tenantId, array $facts): int
     {
         $pauseDate = isset($facts['pause_date']) ? (string) $facts['pause_date'] : null;
-        $closing = $pauseDate !== null
-            ? [self::KEY . 'limit_over_will_pause', ['date' => $pauseDate]]
-            : [self::KEY . 'limit_over_warn_only', []];
+        $rule = isset($facts['rule']) ? (string) $facts['rule'] : ($pauseDate !== null ? 'pause' : 'none');
+
+        $closing = match ($rule) {
+            'pause' => [self::KEY . 'limit_over_will_pause', ['date' => (string) $pauseDate]],
+            'block_joining' => [self::KEY . 'limit_over_joining_closed', []],
+            'upgrade' => isset($facts['move_plan'], $facts['move_date'])
+                ? [self::KEY . 'limit_over_will_move_up', ['date' => (string) $facts['move_date'], 'plan' => (string) $facts['move_plan']]]
+                : [self::KEY . 'limit_over_needs_decision', []],
+            default => ($facts['rule_action'] ?? null) === 'upgrade'
+                ? [self::KEY . 'limit_over_needs_decision', []]
+                : [self::KEY . 'limit_over_warn_only', []],
+        };
 
         return self::limitNotice($tenantId, $facts, 'limit_over', true, $closing, 'warning');
+    }
+
+    /**
+     * The sentence in the "approaching" and "reached" notices saying what the
+     * rule will do if the community goes or stays over. None for warn only.
+     *
+     * @param array<string, int|string|null> $facts
+     * @return array{0:string, 1:array<string, string>}|null
+     */
+    private static function ruleLine(array $facts): ?array
+    {
+        $days = (string) ($facts['grace_days'] ?? '');
+
+        return match ($facts['rule'] ?? null) {
+            'block_joining' => [self::KEY . 'limit_rule_block_joining', []],
+            'pause' => [self::KEY . 'limit_rule_pause', ['days' => $days]],
+            'upgrade' => [self::KEY . 'limit_rule_upgrade', ['days' => $days]],
+            default => null,
+        };
     }
 
     /**

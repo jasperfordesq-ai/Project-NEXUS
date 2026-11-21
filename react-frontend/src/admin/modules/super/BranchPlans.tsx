@@ -29,6 +29,13 @@ import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { formatCurrency, formatNumber } from '@/lib/helpers';
 import { PageHeader } from '../../components/PageHeader';
+import {
+  OverLimitRuleFields,
+  isOverLimitAction,
+  overLimitLabel,
+  parseGraceDays,
+  type OverLimitAction,
+} from '../billing/OverLimitRuleDialog';
 
 /** Money arrives as a number, or as a numeric string from a decimal column. */
 type Money = number | string | null;
@@ -62,12 +69,27 @@ interface Hub {
   children_paying: number;
 }
 
+/**
+ * The selected hub's default rule for the communities that pay it, and the
+ * platform default it falls back to. Null for both of the hub's values means
+ * it follows the platform. Null as a whole when there is no hub to set it on.
+ */
+interface HubOverLimit {
+  action: string | null;
+  grace_days: number | null;
+  platform_action: string;
+  platform_grace_days: number;
+  /** The platform team's master switch: while off, no rule acts on anyone. */
+  automation_enabled: boolean;
+}
+
 interface BranchPlansResponse {
   hubs: Hub[];
   hub_id: number | null;
   /** The selected hub's own billing currency; its column leads the table. */
   hub_currency: 'eur' | 'gbp' | null;
   plans: HubPlan[];
+  over_limit: HubOverLimit | null;
 }
 
 const MONEY_FIELDS = ['price_monthly', 'price_yearly', 'setup_fee', 'price_monthly_gbp', 'price_yearly_gbp', 'setup_fee_gbp'] as const;
@@ -149,6 +171,11 @@ export function BranchPlans() {
   const [form, setForm] = useState<Form | null>(null);
   const [errors, setErrors] = useState<FormErrors>({});
   const [busyId, setBusyId] = useState<number | null>(null);
+  // The hub's over-limit rule as being edited; refilled from each load.
+  const [ruleAction, setRuleAction] = useState<OverLimitAction | null>(null);
+  const [ruleDays, setRuleDays] = useState('');
+  const [ruleDaysError, setRuleDaysError] = useState<string | undefined>(undefined);
+  const [savingRule, setSavingRule] = useState(false);
 
   const load = useCallback(async (hubId?: number | null) => {
     lastAsked.current = hubId ?? null;
@@ -156,6 +183,10 @@ export function BranchPlans() {
     const response = await api.get<BranchPlansResponse>(path);
     if (response.success && response.data && Array.isArray(response.data.plans) && Array.isArray(response.data.hubs)) {
       setData(response.data);
+      const rule = response.data.over_limit ?? null;
+      setRuleAction(rule && isOverLimitAction(rule.action) ? rule.action : null);
+      setRuleDays(rule && rule.grace_days !== null ? String(rule.grace_days) : '');
+      setRuleDaysError(undefined);
       setLoadFailed(false);
       setReloadFailed(false);
       loadedOnce.current = true;
@@ -251,6 +282,28 @@ export function BranchPlans() {
     if (await write(dialog, 'put', body, 'branch_plans.done_saved')) closeDialog();
   };
 
+  const saveRule = async () => {
+    if (hubId === null) return;
+    const days = parseGraceDays(ruleDays);
+    if (days === 'invalid') {
+      setRuleDaysError(t('admin_billing:over_limit_rule.days_invalid'));
+      return;
+    }
+    setRuleDaysError(undefined);
+    setSavingRule(true);
+    const response = await api.put(`/v2/admin/super/branch-plans/${hubId}/over-limit`, { action: ruleAction, grace_days: days });
+    setSavingRule(false);
+
+    if (response.success) {
+      toast.success(t('admin_billing:over_limit_rule.saved'));
+      void load(hubId);
+      return;
+    }
+
+    // admin-i18n-ignore: localized server message — AdminSuperController Branch plans over-limit refusals (lang/*/api.php)
+    toast.error(response.error || t('admin_billing:over_limit_rule.save_failed'));
+  };
+
   /** "Standard: £199" under each field, so the manager sees what empty means. */
   const standardLine = (plan: HubPlan, field: Field): string => {
     const standard = plan.default[field];
@@ -342,6 +395,45 @@ export function BranchPlans() {
       />
     );
   };
+
+  // The hub's default over-limit rule; none when the server sends none.
+  const rule = data.over_limit;
+  const platformAction = rule && isOverLimitAction(rule.platform_action) ? rule.platform_action : null;
+  const ruleCard = rule ? (
+    <Card>
+      <CardHeader className="flex flex-col items-start gap-1 pb-0">
+        <span className="font-semibold text-sm">{t('admin_billing:over_limit_rule.card_title')}</span>
+        <span className="text-xs text-muted">{t('admin_billing:over_limit_rule.card_help')}</span>
+      </CardHeader>
+      <CardBody className="flex flex-col gap-3">
+        {/* Said up front so a saved rule is never read as already acting. */}
+        {rule.automation_enabled === false ? (
+          <Alert color="warning" title={t('admin_billing:over_limit_rule.automation_off_note')} />
+        ) : null}
+        <div className="sm:max-w-md">
+          <OverLimitRuleFields
+            action={ruleAction}
+            onActionChange={setRuleAction}
+            days={ruleDays}
+            onDaysChange={setRuleDays}
+            followLabel={platformAction
+              ? t('admin_billing:over_limit_rule.follow_platform_current', { rule: overLimitLabel(t, platformAction) })
+              : t('admin_billing:over_limit_rule.follow_default')}
+            inheritedAction={platformAction}
+            defaultDays={rule.platform_grace_days}
+            // The communities that pay a hub never pay the platform by card.
+            allowUpgrade
+            daysError={ruleDaysError}
+          />
+        </div>
+        <div className="flex justify-end">
+          <Button color="primary" onPress={() => void saveRule()} isLoading={savingRule}>
+            {t('admin_billing:over_limit_rule.save')}
+          </Button>
+        </div>
+      </CardBody>
+    </Card>
+  ) : null;
 
   // The hub's own currency leads; the other stays beside it.
   const monthlyOrder: MoneyField[] = data.hub_currency === 'gbp'
@@ -458,8 +550,7 @@ export function BranchPlans() {
         </CardBody>
       </Card>
 
-      {/* A later stage adds a second card here: what happens when a community
-          that pays this hub goes over its member number. */}
+      {ruleCard}
 
       <Modal isOpen={dialog !== null} onClose={closeDialog} size="lg" scrollBehavior="inside">
         <ModalContent>

@@ -25,8 +25,14 @@ import { Button, Card, CardBody, CardHeader, Input, Radio, RadioGroup, Spinner, 
 import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { formatDate } from '@/lib/helpers';
-
-type OverLimitAction = 'none' | 'pause';
+import {
+  OVER_LIMIT_ACTIONS,
+  isOverLimitAction,
+  overLimitExplanation,
+  overLimitLabel,
+  usesDays,
+  type OverLimitAction,
+} from './OverLimitRuleDialog';
 
 /** GET /v2/admin/super/billing/settings */
 interface BillingAutomationSettings {
@@ -273,19 +279,25 @@ export function BillingAutomationCard({ onWarningPercent }: BillingAutomationCar
               />
             </div>
 
+            {/* The platform default: a hub's default or a community's own rule wins over it. */}
             <RadioGroup
               label={t('automation.over_limit_label')}
               value={draft.over_limit_action}
-              onValueChange={(value) => setDraft({ ...draft, over_limit_action: value === 'pause' ? 'pause' : 'none' })}
+              onValueChange={(value) => {
+                if (isOverLimitAction(value)) setDraft({ ...draft, over_limit_action: value });
+              }}
             >
-              <Radio value="none">{t('automation.over_limit_none')}</Radio>
-              <Radio value="pause">{t('automation.over_limit_pause')}</Radio>
+              {OVER_LIMIT_ACTIONS.map((action) => (
+                <Radio key={action} value={action} description={overLimitExplanation(t, action)}>
+                  {overLimitLabel(t, action)}
+                </Radio>
+              ))}
             </RadioGroup>
 
-            {draft.over_limit_action === 'pause' ? (
+            {usesDays(draft.over_limit_action) ? (
               <Input
                 className="sm:max-w-xs"
-                label={t('automation.over_limit_grace_days')}
+                label={t('automation.over_limit_days')}
                 type="number"
                 min={1}
                 max={365}

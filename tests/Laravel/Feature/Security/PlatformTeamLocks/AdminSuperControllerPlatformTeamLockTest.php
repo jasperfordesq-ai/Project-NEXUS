@@ -84,6 +84,10 @@ final class AdminSuperControllerPlatformTeamLockTest extends PlatformTeamLockTes
             'record a payment' => ['POST', '/v2/admin/super/billing/standing/record-payment', 'refusal-only'],
             'payment history' => ['GET', '/v2/admin/super/billing/standing/payments'],
             'set how a community pays' => ['POST', '/v2/admin/super/billing/standing/payer', 'refusal-only'],
+            // A community's own rule for going over its member number (hub
+            // plans Stage 4). Refusal-only: its success path restarts that
+            // community's days-over count.
+            'set a community\'s over-limit rule' => ['POST', '/v2/admin/super/billing/standing/over-limit', 'refusal-only'],
         ];
     }
 

@@ -3326,6 +3326,7 @@ Route::post('/v2/admin/super/branch-payments/{id}/suspend', [\App\Http\Controlle
 Route::post('/v2/admin/super/branch-payments/{id}/restore', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsRestore'])->whereNumber('id');
 Route::get('/v2/admin/super/branch-payments/{id}/plans', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsPlans'])->whereNumber('id');
 Route::post('/v2/admin/super/branch-payments/{id}/plan', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsSetPlan'])->whereNumber('id');
+Route::post('/v2/admin/super/branch-payments/{id}/over-limit', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsSetOverLimit'])->whereNumber('id');
 // Branch plans: a hub's own version of the default plans. Safe in this tier:
 // every one confines itself through BranchPlans::refusalForHub (the caller's
 // own community or one below it; never tenant 1). Pinned by
@@ -3333,6 +3334,7 @@ Route::post('/v2/admin/super/branch-payments/{id}/plan', [\App\Http\Controllers\
 Route::get('/v2/admin/super/branch-plans', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPlans']);
 Route::put('/v2/admin/super/branch-plans/{hubId}/plans/{planId}', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPlansUpdate'])->whereNumber(['hubId', 'planId']);
 Route::delete('/v2/admin/super/branch-plans/{hubId}/plans/{planId}', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPlansReset'])->whereNumber(['hubId', 'planId']);
+Route::put('/v2/admin/super/branch-plans/{hubId}/over-limit', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPlansSetOverLimit'])->whereNumber('hubId');
 Route::post('/v2/admin/super/tenants/{id}/toggle-hub', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantToggleHub']);
 Route::post('/v2/admin/super/tenants/{id}/move', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantMove']);
 
@@ -3498,6 +3500,7 @@ Route::post('/v2/admin/super/billing/standing/paid-until', [\App\Http\Controller
 Route::post('/v2/admin/super/billing/standing/record-payment', [\App\Http\Controllers\Api\AdminSuperController::class, 'recordCommunityPayment']);
 Route::get('/v2/admin/super/billing/standing/payments', [\App\Http\Controllers\Api\AdminSuperController::class, 'communityPayments']);
 Route::post('/v2/admin/super/billing/standing/payer', [\App\Http\Controllers\Api\AdminSuperController::class, 'setCommunityPayer']);
+Route::post('/v2/admin/super/billing/standing/over-limit', [\App\Http\Controllers\Api\AdminSuperController::class, 'setCommunityOverLimitRule']);
 Route::get('/v2/admin/super/billing/standing/preview', [\App\Http\Controllers\Api\AdminSuperController::class, 'previewBillingAutomation']);
 Route::get('/v2/admin/super/billing/settings', [\App\Http\Controllers\Api\AdminSuperController::class, 'getBillingAutomationSettings']);
 Route::put('/v2/admin/super/billing/settings', [\App\Http\Controllers\Api\AdminSuperController::class, 'updateBillingAutomationSettings']);

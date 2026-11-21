@@ -25,13 +25,16 @@ vi.mock('@/components/ui', async () => {
         <RadioContext.Provider value={{ value, onValueChange }}>{children}</RadioContext.Provider>
       </fieldset>
     ),
-    Radio: ({ value, children }: { value: string; children?: React.ReactNode }) => {
+    Radio: ({ value, children, description }: { value: string; children?: React.ReactNode; description?: React.ReactNode }) => {
       const group = useContext(RadioContext);
       return (
-        <label>
-          <input type="radio" checked={group.value === value} onChange={() => group.onValueChange(value)} />
-          {children}
-        </label>
+        <div>
+          <label>
+            <input type="radio" checked={group.value === value} onChange={() => group.onValueChange(value)} />
+            {children}
+          </label>
+          {description ? <p>{description}</p> : null}
+        </div>
       );
     },
   };
@@ -243,16 +246,34 @@ describe('BillingAutomationCard', () => {
     expect(previewCalls.length).toBe(2);
   });
 
-  it('shows the grace days only when going over the limit pauses', async () => {
+  const DAYS = 'Days over the limit before pausing or moving up';
+
+  it('offers the four rules for the platform default, each with what it does', async () => {
+    await renderCard();
+
+    for (const label of ['Warn only', 'Stop new members joining', 'Pause the community', 'Move up to the next plan']) {
+      expect(screen.getByLabelText(label)).toBeInTheDocument();
+    }
+    expect(screen.getByText(/Nobody new can join/)).toBeInTheDocument();
+    expect(screen.getByText(/moved to the smallest plan that fits/)).toBeInTheDocument();
+  });
+
+  it('shows the grace days only for a rule that waits', async () => {
     const user = userEvent.setup();
     await renderCard();
 
-    expect(screen.queryByLabelText('Days over the limit before pausing')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(DAYS)).not.toBeInTheDocument();
 
-    await user.click(screen.getByLabelText('Pause after a number of days over the limit'));
-    expect(screen.getByLabelText('Days over the limit before pausing')).toBeInTheDocument();
+    await user.click(screen.getByLabelText('Stop new members joining'));
+    expect(screen.queryByLabelText(DAYS)).not.toBeInTheDocument();
 
-    fireEvent.change(screen.getByLabelText('Days over the limit before pausing'), { target: { value: '45' } });
+    await user.click(screen.getByLabelText('Move up to the next plan'));
+    expect(screen.getByLabelText(DAYS)).toBeInTheDocument();
+
+    await user.click(screen.getByLabelText('Pause the community'));
+    expect(screen.getByLabelText(DAYS)).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText(DAYS), { target: { value: '45' } });
     await user.click(button('Save settings')!);
 
     await waitFor(() => {
@@ -263,12 +284,32 @@ describe('BillingAutomationCard', () => {
     });
   });
 
+  it('saves stop new members joining as block_joining', async () => {
+    const user = userEvent.setup();
+    await renderCard();
+
+    await user.click(screen.getByLabelText('Stop new members joining'));
+    await user.click(button('Save settings')!);
+
+    await waitFor(() => {
+      expect(mockApi.put).toHaveBeenCalledWith('/v2/admin/super/billing/settings', { over_limit_action: 'block_joining' });
+    });
+  });
+
   it('opens on the saved choice to pause', async () => {
     serve(makeSettings({ over_limit_action: 'pause', over_limit_grace_days: 21 }), []);
     await renderCard();
 
-    expect(screen.getByLabelText('Pause after a number of days over the limit')).toBeChecked();
-    expect((screen.getByLabelText('Days over the limit before pausing') as HTMLInputElement).value).toBe('21');
+    expect(screen.getByLabelText('Pause the community')).toBeChecked();
+    expect((screen.getByLabelText(DAYS) as HTMLInputElement).value).toBe('21');
+  });
+
+  it('opens on the saved choice to move up', async () => {
+    serve(makeSettings({ over_limit_action: 'upgrade', over_limit_grace_days: 10 }), []);
+    await renderCard();
+
+    expect(screen.getByLabelText('Move up to the next plan')).toBeChecked();
+    expect((screen.getByLabelText(DAYS) as HTMLInputElement).value).toBe('10');
   });
 
   it('shows the server’s own refusal and keeps the change on screen', async () => {

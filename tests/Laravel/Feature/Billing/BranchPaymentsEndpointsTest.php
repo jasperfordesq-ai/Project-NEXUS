@@ -128,10 +128,10 @@ final class BranchPaymentsEndpointsTest extends TestCase
         $this->assertSame($expected, $ids, 'Not its own community, not the other hub, not the other hub\'s child, not tenant 1.');
 
         $row = collect($response->json('data'))->firstWhere('id', $this->grandchild);
-        // Stage 3 added `plan`, `members` and `plan_change_refusal`; the exact shape is pinned key
-        // for key in BranchPaymentsPlanEndpointsTest.
+        // Stage 3 added `plan`, `members` and `plan_change_refusal`, Stage 4 `over_limit` and
+        // `upgrade_allowed`; the exact shape is pinned key for key in BranchPaymentsPlanEndpointsTest.
         $this->assertSame(
-            ['id', 'name', 'depth', 'parent_id', 'parent_name', 'standing', 'days_late', 'can_act', 'cannot_act_reason', 'paused_from_above', 'plan', 'members', 'plan_change_refusal'],
+            ['id', 'name', 'depth', 'parent_id', 'parent_name', 'standing', 'days_late', 'can_act', 'cannot_act_reason', 'paused_from_above', 'plan', 'members', 'plan_change_refusal', 'over_limit', 'upgrade_allowed'],
             array_keys($row)
         );
         $this->assertTrue($row['can_act']);
@@ -203,6 +203,8 @@ final class BranchPaymentsEndpointsTest extends TestCase
             'paid-until' => ['paid-until'],
             'suspend' => ['suspend'],
             'restore' => ['restore'],
+            // Hub plans Stage 4: a community's rule for going over its member number.
+            'over-limit' => ['over-limit'],
         ];
     }
 
@@ -412,7 +414,7 @@ final class BranchPaymentsEndpointsTest extends TestCase
 
         $this->assertContains($this->apiGet('/v2/admin/super/branch-payments')->getStatusCode(), [401, 403]);
 
-        foreach (['paid-until', 'suspend', 'restore'] as $action) {
+        foreach (['paid-until', 'suspend', 'restore', 'over-limit'] as $action) {
             $status = $this->apiPost("/v2/admin/super/branch-payments/{$this->child}/{$action}", ['paid_until' => '2027-01-31'])->getStatusCode();
             $this->assertContains($status, [401, 403], "{$action} answered {$status}");
         }

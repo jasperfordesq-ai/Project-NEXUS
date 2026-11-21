@@ -50,15 +50,18 @@ vi.mock('@/components/ui', async () => {
         {children}
       </label>
     ),
-    Select: ({ children, label, selectedKeys, onSelectionChange }: {
-      children?: React.ReactNode; label?: string;
+    Select: ({ children, label, selectedKeys, onSelectionChange, description }: {
+      children?: React.ReactNode; label?: string; description?: React.ReactNode;
       selectedKeys?: Iterable<string>; onSelectionChange?: (keys: Set<string>) => void;
     }) => {
       const keys = selectedKeys ? Array.from(selectedKeys) : [];
       return (
-        <select aria-label={label} value={keys[0] ?? ''} onChange={(e) => onSelectionChange?.(new Set([e.target.value]))}>
-          {children}
-        </select>
+        <>
+          <select aria-label={label} value={keys[0] ?? ''} onChange={(e) => onSelectionChange?.(new Set([e.target.value]))}>
+            {children}
+          </select>
+          {description ? <p>{description}</p> : null}
+        </>
       );
     },
     SelectItem: ({ children, id }: { children?: React.ReactNode; id?: string }) => (
@@ -425,5 +428,102 @@ describe('BranchPlans', () => {
 
     await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('A community that pays you is on this plan.'));
     expect(mockToast.success).not.toHaveBeenCalled();
+  });
+  // ─── The hub's default rule for going over the member number ────────────────
+  const OVER_LIMIT = { action: null, grace_days: null, platform_action: 'pause', platform_grace_days: 30, automation_enabled: true };
+  const ruleSelect = () => screen.getByLabelText('What happens') as HTMLSelectElement;
+
+  it('offers the platform default, naming it, and the four rules', async () => {
+    await renderWith(makeResponse({ over_limit: OVER_LIMIT }));
+
+    expect(screen.getByText('When a community goes over its member number')).toBeInTheDocument();
+    expect(Array.from(ruleSelect().options).map((o) => o.textContent)).toEqual([
+      'Follow the platform default (currently: Pause the community)',
+      'Warn only',
+      'Stop new members joining',
+      'Pause the community',
+      'Move up to the next plan',
+    ]);
+    expect(ruleSelect().value).toBe('default');
+    // The platform default pauses, so its days show as the hint.
+    expect((screen.getByLabelText('After how many days over') as HTMLInputElement).placeholder).toBe('30');
+  });
+
+  it('opens on the hub’s own rule and hides the days for a rule that does not wait', async () => {
+    await renderWith(makeResponse({ over_limit: { ...OVER_LIMIT, action: 'block_joining' } }));
+
+    expect(ruleSelect().value).toBe('block_joining');
+    expect(screen.queryByLabelText('After how many days over')).not.toBeInTheDocument();
+    expect(screen.getByText(/Nobody new can join/)).toBeInTheDocument();
+  });
+
+  it('saves the hub’s rule and days, then reloads', async () => {
+    const user = userEvent.setup();
+    await renderWith(makeResponse({ over_limit: OVER_LIMIT }));
+
+    fireEvent.change(ruleSelect(), { target: { value: 'upgrade' } });
+    fireEvent.change(screen.getByLabelText('After how many days over'), { target: { value: '21' } });
+    await user.click(button('Save rule')!);
+
+    await waitFor(() => expect(mockApi.put).toHaveBeenCalledWith('/v2/admin/super/branch-plans/5/over-limit', { action: 'upgrade', grace_days: 21 }));
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('Over-limit rule saved'));
+    await waitFor(() => expect(mockApi.get).toHaveBeenCalledWith('/v2/admin/super/branch-plans?hub_id=5'));
+  });
+
+  it('sends null for both to follow the platform default', async () => {
+    const user = userEvent.setup();
+    await renderWith(makeResponse({ over_limit: { ...OVER_LIMIT, action: 'pause', grace_days: 10 } }));
+
+    fireEvent.change(ruleSelect(), { target: { value: 'default' } });
+    fireEvent.change(screen.getByLabelText('After how many days over'), { target: { value: '' } });
+    await user.click(button('Save rule')!);
+
+    await waitFor(() => expect(mockApi.put).toHaveBeenCalledWith('/v2/admin/super/branch-plans/5/over-limit', { action: null, grace_days: null }));
+  });
+
+  it('refuses days outside 1 to 365 before sending', async () => {
+    const user = userEvent.setup();
+    await renderWith(makeResponse({ over_limit: OVER_LIMIT }));
+
+    fireEvent.change(screen.getByLabelText('After how many days over'), { target: { value: '0' } });
+    await user.click(button('Save rule')!);
+
+    expect(screen.getByText('Enter a whole number of days from 1 to 365.')).toBeInTheDocument();
+    expect(mockApi.put).not.toHaveBeenCalled();
+  });
+
+  it('shows the server’s refusal of the rule as sent', async () => {
+    const user = userEvent.setup();
+    mockApi.put.mockResolvedValue({ success: false, error: 'You cannot set this.', code: 'NOT_IN_REACH' });
+    await renderWith(makeResponse({ over_limit: OVER_LIMIT }));
+
+    await user.click(button('Save rule')!);
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('You cannot set this.'));
+  });
+
+  const OFF_NOTE = /automatic checks are switched off/;
+
+  it('says nothing acts while the platform’s automatic checks are off, and still lets the rule be set', async () => {
+    const user = userEvent.setup();
+    await renderWith(makeResponse({ over_limit: { ...OVER_LIMIT, automation_enabled: false } }));
+
+    expect(screen.getByText(OFF_NOTE)).toBeInTheDocument();
+
+    fireEvent.change(ruleSelect(), { target: { value: 'block_joining' } });
+    await user.click(button('Save rule')!);
+    await waitFor(() => expect(mockApi.put).toHaveBeenCalledWith('/v2/admin/super/branch-plans/5/over-limit', { action: 'block_joining', grace_days: null }));
+  });
+
+  it('shows no such note while the automatic checks are on', async () => {
+    await renderWith(makeResponse({ over_limit: OVER_LIMIT }));
+
+    expect(screen.queryByText(OFF_NOTE)).not.toBeInTheDocument();
+  });
+
+  it('shows no rule card when the server sends none', async () => {
+    await renderWith(makeResponse({ over_limit: null }));
+
+    expect(screen.queryByText('When a community goes over its member number')).not.toBeInTheDocument();
   });
 });

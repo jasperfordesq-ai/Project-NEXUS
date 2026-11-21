@@ -964,6 +964,33 @@ that pays the platform. A plan a paying community is on cannot be hidden
 (`hub_plan_terms_changed`). Pinned in
 `tests/Laravel/Feature/Billing/BranchPlansEndpointsTest.php`.
 
+**The rule for going over the member number (21 November 2026).** Each
+community has a rule for what happens when it goes over its plan's member
+number (warn only, stop new members joining, pause, move up to the next plan)
+and a number of days over before it acts. It resolves through
+`App\Support\Billing\OverLimitRule`, the action and the days separately: the
+community's own, then (when it pays a parent above tenant 1) the default its
+parent set for its children, then the platform's (`BillingSettings`, default
+pause after 30 days). Who may set it:
+
+| Level | Endpoint | Who |
+|---|---|---|
+| The platform default | `PUT /v2/admin/super/billing/settings` (`over_limit_action`, `over_limit_grace_days`) | The platform team only |
+| A hub's default for the communities that pay it | `PUT /v2/admin/super/branch-plans/{hubId}/over-limit` | A tenant super admin for **its own community** and any community below it, through `BranchPlans::refusalForHub()` exactly as Branch plans; a global super admin and the platform team for any; never tenant 1 (404 `NOT_IN_REACH`) |
+| One community's own rule | `POST /v2/admin/super/branch-payments/{id}/over-limit` | A tenant super admin for a community **below** it that pays its parent and is not exempt, through `BranchPayments::refusalFor()` exactly as the other Branch payments writes (403 out of reach, 422 `PAYS_PLATFORM` / `EXEMPT`) |
+| One community's own rule | `POST /v2/admin/super/billing/standing/over-limit` | The platform team only (`requireGodPlatformAdmin()`), any community but tenant 1 |
+
+"Move up" cannot be chosen for a community that pays the platform by card or
+holds a live card subscription (422 `RULE_NOT_ALLOWED`,
+`OverLimitRule::refusalFor()`; the lists carry `upgrade_allowed` from the same
+rule); a default of "move up" reaching such a community is treated as warn
+only. Every change is audited (`standing_over_limit_rule_set`,
+`standing_children_over_limit_rule_set`) and restarts the days-over count of
+the communities it reaches, so no setting causes a pause the next morning.
+Nothing acts while the platform team's "Automatic checks" switch is off.
+Pinned in `tests/Laravel/Feature/Billing/OverLimitRuleEndpointsTest.php`,
+`BranchPaymentsEndpointsTest.php` and the platform team lock test.
+
 **Adding a page to the panel.** Mount it in `PlatformTeamRoutes.tsx`, add it to
 `PlatformTeamSidebar.tsx` in the zone that matches what the page acts on ("The
 whole platform" or "This community"), start each of its endpoints with

@@ -9,7 +9,8 @@
  *
  * And, for a community that is NOT paused, one warning line before anything
  * happens to it (Stage 3c): its payment is overdue, or it is approaching, at
- * or over its package's member limit; that warning also names the plan. The server measures both the way the
+ * or over its package's member limit; that warning also names the plan and
+ * says what the over-limit rule will do (Stage 4). The server measures both the way the
  * daily check does, so the banner and the check's emails agree.
  *
  * That means one request whenever the admin panel is open, paused or not.
@@ -37,6 +38,10 @@ interface MemberLimit {
   max: number;
   percent: number;
   stage: 'approaching' | 'reached' | 'over' | null;
+  /** The over-limit rule that applies to this community (OverLimitRule::for()'s effective action). */
+  rule?: 'none' | 'block_joining' | 'pause' | 'upgrade';
+  /** The day it will be paused if still over (YYYY-MM-DD); null when nothing is scheduled. */
+  acts_on?: string | null;
 }
 
 /** The plan as it applies to this community (PlanTerms::forCommunity()), in its own currency. */
@@ -134,6 +139,7 @@ export function BillingPausedBanner() {
       <p className="min-w-0 flex-1 break-words font-medium">
         <span className="block">{warning.line}</span>
         {warning.plan ? <span className="block">{warning.plan}</span> : null}
+        {warning.rule ? <span className="block">{warning.rule}</span> : null}
       </p>
     </div>
   );
@@ -161,6 +167,8 @@ interface Warning {
   line: string;
   /** Its own element, never joined to the line with a space: sentence spacing differs by language. */
   plan: string | null;
+  /** What the over-limit rule will do; its own element for the same reason. */
+  rule: string | null;
 }
 
 /** One warning: an overdue payment first, because that is what leads to a pause. */
@@ -168,7 +176,7 @@ function warningWording(standing: BillingStanding, t: Translate): Warning | null
   const number = (value: number) => value.toLocaleString(getFormattingLocale());
 
   if (typeof standing.overdue_days === 'number' && standing.overdue_days > 0) {
-    return { line: t('paused_banner.overdue', { days: number(standing.overdue_days) }), plan: null };
+    return { line: t('paused_banner.overdue', { days: number(standing.overdue_days) }), plan: null, rule: null };
   }
 
   const limit = standing.member_limit;
@@ -183,7 +191,23 @@ function warningWording(standing: BillingStanding, t: Translate): Warning | null
 
   // A second sentence rather than a plan name worked into each limit
   // sentence, so every locale keeps a grammatical line.
-  return { line, plan: standing.plan ? t('paused_banner.limit_plan', { plan: standing.plan.name }) : null };
+  return {
+    line,
+    plan: standing.plan ? t('paused_banner.limit_plan', { plan: standing.plan.name }) : null,
+    rule: ruleWording(limit, t),
+  };
+}
+
+/** Warn only says nothing extra: the warning itself is all that happens. */
+function ruleWording(limit: MemberLimit, t: Translate): string | null {
+  if (limit.rule === 'block_joining') return t('paused_banner.rule_block_joining');
+  if (limit.rule === 'upgrade') return t('paused_banner.rule_upgrade');
+  if (limit.rule === 'pause') {
+    return limit.acts_on
+      ? t('paused_banner.rule_pause_on', { date: formatDate(limit.acts_on) })
+      : t('paused_banner.rule_pause_maybe');
+  }
+  return null;
 }
 
 export default BillingPausedBanner;

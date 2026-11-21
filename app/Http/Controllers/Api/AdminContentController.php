@@ -16,6 +16,7 @@ use App\Models\Page;
 use App\Services\PageContentPolicy;
 use App\Services\RedisCache;
 use App\Services\PrerenderContentInvalidator;
+use App\Services\BillingStandingService;
 use App\Services\StripeSubscriptionService;
 use App\Support\Billing\PlanTerms;
 
@@ -958,6 +959,39 @@ class AdminContentController extends BaseApiController
         return $this->respondWithData($plan, null, 201);
     }
 
+    /**
+     * A changed default member number is new terms for every community on
+     * the plan that is held to it, so their days over start again (hub plans
+     * DESIGN 6.4). Not for a community whose hub set its own number for this
+     * plan: that number has not changed.
+     */
+    private function restartLimitClockForDefaultMemberNumber(int $planId, ?int $before): void
+    {
+        $after = DB::table('pay_plans')->where('id', $planId)->value('max_users');
+        $after = $after !== null ? (int) $after : null;
+        if ($after === $before) {
+            return;
+        }
+
+        $onPlan = DB::table('tenant_plan_assignments')
+            ->where('pay_plan_id', $planId)
+            ->whereIn('status', ['active', 'trial', 'trialing'])
+            ->distinct()
+            ->pluck('tenant_id')
+            ->map(static fn ($id): int => (int) $id)
+            ->all();
+
+        // A hub's own number for this plan comes through applyHubChanges();
+        // asked with no default number, only those held to the default
+        // still come back with none.
+        $followDefault = array_values(array_filter(
+            $onPlan,
+            static fn (int $tenantId): bool => PlanTerms::applyHubChanges($tenantId, $planId, ['max_users' => null])['values']['max_users'] === null
+        ));
+
+        BillingStandingService::restartLimitClock($followDefault);
+    }
+
     public function updatePlan($id): JsonResponse
     {
         $this->requireGodPlatformAdmin();
@@ -997,6 +1031,10 @@ class AdminContentController extends BaseApiController
 
         DB::update("UPDATE pay_plans SET " . implode(', ', $updates) . " WHERE id = ?", $params);
         PlanTerms::flush();
+
+        if (array_key_exists('max_users', $columns)) {
+            $this->restartLimitClockForDefaultMemberNumber($id, $before->max_users !== null ? (int) $before->max_users : null);
+        }
 
         // Sync to Stripe (non-blocking — don't fail plan update if Stripe is unreachable)
         try {

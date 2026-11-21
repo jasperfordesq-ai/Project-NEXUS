@@ -39,6 +39,8 @@ final class BranchPaymentsPlanEndpointsTest extends TestCase
     private const ROW_KEYS = [
         'id', 'name', 'depth', 'parent_id', 'parent_name', 'standing', 'days_late',
         'can_act', 'cannot_act_reason', 'paused_from_above', 'plan', 'members', 'plan_change_refusal',
+        // Hub plans Stage 4: the rule for going over (OverLimitRuleEndpointsTest pins its keys).
+        'over_limit', 'upgrade_allowed',
     ];
 
     private const TERMS_KEYS = [

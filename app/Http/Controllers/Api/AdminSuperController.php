@@ -23,6 +23,7 @@ use App\Services\BillingStandingService;
 use App\Support\Billing\BillingSettings;
 use App\Support\Billing\BranchPayments;
 use App\Support\Billing\BranchPlans;
+use App\Support\Billing\OverLimitRule;
 use App\Support\Billing\PlanTerms;
 use App\Services\SuperAdminAuditService;
 use App\Services\StripeSubscriptionService;
@@ -3200,6 +3201,37 @@ class AdminSuperController extends BaseApiController
         return $this->respondWithData(['standing' => BillingStandingService::get($tenantId)]);
     }
 
+    /**
+     * POST /api/v2/admin/super/billing/standing/over-limit  {tenant_id, action, grace_days}
+     *
+     * The platform team sets any community's own rule for going over its
+     * member number. Both rule keys are required; null = follow the default.
+     * "Move up" is refused for a card payer (RULE_NOT_ALLOWED). Restarts the
+     * community's days-over count.
+     */
+    public function setCommunityOverLimitRule(): JsonResponse
+    {
+        $userId = $this->requireGodPlatformAdmin();
+        $input = $this->getAllInput();
+        $tenantId = (int) ($input['tenant_id'] ?? 0);
+        if ($tenantId < 1) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.tenant_id_is_required'), 'tenant_id', 422);
+        }
+
+        $rule = $this->overLimitRuleInput($input);
+        if ($rule instanceof JsonResponse) {
+            return $rule;
+        }
+
+        try {
+            BillingStandingService::setOverLimitRule($tenantId, $rule['action'], $rule['grace_days'], $userId);
+        } catch (\DomainException $e) {
+            return $this->overLimitRefusal($e);
+        }
+
+        return $this->respondWithData($this->overLimitOf($tenantId));
+    }
+
     // =====================================================================
     // THE DAILY CHECK — its settings and what it would do today
     // =====================================================================
@@ -3424,6 +3456,92 @@ class AdminSuperController extends BaseApiController
         ]);
     }
 
+    /**
+     * POST /api/v2/admin/super/branch-payments/{id}/over-limit  {action, grace_days}
+     *
+     * A hub's manager sets the rule for going over the member number on a
+     * community that pays it. Both keys are required; null = follow the
+     * default (the hub's default for its children, else the platform's).
+     * Restarts the community's days-over count.
+     */
+    public function branchPaymentsSetOverLimit(int $id): JsonResponse
+    {
+        $userId = $this->requireSuperAdmin();
+        if ($refused = $this->branchPaymentsRefusal($id)) {
+            return $refused;
+        }
+
+        $rule = $this->overLimitRuleInput($this->getAllInput());
+        if ($rule instanceof JsonResponse) {
+            return $rule;
+        }
+
+        try {
+            BillingStandingService::setOverLimitRule($id, $rule['action'], $rule['grace_days'], $userId);
+        } catch (\DomainException $e) {
+            return $this->overLimitRefusal($e);
+        }
+
+        return $this->respondWithData($this->overLimitOf($id));
+    }
+
+    /**
+     * The rule and whether "move up" may be chosen, as the Branch payments
+     * row and the Billing control row carry them.
+     *
+     * @return array{over_limit: array<string, mixed>, upgrade_allowed: bool}
+     */
+    private function overLimitOf(int $tenantId): array
+    {
+        return [
+            'over_limit' => OverLimitRule::describe($tenantId),
+            'upgrade_allowed' => OverLimitRule::refusalFor($tenantId, 'upgrade') === null,
+        ];
+    }
+
+    /**
+     * `action` and `grace_days` from a request, both required (an explicit
+     * null follows the default). An empty day count is null, as Laravel turns
+     * an emptied field into null anyway.
+     *
+     * @param array<string, mixed> $input
+     * @return array{action: ?string, grace_days: ?int}|JsonResponse
+     */
+    private function overLimitRuleInput(array $input): array|JsonResponse
+    {
+        $action = $input['action'] ?? null;
+        if (!array_key_exists('action', $input) || !OverLimitRule::isValidAction($action)) {
+            return $this->respondWithError('OVER_LIMIT_ACTION_INVALID', __('api.over_limit_action_invalid'), 'action', 422);
+        }
+
+        $days = $input['grace_days'] ?? null;
+        if (!array_key_exists('grace_days', $input)) {
+            return $this->respondWithError('OVER_LIMIT_DAYS_INVALID', __('api.over_limit_days_invalid'), 'grace_days', 422);
+        }
+        if ($days === '') {
+            $days = null;
+        }
+        if ($days !== null) {
+            $days = is_bool($days) ? false : filter_var($days, FILTER_VALIDATE_INT);
+            if ($days === false || !OverLimitRule::isValidDays($days)) {
+                return $this->respondWithError('OVER_LIMIT_DAYS_INVALID', __('api.over_limit_days_invalid'), 'grace_days', 422);
+            }
+        }
+
+        return ['action' => $action, 'grace_days' => $days];
+    }
+
+    /** A refusal from setting an over-limit rule, as a translated 422. */
+    private function overLimitRefusal(\DomainException $e): JsonResponse
+    {
+        return match ($e->getMessage()) {
+            'over_limit_rule_not_allowed' => $this->respondWithError(OverLimitRule::RULE_NOT_ALLOWED, __('api.over_limit_rule_not_allowed'), 'action', 422),
+            'over_limit_action_invalid' => $this->respondWithError('OVER_LIMIT_ACTION_INVALID', __('api.over_limit_action_invalid'), 'action', 422),
+            'over_limit_days_invalid' => $this->respondWithError('OVER_LIMIT_DAYS_INVALID', __('api.over_limit_days_invalid'), 'grace_days', 422),
+            default => $this->standingRefusal($e),
+        };
+    }
+
     private function cardSubscriptionRefusal(): JsonResponse
     {
         return $this->respondWithError('HAS_CARD_SUBSCRIPTION', __('api.branch_payments_card_subscription'), null, 422);
@@ -3474,7 +3592,76 @@ class AdminSuperController extends BaseApiController
             // The page leads with the hub's own currency; both are editable.
             'hub_currency' => $hubId !== null ? StripeSubscriptionService::billingCurrencyFor($hubId) : null,
             'plans' => $hubId !== null ? PlanTerms::offeredBy($hubId) : [],
+            'over_limit' => $hubId !== null ? $this->hubOverLimit($hubId) : null,
         ]);
+    }
+
+    /**
+     * PUT /api/v2/admin/super/branch-plans/{hubId}/over-limit  {action, grace_days}
+     *
+     * The rule a hub sets for the communities that pay it. Both keys are
+     * required; null = they follow the platform's. May be "move up": for a
+     * child that pays by card it is treated as warn only. Restarts the
+     * days-over count of every child that follows the part that changed.
+     */
+    public function branchPlansSetOverLimit(int $hubId): JsonResponse
+    {
+        $userId = $this->requireSuperAdmin();
+        if (BranchPlans::refusalForHub($hubId) !== null) {
+            return $this->branchPlansNotInReach();
+        }
+
+        $rule = $this->overLimitRuleInput($this->getAllInput());
+        if ($rule instanceof JsonResponse) {
+            return $rule;
+        }
+
+        try {
+            BillingStandingService::setChildrenOverLimitRule($hubId, $rule['action'], $rule['grace_days'], $userId);
+        } catch (\DomainException $e) {
+            return $this->overLimitRefusal($e);
+        }
+
+        return $this->respondWithData(['over_limit' => $this->hubOverLimit($hubId)]);
+    }
+
+    /**
+     * A hub's stored default for its children (null = follow the platform)
+     * beside the platform's own values, so the page can say what "follow the
+     * default" means today.
+     *
+     * `automation_enabled`: whether the platform team's automatic checks are
+     * on, so the page can say plainly that nothing acts until they are.
+     *
+     * @return array{action: ?string, grace_days: ?int, platform_action: string, platform_grace_days: int, automation_enabled: bool}
+     */
+    private function hubOverLimit(int $hubId): array
+    {
+        $stored = OverLimitRule::childrenDefault($hubId);
+
+        return [
+            'action' => $stored['action'],
+            'grace_days' => $stored['grace_days'],
+            'platform_action' => (string) BillingSettings::get('over_limit_action'),
+            'platform_grace_days' => (int) BillingSettings::get('over_limit_grace_days'),
+            'automation_enabled' => (bool) BillingSettings::get('automation_enabled'),
+        ];
+    }
+
+    /**
+     * Restart the days-over count of the communities that pay $hubId and are
+     * on $planId when the member number they are held to has changed
+     * (DESIGN 6.4), so a hub lowering a number never causes a pause or a move
+     * the next morning. Nothing restarts when the number is the same.
+     */
+    private function restartWhenHubMemberNumberChanged(int $hubId, int $planId, ?int $before): void
+    {
+        $after = $this->hubPlan($hubId, $planId)['max_users'] ?? null;
+        if ($before === $after) {
+            return;
+        }
+
+        BillingStandingService::restartLimitClock(OverLimitRule::communitiesPaying($hubId, $planId));
     }
 
     /** PUT /api/v2/admin/super/branch-plans/{hubId}/plans/{planId} */
@@ -3506,8 +3693,12 @@ class AdminSuperController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', __('api.no_fields_to_update'), null, 422);
         }
 
+        PlanTerms::flush();
+        $membersBefore = $this->hubPlan($hubId, $planId)['max_users'] ?? null;
+
         try {
             BranchPlans::saveTerms($hubId, $planId, $values, $isOffered, $userId);
+            $this->restartWhenHubMemberNumberChanged($hubId, $planId, $membersBefore);
         } catch (\DomainException $e) {
             if ($e->getMessage() !== BranchPlans::PLAN_IN_USE) {
                 throw $e;
@@ -3530,7 +3721,11 @@ class AdminSuperController extends BaseApiController
             return $this->respondWithError('NOT_FOUND', __('api.plan_not_found'), 'plan_id', 404);
         }
 
+        PlanTerms::flush();
+        $membersBefore = $this->hubPlan($hubId, $planId)['max_users'] ?? null;
+
         BranchPlans::resetTerms($hubId, $planId, $userId);
+        $this->restartWhenHubMemberNumberChanged($hubId, $planId, $membersBefore);
 
         return $this->respondWithData(['plan' => $this->hubPlan($hubId, $planId)]);
     }

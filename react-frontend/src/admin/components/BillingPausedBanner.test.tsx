@@ -191,6 +191,54 @@ describe('BillingPausedBanner', () => {
     expect(line).not.toHaveTextContent('limit_plan');
   });
 
+  // What the rule that applies will do, in its own sentence beside the warning.
+  const over = (rule: string, acts_on: string | null = null) =>
+    ({ used: 120, max: 100, percent: 120, stage: 'over', rule, acts_on });
+
+  it('says nothing extra under the warn-only rule', async () => {
+    notPaused();
+    apiGet.mockResolvedValue(open({ plan: null, member_limit: over('none') }));
+    render(<BillingPausedBanner />);
+
+    const line = await screen.findByRole('status');
+    expect(line).toHaveTextContent('paused_banner.limit_over');
+    expect(line).not.toHaveTextContent('paused_banner.rule_');
+  });
+
+  it('says new members cannot join under the stop-joining rule', async () => {
+    notPaused();
+    apiGet.mockResolvedValue(open({ plan: null, member_limit: over('block_joining') }));
+    render(<BillingPausedBanner />);
+
+    const rule = await screen.findByText((text) => text.startsWith('paused_banner.rule_block_joining'));
+    expect(rule.textContent?.startsWith('paused_banner.rule_block_joining')).toBe(true);
+  });
+
+  it('names the pause date under the pause rule', async () => {
+    notPaused();
+    apiGet.mockResolvedValue(open({ plan: null, member_limit: over('pause', '2026-12-21') }));
+    render(<BillingPausedBanner />);
+
+    const rule = await screen.findByText((text) => text.startsWith('paused_banner.rule_pause_on'));
+    expect(rule).toHaveTextContent('"date":"DATE(2026-12-21)"');
+  });
+
+  it('says it may be paused when no date is set', async () => {
+    notPaused();
+    apiGet.mockResolvedValue(open({ plan: null, member_limit: { ...over('pause'), stage: 'approaching', used: 85, percent: 85 } }));
+    render(<BillingPausedBanner />);
+
+    expect(await screen.findByText((text) => text.startsWith('paused_banner.rule_pause_maybe'))).toBeInTheDocument();
+  });
+
+  it('says it will be moved up under the move-up rule', async () => {
+    notPaused();
+    apiGet.mockResolvedValue(open({ plan: null, member_limit: over('upgrade') }));
+    render(<BillingPausedBanner />);
+
+    expect(await screen.findByText((text) => text.startsWith('paused_banner.rule_upgrade'))).toBeInTheDocument();
+  });
+
   it('is silent when the request fails for an open community', async () => {
     notPaused();
     apiGet.mockResolvedValue({ success: false, error: 'nope', code: 'HTTP_500' });

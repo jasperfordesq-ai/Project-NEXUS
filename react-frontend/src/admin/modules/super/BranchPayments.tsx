@@ -9,8 +9,9 @@
  * A parent community's manager and the payment standing of the communities
  * below it: who each pays, the date it is paid up to, how late it is, and
  * whether it is paused, the plan it is on and how many active members it has
- * against that plan's limit. The manager records a paid-until date, pauses a
- * community, restores it and changes its plan.
+ * against that plan's limit, and what happens if it goes over that limit. The
+ * manager records a paid-until date, pauses a community, restores it, changes
+ * its plan and sets its own over-limit rule.
  *
  * 🔴 The screen decides nothing about who may act. Every row arrives with
  * `can_act` and, when false, `cannot_act_reason`, worked out by the same rule
@@ -32,6 +33,7 @@ import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { formatCurrency, formatDate, formatNumber } from '@/lib/helpers';
 import { PageHeader } from '../../components/PageHeader';
+import { OverLimitRuleDialog, OverLimitSummary, type OverLimitChoice, type OverLimitState } from '../billing/OverLimitRuleDialog';
 
 /**
  * As the Branch payments list sends it: without the note against a pause and
@@ -90,6 +92,10 @@ interface BranchRow {
   members: Members;
   /** Set when the plan is the platform team's to change (it pays the platform by card). */
   plan_change_refusal: 'card_subscription' | null;
+  /** What happens if it goes over its member number, and where that rule comes from. */
+  over_limit: OverLimitState;
+  /** False when "Move up to the next plan" may not be chosen for it. */
+  upgrade_allowed: boolean;
 }
 
 type PlanList = Terms[] | 'loading' | 'failed';
@@ -165,6 +171,7 @@ export function BranchPayments() {
   const [plans, setPlans] = useState<PlanList>('loading');
   const [planChoice, setPlanChoice] = useState('');
   const [savingPlan, setSavingPlan] = useState(false);
+  const [ruleRow, setRuleRow] = useState<BranchRow | null>(null);
   // The community the plan dialog is open on now: a late reply for another is dropped.
   const planFor = useRef<number | null>(null);
 
@@ -256,6 +263,21 @@ export function BranchPayments() {
     toast.error(response.error || t('admin_billing:billing.standing_failed'));
   };
 
+  const saveRule = async (choice: OverLimitChoice): Promise<boolean> => {
+    if (!ruleRow) return false;
+    const response = await api.post(`/v2/admin/super/branch-payments/${ruleRow.id}/over-limit`, choice);
+
+    if (response.success) {
+      toast.success(t('admin_billing:over_limit_rule.saved'));
+      void load();
+      return true;
+    }
+
+    // admin-i18n-ignore: localized server message — AdminSuperController Branch payments over-limit refusals (lang/*/api.php)
+    toast.error(response.error || t('admin_billing:over_limit_rule.save_failed'));
+    return false;
+  };
+
   const header = (
     <PageHeader title={t('branch_payments.title')} description={t('branch_payments.description')} />
   );
@@ -296,6 +318,7 @@ export function BranchPayments() {
               <TableColumn>{t('admin_billing:billing.col_pays')}</TableColumn>
               <TableColumn>{t('branch_payments.col_plan')}</TableColumn>
               <TableColumn>{t('branch_payments.col_members')}</TableColumn>
+              <TableColumn>{t('admin_billing:over_limit_rule.col_if_over')}</TableColumn>
               <TableColumn>{t('branch_payments.col_paid_until')}</TableColumn>
               <TableColumn>{t('branch_payments.col_days_late')}</TableColumn>
               <TableColumn>{t('admin_billing:billing.col_standing')}</TableColumn>
@@ -339,6 +362,10 @@ export function BranchPayments() {
                     </TableCell>
 
                     <TableCell>
+                      <OverLimitSummary rule={row.over_limit ?? null} />
+                    </TableCell>
+
+                    <TableCell>
                       <span className="text-sm text-muted">
                         {row.standing.paid_until ? formatDate(row.standing.paid_until) : t('branch_payments.no_date')}
                       </span>
@@ -375,6 +402,10 @@ export function BranchPayments() {
                               {t('branch_payments.change_plan')}
                             </Button>
                           )}
+
+                          <Button size="sm" variant="tertiary" isDisabled={busy} onPress={() => setRuleRow(row)}>
+                            {t('admin_billing:over_limit_rule.open_dialog')}
+                          </Button>
 
                           {state === 'open' ? (
                             <Button size="sm" color="warning" variant="tertiary" isDisabled={busy} onPress={() => openDialog(row, 'pause')}>
@@ -457,6 +488,12 @@ export function BranchPayments() {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      <OverLimitRuleDialog
+        target={ruleRow ? { id: ruleRow.id, name: ruleRow.name, state: ruleRow.over_limit, upgradeAllowed: ruleRow.upgrade_allowed } : null}
+        onClose={() => setRuleRow(null)}
+        onSave={saveRule}
+      />
 
       <Modal isOpen={planRow !== null} onClose={closePlanDialog} size="lg" scrollBehavior="inside">
         <ModalContent>

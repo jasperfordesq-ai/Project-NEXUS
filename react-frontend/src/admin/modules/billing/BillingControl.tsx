@@ -16,6 +16,7 @@ import { BillingAutomationCard } from './BillingAutomationCard';
 import { assignablePlans } from './assignablePlans';
 import { RecordPaymentDialog, type PaymentMethod } from './RecordPaymentDialog';
 import { PayerDialog, type Payer } from './PayerDialog';
+import { OverLimitRuleDialog, OverLimitSummary, type OverLimitChoice, type OverLimitState } from './OverLimitRuleDialog';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -24,8 +25,9 @@ import { PayerDialog, type Payer } from './PayerDialog';
 /**
  * BillingControl
  * Platform team billing dashboard — every community's plan and price, who it
- * pays, and whether it is paused for non-payment or exempt; assign a plan,
- * pause, restore, exempt, and export a CSV.
+ * pays, whether it is paused for non-payment or exempt, and what happens if it
+ * goes over its member number; assign a plan, pause, restore, exempt, set a
+ * community's own over-limit rule, and export a CSV.
  *
  * 🔴 The types below are the SERVER's shape, key for key
  * (TenantBillingService::getBillingSnapshot, BillingStandingService::get).
@@ -115,7 +117,17 @@ interface TenantSnapshot {
   usage_percent: number | null;
   /** Slug of the smallest standard package that fits; null above the largest. */
   suggested_plan: string | null;
+  /** Over its member limit now. */
   over_limit: boolean;
+  /**
+   * What happens if it goes over its member number: the same eight keys as a
+   * Branch payments row's `over_limit` (OverLimitRule::describe()). Named
+   * differently here because `over_limit` above is the "over now" flag.
+   * Null for the platform's own community: no rule applies to it.
+   */
+  over_limit_rule: OverLimitState | null;
+  /** False when "Move up to the next plan" may not be chosen (it pays the platform by card). */
+  upgrade_allowed: boolean;
   is_in_grace_period: boolean;
   grace_days_remaining: number;
   standing: Standing;
@@ -243,6 +255,9 @@ export function BillingControl() {
   // ---- record a payment / change how it pays ----
   const [paymentRow, setPaymentRow] = useState<TenantSnapshot | null>(null);
   const [payerRow, setPayerRow] = useState<TenantSnapshot | null>(null);
+
+  // ---- one community's own over-limit rule ----
+  const [ruleRow, setRuleRow] = useState<TenantSnapshot | null>(null);
 
   // The daily check's warning percent, from its settings card; 80 until known.
   const [warningPercent, setWarningPercent] = useState(80);
@@ -416,6 +431,25 @@ export function BillingControl() {
     toast.error(response.error || t('billing.standing_failed'));
   };
 
+  // ---------------------------------------------------------------------------
+  // Over-limit rule
+  // ---------------------------------------------------------------------------
+
+  const saveRule = async (choice: OverLimitChoice): Promise<boolean> => {
+    if (!ruleRow) return false;
+    const response = await api.post('/v2/admin/super/billing/standing/over-limit', { tenant_id: ruleRow.id, ...choice });
+
+    if (response.success) {
+      toast.success(t('over_limit_rule.saved'));
+      void fetchSnapshot();
+      return true;
+    }
+
+    // admin-i18n-ignore: localized server message — AdminSuperController over-limit refusals (lang/*/api.php)
+    toast.error(response.error || t('over_limit_rule.save_failed'));
+    return false;
+  };
+
   /** The suggested package's own name, when it differs from the current plan. */
   const suggestedPlanName = (row: TenantSnapshot): string | null => {
     if (!row.suggested_plan || row.suggested_plan === row.current_plan?.slug) return null;
@@ -513,6 +547,7 @@ export function BillingControl() {
               <TableColumn>{t('billing.col_pays')}</TableColumn>
               <TableColumn>{t('control.col_paid_until')}</TableColumn>
               <TableColumn>{t('billing.col_standing')}</TableColumn>
+              <TableColumn>{t('over_limit_rule.col_if_over')}</TableColumn>
               {isGod
                 ? <TableColumn>{t('billing.col_actions')}</TableColumn>
                 : <TableColumn>{''}</TableColumn>
@@ -636,6 +671,11 @@ export function BillingControl() {
                       </Chip>
                     </TableCell>
 
+                    {/* What happens if it goes over its member number */}
+                    <TableCell>
+                      {row.over_limit_rule ? <OverLimitSummary rule={row.over_limit_rule} /> : null}
+                    </TableCell>
+
                     {/* Actions */}
                     <TableCell>
                       {isGod ? (
@@ -674,6 +714,17 @@ export function BillingControl() {
                           >
                             {t('control.change_payer')}
                           </Button>
+
+                          {row.over_limit_rule ? (
+                            <Button
+                              size="sm"
+                              variant="tertiary"
+                              isDisabled={busy}
+                              onPress={() => setRuleRow(row)}
+                            >
+                              {t('over_limit_rule.open_dialog')}
+                            </Button>
+                          ) : null}
 
                           {state === 'open' ? (
                             <Button
@@ -934,6 +985,17 @@ export function BillingControl() {
           setPaymentRow(null);
           void fetchSnapshot();
         }}
+      />
+
+      <OverLimitRuleDialog
+        target={ruleRow && ruleRow.over_limit_rule ? {
+          id: ruleRow.id,
+          name: ruleRow.name,
+          state: ruleRow.over_limit_rule,
+          upgradeAllowed: ruleRow.upgrade_allowed === true,
+        } : null}
+        onClose={() => setRuleRow(null)}
+        onSave={saveRule}
       />
 
       <PayerDialog

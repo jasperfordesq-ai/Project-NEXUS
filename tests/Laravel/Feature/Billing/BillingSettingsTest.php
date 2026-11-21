@@ -37,7 +37,12 @@ final class BillingSettingsTest extends TestCase
         }
     }
 
-    public function test_the_defaults_are_switched_off_and_warn_only(): void
+    /**
+     * Was "switched off and warn only". Owner, 21 Nov 2026: the default for
+     * going over the member number is to pause. Still switched off, so
+     * nothing happens on deploy.
+     */
+    public function test_the_defaults_are_switched_off_and_pause_when_over(): void
     {
         DB::table('platform_billing_settings')->delete();
         BillingSettings::flush();
@@ -49,7 +54,7 @@ final class BillingSettingsTest extends TestCase
             'suspend_days_late' => 14,
             'card_retry_max_days_late' => 30,
             'limit_warning_percent' => 80,
-            'over_limit_action' => 'none',
+            'over_limit_action' => 'pause',
             'over_limit_grace_days' => 30,
         ], BillingSettings::all());
 
@@ -57,15 +62,43 @@ final class BillingSettingsTest extends TestCase
         $this->assertSame(14, BillingSettings::get('suspend_days_late'));
     }
 
+    /** @return array<string, array{0: string}> */
+    public static function overLimitActions(): array
+    {
+        return ['warn only' => ['none'], 'stop new members' => ['block_joining'], 'pause' => ['pause'], 'move up' => ['upgrade']];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('overLimitActions')]
+    public function test_each_of_the_four_over_limit_actions_is_accepted(string $action): void
+    {
+        BillingSettings::set('over_limit_action', $action, 42);
+        BillingSettings::flush();
+
+        $this->assertSame($action, BillingSettings::get('over_limit_action'));
+    }
+
+    public function test_a_stored_none_on_an_existing_installation_stays_none(): void
+    {
+        DB::table('platform_billing_settings')->delete();
+        DB::table('platform_billing_settings')->insert([
+            'setting_key' => 'over_limit_action', 'setting_value' => 'none', 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        BillingSettings::flush();
+
+        $this->assertSame('none', BillingSettings::get('over_limit_action'));
+    }
+
     public function test_a_change_is_saved_typed_and_audited(): void
     {
         BillingSettings::set('automation_enabled', true, 42);
         BillingSettings::set('suspend_days_late', '21', 42);
-        BillingSettings::set('over_limit_action', 'pause', 42);
+        // `none`, not `pause`: pause became the default in hub plans Stage 4,
+        // so setting it would change nothing and write no audit row.
+        BillingSettings::set('over_limit_action', 'none', 42);
 
         $this->assertTrue(BillingSettings::get('automation_enabled'));
         $this->assertSame(21, BillingSettings::get('suspend_days_late'));
-        $this->assertSame('pause', BillingSettings::get('over_limit_action'));
+        $this->assertSame('none', BillingSettings::get('over_limit_action'));
 
         $rows = DB::table('billing_audit_log')
             ->where('tenant_id', 0)

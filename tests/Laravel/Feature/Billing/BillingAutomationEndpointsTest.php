@@ -364,7 +364,10 @@ final class BillingAutomationEndpointsTest extends TestCase
 
         $limit = $this->apiGet('/v2/admin/billing/standing')->json('data.member_limit');
 
-        $this->assertSame(['used' => 85, 'max' => 100, 'percent' => 85, 'stage' => 'approaching'], $limit);
+        // Hub plans Stage 4 added `rule` and `acts_on` (null: not over). The
+        // automatic checks are off here, so nothing will happen: `none`
+        // (fix round 1; it said `pause` while the checks were off).
+        $this->assertSame(['used' => 85, 'max' => 100, 'percent' => 85, 'stage' => 'approaching', 'rule' => 'none', 'acts_on' => null], $limit);
     }
 
     public function test_the_member_limit_stages_use_the_same_thresholds_as_the_daily_check(): void

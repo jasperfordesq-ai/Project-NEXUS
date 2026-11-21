@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace App\Support\Billing;
 
+use App\Services\BillingStandingService;
 use App\Services\TenantBillingService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +19,8 @@ use Illuminate\Support\Facades\Log;
  *
  * One row per changed setting in `platform_billing_settings`; a missing row is
  * the default below. The defaults are the safe ones to deploy: the check is
- * switched off, and going over the member limit only warns. The day counts
+ * switched off, so nothing happens until the platform team turns it on; then
+ * going over the member limit pauses after the days (owner, 21 Nov 2026). The day counts
  * are the design's placeholders; the owner sets the real ones.
  *
  * Every change is checked as a whole before anything is written (the pause day
@@ -33,7 +35,8 @@ final class BillingSettings
 
     public const CACHE_TTL = 60;
 
-    public const OVER_LIMIT_ACTIONS = ['none', 'pause'];
+    /** The platform default rule for going over a member number (OverLimitRule::ACTIONS). */
+    public const OVER_LIMIT_ACTIONS = ['none', 'block_joining', 'pause', 'upgrade'];
 
     /**
      * `reminder_days` is a list of days before the paid-until date, stored as
@@ -53,7 +56,10 @@ final class BillingSettings
         'suspend_days_late' => 14,
         'card_retry_max_days_late' => 30,
         'limit_warning_percent' => 80,
-        'over_limit_action' => 'none',
+        // Owner, 21 Nov 2026: a community that stays over its member number
+        // is paused. Only a missing row takes this; a stored `none` on an
+        // existing installation stays `none`.
+        'over_limit_action' => 'pause',
         'over_limit_grace_days' => 30,
     ];
 
@@ -182,6 +188,20 @@ final class BillingSettings
                     [$key => $value],
                     null
                 );
+            }
+            // A changed platform rule or day count clears no count here: the
+            // daily check sees from each community's terms key
+            // (OverLimitRule::termsKey()) whether it follows this default, and
+            // restarts only those, with a fresh notice.
+
+            // Switching the automatic checks ON starts every member-limit
+            // count afresh, so the first run warns before it pauses: a count
+            // kept from before (or run on while the switch was off) would
+            // pause at once on a notice weeks old, though the screens said
+            // nothing would happen while the checks were off. Switching off,
+            // or saving with the switch unchanged, does nothing here.
+            if (!$current['automation_enabled'] && $next['automation_enabled']) {
+                BillingStandingService::restartAllLimitClocks();
             }
         });
 

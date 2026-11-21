@@ -20,6 +20,19 @@ vi.mock('@/components/ui', async () => {
   const base = (await import('@/test/uiMock')).uiMock as Record<string, unknown>;
 
   const tableOverrides: Record<string, unknown> = {
+    // A native select, so the over-limit rule dialog's choice can be made.
+    Select: ({ children, label, selectedKeys, onSelectionChange }: {
+      children?: React.ReactNode; label?: string;
+      selectedKeys?: Iterable<string>; onSelectionChange?: (keys: Set<string>) => void;
+    }) => {
+      const keys = selectedKeys ? Array.from(selectedKeys) : [];
+      return (
+        <select aria-label={label} value={keys[0] ?? ''} onChange={(e) => onSelectionChange?.(new Set([e.target.value]))}>
+          {children}
+        </select>
+      );
+    },
+    SelectItem: ({ children, id }: { children?: React.ReactNode; id?: string }) => <option value={id}>{children}</option>,
     TableBody: ({ items, children, emptyContent }: {
       items?: unknown[];
       children?: ((item: unknown) => React.ReactNode) | React.ReactNode;
@@ -152,6 +165,20 @@ const makePlanOnRow = (overrides = {}) => ({
   ...overrides,
 });
 
+// OverLimitRule::describe(): the same eight keys as a Branch payments row's
+// over_limit, sent here as over_limit_rule beside the over_limit flag.
+const makeOverLimit = (overrides: Record<string, unknown> = {}) => ({
+  action: 'pause',
+  effective_action: 'pause',
+  grace_days: 30,
+  action_source: 'platform',
+  days_source: 'platform',
+  own_action: null,
+  own_grace_days: null,
+  acts_on: null,
+  ...overrides,
+});
+
 const makeSnapshot = (overrides: Record<string, unknown> = {}) => ({
   id: 5,
   name: 'Cork Timebank',
@@ -166,6 +193,8 @@ const makeSnapshot = (overrides: Record<string, unknown> = {}) => ({
   usage_percent: 30,
   suggested_plan: 'pro',
   over_limit: false,
+  over_limit_rule: makeOverLimit(),
+  upgrade_allowed: true,
   is_in_grace_period: false,
   grace_days_remaining: 0,
   standing: makeStanding(),
@@ -667,5 +696,72 @@ describe('BillingControl', () => {
 
     expect(screen.getByText('Cork Timebank')).toBeInTheDocument();
     expect(screen.getByText('Dublin Timebank')).toBeInTheDocument();
+  });
+  // ─── What happens when a community goes over its member number ──────────────
+  const ruleSelect = () => screen.getByLabelText('What happens') as HTMLSelectElement;
+
+  it('shows the rule that applies to each community', async () => {
+    await renderWith([
+      makeSnapshot({ over_limit_rule: makeOverLimit({ action_source: 'hub', acts_on: '2026-12-21' }) }),
+      makeSnapshot({ id: 6, name: 'Galway Timebank', over_limit_rule: makeOverLimit({ action: 'upgrade', effective_action: 'none' }), standing: makeStanding({ tenant_id: 6 }) }),
+    ]);
+
+    expect(screen.getByRole('columnheader', { name: 'If over' })).toBeInTheDocument();
+    expect(screen.getByText('Pause after 30 days')).toBeInTheDocument();
+    expect(screen.getByText('hub default')).toBeInTheDocument();
+    expect(screen.getByText(`Pause on ${formatDate('2026-12-21')}`)).toBeInTheDocument();
+    expect(screen.getByText('Move up (platform team does this one by hand)')).toBeInTheDocument();
+  });
+
+  it('sets one community’s own rule through the platform endpoint', async () => {
+    const user = userEvent.setup();
+    await renderWith([makeSnapshot()]);
+
+    await user.click(button('Over-limit rule')!);
+    expect(ruleSelect().value).toBe('default');
+    fireEvent.change(ruleSelect(), { target: { value: 'upgrade' } });
+    fireEvent.change(screen.getByLabelText('After how many days over'), { target: { value: '20' } });
+    await user.click(screen.getByRole('button', { name: 'Save rule' }));
+
+    await waitFor(() => expect(mockApi.post).toHaveBeenCalledWith('/v2/admin/super/billing/standing/over-limit', { tenant_id: 5, action: 'upgrade', grace_days: 20 }));
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('Over-limit rule saved'));
+  });
+
+  it('draws no rule and no rule action for the platform’s own community', async () => {
+    await renderWith([
+      makeSnapshot({ id: 1, name: 'Platform', parent_id: null, depth: 0, over_limit_rule: null, upgrade_allowed: false, standing: makeStanding({ tenant_id: 1 }) }),
+    ]);
+
+    expect(screen.getByRole('columnheader', { name: 'If over' })).toBeInTheDocument();
+    expect(screen.queryByText(/^Pause after/)).not.toBeInTheDocument();
+    expect(screen.queryByTestId('over-limit-summary')).not.toBeInTheDocument();
+    expect(button('Over-limit rule')).toBeUndefined();
+  });
+
+  it('draws the rule and its action for a community that has one', async () => {
+    await renderWith([makeSnapshot()]);
+
+    expect(screen.getByTestId('over-limit-summary')).toBeInTheDocument();
+    expect(button('Over-limit rule')).toBeDefined();
+  });
+
+  it('leaves out moving up for a community that pays by card', async () => {
+    const user = userEvent.setup();
+    await renderWith([makeSnapshot({ upgrade_allowed: false })]);
+
+    await user.click(button('Over-limit rule')!);
+
+    expect(Array.from(ruleSelect().options).map((o) => o.textContent)).not.toContain('Move up to the next plan');
+  });
+
+  it('shows the server’s refusal of a rule as sent', async () => {
+    const user = userEvent.setup();
+    mockApi.post.mockResolvedValue({ success: false, error: 'Move up cannot be chosen for a card payer.', code: 'RULE_NOT_ALLOWED' });
+    await renderWith([makeSnapshot()]);
+
+    await user.click(button('Over-limit rule')!);
+    await user.click(screen.getByRole('button', { name: 'Save rule' }));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Move up cannot be chosen for a card payer.'));
   });
 });

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use App\Core\Mailer;
+use App\Support\Billing\OverLimitRule;
 use App\Support\Billing\PlanTerms;
 use App\Support\Billing\StandardPlans;
 
@@ -455,10 +456,33 @@ class TenantBillingService
                     $standing['suspended_at'] !== null
                 ),
                 'last_payment'        => $lastPaymentMap[$id] ?? null,
-            ];
+            ] + self::overLimitFields($id, $activeCount);
         }
 
         return $snapshot;
+    }
+
+    /**
+     * The rule for going over the member number on a Billing control row, as
+     * Branch payments carries it (OverLimitRule::describe()), and whether
+     * "move up" may be chosen. Not named `over_limit`: that key is the "over
+     * its limit now" flag the screen already reads.
+     *
+     * The platform's own community has no rule (the server refuses one for
+     * it), so it gets none and no button to set one.
+     *
+     * @return array{over_limit_rule: array<string, mixed>|null, upgrade_allowed: bool}
+     */
+    public static function overLimitFields(int $tenantId, int $activeMembers): array
+    {
+        if ($tenantId <= 1) {
+            return ['over_limit_rule' => null, 'upgrade_allowed' => false];
+        }
+
+        return [
+            'over_limit_rule' => OverLimitRule::describe($tenantId, $activeMembers),
+            'upgrade_allowed' => OverLimitRule::refusalFor($tenantId, 'upgrade') === null,
+        ];
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -673,6 +697,13 @@ class TenantBillingService
 
         self::logAudit($tenantId, $assignedBy, 'plan_assigned', $oldValue, $newValue, $notes);
 
+        // A new plan is new terms: the days over start again, with a fresh
+        // notice (DESIGN 6.4). Only when the plan itself changed: a new
+        // price or note leaves the member number where it was.
+        if ($existing === null || (int) $existing->pay_plan_id !== $planId) {
+            BillingStandingService::restartLimitClock([$tenantId]);
+        }
+
         // Legacy activity_log entry (kept for backward compatibility).
         if (Schema::hasTable('activity_log')) {
             DB::table('activity_log')->insert([
@@ -780,6 +811,10 @@ class TenantBillingService
                 ['pay_plan_id' => $planId, 'source' => $source],
                 $source
             );
+
+            // A new plan is new terms: the days over start again, with a
+            // fresh notice (DESIGN 6.4).
+            BillingStandingService::restartLimitClock([$tenantId]);
         });
     }
 
