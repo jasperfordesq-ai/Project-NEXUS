@@ -1017,6 +1017,8 @@
     "pay_to_platform": "Le paiement est versé à l’équipe de la plateforme, qui l’enregistre sur la plateforme.",
     "payee_note_parent": "Vous recevez ce message parce que <strong>{{community}}</strong> paie votre communauté. Ses propres administrateurs ont également été prévenus.",
     "payee_note_platform": "Vous recevez ce message parce que <strong>{{community}}</strong> paie la plateforme. Ses propres administrateurs ont également été prévenus.",
+    "payee_note_no_manager": "Vous recevez ce message parce que <strong>{{community}}</strong> paie <strong>{{payee}}</strong> et que personne là-bas n’est chargé de gérer les paiements de ses communautés. Ses propres administrateurs ont également été informés.",
+    "payment_plan": "Elle a la formule <strong>{{plan}}</strong>.",
     "paused_body_over_limit": "Les membres de <strong>{{community}}</strong> ne peuvent pas l’utiliser, car elle compte plus de membres actifs que son forfait ne le permet depuis le <strong>{{date}}</strong>. Passer à un forfait plus grand, ou repasser sous la limite, la rouvre. Vous pouvez toujours vous connecter au panneau d’administration. Rien n’a été supprimé.",
     "payee_paused_title": "Une communauté a été mise en pause",
     "payee_paused_body": "<strong>{{community}}</strong> était payée jusqu’au <strong>{{date}}</strong> et a été mise en pause automatiquement, car son paiement a <strong>{{days}}</strong> jours de retard. Ses membres ne peuvent pas l’utiliser tant que le paiement n’est pas enregistré.",

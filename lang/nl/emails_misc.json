@@ -1017,6 +1017,8 @@
     "pay_to_platform": "De betaling gaat naar het platformteam, dat haar op het platform registreert.",
     "payee_note_parent": "Je ontvangt dit bericht omdat <strong>{{community}}</strong> aan jouw gemeenschap betaalt. De eigen beheerders zijn ook op de hoogte gebracht.",
     "payee_note_platform": "Je ontvangt dit bericht omdat <strong>{{community}}</strong> aan het platform betaalt. De eigen beheerders zijn ook op de hoogte gebracht.",
+    "payee_note_no_manager": "U ontvangt dit bericht omdat <strong>{{community}}</strong> aan <strong>{{payee}}</strong> betaalt en daar niemand is aangesteld om de betalingen van haar gemeenschappen te beheren. De eigen beheerders zijn ook op de hoogte gebracht.",
+    "payment_plan": "Ze heeft het plan <strong>{{plan}}</strong>.",
     "paused_body_over_limit": "Leden van <strong>{{community}}</strong> kunnen haar niet gebruiken, omdat zij sinds <strong>{{date}}</strong> meer actieve leden heeft dan haar pakket toestaat. Overstappen naar een groter pakket, of weer onder de limiet komen, opent haar opnieuw. Je kunt nog steeds inloggen op het beheerpaneel. Er is niets verwijderd.",
     "payee_paused_title": "Een gemeenschap is gepauzeerd",
     "payee_paused_body": "<strong>{{community}}</strong> was betaald tot en met <strong>{{date}}</strong> en is automatisch gepauzeerd, omdat de betaling <strong>{{days}}</strong> dagen te laat is. De leden kunnen haar pas weer gebruiken als de betaling is geregistreerd.",

@@ -1017,6 +1017,8 @@
     "pay_to_platform": "お支払い先はプラットフォームチームで、プラットフォーム上で記録されます。",
     "payee_note_parent": "<strong>{{community}}</strong>があなたのコミュニティに支払いを行っているため、このメールをお送りしています。このコミュニティの管理者にもお知らせしています。",
     "payee_note_platform": "<strong>{{community}}</strong>がプラットフォームに支払いを行っているため、このメールをお送りしています。このコミュニティの管理者にもお知らせしています。",
+    "payee_note_no_manager": "<strong>{{community}}</strong> は <strong>{{payee}}</strong> に支払っていますが、そちらにはコミュニティの支払いを管理する担当者がいないため、このお知らせをお送りしています。コミュニティ自身の管理者にも通知済みです。",
+    "payment_plan": "現在のプランは <strong>{{plan}}</strong> です。",
     "paused_body_over_limit": "<strong>{{date}}</strong>以降、<strong>{{community}}</strong>のアクティブメンバー数がパッケージの上限を超えているため、メンバーは利用できません。より大きなパッケージに変更するか、上限を下回ると再開されます。管理パネルには引き続きサインインできます。何も削除されていません。",
     "payee_paused_title": "コミュニティが一時停止されました",
     "payee_paused_body": "<strong>{{community}}</strong>は<strong>{{date}}</strong>まで支払い済みでしたが、お支払いが<strong>{{days}}</strong>日遅れているため自動的に一時停止されました。お支払いが記録されるまで、メンバーは利用できません。",

@@ -1017,6 +1017,8 @@
     "pay_to_platform": "O pagamento é feito à equipe da plataforma, que o registra na plataforma.",
     "payee_note_parent": "Você está recebendo esta mensagem porque <strong>{{community}}</strong> paga à sua comunidade. Os administradores dela também foram avisados.",
     "payee_note_platform": "Você está recebendo esta mensagem porque <strong>{{community}}</strong> paga à plataforma. Os administradores dela também foram avisados.",
+    "payee_note_no_manager": "Recebe esta mensagem porque <strong>{{community}}</strong> paga a <strong>{{payee}}</strong> e não há lá ninguém encarregado de gerir os pagamentos das suas comunidades. Os seus próprios administradores também foram informados.",
+    "payment_plan": "Tem o plano <strong>{{plan}}</strong>.",
     "paused_body_over_limit": "Os membros de <strong>{{community}}</strong> não podem usá-la porque, desde <strong>{{date}}</strong>, ela tem mais membros ativos do que o seu pacote permite. Mudar para um pacote maior, ou voltar a ficar abaixo do limite, a reabre. Você ainda pode entrar no painel de administração. Nada foi excluído.",
     "payee_paused_title": "Uma comunidade foi pausada",
     "payee_paused_body": "<strong>{{community}}</strong> estava paga até <strong>{{date}}</strong> e foi pausada automaticamente porque o pagamento está <strong>{{days}}</strong> dias atrasado. Os seus membros não podem usá-la até que o pagamento seja registrado.",

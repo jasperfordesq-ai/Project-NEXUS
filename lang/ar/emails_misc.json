@@ -1017,6 +1017,8 @@
     "pay_to_platform": "يُدفع المبلغ إلى فريق المنصة، الذي يسجّله على المنصة.",
     "payee_note_parent": "تصلك هذه الرسالة لأن <strong>{{community}}</strong> يدفع لمجتمعك. وقد أُبلغ مسؤولوه أيضًا.",
     "payee_note_platform": "تصلك هذه الرسالة لأن <strong>{{community}}</strong> يدفع للمنصة. وقد أُبلغ مسؤولوه أيضًا.",
+    "payee_note_no_manager": "تصلك هذه الرسالة لأن <strong>{{community}}</strong> يدفع إلى <strong>{{payee}}</strong>، ولا يوجد هناك من يتولى إدارة مدفوعات مجتمعاته. وقد أُبلغ مشرفوه أيضًا.",
+    "payment_plan": "هو على خطة <strong>{{plan}}</strong>.",
     "paused_body_over_limit": "لا يمكن لأعضاء <strong>{{community}}</strong> استخدامه لأن عدد أعضائه النشطين يتجاوز ما تسمح به باقته منذ <strong>{{date}}</strong>. الانتقال إلى باقة أكبر، أو العودة إلى ما دون الحد، يعيد فتحه. ما زال بإمكانك تسجيل الدخول إلى لوحة الإدارة. لم يُحذف شيء.",
     "payee_paused_title": "تم إيقاف مجتمع مؤقتًا",
     "payee_paused_body": "كان <strong>{{community}}</strong> مدفوعًا حتى <strong>{{date}}</strong> وأُوقف مؤقتًا تلقائيًا لأن دفعه متأخر <strong>{{days}}</strong> يومًا. لا يمكن لأعضائه استخدامه حتى يُسجَّل الدفع.",

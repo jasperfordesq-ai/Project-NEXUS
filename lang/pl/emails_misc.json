@@ -1017,6 +1017,8 @@
     "pay_to_platform": "Płatność trafia do zespołu platformy, który odnotowuje ją na platformie.",
     "payee_note_parent": "Otrzymujesz tę wiadomość, ponieważ społeczność <strong>{{community}}</strong> płaci Twojej społeczności. Jej administratorzy również zostali powiadomieni.",
     "payee_note_platform": "Otrzymujesz tę wiadomość, ponieważ społeczność <strong>{{community}}</strong> płaci platformie. Jej administratorzy również zostali powiadomieni.",
+    "payee_note_no_manager": "Otrzymujesz tę wiadomość, ponieważ <strong>{{community}}</strong> płaci <strong>{{payee}}</strong>, a nikt tam nie zarządza płatnościami jej społeczności. Jej administratorzy również zostali powiadomieni.",
+    "payment_plan": "Ma plan <strong>{{plan}}</strong>.",
     "paused_body_over_limit": "Członkowie społeczności <strong>{{community}}</strong> nie mogą z niej korzystać, ponieważ od <strong>{{date}}</strong> ma ona więcej aktywnych członków, niż pozwala jej pakiet. Przejście na większy pakiet lub powrót poniżej limitu otworzy ją ponownie. Nadal możesz zalogować się do panelu administracyjnego. Nic nie zostało usunięte.",
     "payee_paused_title": "Społeczność została wstrzymana",
     "payee_paused_body": "Społeczność <strong>{{community}}</strong> była opłacona do <strong>{{date}}</strong> i została automatycznie wstrzymana, ponieważ płatność jest opóźniona o <strong>{{days}}</strong> dni. Jej członkowie nie mogą z niej korzystać, dopóki płatność nie zostanie odnotowana.",

@@ -1017,6 +1017,8 @@
     "pay_to_platform": "Die Zahlung geht an das Plattform-Team, das sie auf der Plattform erfasst.",
     "payee_note_parent": "Sie erhalten diese Nachricht, weil <strong>{{community}}</strong> an Ihre Community zahlt. Die eigenen Admins wurden ebenfalls informiert.",
     "payee_note_platform": "Sie erhalten diese Nachricht, weil <strong>{{community}}</strong> an die Plattform zahlt. Die eigenen Admins wurden ebenfalls informiert.",
+    "payee_note_no_manager": "Sie erhalten diese Nachricht, weil <strong>{{community}}</strong> an <strong>{{payee}}</strong> zahlt und dort niemand eingerichtet ist, der die Zahlungen ihrer Communities verwaltet. Die eigenen Admins wurden ebenfalls informiert.",
+    "payment_plan": "Sie hat den Plan <strong>{{plan}}</strong>.",
     "paused_body_over_limit": "Mitglieder von <strong>{{community}}</strong> können sie nicht nutzen, weil sie seit dem <strong>{{date}}</strong> mehr aktive Mitglieder hat, als ihr Paket erlaubt. Ein Wechsel zu einem größeren Paket oder ein Zurückgehen unter das Limit öffnet sie wieder. Sie können sich weiterhin im Adminbereich anmelden. Es wurde nichts gelöscht.",
     "payee_paused_title": "Eine Community wurde pausiert",
     "payee_paused_body": "<strong>{{community}}</strong> war bis zum <strong>{{date}}</strong> bezahlt und wurde automatisch pausiert, weil die Zahlung <strong>{{days}}</strong> Tage überfällig ist. Ihre Mitglieder können sie erst wieder nutzen, wenn die Zahlung erfasst ist.",

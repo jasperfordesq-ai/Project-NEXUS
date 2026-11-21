@@ -1017,6 +1017,8 @@
     "pay_to_platform": "Déantar an íocaíocht le foireann an ardáin, a thaifeadann ar an ardán í.",
     "payee_note_parent": "Tá an teachtaireacht seo agat toisc go n-íocann <strong>{{community}}</strong> do phobal. Cuireadh a riarthóirí féin ar an eolas freisin.",
     "payee_note_platform": "Tá an teachtaireacht seo agat toisc go n-íocann <strong>{{community}}</strong> an t-ardán. Cuireadh a riarthóirí féin ar an eolas freisin.",
+    "payee_note_no_manager": "Tá tú á fháil seo mar go n-íocann <strong>{{community}}</strong> <strong>{{payee}}</strong>, agus níl aon duine ansin socraithe chun íocaíochtaí a phobal a bhainistiú. Cuireadh a riarthóirí féin ar an eolas freisin.",
+    "payment_plan": "Tá sé ar an bplean <strong>{{plan}}</strong>.",
     "paused_body_over_limit": "Ní féidir le baill <strong>{{community}}</strong> é a úsáid, mar tá níos mó ball gníomhach aige ó <strong>{{date}}</strong> ná mar a cheadaíonn a phacáiste. Osclófar arís é má aistrítear go pacáiste níos mó, nó má théann sé faoin teorainn arís. Is féidir leat síniú isteach sa phainéal riaracháin fós. Níor scriosadh aon rud.",
     "payee_paused_title": "Cuireadh pobal ar sos",
     "payee_paused_body": "Bhí <strong>{{community}}</strong> íoctha go dtí <strong>{{date}}</strong> agus cuireadh ar sos go huathoibríoch é toisc go bhfuil a íocaíocht <strong>{{days}}</strong> lá déanach. Ní féidir lena bhaill é a úsáid go dtí go dtaifeadtar an íocaíocht.",

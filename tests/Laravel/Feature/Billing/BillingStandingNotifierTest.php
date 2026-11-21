@@ -274,4 +274,101 @@ final class BillingStandingNotifierTest extends TestCase
         $this->assertCount(2, $mail);
         $this->assertStringContainsString('open again', (string) $mail[1]->subject);
     }
+
+    // ── payment notices: the amount, and a hub with nobody to tell ─────────
+
+    /**
+     * Stands in for the mailer and keeps what it was asked to send.
+     *
+     * @return object{sent: list<array{to:string, body:string}>}
+     */
+    private function captureMail(): object
+    {
+        $mail = new class extends \App\Services\EmailDispatchService {
+            /** @var list<array{to:string, body:string}> */
+            public array $sent = [];
+
+            public function send(string $to, string $subject, string $body, array $options = []): bool
+            {
+                $this->sent[] = ['to' => $to, 'body' => $body];
+
+                return true;
+            }
+        };
+        app()->instance(\App\Services\EmailDispatchService::class, $mail);
+
+        return $mail;
+    }
+
+    private function putOnPlan(int $tenantId, string $planName): void
+    {
+        $plan = (int) DB::table('pay_plans')->insertGetId([
+            'name' => $planName, 'slug' => 'notice-plan-' . bin2hex(random_bytes(4)), 'tier_level' => 9,
+            'price_monthly' => 49, 'price_yearly' => 490, 'max_users' => 100, 'is_active' => 1,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+        DB::table('tenant_plan_assignments')->insert([
+            'tenant_id' => $tenantId, 'pay_plan_id' => $plan, 'status' => 'active',
+            'starts_at' => now(), 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        \App\Support\Billing\PlanTerms::flush();
+    }
+
+    public function test_a_payment_notice_names_the_plan_and_says_what_it_costs(): void
+    {
+        $community = $this->makeCommunity('Notice direct', 1, '/1/');
+        $admin = $this->person($community, ['role' => 'admin']);
+        $this->putOnPlan($community, 'Notice Local');
+        $mail = $this->captureMail();
+
+        $counts = BillingStandingNotifier::paymentNoticeCounted($community, ['paid_until' => '2026-12-01'], 'due');
+
+        $this->assertGreaterThanOrEqual(1, $counts['accepted']);
+        $toAdmin = collect($mail->sent)->firstWhere('to', $admin);
+        $this->assertNotNull($toAdmin);
+        // "Payment is due" used to be the whole message: no plan, no amount.
+        $this->assertStringContainsString('Notice Local', $toAdmin['body']);
+        $this->assertMatchesRegularExpression('/€\s?49(\.00)?\b/u', html_entity_decode($toAdmin['body']));
+        $this->assertMatchesRegularExpression('/€\s?490(\.00)?\b/u', html_entity_decode($toAdmin['body']));
+    }
+
+    public function test_a_payment_notice_for_a_community_with_no_plan_states_no_amount(): void
+    {
+        $community = $this->makeCommunity('Notice planless', 1, '/1/');
+        $admin = $this->person($community, ['role' => 'admin']);
+        $mail = $this->captureMail();
+
+        BillingStandingNotifier::paymentNoticeCounted($community, ['paid_until' => '2026-12-01'], 'due');
+
+        $toAdmin = collect($mail->sent)->firstWhere('to', $admin);
+        $this->assertNotNull($toAdmin);
+        $this->assertStringNotContainsString(__('emails_misc.billing_standing.payment_plan', ['plan' => '']), $toAdmin['body']);
+        $this->assertStringNotContainsString('€', html_entity_decode($toAdmin['body']));
+    }
+
+    public function test_when_a_parent_has_nobody_to_manage_payments_the_platform_team_is_told_instead(): void
+    {
+        $this->person($this->child, ['role' => 'admin']);
+        $team = $this->person(1, ['role' => 'admin', 'is_god' => true, 'is_super_admin' => true]);
+        // A community under a hub pays its hub unless told otherwise.
+        $this->assertSame('parent', BillingStandingService::get($this->child)['payer']);
+        $mail = $this->captureMail();
+
+        // The hub has no manager: its child's "payment due" reached nobody
+        // who could act on it.
+        BillingStandingNotifier::paymentNoticeCounted($this->child, ['paid_until' => '2026-12-01'], 'due');
+
+        $toTeam = collect($mail->sent)->firstWhere('to', $team);
+        $this->assertNotNull($toTeam, 'the platform team is told');
+        $this->assertStringContainsString($this->hubName, $toTeam['body'], 'and told which parent has no manager');
+
+        // With a manager on the hub, the manager is told and the platform team is not.
+        $manager = $this->person($this->hub, ['role' => 'admin', 'is_tenant_super_admin' => true]);
+        $mail->sent = [];
+
+        BillingStandingNotifier::paymentNoticeCounted($this->child, ['paid_until' => '2026-12-01'], 'due');
+
+        $this->assertNotNull(collect($mail->sent)->firstWhere('to', $manager));
+        $this->assertNull(collect($mail->sent)->firstWhere('to', $team));
+    }
 }

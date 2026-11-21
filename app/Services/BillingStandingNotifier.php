@@ -637,17 +637,58 @@ final class BillingStandingNotifier
             $payTo = [self::KEY . 'pay_by_card', []];
         }
 
+        // Which plan, and what it costs. A payment notice said that money
+        // was due and never how much.
+        $amount = self::planPriceLines($tenantId);
+
         $admins = self::admins($tenantId);
         $subjectParams = ['date' => $params['date'], 'pause_date' => $params['pause_date']];
 
-        $adminCounts = self::deliverCounted($admins, $about['name'], self::KEY . "{$stage}_subject", self::KEY . "{$stage}_title", [$body, $payTo], $theme, '/admin', $subjectParams);
+        $adminCounts = self::deliverCounted($admins, $about['name'], self::KEY . "{$stage}_subject", self::KEY . "{$stage}_title", [$body, ...$amount, $payTo], $theme, '/admin', $subjectParams);
         $sent = $adminCounts['tried'];
 
         if ($tellPayee) {
-            $sent += self::toPayees($tenantId, $about, $admins, self::KEY . "{$stage}_subject", self::KEY . "{$stage}_title", [$body], $theme, $subjectParams);
+            $sent += self::toPayees($tenantId, $about, $admins, self::KEY . "{$stage}_subject", self::KEY . "{$stage}_title", [$body, ...$amount], $theme, $subjectParams);
         }
 
         return $sent;
+    }
+
+    /**
+     * "It is on the PLAN plan." and "Its price is X a month or Y a year.",
+     * for a payment notice: the plan as it applies to the community and its
+     * price in the currency it is billed in (its hub's price when it pays its
+     * hub; TenantBillingService::planChangedFacts()). Empty with no plan in
+     * force, or one that costs nothing: then there is no amount to state.
+     *
+     * @return list<array{0:string, 1:array<string, string|\Closure>}>
+     */
+    private static function planPriceLines(int $tenantId): array
+    {
+        try {
+            $facts = TenantBillingService::planChangedFacts($tenantId, null);
+        } catch (\RuntimeException) {
+            return [];
+        }
+
+        $currency = strtoupper((string) $facts['currency']) === 'GBP' ? 'GBP' : 'EUR';
+        $monthly = self::chargedAmount($facts['price_monthly']);
+        $yearly = self::chargedAmount($facts['price_yearly']);
+        if ($monthly === null && $yearly === null) {
+            return [];
+        }
+
+        $monthlyText = static fn (): string => self::money((float) $monthly, $currency);
+        $yearlyText = static fn (): string => self::money((float) $yearly, $currency);
+
+        return [
+            [self::KEY . 'payment_plan', ['plan' => (string) $facts['plan_name']]],
+            match (true) {
+                $monthly !== null && $yearly !== null => [self::KEY . 'plan_changed_price', ['monthly' => $monthlyText, 'yearly' => $yearlyText]],
+                $monthly !== null => [self::KEY . 'plan_changed_price_monthly', ['monthly' => $monthlyText]],
+                default => [self::KEY . 'plan_changed_price_yearly', ['yearly' => $yearlyText]],
+            },
+        ];
     }
 
     /**
@@ -803,8 +844,27 @@ final class BillingStandingNotifier
             $path = '/platform-team/billing';
         }
 
+        $everyPayee = self::payees($about);
+
+        // A community that pays its parent, where the parent has nobody who
+        // manages its communities' payments: the notice used to go to no one
+        // but the community itself. The platform team is told instead, and
+        // told why it is reading it.
+        if ($about['pays_parent'] && $everyPayee->isEmpty()) {
+            Log::warning('[BillingStandingNotifier] a community pays a parent that has no manager; the platform team is told instead', [
+                'tenant_id' => $tenantId,
+                'parent_id' => $about['parent_id'],
+            ]);
+            $everyPayee = self::platformTeam();
+            $note = [self::KEY . 'payee_note_no_manager', [
+                'community' => $about['name'],
+                'payee' => (string) ($about['payee_name'] ?? ''),
+            ]];
+            $path = '/platform-team/billing';
+        }
+
         $alreadyTold = $admins->pluck('id')->map(static fn ($id): int => (int) $id)->all();
-        $payees = self::payees($about)
+        $payees = $everyPayee
             ->reject(static fn ($person): bool => in_array((int) $person->id, $alreadyTold, true))
             ->values();
 
