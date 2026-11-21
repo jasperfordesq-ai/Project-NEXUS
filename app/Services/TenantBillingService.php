@@ -109,7 +109,7 @@ class TenantBillingService
      * same reason: an empty prefix would bill this community for the whole
      * platform. Without a path, only its own members are counted.
      */
-    public static function getSubtreeActiveMemberCount(int $tenantId, int $days = StandardPlans::ACTIVE_WINDOW_DAYS): int
+    public static function getSubtreeActiveMemberCount(int $tenantId, int $days = StandardPlans::ACTIVE_WINDOW_DAYS, ?\DateTimeInterface $asOf = null): int
     {
         $row = DB::selectOne('SELECT path FROM tenants WHERE id = ?', [$tenantId]);
         if (!$row) {
@@ -117,7 +117,13 @@ class TenantBillingService
         }
 
         $path = trim((string) ($row->path ?? ''));
-        $since = now()->subDays($days);
+        // `$asOf`: the window ends at that moment instead of now. The daily
+        // check passes the moment a community was paused for being over its
+        // number: its members cannot use it while it is paused, so counted to
+        // "now" they would all age out of the window and the pause would lift
+        // itself after a couple of months with nothing changed. Counted to the
+        // pause, the number only falls when accounts are really taken off.
+        $since = ($asOf !== null ? \Illuminate\Support\Carbon::instance($asOf) : now())->copy()->subDays($days);
 
         if ($path === '') {
             Log::error('TenantBillingService: tenant has no materialised path; counting own active members only', [
@@ -826,6 +832,24 @@ class TenantBillingService
      * charged or retried on it, and a new one may be started.
      */
     public const STRIPE_SUBSCRIPTION_ENDED = ['canceled', 'incomplete_expired'];
+
+    /**
+     * SQL for "this plan record (alias `tpa`) is a plan the community is on":
+     * active, on trial, or `expired` only because its card failed while
+     * Stripe still has the subscription open (STRIPE_SUBSCRIPTION_ENDED,
+     * spelled out because this is raw SQL).
+     *
+     * 🔴 A failed renewal is stored as `expired`. Reading "on a plan" as
+     * `status = 'active'` meant a card payer's plan vanished the moment its
+     * card failed: no member limit was watched any more, so a community
+     * paused for being over its number was reopened, and a shut joining door
+     * opened. A plan on trial was never watched at all.
+     */
+    public const PLAN_IN_FORCE_SQL = "(tpa.status IN ('active', 'trial')
+        OR (tpa.status = 'expired'
+            AND tpa.stripe_subscription_id IS NOT NULL AND tpa.stripe_subscription_id <> ''
+            AND tpa.stripe_status IS NOT NULL
+            AND tpa.stripe_status NOT IN ('canceled', 'incomplete_expired')))";
 
     /**
      * Whether the community holds a card subscription with the platform that

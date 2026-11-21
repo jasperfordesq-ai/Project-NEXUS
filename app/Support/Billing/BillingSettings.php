@@ -202,6 +202,10 @@ final class BillingSettings
             // or saving with the switch unchanged, does nothing here.
             if (!$current['automation_enabled'] && $next['automation_enabled']) {
                 BillingStandingService::restartAllLimitClocks();
+                // The payment warnings too: a "final warning" recorded before
+                // the checks were switched off would otherwise pause on the
+                // first run, weeks or months later, with no fresh notice.
+                BillingStandingService::restartPaymentClock(null);
             }
         });
 

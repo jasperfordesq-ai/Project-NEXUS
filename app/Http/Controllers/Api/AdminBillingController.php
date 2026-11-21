@@ -187,7 +187,7 @@ class AdminBillingController extends BaseApiController
         }
 
         // Block downgrade to free plan or lower tier while on an active paid subscription
-        $targetPlan = DB::selectOne("SELECT id, price_monthly, price_yearly, price_monthly_gbp, price_yearly_gbp, tier_level, is_active, is_standard FROM pay_plans WHERE id = ?", [$planId]);
+        $targetPlan = DB::selectOne("SELECT id, price_monthly, price_yearly, price_monthly_gbp, price_yearly_gbp, tier_level, is_active, is_standard, max_users FROM pay_plans WHERE id = ?", [$planId]);
         // F-178: a withdrawn plan is not purchasable — a zero-price one would
         // otherwise activate directly, without Stripe.
         if (!$targetPlan || !(int) ($targetPlan->is_active ?? 0)) {
@@ -201,6 +201,23 @@ class AdminBillingController extends BaseApiController
         // platform team and paid by invoice.
         if (!(int) ($targetPlan->is_standard ?? 0)) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_plan_id'), 'plan_id', 422);
+        }
+        // A plan is sold by how many active members it allows, so a community
+        // cannot buy one it has already outgrown. Without this, a community
+        // paused for not paying on a large plan could buy the smallest one by
+        // card: the payment moved its paid-until date, which reopened it, on
+        // a plan a fraction of its size.
+        $planMembers = $targetPlan->max_users !== null ? (int) $targetPlan->max_users : null;
+        if ($planMembers !== null && $planMembers > 0) {
+            $activeMembers = TenantBillingService::getSubtreeActiveMemberCount((int) $tenantId);
+            if ($activeMembers > $planMembers) {
+                return $this->respondWithError(
+                    'PLAN_TOO_SMALL',
+                    __('api.billing_checkout_plan_too_small', ['members' => number_format($activeMembers), 'max' => number_format($planMembers)]),
+                    'plan_id',
+                    422
+                );
+            }
         }
         $isFreeTarget = StripeSubscriptionService::isFreePlan($targetPlan);
 

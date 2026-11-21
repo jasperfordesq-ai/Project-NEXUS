@@ -690,27 +690,51 @@ final class BillingAutomationService
         }
 
         $recordedStage = $stage;
-        if ($act) {
-            // Recorded first: a notice is sent once even if the mail fails.
+        $record = static function () use ($id, $stage, $today): void {
             BillingStandingService::recordCheckState($id, ['last_notice_stage' => $stage, 'last_notice_at' => self::stamp($today)]);
-        }
+        };
 
         if ($step['silent']) {
             // Paused already, for whatever reason: never paused twice, and
             // nobody is told it again. The stage is still recorded, so a
             // person who lifts that pause is not overruled next morning.
+            if ($act) {
+                $record();
+            }
+
             return [];
         }
 
         if ($act) {
             if ($stage === 'suspend') {
+                // The pause first, its record after. It used to be recorded
+                // first: if pausing then failed, the stage said "paused", the
+                // next run saw nothing left to do, and the community was
+                // never paused. Now a failure leaves no record and tomorrow's
+                // run tries again.
                 self::pause($id, 'non_payment', $facts);
+                $record();
             } else {
-                self::tell(fn () => match ($stage) {
-                    'reminder' => BillingStandingNotifier::paymentReminder($id, $facts),
-                    'due' => BillingStandingNotifier::paymentDue($id, $facts),
-                    default => BillingStandingNotifier::paymentFinalWarning($id, $facts),
-                }, $id);
+                // A warning counts as given only when the mail provider took
+                // it for at least one of the community's admins (or there is
+                // genuinely nobody to mail). It used to be recorded before it
+                // was sent: with mail down on the final-warning day, the
+                // community was paused a week later on a warning nobody got.
+                $counts = self::tellCounted(
+                    static fn (): array => BillingStandingNotifier::paymentNoticeCounted($id, $facts, $stage),
+                    $id
+                );
+                if (!self::reachedSomeone($counts)) {
+                    Log::warning('[BillingAutomation] a payment notice reached nobody; it will be tried again on the next run', [
+                        'tenant_id' => $id,
+                        'stage' => $stage,
+                    ]);
+                    // Nothing new is recorded, so nothing later is counted from it.
+                    $recordedStage = $row->last_notice_stage !== null ? (string) $row->last_notice_stage : null;
+
+                    return [];
+                }
+                $record();
             }
         }
 
@@ -1056,7 +1080,12 @@ final class BillingAutomationService
             return [];
         }
 
-        $active = TenantBillingService::getSubtreeActiveMemberCount($id, StandardPlans::ACTIVE_WINDOW_DAYS);
+        // A community paused for being over its number is counted as it stood
+        // when it was paused: see getSubtreeActiveMemberCount().
+        $pausedAt = $pausedForLimit && !empty($row->suspended_at)
+            ? CarbonImmutable::parse((string) $row->suspended_at)
+            : null;
+        $active = TenantBillingService::getSubtreeActiveMemberCount($id, StandardPlans::ACTIVE_WINDOW_DAYS, $pausedAt);
         $max = $limit['max_users'];
         $percent = (int) floor($active * 100 / $max);
         $stage = self::limitStage($active, $max, (int) $settings['limit_warning_percent']);
@@ -1743,17 +1772,21 @@ final class BillingAutomationService
     {
         $query = DB::table('tenant_plan_assignments as tpa')
             ->join('pay_plans as pp', 'pp.id', '=', 'tpa.pay_plan_id')
-            ->where('tpa.status', 'active')
+            // The plan the community is on, including a card payer whose card
+            // has failed and a plan on trial (TenantBillingService::PLAN_IN_FORCE_SQL).
+            ->whereRaw(TenantBillingService::PLAN_IN_FORCE_SQL)
             ->where('pp.is_standard', 1);
         if ($onlyTenantId !== null) {
             $query->where('tpa.tenant_id', $onlyTenantId);
         }
+        // Last one wins below: an active record beats one on trial, which
+        // beats a failed-card one; among equals the newest.
         $rows = $query
-            ->orderBy('tpa.id')
+            ->orderByRaw("(tpa.status = 'active') ASC, (tpa.status = 'trial') ASC, tpa.id ASC")
             ->get(['tpa.tenant_id', 'tpa.pay_plan_id', 'pp.name', 'pp.max_users']);
 
-        // One active assignment per community is the rule; if there are
-        // more, the newest wins.
+        // One record in force per community is the rule; if there are more,
+        // the last by that order wins.
         $newest = [];
         foreach ($rows as $row) {
             $newest[(int) $row->tenant_id] = $row;

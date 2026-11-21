@@ -1152,6 +1152,7 @@ return [
     'branch_payments_plan_not_offered' => '親コミュニティがこのプランを提供していないため、このコミュニティに割り当てることはできません。',
     'billing_checkout_pays_parent' => 'このコミュニティは親コミュニティに支払っているため、プラットフォームにカードで支払うものはありません。',
     'billing_checkout_already_subscribed' => 'このコミュニティはすでにカードでプランの料金を支払っているため、2つ目のカード決済は開始できません。両方とも請求されてしまいます。プランを変更するには、プラットフォームチームにご依頼ください。',
+    'billing_checkout_plan_too_small' => 'このプランのアクティブメンバーの上限は :max 人ですが、このコミュニティには :members 人います。合うプランを選んでください。',
     'billing_plan_not_sold_monthly' => 'このプランは月払いでは販売されていません。代わりに年払いを選んでください。',
     'billing_plan_not_sold_yearly' => 'このプランは年払いでは販売されていません。代わりに月払いを選んでください。',
     'billing_standing_payment_paid_until_required' => 'この支払いでいつまでの分が支払われるか、その日付を入力してください。',

@@ -588,7 +588,32 @@ final class BillingStandingNotifier
     /**
      * @param array<string, int|string|null> $facts
      */
-    private static function paymentNotice(int $tenantId, array $facts, string $stage, bool $tellPayee, string $theme): int
+    /**
+     * A payment notice for the daily check, which must know whether the
+     * community was really told before it counts the notice as given: the
+     * counts for the community's OWN admins (`tried`, `accepted`). Whoever it
+     * pays is told as well, as before, and is not part of the count.
+     *
+     * @param 'reminder'|'due'|'final_warning' $stage
+     * @param array<string, mixed> $facts
+     * @return array{tried:int, accepted:int}
+     */
+    public static function paymentNoticeCounted(int $tenantId, array $facts, string $stage): array
+    {
+        $counts = ['tried' => 0, 'accepted' => 0];
+        match ($stage) {
+            'reminder' => self::paymentNotice($tenantId, $facts, 'reminder', false, 'default', $counts),
+            'due' => self::paymentNotice($tenantId, $facts, 'due', true, 'warning', $counts),
+            default => self::paymentNotice($tenantId, $facts, 'final_warning', true, 'warning', $counts),
+        };
+
+        return $counts;
+    }
+
+    /**
+     * @param array{tried:int, accepted:int}|null $adminCounts set to what the mailer did for the community's own admins
+     */
+    private static function paymentNotice(int $tenantId, array $facts, string $stage, bool $tellPayee, string $theme, ?array &$adminCounts = null): int
     {
         $about = self::community($tenantId);
         if ($about === null) {
@@ -609,7 +634,8 @@ final class BillingStandingNotifier
         $admins = self::admins($tenantId);
         $subjectParams = ['date' => $params['date'], 'pause_date' => $params['pause_date']];
 
-        $sent = self::deliver($admins, $about['name'], self::KEY . "{$stage}_subject", self::KEY . "{$stage}_title", [$body, $payTo], $theme, '/admin', $subjectParams);
+        $adminCounts = self::deliverCounted($admins, $about['name'], self::KEY . "{$stage}_subject", self::KEY . "{$stage}_title", [$body, $payTo], $theme, '/admin', $subjectParams);
+        $sent = $adminCounts['tried'];
 
         if ($tellPayee) {
             $sent += self::toPayees($tenantId, $about, $admins, self::KEY . "{$stage}_subject", self::KEY . "{$stage}_title", [$body], $theme, $subjectParams);

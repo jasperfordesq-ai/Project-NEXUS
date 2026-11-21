@@ -1221,6 +1221,7 @@ return [
     'branch_payments_plan_not_offered' => 'La comunidad superior no ofrece este plan, así que no se puede asignar a esta comunidad.',
     'billing_checkout_pays_parent' => 'Esta comunidad paga a su comunidad superior, así que no hay nada que pagar a la plataforma con tarjeta.',
     'billing_checkout_already_subscribed' => 'Esta comunidad ya paga un plan con tarjeta, por lo que no se puede iniciar un segundo pago con tarjeta: se cobrarían los dos. Para cambiar de plan, pídaselo al equipo de la plataforma.',
+    'billing_checkout_plan_too_small' => 'Este plan admite hasta :max miembros activos y esta comunidad tiene :members. Elija un plan que se ajuste.',
     'billing_plan_not_sold_monthly' => 'Este plan no se vende con pago mensual. Elige la facturación anual.',
     'billing_plan_not_sold_yearly' => 'Este plan no se vende con pago anual. Elige la facturación mensual.',
     'billing_standing_payment_paid_until_required' => 'Indica la fecha hasta la que cubre este pago.',

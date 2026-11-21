@@ -171,8 +171,8 @@ final class PlanTerms
                     pp.price_monthly_gbp, pp.price_yearly_gbp, pp.setup_fee_gbp, pp.is_standard
              FROM tenant_plan_assignments tpa
              INNER JOIN pay_plans pp ON pp.id = tpa.pay_plan_id
-             WHERE tpa.tenant_id = ? AND tpa.status IN ('active', 'trial', 'trialing')
-             ORDER BY (tpa.status = 'active') DESC, tpa.id DESC
+             WHERE tpa.tenant_id = ? AND " . \App\Services\TenantBillingService::PLAN_IN_FORCE_SQL . "
+             ORDER BY (tpa.status = 'active') DESC, (tpa.status = 'trial') DESC, tpa.id DESC
              LIMIT 1",
             [$tenantId]
         );

@@ -313,6 +313,35 @@ final class CommunityBillingPageContractTest extends TestCase
         $this->assertSame(0, DB::table('tenant_plan_assignments')->where('tenant_id', $this->community)->count());
     }
 
+    public function test_a_plan_the_community_has_already_outgrown_cannot_be_bought(): void
+    {
+        // Five active members; a standard plan for three.
+        for ($i = 0; $i < 5; $i++) {
+            $uid = bin2hex(random_bytes(6));
+            DB::table('users')->insert([
+                'tenant_id' => $this->community, 'name' => 'Member ' . $uid, 'first_name' => 'Member', 'last_name' => 'Test',
+                'email' => $uid . '@example.test', 'status' => 'active', 'role' => 'member', 'balance' => 0, 'is_approved' => 1,
+                'last_login_at' => now()->subDay(), 'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }
+        $tiny = (int) DB::table('pay_plans')->insertGetId([
+            'name' => 'Tiny standard', 'slug' => 'tiny-' . bin2hex(random_bytes(4)), 'tier_level' => 1, 'max_users' => 3,
+            'price_monthly' => 5, 'price_yearly' => 50, 'is_active' => 1, 'is_standard' => 1,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        $response = $this->apiPost('/v2/admin/billing/checkout', ['plan_id' => $tiny, 'billing_interval' => 'monthly']);
+
+        $response->assertStatus(422);
+        $this->assertSame('PLAN_TOO_SMALL', $response->json('errors.0.code'));
+        $this->assertStringContainsString('3', (string) $response->json('errors.0.message'));
+        $this->assertStringNotContainsString('api.', (string) $response->json('errors.0.message'));
+        $this->assertSame([], $this->checkoutSessionsCreated());
+
+        // A plan that fits is sold.
+        $this->apiPost('/v2/admin/billing/checkout', ['plan_id' => $this->local, 'billing_interval' => 'monthly'])->assertOk();
+    }
+
     public function test_a_standard_plan_can_be_bought_and_the_checkout_records_the_period(): void
     {
         $response = $this->apiPost('/v2/admin/billing/checkout', ['plan_id' => $this->local, 'billing_interval' => 'yearly']);

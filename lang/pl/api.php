@@ -1152,6 +1152,7 @@ return [
     'branch_payments_plan_not_offered' => 'Społeczność nadrzędna nie oferuje tego planu, więc nie można go przypisać tej społeczności.',
     'billing_checkout_pays_parent' => 'Ta społeczność płaci swojej społeczności nadrzędnej, więc nie ma nic do zapłacenia platformie kartą.',
     'billing_checkout_already_subscribed' => 'Ta społeczność płaci już kartą za plan, więc nie można rozpocząć drugiej płatności kartą: pobierane byłyby obie. Aby zmienić plan, zwróć się do zespołu platformy.',
+    'billing_checkout_plan_too_small' => 'Ten plan pozwala na maksymalnie :max aktywnych członków, a ta społeczność ma ich :members. Wybierz plan, który pasuje.',
     'billing_plan_not_sold_monthly' => 'Ten plan nie jest sprzedawany w rozliczeniu miesięcznym. Wybierz rozliczenie roczne.',
     'billing_plan_not_sold_yearly' => 'Ten plan nie jest sprzedawany w rozliczeniu rocznym. Wybierz rozliczenie miesięczne.',
     'billing_standing_payment_paid_until_required' => 'Wpisz datę, do której ta płatność opłaca społeczność.',

@@ -334,6 +334,9 @@ final class BillingStandingService
             // A count from before the exemption never carries over it: the
             // first run after starts afresh, with a fresh notice.
             self::restartLimitClock([$tenantId]);
+            // And the payment warnings: a final warning from before the
+            // exemption must not pause it the morning it comes off.
+            self::restartPaymentClock([$tenantId]);
 
             TenantBillingService::logAudit(
                 $tenantId,
@@ -519,6 +522,10 @@ final class BillingStandingService
         }
 
         self::write($tenantId, ['payer' => $payer]);
+        // Who it pays has changed: the payment warnings start again, so a
+        // stage reached under the old arrangement (or left over from when it
+        // was not billed at all) never pauses it without a fresh warning.
+        self::restartPaymentClock([$tenantId]);
 
         // Who it pays decides whose rule and member number it is held to
         // (its hub's or the platform's): new terms, a fresh count. The daily
@@ -608,6 +615,38 @@ final class BillingStandingService
             TenantBillingService::logAudit($hubTenantId, $actedBy, 'standing_children_over_limit_rule_set', $current, $next, null);
         });
         JoiningGate::flush();
+    }
+
+    /**
+     * Start the payment warnings again for these communities: the recorded
+     * stage and its date are cleared, so the next run begins with "now due"
+     * and a pause comes only after a final warning has stood its time.
+     *
+     * A community that is paused keeps its record (it is closed already, and
+     * a restore handles its own restart). The member-limit count has had
+     * this protection since it was built; the payment warnings did not, so a
+     * community that reached "final warning", was then exempted or set to
+     * "not billed" (or the checks were switched off) for months, was paused
+     * on that old warning the first morning it applied again.
+     *
+     * @param list<int>|null $tenantIds null = every community
+     */
+    public static function restartPaymentClock(?array $tenantIds): void
+    {
+        if ($tenantIds === []) {
+            return;
+        }
+
+        $query = DB::table('tenant_billing_standing')
+            ->whereNull('suspended_at')
+            ->where(static function ($q): void {
+                $q->whereNotNull('last_notice_stage')->orWhereNotNull('last_notice_at');
+            });
+        if ($tenantIds !== null) {
+            $query->whereIn('tenant_id', $tenantIds);
+        }
+
+        $query->update(['last_notice_stage' => null, 'last_notice_at' => null, 'updated_at' => now()]);
     }
 
     /**
