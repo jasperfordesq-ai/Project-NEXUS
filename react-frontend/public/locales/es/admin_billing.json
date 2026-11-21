@@ -399,13 +399,19 @@
     "follow_default_card": "Seguir el valor predeterminado (ahora: Solo avisar; el cambio de plan lo hace el equipo de la plataforma)"
   },
   "plan_facts": {
-    "already_by_card": "Esta comunidad ya paga un plan con tarjeta. No se puede iniciar aquí un segundo pago con tarjeta, porque se cobrarían los dos. Para cambiar de plan, pídaselo al equipo de la plataforma.",
+    "already_by_card": "Esta comunidad paga con tarjeta. Elegir otro plan cambia ese pago con tarjeta. No inicia un segundo pago.",
+    "card_fix_first": "El último pago con tarjeta no se completó. Use «Administrar pago» en la página de facturación para corregir la tarjeta antes de cambiar de plan.",
+    "change_confirm_body": "Su pago con tarjeta se cambia, no se duplica. El cambio se aplica ahora. La diferencia por el resto del periodo actual se cobra, o se abona, en su próxima factura.",
+    "change_confirm_button": "Cambiar de plan",
+    "change_confirm_title": "¿Cambiar al plan {{plan}}?",
+    "change_done": "Plan cambiado a {{plan}}",
+    "change_to_plan": "Cambiar a este plan",
     "members_up_to": "Hasta {{max}} miembros activos",
     "no_member_limit": "Sin límite de miembros",
-    "setup_fee": "más {{amount}} de cuota de alta única",
     "no_setup_fee": "Sin cuota de alta",
-    "year_one": "Primer año {{first}}, después {{renewal}} al año",
-    "setup_fee_first_payment": "La cuota de alta única se añade al primer pago con tarjeta."
+    "setup_fee": "más {{amount}} de cuota de alta única",
+    "setup_fee_first_payment": "La cuota de alta única se añade al primer pago con tarjeta.",
+    "year_one": "Primer año {{first}}, después {{renewal}} al año"
   },
   "own_billing": {
     "card_failed": "El último pago con tarjeta no se completó. Use «Administrar pago» para comprobar o cambiar la tarjeta.",

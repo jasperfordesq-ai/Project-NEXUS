@@ -407,13 +407,19 @@
     "follow_default_card": "Lean an réamhshocrú (faoi láthair: Rabhadh amháin — is í foireann an ardáin a dhéanann an t-aistriú)"
   },
   "plan_facts": {
-    "already_by_card": "Tá an pobal seo ag íoc as plean le cárta cheana féin. Ní féidir an dara híocaíocht chárta a thosú anseo, mar ghearrfaí an dá cheann. Chun an plean a athrú, iarr ar fhoireann an ardáin.",
+    "already_by_card": "Íocann an pobal seo le cárta. Má roghnaítear plean eile, athraítear an íocaíocht chárta sin. Ní thosaítear an dara ceann.",
+    "card_fix_first": "Níor éirigh leis an íocaíocht chárta dheireanach. Úsáid «Bainistigh Íocaíocht» ar an leathanach Billeála chun an cárta a cheartú sula n-athraíonn tú an plean.",
+    "change_confirm_body": "Athraítear d’íocaíocht chárta; ní dhúblaítear í. Tarlaíonn an t-athrú anois. Gearrtar an difríocht don chuid eile den tréimhse reatha, nó cuirtear chun sochair í, ar do chéad sonrasc eile.",
+    "change_confirm_button": "Athraigh an plean",
+    "change_confirm_title": "An plean a athrú go {{plan}}?",
+    "change_done": "Athraíodh an plean go {{plan}}",
+    "change_to_plan": "Athraigh go dtí an plean seo",
     "members_up_to": "Suas le {{max}} ball gníomhach",
     "no_member_limit": "Gan teorainn ball",
-    "setup_fee": "móide táille bunaithe aonuaire {{amount}}",
     "no_setup_fee": "Gan táille bunaithe",
-    "year_one": "An chéad bhliain {{first}}, ansin {{renewal}} in aghaidh na bliana",
-    "setup_fee_first_payment": "Cuirtear an táille bunaithe aonuaire leis an gcéad íocaíocht chárta."
+    "setup_fee": "móide táille bunaithe aonuaire {{amount}}",
+    "setup_fee_first_payment": "Cuirtear an táille bunaithe aonuaire leis an gcéad íocaíocht chárta.",
+    "year_one": "An chéad bhliain {{first}}, ansin {{renewal}} in aghaidh na bliana"
   },
   "own_billing": {
     "card_failed": "Níor éirigh leis an íocaíocht chárta dheireanach. Úsáid «Bainistigh Íocaíocht» chun an cárta a sheiceáil nó a athrú.",

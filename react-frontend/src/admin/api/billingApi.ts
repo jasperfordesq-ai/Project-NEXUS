@@ -167,6 +167,14 @@ export const billingApi = {
   createCheckout: (data: { plan_id: number; billing_interval: 'monthly' | 'yearly' }) =>
     api.post<{ checkout_url: string | null; activated?: boolean }>('/v2/admin/billing/checkout', data),
 
+  /**
+   * Change the plan (and, if given, the period) of the community's EXISTING
+   * card subscription. Never a second subscription: see
+   * AdminBillingController::changePlan().
+   */
+  changePlan: (data: { plan_id: number; billing_interval?: 'monthly' | 'yearly' }) =>
+    api.post<{ plan_id: number; plan_name: string; billing_interval: 'monthly' | 'yearly' }>('/v2/admin/billing/change-plan', data),
+
   /** Create a Stripe Customer Portal session, returns a redirect URL */
   createPortal: () =>
     api.post<{ portal_url: string }>('/v2/admin/billing/portal'),

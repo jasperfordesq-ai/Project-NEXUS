@@ -403,13 +403,19 @@
     "follow_default_card": "Stosuj wartość domyślną (obecnie: Tylko ostrzegaj — zmianę planu wykonuje zespół platformy)"
   },
   "plan_facts": {
-    "already_by_card": "Ta społeczność płaci już kartą za plan. Nie można tu rozpocząć drugiej płatności kartą, ponieważ pobierane byłyby obie. Aby zmienić plan, zwróć się do zespołu platformy.",
+    "already_by_card": "Ta społeczność płaci kartą. Wybór innego planu zmienia tę płatność kartą. Nie rozpoczyna drugiej.",
+    "card_fix_first": "Ostatnia płatność kartą nie powiodła się. Zanim zmienisz plan, użyj opcji „Zarządzaj płatnościami” na stronie Rozliczenia, aby poprawić kartę.",
+    "change_confirm_body": "Płatność kartą zostaje zmieniona, a nie podwojona. Zmiana następuje teraz. Różnica za pozostałą część bieżącego okresu zostanie doliczona lub odliczona na następnej fakturze.",
+    "change_confirm_button": "Zmień plan",
+    "change_confirm_title": "Zmienić plan na {{plan}}?",
+    "change_done": "Plan zmieniony na {{plan}}",
+    "change_to_plan": "Zmień na ten plan",
     "members_up_to": "Do {{max}} aktywnych członków",
     "no_member_limit": "Bez limitu członków",
-    "setup_fee": "plus jednorazowa opłata za uruchomienie: {{amount}}",
     "no_setup_fee": "Bez opłaty za uruchomienie",
-    "year_one": "Pierwszy rok {{first}}, potem {{renewal}} rocznie",
-    "setup_fee_first_payment": "Jednorazowa opłata za uruchomienie jest doliczana do pierwszej płatności kartą."
+    "setup_fee": "plus jednorazowa opłata za uruchomienie: {{amount}}",
+    "setup_fee_first_payment": "Jednorazowa opłata za uruchomienie jest doliczana do pierwszej płatności kartą.",
+    "year_one": "Pierwszy rok {{first}}, potem {{renewal}} rocznie"
   },
   "own_billing": {
     "card_failed": "Ostatnia płatność kartą nie powiodła się. Użyj opcji „Zarządzaj płatnościami”, aby sprawdzić lub zmienić kartę.",

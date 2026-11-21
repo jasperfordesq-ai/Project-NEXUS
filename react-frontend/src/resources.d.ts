@@ -4773,7 +4773,13 @@ export default interface Resources {
       "unknown": "This community is paused. Members cannot use it. The reason could not be loaded; please reload the page."
     },
     "plan_facts": {
-      "already_by_card": "This community already pays for a plan by card. A second card payment cannot be started here, because both would be charged. To change plan, ask the platform team.",
+      "already_by_card": "This community pays by card. Choosing another plan changes that card payment. It does not start a second one.",
+      "card_fix_first": "The last card payment did not go through. Use Manage Payment on the Billing page to put the card right before changing plan.",
+      "change_confirm_body": "Your card payment is changed, not doubled. The change happens now. The difference for the rest of the current period is charged, or credited, on your next invoice.",
+      "change_confirm_button": "Change plan",
+      "change_confirm_title": "Change plan to {{plan}}?",
+      "change_done": "Plan changed to {{plan}}",
+      "change_to_plan": "Change to this plan",
       "members_up_to": "Up to {{max}} active members",
       "no_member_limit": "No member limit",
       "no_setup_fee": "No setup fee",

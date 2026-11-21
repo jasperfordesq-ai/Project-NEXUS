@@ -399,13 +399,19 @@
     "follow_default_card": "Seguir o valor predefinido (atualmente: Apenas avisar — a mudança de plano é feita pela equipa da plataforma)"
   },
   "plan_facts": {
-    "already_by_card": "Esta comunidade já paga um plano por cartão. Não é possível iniciar aqui um segundo pagamento por cartão, porque ambos seriam cobrados. Para mudar de plano, peça à equipa da plataforma.",
+    "already_by_card": "Esta comunidade paga por cartão. Escolher outro plano altera esse pagamento por cartão. Não inicia um segundo.",
+    "card_fix_first": "O último pagamento por cartão não foi concluído. Use «Gerenciar pagamento» na página de Faturação para corrigir o cartão antes de mudar de plano.",
+    "change_confirm_body": "O seu pagamento por cartão é alterado, não duplicado. A alteração acontece agora. A diferença pelo resto do período atual é cobrada, ou creditada, na próxima fatura.",
+    "change_confirm_button": "Mudar de plano",
+    "change_confirm_title": "Mudar para o plano {{plan}}?",
+    "change_done": "Plano alterado para {{plan}}",
+    "change_to_plan": "Mudar para este plano",
     "members_up_to": "Até {{max}} membros ativos",
     "no_member_limit": "Sem limite de membros",
-    "setup_fee": "mais {{amount}} de taxa de adesão única",
     "no_setup_fee": "Sem taxa de adesão",
-    "year_one": "Primeiro ano {{first}}, depois {{renewal}} por ano",
-    "setup_fee_first_payment": "A taxa de adesão única é adicionada ao primeiro pagamento por cartão."
+    "setup_fee": "mais {{amount}} de taxa de adesão única",
+    "setup_fee_first_payment": "A taxa de adesão única é adicionada ao primeiro pagamento por cartão.",
+    "year_one": "Primeiro ano {{first}}, depois {{renewal}} por ano"
   },
   "own_billing": {
     "card_failed": "O último pagamento por cartão não foi concluído. Use «Gerenciar pagamento» para verificar ou alterar o cartão.",

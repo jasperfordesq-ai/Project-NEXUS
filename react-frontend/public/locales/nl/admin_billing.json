@@ -395,13 +395,19 @@
     "follow_default_card": "De standaard volgen (nu: Alleen waarschuwen — een overstap doet het platformteam)"
   },
   "plan_facts": {
-    "already_by_card": "Deze community betaalt al met een kaart voor een plan. Een tweede kaartbetaling kan hier niet worden gestart, omdat beide zouden worden afgeschreven. Vraag het platformteam om van plan te veranderen.",
+    "already_by_card": "Deze community betaalt met een kaart. Als u een ander plan kiest, wordt die kaartbetaling gewijzigd. Er wordt geen tweede gestart.",
+    "card_fix_first": "De laatste kaartbetaling is niet gelukt. Gebruik ‘Beheer de betaling’ op de pagina Facturering om de kaart in orde te brengen voordat u van plan verandert.",
+    "change_confirm_body": "Uw kaartbetaling wordt gewijzigd, niet verdubbeld. De wijziging gaat nu in. Het verschil voor de rest van de lopende periode wordt op uw volgende factuur in rekening gebracht of verrekend.",
+    "change_confirm_button": "Plan wijzigen",
+    "change_confirm_title": "Plan wijzigen naar {{plan}}?",
+    "change_done": "Plan gewijzigd naar {{plan}}",
+    "change_to_plan": "Naar dit plan overstappen",
     "members_up_to": "Tot {{max}} actieve leden",
     "no_member_limit": "Geen ledenlimiet",
-    "setup_fee": "plus {{amount}} eenmalige opstartkosten",
     "no_setup_fee": "Geen opstartkosten",
-    "year_one": "Eerste jaar {{first}}, daarna {{renewal}} per jaar",
-    "setup_fee_first_payment": "De eenmalige opstartkosten worden bij de eerste kaartbetaling opgeteld."
+    "setup_fee": "plus {{amount}} eenmalige opstartkosten",
+    "setup_fee_first_payment": "De eenmalige opstartkosten worden bij de eerste kaartbetaling opgeteld.",
+    "year_one": "Eerste jaar {{first}}, daarna {{renewal}} per jaar"
   },
   "own_billing": {
     "card_failed": "De laatste kaartbetaling is niet gelukt. Gebruik ‘Beheer de betaling’ om de kaart te controleren of te wijzigen.",

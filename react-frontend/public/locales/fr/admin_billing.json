@@ -399,13 +399,19 @@
     "follow_default_card": "Suivre la valeur par défaut (actuellement : Avertir seulement — un changement de formule est fait par l’équipe de la plateforme)"
   },
   "plan_facts": {
-    "already_by_card": "Cette communauté paie déjà une formule par carte. Un second paiement par carte ne peut pas être lancé ici, car les deux seraient prélevés. Pour changer de formule, adressez-vous à l’équipe de la plateforme.",
+    "already_by_card": "Cette communauté paie par carte. Choisir une autre formule modifie ce paiement par carte. Cela n’en lance pas un second.",
+    "card_fix_first": "Le dernier paiement par carte n’a pas abouti. Utilisez « Gérer le paiement » sur la page Facturation pour corriger la carte avant de changer de formule.",
+    "change_confirm_body": "Votre paiement par carte est modifié, pas doublé. Le changement prend effet maintenant. La différence pour le reste de la période en cours est facturée, ou créditée, sur votre prochaine facture.",
+    "change_confirm_button": "Changer de formule",
+    "change_confirm_title": "Passer à la formule {{plan}} ?",
+    "change_done": "Formule changée : {{plan}}",
+    "change_to_plan": "Passer à cette formule",
     "members_up_to": "Jusqu'à {{max}} membres actifs",
     "no_member_limit": "Aucune limite de membres",
-    "setup_fee": "plus {{amount}} de frais de mise en place uniques",
     "no_setup_fee": "Pas de frais de mise en place",
-    "year_one": "Première année {{first}}, puis {{renewal}} par an",
-    "setup_fee_first_payment": "Les frais de mise en place uniques sont ajoutés au premier paiement par carte."
+    "setup_fee": "plus {{amount}} de frais de mise en place uniques",
+    "setup_fee_first_payment": "Les frais de mise en place uniques sont ajoutés au premier paiement par carte.",
+    "year_one": "Première année {{first}}, puis {{renewal}} par an"
   },
   "own_billing": {
     "card_failed": "Le dernier paiement par carte n’a pas abouti. Utilisez « Gérer le paiement » pour vérifier ou changer la carte.",

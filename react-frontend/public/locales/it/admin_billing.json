@@ -399,13 +399,19 @@
     "follow_default_card": "Segui il valore predefinito (attuale: Solo avvisare — il cambio di piano lo fa il team della piattaforma)"
   },
   "plan_facts": {
-    "already_by_card": "Questa comunità paga già un piano con carta. Non è possibile avviare qui un secondo pagamento con carta, perché verrebbero addebitati entrambi. Per cambiare piano, rivolgiti al team della piattaforma.",
+    "already_by_card": "Questa comunità paga con carta. Scegliendo un altro piano si modifica quel pagamento con carta. Non ne viene avviato un secondo.",
+    "card_fix_first": "L’ultimo pagamento con carta non è andato a buon fine. Usa «Gestisci il pagamento» nella pagina Fatturazione per sistemare la carta prima di cambiare piano.",
+    "change_confirm_body": "Il pagamento con carta viene modificato, non raddoppiato. La modifica ha effetto subito. La differenza per il resto del periodo in corso viene addebitata, o accreditata, nella prossima fattura.",
+    "change_confirm_button": "Cambia piano",
+    "change_confirm_title": "Passare al piano {{plan}}?",
+    "change_done": "Piano cambiato in {{plan}}",
+    "change_to_plan": "Passa a questo piano",
     "members_up_to": "Fino a {{max}} membri attivi",
     "no_member_limit": "Nessun limite di membri",
-    "setup_fee": "più {{amount}} di costo di attivazione una tantum",
     "no_setup_fee": "Nessun costo di attivazione",
-    "year_one": "Primo anno {{first}}, poi {{renewal}} all'anno",
-    "setup_fee_first_payment": "Il costo di attivazione una tantum viene aggiunto al primo pagamento con carta."
+    "setup_fee": "più {{amount}} di costo di attivazione una tantum",
+    "setup_fee_first_payment": "Il costo di attivazione una tantum viene aggiunto al primo pagamento con carta.",
+    "year_one": "Primo anno {{first}}, poi {{renewal}} all'anno"
   },
   "own_billing": {
     "card_failed": "L’ultimo pagamento con carta non è andato a buon fine. Usa «Gestisci il pagamento» per controllare o cambiare la carta.",

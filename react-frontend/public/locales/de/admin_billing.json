@@ -395,13 +395,19 @@
     "follow_default_card": "Dem Standard folgen (derzeit: Nur warnen – eine Hochstufung nimmt das Plattform-Team vor)"
   },
   "plan_facts": {
-    "already_by_card": "Diese Community zahlt bereits per Karte für einen Plan. Eine zweite Kartenzahlung kann hier nicht gestartet werden, weil beide abgebucht würden. Um den Plan zu ändern, wenden Sie sich an das Plattform-Team.",
+    "already_by_card": "Diese Community zahlt per Karte. Wenn Sie einen anderen Plan wählen, wird diese Kartenzahlung geändert. Es wird keine zweite gestartet.",
+    "card_fix_first": "Die letzte Kartenzahlung ist fehlgeschlagen. Bringen Sie die Karte auf der Seite „Abrechnung“ über „Zahlung verwalten“ in Ordnung, bevor Sie den Plan ändern.",
+    "change_confirm_body": "Ihre Kartenzahlung wird geändert, nicht verdoppelt. Die Änderung gilt sofort. Die Differenz für den Rest des laufenden Zeitraums wird auf Ihrer nächsten Rechnung berechnet oder gutgeschrieben.",
+    "change_confirm_button": "Plan ändern",
+    "change_confirm_title": "Plan zu {{plan}} ändern?",
+    "change_done": "Plan zu {{plan}} geändert",
+    "change_to_plan": "Zu diesem Plan wechseln",
     "members_up_to": "Bis zu {{max}} aktive Mitglieder",
     "no_member_limit": "Kein Mitgliederlimit",
-    "setup_fee": "zuzüglich {{amount}} einmalige Einrichtungsgebühr",
     "no_setup_fee": "Keine Einrichtungsgebühr",
-    "year_one": "Erstes Jahr {{first}}, danach {{renewal}} pro Jahr",
-    "setup_fee_first_payment": "Die einmalige Einrichtungsgebühr wird mit der ersten Kartenzahlung berechnet."
+    "setup_fee": "zuzüglich {{amount}} einmalige Einrichtungsgebühr",
+    "setup_fee_first_payment": "Die einmalige Einrichtungsgebühr wird mit der ersten Kartenzahlung berechnet.",
+    "year_one": "Erstes Jahr {{first}}, danach {{renewal}} pro Jahr"
   },
   "own_billing": {
     "card_failed": "Die letzte Kartenzahlung ist fehlgeschlagen. Prüfen oder ändern Sie die Karte über „Zahlung verwalten“.",

@@ -1,4 +1,4 @@
-import { Alert, Card, CardBody, CardHeader, CardFooter, Button, Chip, Spinner } from '@/components/ui';
+import { Alert, Card, CardBody, CardHeader, CardFooter, Button, Chip, Spinner, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/components/ui';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -140,16 +140,26 @@ export function PlanSelector() {
 
   // Stripe still has a card subscription open for this community. A checkout
   // always starts a NEW subscription, so a second one would be charged beside
-  // the first; the server refuses it (ALREADY_SUBSCRIBED). The screen stops
-  // offering it, and says who can change the plan.
+  // the first; the server refuses it (ALREADY_SUBSCRIBED). A card payer
+  // changes plan by changing the subscription it has (changePlan), which this
+  // screen offers instead of "Subscribe".
   const paysByCard = subscription?.has_card_subscription === true;
+  // The last card payment failed: the card is put right first (the server
+  // refuses a change with CARD_NEEDS_ATTENTION).
+  const cardStatus = subscription?.stripe_status ?? null;
+  const cardNeedsFixing = paysByCard && cardStatus !== null && cardStatus !== 'active' && cardStatus !== 'trialing';
+  // The period the card subscription is on, when known.
+  const currentInterval = subscription?.billing_interval ?? null;
 
   // A card payer whose card has failed is recorded as `expired`, but its plan
-  // is still the one it is on: Stripe is still collecting for it.
+  // is still the one it is on: Stripe is still collecting for it. For a card
+  // payer the same plan on the OTHER period is a change it can make.
   const isCurrentPlan = (plan: Plan) =>
     subscription &&
     currentPlanId === plan.id &&
-    (paysByCard || (subscription.status !== 'cancelled' && subscription.status !== 'expired'));
+    (paysByCard
+      ? currentInterval === null || currentInterval === billingInterval || cardNeedsFixing
+      : subscription.status !== 'cancelled' && subscription.status !== 'expired');
 
   const isActivePaidSubscription =
     !!subscription &&
@@ -157,10 +167,35 @@ export function PlanSelector() {
     subscription.status !== 'expired' &&
     subscription.plan_tier_level > 0;
 
-  // Not on offer from this screen: any other plan for a card payer, and a
-  // no-charge plan for a community on a paid one.
+  // Not on offer from this screen: a no-charge plan for a community on a paid
+  // one, and anything at all for a card payer whose card has to be put right.
   const isDowngrade = (plan: Plan) =>
-    !isCurrentPlan(plan) && (paysByCard || (isActivePaidSubscription && isFreePlan(plan)));
+    !isCurrentPlan(plan) && (
+      paysByCard ? cardNeedsFixing || isFreePlan(plan) : isActivePaidSubscription && isFreePlan(plan)
+    );
+
+  const [changeTo, setChangeTo] = useState<Plan | null>(null);
+  const [changing, setChanging] = useState(false);
+
+  const confirmChange = async () => {
+    if (!changeTo) return;
+    setChanging(true);
+    try {
+      const res = await billingApi.changePlan({ plan_id: changeTo.id, billing_interval: billingInterval });
+      if (res.success) {
+        toast.success(t('plan_facts.change_done', { plan: changeTo.name }));
+        setChangeTo(null);
+        await loadData();
+      } else {
+        // admin-i18n-ignore: localized server message — AdminBillingController change-plan refusals (lang/*/api.php)
+        toast.error(res.error || t('billing.checkout_error'));
+      }
+    } catch {
+      toast.error(t('billing.checkout_error'));
+    } finally {
+      setChanging(false);
+    }
+  };
 
   const savingPercent = yearlySavingPercent(plans);
   // Checkout adds the setup fee to the first payment, once. The server sends
@@ -180,8 +215,10 @@ export function PlanSelector() {
         </div>
       ) : (
         <>
-          {paysByCard ? (
-            <Alert color="warning" className="mb-6" title={t('plan_facts.already_by_card')} />
+          {cardNeedsFixing ? (
+            <Alert color="danger" className="mb-6" title={t('plan_facts.card_fix_first')} />
+          ) : paysByCard ? (
+            <Alert color="default" className="mb-6" title={t('plan_facts.already_by_card')} />
           ) : null}
 
           {/* Billing interval toggle */}
@@ -298,14 +335,16 @@ export function PlanSelector() {
                       variant={isCurrent || isDowngradeBlocked ? 'flat' : 'solid'}
                       isDisabled={!!isCurrent || isDowngradeBlocked}
                       isLoading={checkoutLoading === plan.id}
-                      onPress={() => handleSubscribe(plan.id)}
+                      onPress={() => (paysByCard ? setChangeTo(plan) : handleSubscribe(plan.id))}
                       fullWidth
                     >
                       {isCurrent
                         ? t('billing.current')
                         : isDowngradeBlocked
                           ? t('billing.contact_support')
-                          : t('billing.subscribe')}
+                          : paysByCard
+                            ? t('plan_facts.change_to_plan')
+                            : t('billing.subscribe')}
                     </Button>
                   </CardFooter>
                 </Card>
@@ -324,6 +363,33 @@ export function PlanSelector() {
           )}
         </>
       )}
+
+      {/* A change of plan moves money: it is confirmed, with what happens said plainly. */}
+      <Modal isOpen={changeTo !== null} onClose={() => (changing ? undefined : setChangeTo(null))} size="md">
+        <ModalContent>
+          <ModalHeader>{changeTo ? t('plan_facts.change_confirm_title', { plan: changeTo.name }) : null}</ModalHeader>
+          <ModalBody>
+            {changeTo ? (
+              <div className="flex flex-col gap-2 text-sm">
+                <p className="font-medium">
+                  {t(billingInterval === 'monthly' ? 'billing.amount_per_month' : 'billing.amount_per_year', {
+                    amount: formatPrice(chargeFor(changeTo, billingInterval).amount, chargeFor(changeTo, billingInterval).currency),
+                  })}
+                </p>
+                <p className="text-muted">{t('plan_facts.change_confirm_body')}</p>
+              </div>
+            ) : null}
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="tertiary" onPress={() => setChangeTo(null)} isDisabled={changing}>
+              {t('billing.cancel')}
+            </Button>
+            <Button color="primary" onPress={() => void confirmChange()} isLoading={changing}>
+              {t('plan_facts.change_confirm_button')}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </div>
   );
 }

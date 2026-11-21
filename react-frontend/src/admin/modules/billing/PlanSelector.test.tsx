@@ -13,6 +13,7 @@ const mockBillingApi = vi.hoisted(() => ({
   getPlans: vi.fn(),
   getSubscription: vi.fn(),
   createCheckout: vi.fn(),
+  changePlan: vi.fn(),
 }));
 
 vi.mock('../../api/billingApi', () => ({
@@ -283,34 +284,94 @@ describe('PlanSelector', () => {
     expect(screen.queryByRole('button', { name: /subscribe/i })).not.toBeInTheDocument();
   });
 
-  it('offers no second card payment to a community that already pays by card', async () => {
+  it('lets a card payer change plan on its existing card payment, after confirming', async () => {
     // A checkout always starts a NEW Stripe subscription. "Change plan" sent
     // a card payer through one, and both subscriptions were then charged.
-    // The server now refuses it; the screen stops offering it and says who
-    // can change the plan.
+    // A card payer now changes the subscription it has.
     const subscription = {
       id: 10,
       pay_plan_id: 16,
       plan_name: 'Local',
       plan_tier_level: 2,
       status: 'active',
+      stripe_status: 'active',
+      billing_interval: 'monthly',
       stripe_subscription_id: 'sub_123',
       has_card_subscription: true,
     };
     mockBillingApi.getPlans.mockResolvedValue({ success: true, data: [PLANS[1], local('eur')] });
     mockBillingApi.getSubscription.mockResolvedValue({ success: true, data: subscription });
+    mockBillingApi.changePlan.mockResolvedValue({ success: true, data: { plan_id: 2, plan_name: 'Pro', billing_interval: 'monthly' } });
 
+    const user = userEvent.setup();
     render(<PlanSelector />);
 
     await waitFor(() => expect(screen.getByText('Local')).toBeInTheDocument());
 
-    expect(screen.getByText(/already pays for a plan by card/i)).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /subscribe/i })).not.toBeInTheDocument();
+    expect(screen.getByText(/Choosing another plan changes that card payment/i)).toBeInTheDocument();
+    // Never "Subscribe": that is a second card payment.
+    expect(screen.queryByRole('button', { name: /^subscribe$/i })).not.toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: /^current$/i })).toHaveLength(1);
-    expect(screen.getAllByRole('button', { name: /contact support/i })).toHaveLength(1);
+
+    await user.click(screen.getByRole('button', { name: 'Change to this plan' }));
+
+    // Money moves, so it is confirmed first, with what happens said plainly.
+    expect(await screen.findByText('Change plan to Pro?')).toBeInTheDocument();
+    expect(screen.getByText(/charged, or credited, on your next invoice/i)).toBeInTheDocument();
+    expect(mockBillingApi.changePlan).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole('button', { name: 'Change plan' }));
+
+    await waitFor(() => {
+      expect(mockBillingApi.changePlan).toHaveBeenCalledWith({ plan_id: 2, billing_interval: 'monthly' });
+    });
+    expect(mockBillingApi.createCheckout).not.toHaveBeenCalled();
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('Plan changed to Pro'));
   });
 
-  it('still marks the plan of a card payer whose card has failed, and offers no new payment', async () => {
+  it('offers the same plan on the other period to a card payer', async () => {
+    const subscription = {
+      id: 10, pay_plan_id: 16, plan_name: 'Local', plan_tier_level: 2, status: 'active',
+      stripe_status: 'active', billing_interval: 'monthly', stripe_subscription_id: 'sub_123', has_card_subscription: true,
+    };
+    mockBillingApi.getPlans.mockResolvedValue({ success: true, data: [local('eur')] });
+    mockBillingApi.getSubscription.mockResolvedValue({ success: true, data: subscription });
+
+    const user = userEvent.setup();
+    render(<PlanSelector />);
+
+    await waitFor(() => expect(screen.getByText('Local')).toBeInTheDocument());
+    expect(screen.getAllByRole('button', { name: /^current$/i })).toHaveLength(1);
+
+    await user.click(screen.getByRole('button', { name: /^Yearly/i }));
+
+    // Monthly Local is what it has; yearly Local is a change it can make.
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Change to this plan' })).toBeInTheDocument());
+  });
+
+  it('shows the server\'s reason when a change of plan is refused, and keeps the dialog open', async () => {
+    const subscription = {
+      id: 10, pay_plan_id: 16, plan_name: 'Local', plan_tier_level: 2, status: 'active',
+      stripe_status: 'active', billing_interval: 'monthly', stripe_subscription_id: 'sub_123', has_card_subscription: true,
+    };
+    mockBillingApi.getPlans.mockResolvedValue({ success: true, data: [PLANS[1], local('eur')] });
+    mockBillingApi.getSubscription.mockResolvedValue({ success: true, data: subscription });
+    mockBillingApi.changePlan.mockResolvedValue({ success: false, error: 'This plan allows up to 500 active members and this community has 612.' });
+
+    const user = userEvent.setup();
+    render(<PlanSelector />);
+
+    await waitFor(() => expect(screen.getByText('Local')).toBeInTheDocument());
+    await user.click(screen.getByRole('button', { name: 'Change to this plan' }));
+    await user.click(await screen.findByRole('button', { name: 'Change plan' }));
+
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalledWith('This plan allows up to 500 active members and this community has 612.');
+    });
+    expect(screen.getByText('Change plan to Pro?')).toBeInTheDocument();
+  });
+
+  it('tells a card payer whose card has failed to put it right first, and offers no change', async () => {
     // A failed renewal is recorded as `expired`. The community is still on
     // that plan and Stripe is still collecting for it.
     const subscription = {
@@ -319,6 +380,8 @@ describe('PlanSelector', () => {
       plan_name: 'Local',
       plan_tier_level: 2,
       status: 'expired',
+      stripe_status: 'past_due',
+      billing_interval: 'monthly',
       stripe_subscription_id: 'sub_123',
       has_card_subscription: true,
     };
@@ -329,8 +392,10 @@ describe('PlanSelector', () => {
 
     await waitFor(() => expect(screen.getByText('Local')).toBeInTheDocument());
 
+    expect(screen.getByText(/put the card right before changing plan/i)).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: /^current$/i })).toHaveLength(1);
-    expect(screen.queryByRole('button', { name: /subscribe/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^subscribe$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Change to this plan' })).not.toBeInTheDocument();
   });
 
   it('says nothing about card payments to a community with no card subscription', async () => {
@@ -345,7 +410,7 @@ describe('PlanSelector', () => {
 
     await waitFor(() => expect(screen.getByText('Local')).toBeInTheDocument());
 
-    expect(screen.queryByText(/already pays for a plan by card/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/pays by card/i)).not.toBeInTheDocument();
     // A plan given by hand: paying for another one by card is a first checkout.
     expect(screen.getAllByRole('button', { name: /subscribe/i })).toHaveLength(1);
   });
