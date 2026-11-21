@@ -497,132 +497,188 @@ class TenantBillingService
     // ─────────────────────────────────────────────────────────────────────────
 
     /**
-     * Return a revenue dashboard summary for god-level super admins.
+     * What the platform itself expects to be paid, for the platform team's
+     * Revenue page.
      *
-     * @return array<string, mixed>
+     * Money is counted only for a community that pays the PLATFORM (by card
+     * or by invoice), is not exempt and is not paused. A community that pays
+     * its hub is the hub's income, not the platform's; it used to be added in
+     * at the platform's euro list price, as were exempt communities, yearly
+     * payers (at the monthly price) and pound communities (as euro).
+     *
+     * Each amount is in the currency the community is charged in. Euro and
+     * pounds are totalled separately and never added together. A yearly payer
+     * counts at a twelfth of its yearly price.
+     *
+     * "Over the limit" is measured on active members (signed in within 90
+     * days, whole branch) against the member number as it applies to the
+     * community, the same as Billing control. It counted every account.
+     *
+     * @return array{
+     *   communities: int, with_plan: int, without_plan: int,
+     *   paying_platform: int, paying_parent: int, not_billed: int,
+     *   paused: int, over_limit: int, active_members: int,
+     *   totals: list<array{currency: 'eur'|'gbp', monthly: float, yearly: float, communities: int}>,
+     *   plan_breakdown: list<array{plan: string, communities: int, paying_platform: int, monthly_eur: float, monthly_gbp: float}>,
+     *   recent_changes: list<array{tenant_name: string, action: string, created_at: string, acted_by: string|null}>
+     * }
      */
     public static function getRevenueDashboard(): array
     {
-        // All active plan assignments with plan price data.
-        $allAssignments = DB::select(
-            "SELECT tpa.tenant_id, tpa.is_paused, tpa.nonprofit_verified,
+        $tenants = DB::select("SELECT id FROM tenants WHERE id != 1 AND is_active = 1");
+        $tenantIds = array_map(static fn ($t): int => (int) $t->id, $tenants);
+
+        // The plan in force per community: a card payer whose renewal failed
+        // is still on its plan (PLAN_IN_FORCE_SQL), an active record wins.
+        $assignments = DB::select(
+            "SELECT tpa.tenant_id, tpa.billing_interval, tpa.nonprofit_verified,
                     tpa.discount_percentage, tpa.custom_price_monthly, tpa.custom_price_yearly,
-                    tpa.grace_period_ends_at,
-                    pp.name AS plan_name, pp.price_monthly, pp.price_yearly,
-                    pp.max_users
+                    pp.id AS plan_id, pp.name AS plan_name, pp.max_users,
+                    pp.price_monthly, pp.price_yearly, pp.price_monthly_gbp, pp.price_yearly_gbp,
+                    pp.setup_fee, pp.setup_fee_gbp
              FROM tenant_plan_assignments tpa
              INNER JOIN pay_plans pp ON pp.id = tpa.pay_plan_id
-             WHERE tpa.status = 'active'"
+             INNER JOIN tenants t ON t.id = tpa.tenant_id AND t.id != 1 AND t.is_active = 1
+             WHERE " . self::PLAN_IN_FORCE_SQL . "
+             ORDER BY tpa.tenant_id, (tpa.status = 'active') DESC, (tpa.status = 'trial') DESC, tpa.id DESC"
         );
+        $planOf = [];
+        foreach ($assignments as $row) {
+            $planOf[(int) $row->tenant_id] ??= $row;
+        }
 
-        $activeTenants    = 0;
-        $pausedTenants    = 0;
-        $freeTenants      = 0;
-        $overLimitTenants = 0;
-        $inGracePeriod    = 0;
-        $mrr              = 0.0;
-        $planBreakdownMap = [];
+        $activeCounts = $tenantIds !== [] ? self::activeMemberCountsForBranches($tenantIds) : [];
 
-        $now = time();
+        $counts = [
+            'with_plan' => 0, 'without_plan' => 0, 'paying_platform' => 0,
+            'paying_parent' => 0, 'not_billed' => 0, 'paused' => 0, 'over_limit' => 0,
+        ];
+        $totals = [];
+        $breakdown = [];
 
-        foreach ($allAssignments as $row) {
-            $assignmentArr = [
-                'custom_price_monthly' => $row->custom_price_monthly,
-                'custom_price_yearly'  => $row->custom_price_yearly,
-                'discount_percentage'  => $row->discount_percentage,
-                'nonprofit_verified'   => $row->nonprofit_verified,
-                'price_monthly'        => $row->price_monthly,
-                'price_yearly'         => $row->price_yearly,
-            ];
-            $effective = self::getEffectivePrice($assignmentArr);
-
-            $isPaused = (bool) ($row->is_paused ?? false);
+        foreach ($tenantIds as $id) {
+            $standing = BillingStandingService::get($id);
+            $isPaused = $standing['suspended_at'] !== null;
+            $notBilled = $standing['exempt'] || $standing['payer'] === 'not_billed';
+            $paysPlatform = !$notBilled && in_array($standing['payer'], ['platform_card', 'platform_invoice'], true);
 
             if ($isPaused) {
-                $pausedTenants++;
+                $counts['paused']++;
+            }
+            if ($notBilled) {
+                $counts['not_billed']++;
+            } elseif ($paysPlatform) {
+                $counts['paying_platform']++;
+            } else {
+                $counts['paying_parent']++;
+            }
+
+            $plan = $planOf[$id] ?? null;
+            if ($plan === null) {
+                $counts['without_plan']++;
+                continue;
+            }
+            $counts['with_plan']++;
+
+            // The member number as it applies: the hub's own, when it pays its hub.
+            $applied = PlanTerms::applyHubChanges($id, (int) $plan->plan_id, [
+                'name' => (string) $plan->plan_name,
+                'max_users' => $plan->max_users !== null ? (int) $plan->max_users : null,
+            ]);
+            $maxUsers = $applied['values']['max_users'];
+            if ($maxUsers !== null && ($activeCounts[$id] ?? 0) > (int) $maxUsers) {
+                $counts['over_limit']++;
+            }
+
+            // Grouped under the platform's own plan name: a hub may call the
+            // same plan something else, and that is one plan here.
+            $name = (string) $plan->plan_name;
+            $breakdown[$name] ??= ['plan' => $name, 'communities' => 0, 'paying_platform' => 0, 'monthly_eur' => 0.0, 'monthly_gbp' => 0.0];
+            $breakdown[$name]['communities']++;
+
+            if (!$paysPlatform || $isPaused) {
                 continue;
             }
 
-            $activeTenants++;
+            $interval = $plan->billing_interval === 'yearly' ? 'yearly' : 'monthly';
+            $currency = StripeSubscriptionService::billingCurrencyFor($id);
+            $monthlyQuote = StripeSubscriptionService::quoteFor($plan, 'monthly', $currency);
+            $yearlyQuote = StripeSubscriptionService::quoteFor($plan, 'yearly', $currency);
+            $charged = $interval === 'yearly' ? $yearlyQuote['currency'] : $monthlyQuote['currency'];
 
-            if ($effective['monthly'] === 0.0) {
-                $freeTenants++;
-            }
+            // A special price, a discount and the non-profit reduction apply
+            // to the price in the currency the community is charged in.
+            $effective = self::getEffectivePrice([
+                'custom_price_monthly' => $plan->custom_price_monthly,
+                'custom_price_yearly'  => $plan->custom_price_yearly,
+                'discount_percentage'  => $plan->discount_percentage,
+                'nonprofit_verified'   => $plan->nonprofit_verified,
+                'price_monthly'        => $monthlyQuote['amount'],
+                'price_yearly'         => $yearlyQuote['amount'],
+            ]);
+            $monthly = $interval === 'yearly' ? round($effective['yearly'] / 12, 2) : $effective['monthly'];
 
-            // Grace period check.
-            if (!empty($row->grace_period_ends_at)) {
-                $graceEnds = strtotime($row->grace_period_ends_at);
-                if ($graceEnds !== false && $graceEnds > $now) {
-                    $inGracePeriod++;
-                }
-            }
+            $totals[$charged] ??= ['currency' => $charged, 'monthly' => 0.0, 'yearly' => 0.0, 'communities' => 0];
+            $totals[$charged]['monthly'] += $monthly;
+            $totals[$charged]['communities']++;
 
-            // Over limit check.
-            if ($row->max_users !== null) {
-                $subtreeCount = self::getSubtreeUserCount((int) $row->tenant_id);
-                if ($subtreeCount > (int) $row->max_users) {
-                    $overLimitTenants++;
-                }
-            }
-
-            // MRR contribution.
-            $mrr += $effective['monthly'];
-
-            // Plan breakdown.
-            $planName = $row->plan_name;
-            if (!isset($planBreakdownMap[$planName])) {
-                $planBreakdownMap[$planName] = ['count' => 0, 'mrr' => 0.0];
-            }
-            $planBreakdownMap[$planName]['count']++;
-            $planBreakdownMap[$planName]['mrr'] += $effective['monthly'];
+            $breakdown[$name]['paying_platform']++;
+            $breakdown[$name]['monthly_' . $charged] += $monthly;
         }
 
-        // Total active platform users.
-        $totalUsers = (int) (DB::selectOne(
-            "SELECT COUNT(*) AS cnt FROM users WHERE status = 'active'"
-        )->cnt ?? 0);
+        foreach ($totals as $currency => $total) {
+            $totals[$currency]['monthly'] = round($total['monthly'], 2);
+            $totals[$currency]['yearly'] = round($total['monthly'] * 12, 2);
+        }
+        ksort($totals);
+        foreach ($breakdown as $name => $row) {
+            $breakdown[$name]['monthly_eur'] = round($row['monthly_eur'], 2);
+            $breakdown[$name]['monthly_gbp'] = round($row['monthly_gbp'], 2);
+        }
 
-        // Recent billing audit log.
         $recentRows = DB::select(
-            "SELECT bal.tenant_id, bal.action, bal.created_at,
+            "SELECT bal.action, bal.created_at,
                     t.name AS tenant_name,
                     CONCAT(COALESCE(u.first_name,''), ' ', COALESCE(u.last_name,'')) AS acted_by
              FROM billing_audit_log bal
              LEFT JOIN tenants t ON t.id = bal.tenant_id
              LEFT JOIN users u ON u.id = bal.acted_by_user_id
-             ORDER BY bal.created_at DESC
+             ORDER BY bal.created_at DESC, bal.id DESC
              LIMIT 10"
         );
 
-        $recentChanges = array_map(fn($r) => [
-            'tenant_name' => $r->tenant_name ?? '',
-            'action'      => $r->action,
-            'created_at'  => $r->created_at,
-            'acted_by'    => trim($r->acted_by ?? '') ?: null,
-        ], $recentRows);
-
-        // Build plan breakdown array.
-        $planBreakdown = [];
-        foreach ($planBreakdownMap as $name => $data) {
-            $planBreakdown[] = [
-                'plan'  => $name,
-                'count' => $data['count'],
-                'mrr'   => round($data['mrr'], 2),
-            ];
-        }
-
         return [
-            'active_tenants'       => $activeTenants,
-            'paused_tenants'       => $pausedTenants,
-            'free_tenants'         => $freeTenants,
-            'over_limit_tenants'   => $overLimitTenants,
-            'in_grace_period'      => $inGracePeriod,
-            'mrr'                  => round($mrr, 2),
-            'arr'                  => round($mrr * 12, 2),
-            'total_platform_users' => $totalUsers,
-            'plan_breakdown'       => $planBreakdown,
-            'recent_changes'       => $recentChanges,
+            'communities'     => count($tenantIds),
+            'with_plan'       => $counts['with_plan'],
+            'without_plan'    => $counts['without_plan'],
+            'paying_platform' => $counts['paying_platform'],
+            'paying_parent'   => $counts['paying_parent'],
+            'not_billed'      => $counts['not_billed'],
+            'paused'          => $counts['paused'],
+            'over_limit'      => $counts['over_limit'],
+            'active_members'  => self::platformActiveMembers(),
+            'totals'          => array_values($totals),
+            'plan_breakdown'  => array_values($breakdown),
+            'recent_changes'  => array_map(static fn ($r): array => [
+                'tenant_name' => (string) ($r->tenant_name ?? ''),
+                'action'      => (string) $r->action,
+                'created_at'  => (string) $r->created_at,
+                'acted_by'    => trim((string) ($r->acted_by ?? '')) ?: null,
+            ], $recentRows),
         ];
+    }
+
+    /**
+     * Active members on the whole installation: active accounts that signed
+     * in within the plans' own window. Each counted once.
+     */
+    private static function platformActiveMembers(): int
+    {
+        return (int) (DB::selectOne(
+            "SELECT COUNT(*) AS cnt FROM users
+             WHERE status = 'active' AND last_login_at >= ?",
+            [now()->subDays(StandardPlans::ACTIVE_WINDOW_DAYS)]
+        )->cnt ?? 0);
     }
 
     // ─────────────────────────────────────────────────────────────────────────

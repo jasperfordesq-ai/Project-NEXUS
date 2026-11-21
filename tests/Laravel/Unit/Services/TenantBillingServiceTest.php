@@ -756,31 +756,14 @@ class TenantBillingServiceTest extends TestCase
 
     public function test_getRevenueDashboard_returns_expected_keys(): void
     {
+        // The exact shape and the sums are pinned in
+        // tests/Laravel/Feature/Billing/RevenuePageTest.php.
         $dashboard = TenantBillingService::getRevenueDashboard();
 
         $this->assertIsArray($dashboard);
-        $this->assertArrayHasKey('active_tenants',       $dashboard);
-        $this->assertArrayHasKey('paused_tenants',       $dashboard);
-        $this->assertArrayHasKey('free_tenants',         $dashboard);
-        $this->assertArrayHasKey('over_limit_tenants',   $dashboard);
-        $this->assertArrayHasKey('in_grace_period',      $dashboard);
-        $this->assertArrayHasKey('mrr',                  $dashboard);
-        $this->assertArrayHasKey('arr',                  $dashboard);
-        $this->assertArrayHasKey('total_platform_users', $dashboard);
-        $this->assertArrayHasKey('plan_breakdown',       $dashboard);
-        $this->assertArrayHasKey('recent_changes',       $dashboard);
-    }
-
-    public function test_getRevenueDashboard_arr_is_mrr_times_twelve(): void
-    {
-        $dashboard = TenantBillingService::getRevenueDashboard();
-
-        $this->assertEqualsWithDelta(
-            round($dashboard['mrr'] * 12, 2),
-            $dashboard['arr'],
-            0.01,
-            'ARR should equal MRR * 12'
-        );
+        foreach (['communities', 'with_plan', 'paying_platform', 'paused', 'over_limit', 'totals', 'plan_breakdown', 'recent_changes'] as $key) {
+            $this->assertArrayHasKey($key, $dashboard);
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────

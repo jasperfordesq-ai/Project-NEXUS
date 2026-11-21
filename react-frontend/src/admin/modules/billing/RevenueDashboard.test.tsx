@@ -23,7 +23,7 @@ vi.mock('react-router-dom', async () => {
   return { ...actual, useNavigate: () => mockNavigate };
 });
 
-// ── Mock contexts — god user by default ────────────────────────────────────────
+// ── Mock contexts — a platform team member by default ─────────────────────────
 const GOD_USER = {
   id: 1,
   name: 'God Admin',
@@ -42,52 +42,46 @@ vi.mock('@/contexts', () =>
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
 // ── Revenue dashboard fixture ─────────────────────────────────────────────────
-const REVENUE_DATA = {
-  active_tenants: 12,
-  paused_tenants: 1,
-  free_tenants: 3,
-  over_limit_tenants: 2,
-  in_grace_period: 1,
-  mrr: 4800,
-  arr: 57600,
-  total_platform_users: 1500,
+// The shape TenantBillingService::getRevenueDashboard() sends, pinned on the
+// server by tests/Laravel/Feature/Billing/RevenuePageTest.php. The fixture is
+// typed with the page's own type, so an invented field fails the type check.
+import { RevenueDashboard, type RevenueDashboardData } from './RevenueDashboard';
+
+const REVENUE_DATA: RevenueDashboardData = {
+  communities: 21,
+  with_plan: 17,
+  without_plan: 4,
+  paying_platform: 12,
+  paying_parent: 6,
+  not_billed: 3,
+  paused: 1,
+  over_limit: 2,
+  active_members: 1500,
+  totals: [
+    { currency: 'eur', monthly: 4800, yearly: 57600, communities: 9 },
+    { currency: 'gbp', monthly: 640, yearly: 7680, communities: 3 },
+  ],
   plan_breakdown: [
-    { plan: 'Community', count: 8, mrr_contribution: 2400 },
-    { plan: 'Pro', count: 4, mrr_contribution: 2400 },
+    { plan: 'Local', communities: 11, paying_platform: 8, monthly_eur: 2400, monthly_gbp: 640 },
+    { plan: 'Pro', communities: 6, paying_platform: 4, monthly_eur: 2400, monthly_gbp: 0 },
   ],
   recent_changes: [
-    {
-      tenant_name: 'Test Timebank',
-      action: 'plan_assigned',
-      created_at: '2025-06-01T12:00:00Z',
-      acted_by: 'admin@nexus.ie',
-    },
+    { tenant_name: 'Test Timebank', action: 'standing_suspended', created_at: '2026-06-01 12:00:00', acted_by: 'Aoife Admin' },
+    { tenant_name: 'Second Timebank', action: 'plan_changed', created_at: '2026-06-02 12:00:00', acted_by: null },
+    { tenant_name: 'Third Timebank', action: 'something_new', created_at: '2026-06-03 12:00:00', acted_by: null },
   ],
 };
 
-import { RevenueDashboard } from './RevenueDashboard';
-
-describe('RevenueDashboard — god user', () => {
+describe('RevenueDashboard — platform team', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockApi.get.mockResolvedValue({ success: true, data: REVENUE_DATA });
   });
 
-  // ── God-only guard ─────────────────────────────────────────────────────────
-  // NOTE: testing redirect for non-god users would require mocking useAuth to
-  // return a non-god user per-test which fights against the module-level mock.
-  // The guard logic (returns null when !user?.is_god) is trivially correct by
-  // inspection; we skip it here and document why.
-  it('god-only guard — skipped: module-level mock always provides god user; redirect tested by inspection', () => {
-    expect(true).toBe(true);
-  });
-
-  // ── Loading state ──────────────────────────────────────────────────────────
   it('shows loading spinner while fetching', async () => {
     mockApi.get.mockReturnValue(new Promise(() => {}));
     render(<RevenueDashboard />);
-    const spinner = document.querySelector('[role="status"][aria-busy="true"]');
-    expect(spinner).toBeTruthy();
+    expect(document.querySelector('[role="status"][aria-busy="true"]')).toBeTruthy();
   });
 
   it('shows the development notice on the revenue page', () => {
@@ -97,109 +91,103 @@ describe('RevenueDashboard — god user', () => {
     expect(screen.getByText('Billing tools are under development')).toBeInTheDocument();
   });
 
-  // ── Error state ────────────────────────────────────────────────────────────
   it('shows error card when API returns failure', async () => {
     mockApi.get.mockResolvedValue({ success: false });
     render(<RevenueDashboard />);
-    await waitFor(() => {
-      const alert = document.querySelector('[role="alert"]');
-      expect(alert).toBeTruthy();
-    });
+    await waitFor(() => expect(document.querySelector('[role="alert"]')).toBeTruthy());
   });
 
   it('shows error card when API throws', async () => {
     mockApi.get.mockRejectedValue(new Error('Network error'));
     render(<RevenueDashboard />);
-    await waitFor(() => {
-      const alert = document.querySelector('[role="alert"]');
-      expect(alert).toBeTruthy();
-    });
+    await waitFor(() => expect(document.querySelector('[role="alert"]')).toBeTruthy());
   });
 
-  // ── Populated state ────────────────────────────────────────────────────────
   it('calls the revenue API endpoint', async () => {
     render(<RevenueDashboard />);
     await waitFor(() => expect(mockApi.get).toHaveBeenCalled());
-    const url: string = mockApi.get.mock.calls[0][0];
-    expect(url).toContain('/v2/admin/super/billing/revenue');
+    expect(mockApi.get.mock.calls[0][0]).toContain('/v2/admin/super/billing/revenue');
   });
 
-  it('renders active tenants stat card with value 12', async () => {
+  it('shows what is expected per month and per year in each currency, never added together', async () => {
     render(<RevenueDashboard />);
-    await waitFor(() => expect(screen.getByText('12')).toBeInTheDocument());
+
+    await waitFor(() => expect(screen.getAllByText('Expected per month')).toHaveLength(2));
+    expect(screen.getAllByText('Expected per year')).toHaveLength(2);
+    expect(screen.getByText(/€\s?4[,.]800/)).toBeInTheDocument();
+    expect(screen.getByText(/€\s?57[,.]600/)).toBeInTheDocument();
+    // The plan table repeats the pound month figure for the one plan that has it.
+    expect(screen.getAllByText(/£\s?640/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(/£\s?7[,.]680/)).toBeInTheDocument();
+    // 4800 + 640 is not a number anybody is owed.
+    expect(screen.queryByText(/5[,.]440/)).not.toBeInTheDocument();
+    expect(screen.getByText(/Euro and pounds are never added together/)).toBeInTheDocument();
   });
 
-  it('renders total platform users', async () => {
+  it('says so when nobody pays the platform yet', async () => {
+    mockApi.get.mockResolvedValue({ success: true, data: { ...REVENUE_DATA, totals: [] } });
     render(<RevenueDashboard />);
-    await waitFor(() => {
-      // toLocaleString(1500) → "1,500" or "1500" depending on locale
-      const el = screen.queryByText(/1[,.]?500/);
-      expect(el).toBeInTheDocument();
-    });
+
+    await waitFor(() => expect(screen.getByText('No community pays the platform yet.')).toBeInTheDocument());
+    expect(screen.queryByText('Expected per month')).not.toBeInTheDocument();
   });
 
-  it('renders plan breakdown rows', async () => {
+  it('counts who pays whom, and what needs a look', async () => {
     render(<RevenueDashboard />);
-    // "Community" is also the recent-changes column heading: look past it.
-    const planCells = () => screen.queryAllByText('Community').filter((el) => el.closest('th') === null);
-    await waitFor(() => expect(planCells()).toHaveLength(1));
-    expect(screen.getByText('Pro')).toBeInTheDocument();
+
+    const card = async (label: string) => {
+      const heading = await screen.findByText(label);
+      return heading.closest('div')?.parentElement?.textContent ?? '';
+    };
+    expect(await card('Pay the platform')).toContain('12');
+    expect(await card('Pay the community above them')).toContain('6');
+    expect(await card('Not billed')).toContain('3');
+    expect(await card('No plan')).toContain('4');
+    expect(await card('Over their member number')).toContain('2');
+    expect(await card('Paused')).toContain('1');
+    expect(await card('Active members')).toMatch(/1[,.]?500/);
   });
 
-  it('renders recent changes tenant name', async () => {
+  it('lists each plan with its communities and what it brings in', async () => {
     render(<RevenueDashboard />);
+
+    const local = (await screen.findByText('Local')).closest('tr');
+    expect(local).not.toBeNull();
+    const cells = Array.from(local?.querySelectorAll('td') ?? []).map((cell) => cell.textContent ?? '');
+    expect(cells[1]).toBe('11');
+    expect(cells[2]).toBe('8');
+    expect(cells[3]).toMatch(/€\s?2[,.]400/);
+    expect(cells[4]).toMatch(/£\s?640/);
+    // Nothing on the page is "NaN": the old page read a field that was never sent.
+    expect(document.body.textContent).not.toContain('NaN');
+    expect(screen.getByText('Per month (EUR)')).toBeInTheDocument();
+    expect(screen.getByText('Per month (GBP)')).toBeInTheDocument();
+  });
+
+  it('names each kind of change, says "Automatic" when nobody acted, and has a label for a kind it does not know', async () => {
+    render(<RevenueDashboard />);
+
     await waitFor(() => expect(screen.getByText('Test Timebank')).toBeInTheDocument());
+    expect(screen.getByText('Community paused')).toBeInTheDocument();
+    expect(screen.getByText('Plan changed')).toBeInTheDocument();
+    expect(screen.getByText('Another change')).toBeInTheDocument();
+    expect(screen.getByText('Aoife Admin')).toBeInTheDocument();
+    expect(screen.getAllByText('Automatic')).toHaveLength(2);
+    // The headings say what the columns are.
+    expect(screen.getByText('What changed')).toBeInTheDocument();
+    expect(screen.getByText('Date')).toBeInTheDocument();
+    expect(screen.queryByText('Expiry Date')).not.toBeInTheDocument();
   });
 
-  it('renders acted_by column in recent changes', async () => {
-    render(<RevenueDashboard />);
-    await waitFor(() => expect(screen.getByText('admin@nexus.ie')).toBeInTheDocument());
-  });
-
-  it('renders MRR value in a stat card', async () => {
-    render(<RevenueDashboard />);
-    await waitFor(() => {
-      // formatCurrency(4800) produces something like "€4,800" or "€4.800"
-      const elements = screen.getAllByText(/4[,.]?800/);
-      expect(elements.length).toBeGreaterThan(0);
-    });
-  });
-
-  it('renders plan breakdown percentage values', async () => {
-    render(<RevenueDashboard />);
-    await waitFor(() => {
-      // 2400/4800 = 50% for both plans
-      const pctElements = screen.getAllByText(/50%/);
-      expect(pctElements.length).toBeGreaterThanOrEqual(2);
-    });
-  });
-
-  // ── Navigation ─────────────────────────────────────────────────────────────
   it('renders Back to Billing navigation link', async () => {
     render(<RevenueDashboard />);
     await waitFor(() => expect(screen.getByText(/back/i)).toBeInTheDocument());
   });
 
-  // ── Chip colors for recent changes ─────────────────────────────────────────
-  it('renders plan_assigned action chip in recent changes', async () => {
+  it('says so when no community is on a plan', async () => {
+    mockApi.get.mockResolvedValue({ success: true, data: { ...REVENUE_DATA, plan_breakdown: [] } });
     render(<RevenueDashboard />);
-    // The chip renders the translated action key; in test i18n it falls back to key
-    // Just ensure the cell area renders without crash
-    await waitFor(() => expect(screen.getByText('Test Timebank')).toBeInTheDocument());
-    // No assertion on chip text since it depends on i18n translation of action keys
-    expect(true).toBe(true);
-  });
 
-  // ── Empty plan breakdown ────────────────────────────────────────────────────
-  it('renders empty state in plan breakdown table when no plans', async () => {
-    mockApi.get.mockResolvedValue({
-      success: true,
-      data: { ...REVENUE_DATA, plan_breakdown: [] },
-    });
-    render(<RevenueDashboard />);
-    await waitFor(() => expect(screen.getByText('12')).toBeInTheDocument());
-    // Community/Pro should not appear as plans ("Community" is also the
-    // recent-changes column heading).
-    expect(screen.queryAllByText('Community').filter((el) => el.closest('th') === null)).toHaveLength(0);
+    await waitFor(() => expect(screen.getByText('No community is on a plan yet.')).toBeInTheDocument());
   });
 });

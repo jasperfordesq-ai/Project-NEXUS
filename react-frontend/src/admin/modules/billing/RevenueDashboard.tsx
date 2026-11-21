@@ -1,18 +1,3 @@
-import { formatPercentValue, getFormattingLocale } from '@/lib/helpers';
-import { Card, CardBody, CardHeader, Chip, Spinner, Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@/components/ui';
-import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-
-import { Separator } from '@/components/ui';
-import TrendingUp from 'lucide-react/icons/trending-up';
-import Users from 'lucide-react/icons/users';
-import DollarSign from 'lucide-react/icons/dollar-sign';
-import Building2 from 'lucide-react/icons/building-2';
-import { useTranslation } from 'react-i18next';
-import { usePageTitle } from '@/hooks';
-import { useAuth, useTenant } from '@/contexts';
-import { api } from '@/lib/api';
-import { BillingDevelopmentNotice } from './BillingDevelopmentNotice';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -20,27 +5,53 @@ import { BillingDevelopmentNotice } from './BillingDevelopmentNotice';
 
 /**
  * RevenueDashboard
- * God-only page: platform-wide billing overview at /platform-team/billing/revenue
+ * Platform team only: what the platform itself expects to be paid, at
+ * /platform-team/billing/revenue.
+ *
+ * The shape below is the one the server sends
+ * (TenantBillingService::getRevenueDashboard()), pinned from the server's
+ * side by tests/Laravel/Feature/Billing/RevenuePageTest.php. This page used
+ * to read a field the server never sent and showed "NaN" in the plan table.
  */
 
+import { Card, CardBody, CardHeader, Chip, Spinner, Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Separator } from '@/components/ui';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import TrendingUp from 'lucide-react/icons/trending-up';
+import Users from 'lucide-react/icons/users';
+import Banknote from 'lucide-react/icons/banknote';
+import Building2 from 'lucide-react/icons/building-2';
+import { useTranslation } from 'react-i18next';
+import { usePageTitle } from '@/hooks';
+import { useAuth, useTenant } from '@/contexts';
+import { api } from '@/lib/api';
+import { formatCurrency, formatDate, getFormattingLocale } from '@/lib/helpers';
+import { BillingDevelopmentNotice } from './BillingDevelopmentNotice';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
 
-interface RevenueDashboardData {
-  active_tenants: number;
-  paused_tenants: number;
-  free_tenants: number;
-  over_limit_tenants: number;
-  in_grace_period: number;
-  mrr: number;
-  arr: number;
-  total_platform_users: number;
+type Currency = 'eur' | 'gbp';
+
+export interface RevenueDashboardData {
+  communities: number;
+  with_plan: number;
+  without_plan: number;
+  paying_platform: number;
+  paying_parent: number;
+  not_billed: number;
+  paused: number;
+  over_limit: number;
+  active_members: number;
+  /** One entry per currency somebody pays the platform in. Never added together. */
+  totals: Array<{ currency: Currency; monthly: number; yearly: number; communities: number }>;
   plan_breakdown: Array<{
     plan: string;
-    count: number;
-    mrr_contribution: number;
+    communities: number;
+    paying_platform: number;
+    monthly_eur: number;
+    monthly_gbp: number;
   }>;
   recent_changes: Array<{
     tenant_name: string;
@@ -54,54 +65,35 @@ interface RevenueDashboardData {
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat(getFormattingLocale(), {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
+function money(amount: number, currency: Currency): string {
+  return formatCurrency(amount, currency.toUpperCase(), { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 }
 
-function actionChipColor(
-  action: string
-): 'primary' | 'warning' | 'danger' | 'secondary' | 'default' | 'success' {
-  switch (action) {
-    case 'plan_assigned':
-      return 'primary';
-    case 'grace_period_set':
-      return 'warning';
-    case 'plan_paused':
-      return 'danger';
-    case 'plan_resumed':
-      return 'success';
-    case 'delegate_granted':
-      return 'secondary';
-    case 'delegate_revoked':
-      return 'danger';
-    default:
-      return 'default';
-  }
-}
+type ChipColor = 'primary' | 'warning' | 'danger' | 'secondary' | 'default' | 'success';
 
-function actionLabelKey(action: string): string {
-  switch (action) {
-    case 'plan_assigned':
-      return 'billing.action_plan_assigned';
-    case 'grace_period_set':
-      return 'billing.action_grace_period_set';
-    case 'plan_paused':
-      return 'billing.action_plan_paused';
-    case 'plan_resumed':
-      return 'billing.action_plan_resumed';
-    case 'delegate_granted':
-      return 'billing.action_delegate_granted';
-    case 'delegate_revoked':
-      return 'billing.action_delegate_revoked';
-    default:
-      return 'billing.action_unknown';
-  }
-}
+/** Every action the billing log can hold, with its label and colour. */
+const ACTIONS: Record<string, { label: string; color: ChipColor }> = {
+  plan_assigned: { label: 'billing.action_plan_assigned', color: 'primary' },
+  plan_changed: { label: 'revenue.action_plan_changed', color: 'primary' },
+  grace_period_set: { label: 'billing.action_grace_period_set', color: 'warning' },
+  plan_paused: { label: 'billing.action_plan_paused', color: 'danger' },
+  plan_resumed: { label: 'billing.action_plan_resumed', color: 'success' },
+  delegate_granted: { label: 'billing.action_delegate_granted', color: 'secondary' },
+  delegate_revoked: { label: 'billing.action_delegate_revoked', color: 'danger' },
+  standing_suspended: { label: 'revenue.action_standing_suspended', color: 'danger' },
+  standing_restored: { label: 'revenue.action_standing_restored', color: 'success' },
+  standing_paid_until_set: { label: 'revenue.action_standing_paid_until_set', color: 'success' },
+  standing_payer_set: { label: 'revenue.action_standing_payer_set', color: 'default' },
+  standing_exempted: { label: 'revenue.action_standing_exempted', color: 'secondary' },
+  standing_exemption_removed: { label: 'revenue.action_standing_exemption_removed', color: 'warning' },
+  standing_over_limit_rule_set: { label: 'revenue.action_standing_over_limit_rule_set', color: 'default' },
+  standing_children_over_limit_rule_set: { label: 'revenue.action_standing_children_over_limit_rule_set', color: 'default' },
+  hub_plan_terms_changed: { label: 'revenue.action_hub_plan_terms_changed', color: 'default' },
+  upgrade_requested: { label: 'revenue.action_upgrade_requested', color: 'warning' },
+  billing_setting_changed: { label: 'revenue.action_billing_setting_changed', color: 'default' },
+};
+
+const OTHER_ACTION = { label: 'revenue.action_other', color: 'default' as ChipColor };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Stat Card
@@ -166,7 +158,7 @@ export function RevenueDashboard() {
       .get<RevenueDashboardData>('/v2/admin/super/billing/revenue')
       .then((res) => {
         if (res.success && res.data) {
-          setData(res.data as unknown as RevenueDashboardData);
+          setData(res.data);
         } else {
           setError(t('billing.failed_to_load'));
         }
@@ -175,11 +167,10 @@ export function RevenueDashboard() {
       .finally(() => setLoading(false));
   }, [user, t]);
 
-
   if (!user?.is_god) return null;
 
-  // Compute total MRR for percentage calculation
-  const totalMrr = data?.plan_breakdown.reduce((sum, p) => sum + p.mrr_contribution, 0) ?? 0;
+  const number = (value: number) => value.toLocaleString(getFormattingLocale());
+  const showsPounds = data?.plan_breakdown.some((row) => row.monthly_gbp > 0) ?? false;
 
   return (
     <div className="space-y-6">
@@ -187,7 +178,7 @@ export function RevenueDashboard() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold">{t('billing.revenue_title')}</h1>
-          <p className="text-muted text-sm mt-1">{t('billing.revenue_desc')}</p>
+          <p className="text-muted text-sm mt-1">{t('revenue.desc')}</p>
         </div>
         <Button
           as={Link}
@@ -213,128 +204,129 @@ export function RevenueDashboard() {
         </Card>
       ) : data ? (
         <>
-          {/* ── Row 1: Revenue & users ── */}
+          {/* ── What the platform expects, one pair of cards per currency ── */}
+          {data.totals.length === 0 ? (
+            <Card>
+              <CardBody>
+                <p className="text-muted text-center py-4">{t('revenue.nothing_expected')}</p>
+              </CardBody>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {data.totals.map((total) => [
+                <StatCard
+                  key={`${total.currency}-month`}
+                  label={t('revenue.per_month')}
+                  value={money(total.monthly, total.currency)}
+                  icon={<Banknote aria-hidden="true" className="w-4 h-4" />}
+                />,
+                <StatCard
+                  key={`${total.currency}-year`}
+                  label={t('revenue.per_year')}
+                  value={money(total.yearly, total.currency)}
+                  color="success"
+                  icon={<TrendingUp aria-hidden="true" className="w-4 h-4" />}
+                />,
+              ])}
+            </div>
+          )}
+          <p className="text-sm text-muted">{t('revenue.how_counted')}</p>
+
+          {/* ── Who pays whom ── */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <StatCard
-              label={t('billing.mrr')}
-              value={t('billing.amount_per_month', { amount: formatCurrency(data.mrr) })}
-              icon={<DollarSign aria-hidden="true" className="w-4 h-4" />}
-            />
-            <StatCard
-              label={t('billing.arr')}
-              value={t('billing.amount_per_year', { amount: formatCurrency(data.arr) })}
-              color="success"
-              icon={<TrendingUp aria-hidden="true" className="w-4 h-4" />}
-            />
-            <StatCard
-              label={t('billing.active_tenants')}
-              value={data.active_tenants}
+              label={t('revenue.paying_platform')}
+              value={number(data.paying_platform)}
               icon={<Building2 aria-hidden="true" className="w-4 h-4" />}
             />
+            <StatCard label={t('revenue.paying_parent')} value={number(data.paying_parent)} />
+            <StatCard label={t('revenue.not_billed')} value={number(data.not_billed)} />
             <StatCard
-              label={t('billing.total_users')}
-              value={data.total_platform_users.toLocaleString(getFormattingLocale())}
+              label={t('revenue.active_members')}
+              value={number(data.active_members)}
               icon={<Users aria-hidden="true" className="w-4 h-4" />}
             />
           </div>
 
-          {/* ── Row 2: Status indicators ── */}
+          {/* ── What needs a look ── */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <StatCard
-              label={t('billing.free_tenants')}
-              value={data.free_tenants}
+              label={t('revenue.without_plan')}
+              value={number(data.without_plan)}
+              color={data.without_plan > 0 ? 'warning' : 'default'}
             />
             <StatCard
-              label={t('billing.over_limit_tenants')}
-              value={data.over_limit_tenants}
-              color={data.over_limit_tenants > 0 ? 'danger' : 'default'}
+              label={t('revenue.over_limit')}
+              value={number(data.over_limit)}
+              color={data.over_limit > 0 ? 'danger' : 'default'}
             />
             <StatCard
-              label={t('billing.in_grace')}
-              value={data.in_grace_period}
-              color={data.in_grace_period > 0 ? 'warning' : 'default'}
-            />
-            <StatCard
-              label={t('billing.paused_tenants')}
-              value={data.paused_tenants}
-              color={data.paused_tenants > 0 ? 'warning' : 'default'}
+              label={t('revenue.paused')}
+              value={number(data.paused)}
+              color={data.paused > 0 ? 'warning' : 'default'}
             />
           </div>
 
-          {/* ── Plan Breakdown ── */}
+          {/* ── By plan ── */}
           <Card>
             <CardHeader>
-              <h2 className="text-lg font-semibold">{t('billing.plan_breakdown')}</h2>
+              <h2 className="text-lg font-semibold">{t('revenue.by_plan')}</h2>
             </CardHeader>
             <Separator />
             <CardBody className="p-0">
-              <Table removeWrapper aria-label={t('billing.plan_breakdown')}>
+              <Table removeWrapper aria-label={t('revenue.by_plan')}>
                 <TableHeader>
-                  <TableColumn>{t('billing.current_plan')}</TableColumn>
-                  <TableColumn>{t('billing.col_users')}</TableColumn>
-                  <TableColumn>{t('billing.mrr_contribution')}</TableColumn>
-                  <TableColumn>{t('billing.percent_mrr')}</TableColumn>
+                  <TableColumn>{t('revenue.col_plan')}</TableColumn>
+                  <TableColumn>{t('revenue.col_communities')}</TableColumn>
+                  <TableColumn>{t('revenue.col_paying_platform')}</TableColumn>
+                  <TableColumn>{t('revenue.col_month', { currency: 'EUR' })}</TableColumn>
+                  <TableColumn>{t('revenue.col_month', { currency: 'GBP' })}</TableColumn>
                 </TableHeader>
-                <TableBody emptyContent={t('billing.no_plan')}>
-                  {data.plan_breakdown.map((row) => {
-                    const pct = totalMrr > 0 ? Math.round((row.mrr_contribution / totalMrr) * 100) : 0;
-                    return (
-                      <TableRow key={row.plan}>
-                        <TableCell className="font-medium">{row.plan}</TableCell>
-                        <TableCell>{row.count}</TableCell>
-                        <TableCell>{formatCurrency(row.mrr_contribution)}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <div className="flex-1 h-2 bg-surface-secondary rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-accent rounded-full"
-                                style={{ width: `${pct}%` }}
-                              />
-                            </div>
-                            <span className="text-sm text-muted w-9 text-right">{formatPercentValue(pct)}</span>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
+                <TableBody emptyContent={t('revenue.no_plans')}>
+                  {data.plan_breakdown.map((row) => (
+                    <TableRow key={row.plan}>
+                      <TableCell className="font-medium">{row.plan}</TableCell>
+                      <TableCell>{number(row.communities)}</TableCell>
+                      <TableCell>{number(row.paying_platform)}</TableCell>
+                      <TableCell>{money(row.monthly_eur, 'eur')}</TableCell>
+                      <TableCell>{showsPounds || row.monthly_gbp > 0 ? money(row.monthly_gbp, 'gbp') : '—'}</TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </CardBody>
           </Card>
 
-          {/* ── Recent Changes ── */}
+          {/* ── Latest changes ── */}
           <Card>
             <CardHeader>
-              <h2 className="text-lg font-semibold">{t('billing.recent_changes')}</h2>
+              <h2 className="text-lg font-semibold">{t('revenue.recent')}</h2>
             </CardHeader>
             <Separator />
             <CardBody className="p-0">
-              <Table removeWrapper aria-label={t('billing.recent_changes')}>
+              <Table removeWrapper aria-label={t('revenue.recent')}>
                 <TableHeader>
-                  <TableColumn>{t('billing.col_tenant')}</TableColumn>
-                  <TableColumn>{t('billing.assign_plan')}</TableColumn>
-                  <TableColumn>{t('billing.changed_by')}</TableColumn>
-                  <TableColumn>{t('billing.expiry_date')}</TableColumn>
+                  <TableColumn>{t('revenue.col_community')}</TableColumn>
+                  <TableColumn>{t('revenue.col_change')}</TableColumn>
+                  <TableColumn>{t('revenue.col_by')}</TableColumn>
+                  <TableColumn>{t('revenue.col_date')}</TableColumn>
                 </TableHeader>
-                <TableBody emptyContent="-">
-                  {data.recent_changes.slice(0, 10).map((change) => (
-                    <TableRow key={`${change.created_at}-${change.tenant_name}-${change.action}`}>
-                      <TableCell className="font-medium">{change.tenant_name}</TableCell>
-                      <TableCell>
-                        <Chip
-                          size="sm"
-                          variant="soft"
-                          color={actionChipColor(change.action)}
-                        >
-                          {t(actionLabelKey(change.action))}
-                        </Chip>
-                      </TableCell>
-                      <TableCell>{change.acted_by ?? '—'}</TableCell>
-                      <TableCell>
-                        {new Date(change.created_at).toLocaleDateString(getFormattingLocale())}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                <TableBody emptyContent={t('revenue.no_changes')}>
+                  {data.recent_changes.map((change, index) => {
+                    const action = ACTIONS[change.action] ?? OTHER_ACTION;
+                    return (
+                      <TableRow key={`${change.created_at}-${change.tenant_name}-${change.action}-${index}`}>
+                        <TableCell className="font-medium">{change.tenant_name || '—'}</TableCell>
+                        <TableCell>
+                          <Chip size="sm" variant="soft" color={action.color}>
+                            {t(action.label)}
+                          </Chip>
+                        </TableCell>
+                        <TableCell>{change.acted_by ?? t('revenue.automatic')}</TableCell>
+                        <TableCell>{formatDate(change.created_at)}</TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </CardBody>
