@@ -320,21 +320,34 @@ class TenantBillingService
                     tpa.custom_price_monthly, tpa.custom_price_yearly,
                     tpa.discount_percentage, tpa.discount_reason,
                     tpa.grace_period_ends_at, tpa.is_paused, tpa.nonprofit_verified,
-                    tpa.expires_at,
+                    tpa.expires_at, tpa.notes, tpa.billing_interval,
                     pp.id AS plan_id, pp.name AS plan_name, pp.slug AS plan_slug,
                     pp.max_users, pp.price_monthly, pp.price_yearly,
-                    pp.max_communities, pp.is_standard
+                    pp.price_monthly_gbp, pp.price_yearly_gbp,
+                    pp.max_communities, pp.is_standard, pp.is_active AS plan_is_active
              FROM tenant_plan_assignments tpa
              INNER JOIN pay_plans pp ON pp.id = tpa.pay_plan_id
              WHERE tpa.tenant_id IN ({$placeholders})
              ORDER BY tpa.tenant_id, (tpa.status = 'active') DESC, tpa.id DESC",
             $tenantIds
         );
+        // The currency each community is billed in, read once per community.
+        $currencyOf = [];
+        foreach ($tenantIds as $tenantId) {
+            $currencyOf[$tenantId] = StripeSubscriptionService::billingCurrencyFor($tenantId);
+        }
+
         $planMap = [];
         foreach ($assignments as $row) {
             if (isset($planMap[(int) $row->tenant_id])) {
                 continue;
             }
+            // In the currency the community is charged in. Every price on
+            // this screen used to be the euro one, pound communities included,
+            // while a special price typed here was read as the community's
+            // own currency by the email that announces it.
+            $money = self::pricesFor($row, $currencyOf[(int) $row->tenant_id] ?? 'eur');
+
             $assignmentArr = [
                 // The Billing control screen opens "Assign plan" on the
                 // community's current plan, so it has to be told which it is.
@@ -344,8 +357,15 @@ class TenantBillingService
                 'max_users'             => $row->max_users !== null ? (int) $row->max_users : null,
                 'max_communities'       => $row->max_communities !== null ? (int) $row->max_communities : null,
                 'is_standard'           => (bool) $row->is_standard,
-                'price_monthly'         => (float) $row->price_monthly,
-                'price_yearly'          => (float) $row->price_yearly,
+                // A retired plan: nobody new is put on it, but the community
+                // on it can still have its price and notes edited.
+                'is_active'             => (bool) $row->plan_is_active,
+                'currency'              => $money['currency'],
+                'price_monthly'         => $money['monthly'],
+                'price_yearly'          => $money['yearly'],
+                // 'monthly' | 'yearly' for a card payer; null when paid by hand.
+                'billing_interval'      => in_array($row->billing_interval, ['monthly', 'yearly'], true) ? (string) $row->billing_interval : null,
+                'notes'                 => $row->notes !== null && $row->notes !== '' ? (string) $row->notes : null,
                 'custom_price_monthly'  => $row->custom_price_monthly !== null ? (float) $row->custom_price_monthly : null,
                 'custom_price_yearly'   => $row->custom_price_yearly !== null ? (float) $row->custom_price_yearly : null,
                 'discount_percentage'   => (int) ($row->discount_percentage ?? 0),
@@ -444,6 +464,9 @@ class TenantBillingService
                 'subtree_user_count'  => $subtreeCount,
                 'active_member_count' => $activeCount,
                 'usage_percent'       => $usagePercent,
+                // 'eur' | 'gbp': what a special price typed for it is in, when
+                // the plan chosen has a pound price.
+                'billing_currency'    => $currencyOf[$id] ?? 'eur',
                 'current_plan'        => $currentPlan,
                 'suggested_plan'      => $suggested,
                 'over_limit'          => $overLimit,
@@ -467,6 +490,31 @@ class TenantBillingService
         }
 
         return $snapshot;
+    }
+
+    /**
+     * A plan's monthly and yearly price in the currency a community billed in
+     * $communityCurrency is charged: pounds only when the plan has a pound
+     * price, euro otherwise (the same rule as card checkout, decided for the
+     * plan as a whole so one row never mixes two currencies).
+     *
+     * @param object $plan a row with price_monthly, price_yearly and the two `_gbp` columns
+     * @return array{currency: 'eur'|'gbp', monthly: float, yearly: float}
+     */
+    public static function pricesFor(object $plan, string $communityCurrency): array
+    {
+        $poundMonthly = (float) ($plan->price_monthly_gbp ?? 0);
+        $poundYearly = (float) ($plan->price_yearly_gbp ?? 0);
+
+        if ($communityCurrency === 'gbp' && ($poundMonthly > 0 || $poundYearly > 0)) {
+            return ['currency' => 'gbp', 'monthly' => $poundMonthly, 'yearly' => $poundYearly];
+        }
+
+        return [
+            'currency' => 'eur',
+            'monthly' => (float) ($plan->price_monthly ?? 0),
+            'yearly' => (float) ($plan->price_yearly ?? 0),
+        ];
     }
 
     /**
@@ -702,11 +750,16 @@ class TenantBillingService
         ?string $discountReason = null,
         bool $nonprofitVerified = false
     ): void {
+        // The record in force: an active one, a trial, or a card payer's
+        // record after a failed renewal (`expired`, Stripe still collecting).
+        // Only `active` was looked for, so for those a SECOND record was
+        // inserted beside the one the card is charged on.
         $existing = DB::selectOne(
-            "SELECT id, pay_plan_id, custom_price_monthly, custom_price_yearly,
-                    discount_percentage, discount_reason, nonprofit_verified, expires_at, notes
-             FROM tenant_plan_assignments
-             WHERE tenant_id = ? AND status = 'active'
+            "SELECT tpa.id, tpa.pay_plan_id, tpa.custom_price_monthly, tpa.custom_price_yearly,
+                    tpa.discount_percentage, tpa.discount_reason, tpa.nonprofit_verified, tpa.expires_at, tpa.notes
+             FROM tenant_plan_assignments tpa
+             WHERE tpa.tenant_id = ? AND " . self::PLAN_IN_FORCE_SQL . "
+             ORDER BY (tpa.status = 'active') DESC, (tpa.status = 'trial') DESC, tpa.id DESC
              LIMIT 1",
             [$tenantId]
         );
@@ -1218,64 +1271,53 @@ class TenantBillingService
      */
     public static function exportCsv(): string
     {
-        $rows = DB::select(
-            "SELECT t.id AS tenant_id, t.name AS tenant_name, t.depth,
-                    pp.name AS plan_name,
-                    tpa.custom_price_monthly, tpa.custom_price_yearly,
-                    tpa.discount_percentage, tpa.nonprofit_verified,
-                    tpa.is_paused, tpa.grace_period_ends_at, tpa.expires_at,
-                    pp.price_monthly, pp.price_yearly
-             FROM tenant_plan_assignments tpa
-             INNER JOIN tenants t ON t.id = tpa.tenant_id
-             INNER JOIN pay_plans pp ON pp.id = tpa.pay_plan_id
-             WHERE tpa.status = 'active'
-               AND t.id != 1
-             ORDER BY t.depth ASC, t.name ASC"
-        );
-
+        // Built from the same snapshot as the Billing control screen, so the
+        // file says what the screen says: every community (those with no
+        // plan too), active members, the currency it is charged in, who it
+        // pays, its paid-until date and its standing. It used to list only
+        // communities with an active plan, at the euro price, with two
+        // columns (`is_paused`, `grace_period_ends_at`) that no longer do
+        // anything.
         $headers = [
-            'tenant_id', 'tenant_name', 'depth', 'plan_name',
-            'own_users', 'subtree_users',
-            'effective_yearly_price', 'discount_pct', 'nonprofit',
-            'is_paused', 'grace_period_ends_at', 'expires_at',
+            'tenant_id', 'tenant_name', 'depth', 'plan_name', 'plan_status',
+            'own_users', 'subtree_users', 'active_members', 'member_limit',
+            'currency', 'effective_monthly_price', 'effective_yearly_price',
+            'discount_pct', 'nonprofit', 'billing_interval',
+            'pays', 'paid_until', 'standing', 'review_date',
         ];
 
-        $lines = [];
-        $lines[] = implode(',', $headers);
+        // Community and plan names are set by people and land on the platform
+        // administrator's machine: neutralise formulas (E-088).
+        $text = static fn (?string $value): string =>
+            '"' . str_replace('"', '""', \App\Support\CsvExportSanitizer::cell((string) $value)) . '"';
 
-        foreach ($rows as $row) {
-            $ownUsers = (int) (DB::selectOne(
-                "SELECT COUNT(*) AS cnt FROM users WHERE tenant_id = ? AND status = 'active'",
-                [(int) $row->tenant_id]
-            )->cnt ?? 0);
+        $lines = [implode(',', $headers)];
 
-            $subtreeUsers = self::getSubtreeUserCount((int) $row->tenant_id);
+        foreach (self::getBillingSnapshot() as $row) {
+            $plan = $row['current_plan'];
+            $standing = $row['standing'];
+            $state = $standing['exempt'] ? 'exempt' : ($standing['suspended_at'] !== null ? 'paused' : ($standing['locked'] ? 'paused_from_above' : 'open'));
 
-            $assignmentArr = [
-                'custom_price_monthly' => $row->custom_price_monthly,
-                'custom_price_yearly'  => $row->custom_price_yearly,
-                'discount_percentage'  => $row->discount_percentage,
-                'nonprofit_verified'   => $row->nonprofit_verified,
-                'price_monthly'        => $row->price_monthly,
-                'price_yearly'         => $row->price_yearly,
-            ];
-            $effective = self::getEffectivePrice($assignmentArr);
-
-            // Community names are set by that community's own admin and land on
-            // the platform administrator's machine: neutralise formulas (E-088).
             $lines[] = implode(',', [
-                (int) $row->tenant_id,
-                '"' . str_replace('"', '""', \App\Support\CsvExportSanitizer::cell((string) $row->tenant_name)) . '"',
-                (int) $row->depth,
-                '"' . str_replace('"', '""', \App\Support\CsvExportSanitizer::cell((string) $row->plan_name)) . '"',
-                $ownUsers,
-                $subtreeUsers,
-                number_format($effective['yearly'], 2, '.', ''),
-                $effective['discount_pct'],
-                $effective['nonprofit'] ? '1' : '0',
-                ($row->is_paused ? '1' : '0'),
-                $row->grace_period_ends_at ?? '',
-                $row->expires_at ?? '',
+                (int) $row['id'],
+                $text($row['name']),
+                (int) $row['depth'],
+                $text($plan['name'] ?? ''),
+                $plan['assignment_status'] ?? '',
+                (int) $row['own_user_count'],
+                (int) $row['subtree_user_count'],
+                (int) $row['active_member_count'],
+                $plan !== null && $plan['max_users'] !== null ? (int) $plan['max_users'] : '',
+                $plan['currency'] ?? '',
+                $plan !== null ? number_format($plan['effective_price']['monthly'], 2, '.', '') : '',
+                $plan !== null ? number_format($plan['effective_price']['yearly'], 2, '.', '') : '',
+                $plan !== null ? $plan['effective_price']['discount_pct'] : '',
+                $plan !== null ? ($plan['effective_price']['nonprofit'] ? '1' : '0') : '',
+                $plan['billing_interval'] ?? '',
+                $standing['payer'],
+                $standing['paid_until'] ?? '',
+                $state,
+                $plan !== null && $plan['expires_at'] !== null ? substr((string) $plan['expires_at'], 0, 10) : '',
             ]);
         }
 

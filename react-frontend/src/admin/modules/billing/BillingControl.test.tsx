@@ -21,13 +21,13 @@ vi.mock('@/components/ui', async () => {
 
   const tableOverrides: Record<string, unknown> = {
     // A native select, so the over-limit rule dialog's choice can be made.
-    Select: ({ children, label, selectedKeys, onSelectionChange }: {
-      children?: React.ReactNode; label?: string;
+    Select: ({ children, label, selectedKeys, onSelectionChange, isDisabled }: {
+      children?: React.ReactNode; label?: string; isDisabled?: boolean;
       selectedKeys?: Iterable<string>; onSelectionChange?: (keys: Set<string>) => void;
     }) => {
       const keys = selectedKeys ? Array.from(selectedKeys) : [];
       return (
-        <select aria-label={label} value={keys[0] ?? ''} onChange={(e) => onSelectionChange?.(new Set([e.target.value]))}>
+        <select aria-label={label} disabled={isDisabled} value={keys[0] ?? ''} onChange={(e) => onSelectionChange?.(new Set([e.target.value]))}>
           {children}
         </select>
       );
@@ -148,8 +148,12 @@ const makePlanOnRow = (overrides = {}) => ({
   name: 'Pro',
   slug: 'pro',
   max_users: 200,
+  currency: 'eur',
   price_monthly: 49,
   price_yearly: 490,
+  billing_interval: null,
+  notes: null,
+  is_active: true,
   custom_price_monthly: null,
   custom_price_yearly: null,
   discount_percentage: 0,
@@ -191,6 +195,7 @@ const makeSnapshot = (overrides: Record<string, unknown> = {}) => ({
   current_plan: makePlanOnRow(),
   active_member_count: 60,
   usage_percent: 30,
+  billing_currency: 'eur',
   suggested_plan: 'pro',
   over_limit: false,
   over_limit_rule: makeOverLimit(),
@@ -359,10 +364,185 @@ describe('BillingControl', () => {
     expect(screen.queryByText('Cancelled')).not.toBeInTheDocument();
   });
 
-  it('marks a community over its member limit', async () => {
+  it('marks a community over its member limit, and still says which plan it is on', async () => {
     await renderWith([makeSnapshot({ over_limit: true })]);
 
     expect(screen.getByText('Over Limit')).toBeInTheDocument();
+    // "Over Limit" used to REPLACE the plan's name on the one row that
+    // needed a decision about its plan.
+    expect(screen.getByText('Pro')).toBeInTheDocument();
+  });
+
+  it('shows the price in the currency the community is charged in, for the period it pays by', async () => {
+    await renderWith([
+      // Paid by hand: both figures, in euro.
+      makeSnapshot(),
+      // A pound community paying yearly by card: the yearly pound price only.
+      makeSnapshot({
+        id: 6,
+        name: 'Leeds Timebank',
+        billing_currency: 'gbp',
+        current_plan: makePlanOnRow({
+          currency: 'gbp', price_monthly: 42, price_yearly: 420, billing_interval: 'yearly',
+          effective_price: { monthly: 42, yearly: 420, has_custom: false, discount_pct: 0, nonprofit: false },
+        }),
+        standing: makeStanding({ tenant_id: 6, payer: 'platform_card' }),
+      }),
+    ]);
+
+    const prices = screen.getAllByTestId('billing-price');
+    expect(prices[0]).toHaveTextContent(/€\s?49 per month/);
+    expect(prices[0]).toHaveTextContent(/€\s?490 per year/);
+    expect(prices[1]).toHaveTextContent(/£\s?420 per year/);
+    expect(prices[1]).not.toHaveTextContent('per month');
+    expect(prices[1]).not.toHaveTextContent('€');
+  });
+
+  it('filters to the communities with no plan, or with no paid-until date', async () => {
+    await renderWith([
+      makeSnapshot({ standing: makeStanding({ paid_until: '2027-01-01' }) }),
+      makeSnapshot({ id: 6, name: 'Galway Timebank', current_plan: null, standing: makeStanding({ tenant_id: 6 }) }),
+      makeSnapshot({ id: 7, name: 'Exempt Timebank', standing: makeStanding({ tenant_id: 7, exempt: true }) }),
+    ]);
+
+    const filter = screen.getByLabelText('Show') as HTMLSelectElement;
+    expect(screen.getByTestId('billing-filter-count')).toHaveTextContent('Showing 3 of 3 communities');
+    // Each choice says how many it would show.
+    expect(Array.from(filter.options).map((option) => option.textContent)).toEqual([
+      'All communities (3)', 'No plan (1)', 'No paid-until date (1)', 'Paused (0)', 'Over their member number (0)',
+    ]);
+
+    fireEvent.change(filter, { target: { value: 'no_plan' } });
+    expect(screen.getByText('Galway Timebank')).toBeInTheDocument();
+    expect(screen.queryByText('Cork Timebank')).not.toBeInTheDocument();
+    expect(screen.getByTestId('billing-filter-count')).toHaveTextContent('Showing 1 of 3 communities');
+
+    // No date to chase for a community nobody bills.
+    fireEvent.change(filter, { target: { value: 'no_paid_until' } });
+    expect(screen.getByText('Galway Timebank')).toBeInTheDocument();
+    expect(screen.queryByText('Exempt Timebank')).not.toBeInTheDocument();
+
+    fireEvent.change(filter, { target: { value: 'paused' } });
+    expect(screen.getByText('No community matches this filter.')).toBeInTheDocument();
+  });
+
+  it('keeps the page on screen while it reloads after an action', async () => {
+    await renderWith([makeSnapshot()]);
+    // The reload after an action never resolves here: the table must stay.
+    mockApi.get.mockImplementation((url: string) => {
+      if (url === '/v2/admin/super/billing/snapshot') return new Promise(() => {});
+      return Promise.resolve({ success: true, data: [] });
+    });
+
+    fireEvent.click(button('Exempt')!);
+    await userEvent.type(await screen.findByLabelText(/reason/i), 'Founding member');
+    fireEvent.click(screen.getAllByRole('button').filter((b) => b.textContent?.trim() === 'Exempt this community').pop()!);
+
+    await waitFor(() => expect(mockApi.post).toHaveBeenCalled());
+    // It used to be replaced by a spinner on every action, which threw away
+    // unsaved edits on the Automatic checks card above the table.
+    expect(screen.getByText('Cork Timebank')).toBeInTheDocument();
+  });
+
+  it('says the list could not be loaded, and offers to try again, instead of an empty table', async () => {
+    mockApi.get.mockImplementation((url: string) => {
+      if (url === '/v2/admin/super/billing/snapshot') return Promise.resolve({ success: false, data: null });
+      return Promise.resolve({ success: true, data: [] });
+    });
+    const { BillingControl } = await import('./BillingControl');
+    render(<BillingControl />);
+
+    expect(await screen.findByText('The list could not be loaded.')).toBeInTheDocument();
+    expect(button('Try again')).toBeDefined();
+    expect(screen.queryByText('Failed to load')).not.toBeInTheDocument();
+  });
+
+  // ── Assign plan: the dialog ───────────────────────────────────────────────
+
+  it('opens Assign plan on what is stored, so saving a new price does not wipe the notes or the date', async () => {
+    await renderWith([
+      makeSnapshot({ current_plan: makePlanOnRow({ notes: 'Agreed in March.', expires_at: '2027-03-01 00:00:00' }) }),
+    ]);
+
+    fireEvent.click(button('Assign Plan')!);
+
+    expect(await screen.findByLabelText('Review date')).toHaveValue('2027-03-01');
+    expect(screen.getByLabelText('Notes')).toHaveValue('Agreed in March.');
+    expect(screen.getByText('A reminder for the platform team. Nothing happens automatically on this date.')).toBeInTheDocument();
+
+    await userEvent.type(screen.getByLabelText('Special price per month (EUR)'), '30');
+    fireEvent.click(screen.getAllByRole('button').filter((b) => b.textContent?.trim() === 'Assign Plan').pop()!);
+
+    await waitFor(() => {
+      expect(mockApi.post).toHaveBeenCalledWith('/v2/admin/super/billing/assign-plan', expect.objectContaining({
+        tenant_id: 5,
+        pay_plan_id: 2,
+        expires_at: '2027-03-01',
+        notes: 'Agreed in March.',
+        custom_price_monthly: 30,
+      }));
+    });
+  });
+
+  it('names the pound for a pound community on a plan with a pound price', async () => {
+    serveGets([]);
+    const pounds = [
+      makePlan({ price_monthly_gbp: '42.00', price_yearly_gbp: '420.00' }),
+    ];
+    mockApi.get.mockImplementation((url: string) => {
+      if (url.includes('/plans')) return Promise.resolve({ success: true, data: pounds });
+      if (url === '/v2/admin/super/billing/snapshot') {
+        return Promise.resolve({ success: true, data: [makeSnapshot({ billing_currency: 'gbp', current_plan: makePlanOnRow({ currency: 'gbp' }) })] });
+      }
+      return Promise.resolve({ success: true, data: [] });
+    });
+    const { BillingControl } = await import('./BillingControl');
+    render(<BillingControl />);
+    await waitFor(() => expect(screen.queryAllByRole('row').length).toBeGreaterThan(1));
+
+    fireEvent.click(button('Assign Plan')!);
+
+    const monthly = await screen.findByLabelText('Special price per month (GBP)');
+    expect(monthly).toHaveAttribute('placeholder', '42.00');
+    expect(screen.getByLabelText('Special price per year (GBP)')).toBeInTheDocument();
+  });
+
+  it('offers the retired plan a community is already on, marked as retired, and no other retired plan', async () => {
+    await renderWith([
+      makeSnapshot({ current_plan: makePlanOnRow({ id: 12, name: 'Old Starter', slug: 'legacy-starter-3', is_active: false }) }),
+    ]);
+
+    fireEvent.click(button('Assign Plan')!);
+
+    const select = await screen.findByLabelText('Select Plan') as HTMLSelectElement;
+    expect(Array.from(select.options).map((option) => option.textContent)).toEqual(['Pro', 'Growth', 'Old Starter (retired)']);
+    expect(select.value).toBe('12');
+  });
+
+  it('tells the platform team a card payer changes plan on its own Billing page, and locks the plan and price', async () => {
+    await renderWith([makeSnapshot({ standing: makeStanding({ payer: 'platform_card' }) })]);
+
+    fireEvent.click(button('Assign Plan')!);
+
+    expect(await screen.findByText(/pays by card\. Its plan and price are changed from its own Billing page/)).toBeInTheDocument();
+    expect(screen.getByLabelText('Select Plan')).toBeDisabled();
+    // The price fields are disabled too; the shared input stand-in does not
+    // carry `isDisabled`, so that is not asserted here. The server refuses
+    // either change for a card payer (BillingControlEditingTest).
+    expect(screen.getByLabelText('Notes')).not.toBeDisabled();
+  });
+
+  it('shows the server’s reason when a plan cannot be assigned', async () => {
+    await renderWith([makeSnapshot()]);
+    mockApi.post.mockResolvedValue({ success: false, error: 'This community pays by card, and its card is charged for the plan on its card payment.' });
+
+    fireEvent.click(button('Assign Plan')!);
+    await screen.findByLabelText('Review date');
+    fireEvent.click(screen.getAllByRole('button').filter((b) => b.textContent?.trim() === 'Assign Plan').pop()!);
+
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalledWith('This community pays by card, and its card is charged for the plan on its card payment.');
+    });
   });
 
   it('shows who each community pays', async () => {
@@ -375,17 +555,6 @@ describe('BillingControl', () => {
     expect(screen.getByText('Its parent')).toBeInTheDocument();
   });
 
-  it('posts the community id when assigning a plan', async () => {
-    await renderWith([makeSnapshot()]);
-
-    expect(button('Assign Plan')).toBeDefined();
-    fireEvent.click(button('Assign Plan')!);
-
-    // useDisclosure in the shared UI mock cannot open a dialog, so the form
-    // itself is not reachable here; the id it would post is the row's `id`,
-    // which the pause test below proves end to end.
-    expect(document.body).toBeTruthy();
-  });
 
   // ── Pausing, restoring, exempting ─────────────────────────────────────────
 
@@ -705,10 +874,22 @@ describe('BillingControl', () => {
     });
   });
 
-  it('shows "in grace period" chip for tenant in grace period', async () => {
+  it('shows an "in grace period" chip beside the plan name', async () => {
     await renderWith([makeSnapshot({ is_in_grace_period: true, grace_days_remaining: 12 })]);
 
     expect(screen.getByText('In Grace Period')).toBeInTheDocument();
+    expect(screen.getByText('Pro')).toBeInTheDocument();
+  });
+
+  it('colours exactly at the limit as danger, as Branch payments does', async () => {
+    await renderWith([
+      makeSnapshot({ active_member_count: 200, usage_percent: 100 }),
+      // 201 of 200 is rounded down to "100%" and is over.
+      makeSnapshot({ id: 6, name: 'Galway Timebank', active_member_count: 201, usage_percent: 100, over_limit: true, standing: makeStanding({ tenant_id: 6 }) }),
+    ]);
+
+    expect(membersCell(0).className).toMatch(/text-danger/);
+    expect(membersCell(1).className).toMatch(/text-danger/);
   });
 
   it('renders multiple tenants in the table', async () => {

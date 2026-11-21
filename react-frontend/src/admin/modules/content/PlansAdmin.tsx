@@ -64,6 +64,9 @@ export function PlansAdmin() {
       if (res.success && res.data) {
         const result = res.data as unknown;
         setData(Array.isArray(result) ? result as PlanListItem[] : []);
+      } else {
+        // A refused load used to look like "no plans".
+        toast.error(t('content.failed_to_load_plans'));
       }
     } catch {
       toast.error(t('content.failed_to_load_plans'));
@@ -84,7 +87,9 @@ export function PlansAdmin() {
         toast.success(t('content.plan_deleted_successfully'));
         fetchData();
       } else {
-        toast.error(t('content.failed_to_delete_plan'));
+        // The server says why (a community is, or was, on the plan).
+        // admin-i18n-ignore: localized server message — AdminContentController plan delete refusals (lang/*/api.php)
+        toast.error(res?.error || t('content.failed_to_delete_plan'));
       }
     } catch {
       toast.error(t('content.an_unexpected_error_occurred'));
@@ -102,7 +107,8 @@ export function PlansAdmin() {
         toast.success(t('content.plan_synced_to_stripe', { name: plan.name }));
         fetchData();
       } else {
-        toast.error(t('content.stripe_sync_failed'));
+        // admin-i18n-ignore: localized server message — AdminContentController Stripe sync refusals (lang/*/api.php)
+        toast.error(res.error || t('content.stripe_sync_failed'));
       }
     } catch {
       toast.error(t('content.stripe_sync_failed_config'));

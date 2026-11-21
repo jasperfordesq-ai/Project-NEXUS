@@ -1229,6 +1229,8 @@ return [
     'billing_change_same_plan' => 'Esta comunidade já está nesse plano.',
     'billing_change_plan_failed' => 'Não foi possível mudar o plano e nada foi cobrado. Tente novamente ou contacte a equipa da plataforma.',
     'plan_has_history' => 'Este plano não pode ser eliminado: :count comunidades têm-no, ou já o tiveram. Desative-o em vez disso.',
+    'billing_assign_card_plan' => 'Esta comunidade paga por cartão, e ao cartão é cobrado o plano do seu pagamento por cartão. Altere o plano na página de Faturação da própria comunidade, para que o pagamento por cartão mude também.',
+    'billing_assign_card_special_price' => 'Esta comunidade paga por cartão, e a um cartão é sempre cobrado o preço próprio do plano. Um preço especial, um desconto ou a redução para entidades sem fins lucrativos são para uma comunidade que paga por fatura.',
     'billing_plan_not_sold_monthly' => 'Este plano não é vendido com pagamento mensal. Escolha a cobrança anual.',
     'billing_plan_not_sold_yearly' => 'Este plano não é vendido com pagamento anual. Escolha a cobrança mensal.',
     'billing_standing_payment_paid_until_required' => 'Informe a data até a qual este pagamento cobre a comunidade.',

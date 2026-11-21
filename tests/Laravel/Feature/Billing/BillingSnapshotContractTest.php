@@ -50,6 +50,8 @@ final class BillingSnapshotContractTest extends TestCase
         // `over_limit_rule`, not `over_limit`: that key stays the true/false
         // "over its limit now" flag above.
         'over_limit_rule', 'upgrade_allowed',
+        // 21 Nov 2026: the currency a special price typed for it is in.
+        'billing_currency',
     ];
 
     /** Read off `over_limit_rule`, key for key (same as a Branch payments row's `over_limit`). */
@@ -77,10 +79,13 @@ final class BillingSnapshotContractTest extends TestCase
         // community pays its parent and the parent changed this plan. `name`
         // and `max_users` are then the hub's.
         'terms',
+        // 21 Nov 2026: prices in the currency the community is charged in,
+        // and what Assign plan must show so that saving does not wipe it.
+        'currency', 'price_monthly', 'price_yearly', 'billing_interval', 'notes', 'expires_at', 'is_active',
     ];
 
     /** Read off `current_plan.effective_price`. */
-    private const REQUIRED_PRICE_KEYS = ['yearly', 'has_custom', 'discount_pct', 'nonprofit'];
+    private const REQUIRED_PRICE_KEYS = ['monthly', 'yearly', 'has_custom', 'discount_pct', 'nonprofit'];
 
     /** Read off `standing`. */
     private const REQUIRED_STANDING_KEYS = ['payer', 'suspended_at', 'exempt', 'locked', 'locked_by_tenant_id', 'paid_until'];

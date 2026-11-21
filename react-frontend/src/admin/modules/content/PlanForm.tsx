@@ -139,6 +139,7 @@ export function PlanForm() {
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   useEffect(() => {
     if (!isEdit) return;
@@ -173,9 +174,17 @@ export function PlanForm() {
             stripe_price_id_monthly_gbp: plan.stripe_price_id_monthly_gbp,
             stripe_price_id_yearly_gbp: plan.stripe_price_id_yearly_gbp,
           });
+        } else {
+          // A refused load used to leave an empty form that looked like a
+          // new plan, ready to be saved over the real one.
+          toast.error(t('content.failed_to_load_plans'));
+          setLoadFailed(true);
         }
       })
-      .catch(() => toast.error(t('content.failed_to_load_plans')))
+      .catch(() => {
+        toast.error(t('content.failed_to_load_plans'));
+        setLoadFailed(true);
+      })
       .finally(() => setLoading(false));
   }, [id, isEdit, t, toast]);
 
@@ -191,7 +200,9 @@ export function PlanForm() {
 
     return {
       name: formData.name,
-      description: formData.description || undefined,
+      // Sent even when empty: leaving it out meant a description could
+      // never be cleared once set.
+      description: formData.description.trim(),
       price_monthly: formData.price_monthly !== '' ? Number(formData.price_monthly) : 0,
       price_yearly: formData.price_yearly !== '' ? Number(formData.price_yearly) : 0,
       price_monthly_gbp: toNullableNumber(formData.price_monthly_gbp),
@@ -255,7 +266,9 @@ export function PlanForm() {
           // A price that did not reach Stripe needs the sync button on this page.
           if (warnings.length === 0) navigate(tenantPath('/platform-team/plans'));
         } else {
-          toast.error(t('content.failed_to_update_plan'));
+          // The server names the field and the reason.
+          // admin-i18n-ignore: localized server message — AdminContentController plan validation (lang/*/api.php)
+          toast.error(res?.error || t('content.failed_to_update_plan'));
         }
       } else {
         const res = await adminPlans.create(buildPayload());
@@ -270,7 +283,8 @@ export function PlanForm() {
             navigate(tenantPath('/platform-team/plans'));
           }
         } else {
-          toast.error(t('content.failed_to_create_plan'));
+          // admin-i18n-ignore: localized server message — AdminContentController plan validation (lang/*/api.php)
+          toast.error(res?.error || t('content.failed_to_create_plan'));
         }
       }
     } catch {
@@ -313,6 +327,15 @@ export function PlanForm() {
       <div>
         <PageHeader title={t(isEdit ? 'content.plan_edit_title' : 'content.plan_create_title')} description="" />
         <div role="status" aria-busy="true" aria-label={t('common.loading')} className="flex justify-center py-12"><Spinner size="lg" /></div>
+      </div>
+    );
+  }
+
+  if (loadFailed) {
+    return (
+      <div>
+        <PageHeader title={t('content.plan_edit_title')} description="" />
+        <p role="alert" className="py-12 text-center text-danger">{t('content.failed_to_load_plans')}</p>
       </div>
     );
   }

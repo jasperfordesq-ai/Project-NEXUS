@@ -1229,6 +1229,8 @@ return [
     'billing_change_same_plan' => 'Tá an pobal seo ar an bplean sin cheana féin.',
     'billing_change_plan_failed' => 'Níorbh fhéidir an plean a athrú agus níor gearradh aon rud. Bain triail eile as, nó iarr ar fhoireann an ardáin.',
     'plan_has_history' => 'Ní féidir an plean seo a scriosadh: tá, nó bhí, :count pobal air. Múch é ina ionad sin.',
+    'billing_assign_card_plan' => 'Íocann an pobal seo le cárta, agus gearrtar ar an gcárta an plean atá ar a íocaíocht chárta. Athraigh an plean óna leathanach Billeála féin, ionas go n-athróidh an íocaíocht chárta leis.',
+    'billing_assign_card_special_price' => 'Íocann an pobal seo le cárta, agus gearrtar praghas an phlean féin ar chárta i gcónaí. Is do phobal a íocann le sonrasc praghas speisialta, lascaine nó an laghdú neamhbhrabúis.',
     'billing_plan_not_sold_monthly' => 'Ní dhíoltar an plean seo go míosúil. Roghnaigh billeáil bhliantúil ina ionad.',
     'billing_plan_not_sold_yearly' => 'Ní dhíoltar an plean seo go bliantúil. Roghnaigh billeáil mhíosúil ina ionad.',
     'billing_standing_payment_paid_until_required' => 'Cuir isteach an dáta a n-íocann an íocaíocht seo suas go dtí é.',

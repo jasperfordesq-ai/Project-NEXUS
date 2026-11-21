@@ -355,7 +355,10 @@ export function BranchPayments() {
 
                     <TableCell>
                       <div className="min-w-36 break-normal text-sm text-muted">
-                        {paysParent && row.parent_name ? row.parent_name : t('branch_payments.pays_platform')}
+                        {/* Nobody is paid by a community that is not billed: it read "The platform". */}
+                        {row.standing.payer === 'not_billed'
+                          ? t('admin_billing:billing.payer_not_billed')
+                          : paysParent && row.parent_name ? row.parent_name : t('branch_payments.pays_platform')}
                       </div>
                     </TableCell>
 

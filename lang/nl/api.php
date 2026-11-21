@@ -1160,6 +1160,8 @@ return [
     'billing_change_same_plan' => 'Deze community heeft dat plan al.',
     'billing_change_plan_failed' => 'Het plan kon niet worden gewijzigd en er is niets afgeschreven. Probeer het opnieuw of neem contact op met het platformteam.',
     'plan_has_history' => 'Dit plan kan niet worden verwijderd: :count community’s hebben het, of hebben het gehad. Schakel het in plaats daarvan uit.',
+    'billing_assign_card_plan' => 'Deze gemeenschap betaalt per kaart, en de kaart wordt belast voor het plan van haar kaartbetaling. Wijzig het plan op haar eigen pagina Facturering, zodat de kaartbetaling mee verandert.',
+    'billing_assign_card_special_price' => 'Deze gemeenschap betaalt per kaart, en een kaart wordt altijd belast met de eigen prijs van het plan. Een speciale prijs, een korting of de non-profitkorting is voor een gemeenschap die per factuur betaalt.',
     'billing_plan_not_sold_monthly' => 'Dit pakket wordt niet per maand verkocht. Kies in plaats daarvan jaarlijkse facturering.',
     'billing_plan_not_sold_yearly' => 'Dit pakket wordt niet per jaar verkocht. Kies in plaats daarvan maandelijkse facturering.',
     'billing_standing_payment_paid_until_required' => 'Voer de datum in tot wanneer deze betaling de gemeenschap dekt.',

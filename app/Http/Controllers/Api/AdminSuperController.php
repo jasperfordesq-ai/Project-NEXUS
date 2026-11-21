@@ -2949,12 +2949,32 @@ class AdminSuperController extends BaseApiController
         if (!DB::selectOne('SELECT id FROM tenants WHERE id = ?', [$tenantId])) {
             return $this->respondWithError('NOT_FOUND', __('api.tenant_not_found'), null, 404);
         }
-        if (!DB::selectOne('SELECT id FROM pay_plans WHERE id = ? AND is_active = 1', [$planId])) {
+        // The plan it is on now, if any (the record in force).
+        $current = DB::selectOne(
+            "SELECT tpa.pay_plan_id FROM tenant_plan_assignments tpa
+             WHERE tpa.tenant_id = ? AND " . TenantBillingService::PLAN_IN_FORCE_SQL . "
+             ORDER BY (tpa.status = 'active') DESC, (tpa.status = 'trial') DESC, tpa.id DESC
+             LIMIT 1",
+            [$tenantId]
+        );
+        $currentPlanId = $current !== null ? (int) $current->pay_plan_id : null;
+
+        // Nobody new is put on a retired plan, but a community already on one
+        // can have its price, discount and notes edited: it answered "Plan
+        // not found" for that.
+        $plan = DB::selectOne('SELECT id, is_active FROM pay_plans WHERE id = ?', [$planId]);
+        if (!$plan || ((int) $plan->is_active !== 1 && $planId !== $currentPlanId)) {
             return $this->respondWithError('NOT_FOUND', __('api.plan_not_found'), null, 404);
         }
 
-        $expiresAt = !empty($input['expires_at']) ? $input['expires_at'] : null;
-        $notes     = !empty($input['notes']) ? trim($input['notes']) : null;
+        $expiresAt = !empty($input['expires_at']) ? substr(trim((string) $input['expires_at']), 0, 10) : null;
+        if ($expiresAt !== null) {
+            $parsed = \DateTimeImmutable::createFromFormat('!Y-m-d', $expiresAt);
+            if ($parsed === false || $parsed->format('Y-m-d') !== $expiresAt) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_date'), 'expires_at', 422);
+            }
+        }
+        $notes     = !empty($input['notes']) ? mb_substr(trim((string) $input['notes']), 0, 2000) : null;
 
         // Pricing overrides and discount.
         $customPriceMonthly = isset($input['custom_price_monthly']) && $input['custom_price_monthly'] !== ''
@@ -2966,6 +2986,20 @@ class AdminSuperController extends BaseApiController
         $discountPct = max(0, min(100, (int) ($input['discount_percentage'] ?? 0)));
         $discountReason = !empty($input['discount_reason']) ? trim($input['discount_reason']) : null;
         $nonprofitVerified = !empty($input['nonprofit_verified']);
+
+        // A card is charged by Stripe, at the plan's own price, for the plan
+        // on its subscription. A change made only here would not reach the
+        // card: Stripe would keep charging the old plan and put it back on
+        // its next update, and a special price would be shown but never
+        // charged. Notes and the review date can still be edited.
+        if (TenantBillingService::hasLiveCardSubscription($tenantId)) {
+            if ($currentPlanId !== null && $planId !== $currentPlanId) {
+                return $this->respondWithError('CARD_PAYER', __('api.billing_assign_card_plan'), 'pay_plan_id', 422);
+            }
+            if ($customPriceMonthly !== null || $customPriceYearly !== null || $discountPct > 0 || $nonprofitVerified) {
+                return $this->respondWithError('CARD_PAYER', __('api.billing_assign_card_special_price'), null, 422);
+            }
+        }
 
         TenantBillingService::assignPlan(
             $tenantId, $planId, $expiresAt, $notes, $userId,

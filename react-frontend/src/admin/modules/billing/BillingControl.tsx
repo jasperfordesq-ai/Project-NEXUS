@@ -1,5 +1,5 @@
-import { Button, Card, CardBody, CardHeader, Chip, Input, Spinner, Select, SelectItem, useDisclosure, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Switch, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@/components/ui';
-import { useState, useEffect, useCallback } from 'react';
+import { Alert, Button, Card, CardBody, CardHeader, Chip, Input, Spinner, Select, SelectItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Switch, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@/components/ui';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import CreditCard from 'lucide-react/icons/credit-card';
@@ -9,7 +9,7 @@ import Download from 'lucide-react/icons/download';
 import { usePageTitle } from '@/hooks';
 import { useAuth, useToast } from '@/contexts';
 import { api } from '@/lib/api';
-import { formatDate, formatNumber, getFormattingLocale } from '@/lib/helpers';
+import { formatCurrency, formatDate, formatNumber, getFormattingLocale } from '@/lib/helpers';
 import { PageHeader } from '../../components/PageHeader';
 import { BillingDevelopmentNotice } from './BillingDevelopmentNotice';
 import { BillingAutomationCard } from './BillingAutomationCard';
@@ -62,8 +62,16 @@ interface CurrentPlan {
   name: string;
   slug: string;
   max_users: number | null;
+  /** The currency the community is charged in; every price on the row is in it. */
+  currency: Currency;
   price_monthly: number;
   price_yearly: number;
+  /** A card payer's period; null when it pays by hand. */
+  billing_interval: 'monthly' | 'yearly' | null;
+  /** The platform team's own notes on this plan record. */
+  notes: string | null;
+  /** False for a retired plan: nobody new is put on it. */
+  is_active: boolean;
   custom_price_monthly: number | null;
   custom_price_yearly: number | null;
   discount_percentage: number;
@@ -83,6 +91,10 @@ interface CurrentPlan {
 }
 
 type AssignmentStatus = 'active' | 'trial' | 'expired' | 'cancelled';
+type Currency = 'eur' | 'gbp';
+type RowFilter = 'all' | 'no_plan' | 'no_paid_until' | 'paused' | 'over_limit';
+
+const ROW_FILTERS: RowFilter[] = ['all', 'no_plan', 'no_paid_until', 'paused', 'over_limit'];
 
 const ASSIGNMENT_STATUS_COLOR: Record<Exclude<AssignmentStatus, 'active'>, ChipColor> = {
   trial: 'primary',
@@ -118,6 +130,8 @@ interface TenantSnapshot {
   active_member_count: number;
   /** Of the plan's member limit; null with no plan or no limit. */
   usage_percent: number | null;
+  /** The currency the community is billed in (a special price typed for it is in this). */
+  billing_currency: Currency;
   /** Slug of the smallest standard package that fits; null above the largest. */
   suggested_plan: string | null;
   /** Over its member limit now. */
@@ -166,13 +180,34 @@ type ChipColor = 'success' | 'warning' | 'danger' | 'default' | 'primary';
 // Helpers
 // ---------------------------------------------------------------------------
 
-function formatEur(amount: number): string {
-  return new Intl.NumberFormat(getFormattingLocale(), {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
+function money(amount: number, currency: Currency): string {
+  return formatCurrency(amount, currency.toUpperCase(), { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+}
+
+/**
+ * The currency a special price for `row` on `plan` is in: pounds only for a
+ * pound community on a plan that has a pound price (the server's own rule,
+ * TenantBillingService::pricesFor()).
+ */
+function chargeCurrency(row: TenantSnapshot, plan: PlanItem | undefined): Currency {
+  if (row.billing_currency !== 'gbp' || !plan) return 'eur';
+  return Number(plan.price_monthly_gbp ?? 0) > 0 || Number(plan.price_yearly_gbp ?? 0) > 0 ? 'gbp' : 'eur';
+}
+
+function matchesFilter(row: TenantSnapshot, filter: RowFilter): boolean {
+  switch (filter) {
+    case 'no_plan':
+      return row.current_plan === null;
+    case 'no_paid_until':
+      // A community nobody bills has no date to chase.
+      return row.standing.paid_until === null && !row.standing.exempt && row.standing.payer !== 'not_billed';
+    case 'paused':
+      return row.standing.suspended_at !== null;
+    case 'over_limit':
+      return row.over_limit;
+    default:
+      return true;
+  }
 }
 
 function formatCount(value: number): string {
@@ -204,10 +239,14 @@ function formatMembers(row: TenantSnapshot): string {
   return `${formatCount(row.active_member_count)} / ${formatCount(max)} (${row.usage_percent}%)`;
 }
 
-/** The same thresholds the daily check uses: warning from its percent, danger over the limit. */
+/**
+ * The same thresholds the daily check uses: warning from its percent, danger
+ * at or over the limit, as Branch payments colours it. `over_limit` is asked
+ * too: the percent is rounded down, so 201 of 200 reads "100%" and is over.
+ */
 function membersColour(row: TenantSnapshot, warningPercent: number): string {
   if (row.usage_percent === null) return 'text-muted';
-  if (row.usage_percent > 100) return 'font-semibold text-danger';
+  if (row.over_limit || row.usage_percent >= 100) return 'font-semibold text-danger';
   if (row.usage_percent >= warningPercent) return 'font-semibold text-warning';
   return 'text-muted';
 }
@@ -245,14 +284,17 @@ export function BillingControl() {
   // ---- snapshot state ----
   const [snapshot, setSnapshot] = useState<TenantSnapshot[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [filter, setFilter] = useState<RowFilter>('all');
 
   // ---- plans state ----
   const [plans, setPlans] = useState<PlanItem[]>([]);
   const [plansLoading, setPlansLoading] = useState(false);
 
   // ---- assign plan modal ----
-  const { isOpen: isAssignOpen, onOpen: onAssignOpen, onClose: onAssignClose } = useDisclosure();
   const [selectedTenant, setSelectedTenant] = useState<TenantSnapshot | null>(null);
+  const isAssignOpen = selectedTenant !== null;
+  const onAssignClose = () => setSelectedTenant(null);
   const [selectedPlanId, setSelectedPlanId] = useState<string>('');
   const [expiresAt, setExpiresAt] = useState('');
   const [notes, setNotes] = useState('');
@@ -286,12 +328,17 @@ export function BillingControl() {
   // Data fetching
   // ---------------------------------------------------------------------------
 
+  // The whole page is replaced by a spinner on the FIRST load only. A reload
+  // after an action keeps the page as it is: it used to blank on every
+  // action, which lost the reader's place and threw away unsaved edits on
+  // the Automatic checks card above the table.
   const fetchSnapshot = useCallback(async () => {
-    setLoading(true);
     const response = await api.get<TenantSnapshot[]>('/v2/admin/super/billing/snapshot');
     if (response.success && Array.isArray(response.data)) {
       setSnapshot(response.data);
+      setLoadFailed(false);
     } else {
+      setLoadFailed(true);
       toast.error(t('billing.failed_to_load'));
     }
     setLoading(false);
@@ -328,15 +375,16 @@ export function BillingControl() {
     const plan = tenant.current_plan;
     setSelectedTenant(tenant);
     setSelectedPlanId(plan ? String(plan.id) : '');
-    setExpiresAt('');
-    setNotes('');
+    // What is stored already. These two opened empty, so saving anything
+    // (a new price, say) wiped the notes and the date.
+    setExpiresAt(plan?.expires_at ? plan.expires_at.slice(0, 10) : '');
+    setNotes(plan?.notes ?? '');
     setCustomPriceMonthly(plan && plan.custom_price_monthly !== null ? String(plan.custom_price_monthly) : '');
     setCustomPriceYearly(plan && plan.custom_price_yearly !== null ? String(plan.custom_price_yearly) : '');
     setDiscountPct(String(plan?.discount_percentage ?? 0));
     setDiscountReason(plan?.discount_reason ?? '');
     setNonprofitVerified(plan?.nonprofit_verified ?? false);
     void fetchPlans();
-    onAssignOpen();
   };
 
   const handleAssign = async () => {
@@ -358,7 +406,10 @@ export function BillingControl() {
       onAssignClose();
       void fetchSnapshot();
     } else {
-      toast.error(t('billing.failed_to_assign'));
+      // The server says why (a card payer, a retired plan, a bad date) in
+      // the reader's language. "Failed to assign" said nothing.
+      // admin-i18n-ignore: localized server message — AdminSuperController::assignPlan refusals (lang/*/api.php)
+      toast.error(response.error || t('billing.failed_to_assign'));
     }
     setAssigning(false);
   };
@@ -470,6 +521,14 @@ export function BillingControl() {
     return false;
   };
 
+  const filterCounts = useMemo(() => {
+    const counts = {} as Record<RowFilter, number>;
+    for (const key of ROW_FILTERS) {
+      counts[key] = snapshot.filter((row) => matchesFilter(row, key)).length;
+    }
+    return counts;
+  }, [snapshot]);
+
   /** The suggested package's own name, when it differs from the current plan. */
   const suggestedPlanName = (row: TenantSnapshot): string | null => {
     if (!row.suggested_plan || row.suggested_plan === row.current_plan?.slug) return null;
@@ -480,12 +539,7 @@ export function BillingControl() {
   // Plan chip rendering
   // ---------------------------------------------------------------------------
 
-  const getPlanChipColor = (row: TenantSnapshot): ChipColor => {
-    if (!row.current_plan) return 'default';
-    if (row.is_in_grace_period) return 'danger';
-    if (row.over_limit) return 'warning';
-    return 'success';
-  };
+  const getPlanChipColor = (row: TenantSnapshot): ChipColor => (row.current_plan ? 'success' : 'default');
 
   const assignmentStatusLabel = (status: Exclude<AssignmentStatus, 'active'>): string => {
     if (status === 'trial') return t('billing.assignment_status_trial');
@@ -493,12 +547,10 @@ export function BillingControl() {
     return t('billing.assignment_status_cancelled');
   };
 
-  const getPlanChipLabel = (row: TenantSnapshot): string => {
-    if (!row.current_plan) return t('billing.status_no_plan');
-    if (row.is_in_grace_period) return t('billing.in_grace_period');
-    if (row.over_limit) return t('billing.over_limit');
-    return row.current_plan.name;
-  };
+  // The plan's own name, always. "Over Limit" and "In Grace Period" used to
+  // replace it, so the one row that needed a decision hid which plan it was on.
+  const getPlanChipLabel = (row: TenantSnapshot): string =>
+    row.current_plan ? row.current_plan.name : t('billing.status_no_plan');
 
   // ---------------------------------------------------------------------------
   // Loading state
@@ -525,6 +577,21 @@ export function BillingControl() {
 
   const selectedPlan = plans.find((p) => String(p.id) === selectedPlanId);
   const exemptNeedsReason = standingDialog?.kind === 'exempt' && standingText.trim() === '';
+  const shownRows = snapshot.filter((row) => matchesFilter(row, filter));
+  // A card is charged by Stripe for the plan on its subscription, at the
+  // plan's own price: the server refuses a change of either made here.
+  const selectedPaysByCard = selectedTenant?.standing.payer === 'platform_card';
+  const dialogCurrency = selectedTenant ? chargeCurrency(selectedTenant, selectedPlan).toUpperCase() : 'EUR';
+  // Active plans, and the retired one this community is already on: it can
+  // stay there and have its price edited; nobody new is put on it.
+  const plansForDialog = plans.filter(
+    (plan) => assignablePlans([plan]).length === 1 || plan.id === selectedTenant?.current_plan?.id,
+  );
+  const placeholderPrice = (period: 'monthly' | 'yearly'): string => {
+    if (!selectedPlan) return '';
+    const value = dialogCurrency === 'GBP' ? selectedPlan[`price_${period}_gbp`] : selectedPlan[`price_${period}`];
+    return value != null ? String(value) : '';
+  };
 
   return (
     <div className="space-y-6">
@@ -559,6 +626,37 @@ export function BillingControl() {
         <CardBody className="p-0">
           {/* Wider than most screens: the table scrolls sideways inside this
               card, never the page, and says so. */}
+          <div className="flex flex-wrap items-end justify-between gap-3 px-4 pt-3">
+            <div className="w-64">
+              <Select
+                label={t('control.filter_label')}
+                selectedKeys={new Set([filter])}
+                onSelectionChange={(keys) => {
+                  const chosen = String(Array.from(keys)[0] ?? 'all') as RowFilter;
+                  setFilter(ROW_FILTERS.includes(chosen) ? chosen : 'all');
+                }}
+              >
+                {ROW_FILTERS.map((key) => (
+                  <SelectItem key={key} id={key}>
+                    {t('control.filter_option', { label: t(`control.filter_${key}`), count: filterCounts[key] })}
+                  </SelectItem>
+                ))}
+              </Select>
+            </div>
+            <p data-testid="billing-filter-count" className="text-xs text-muted">
+              {t('control.filter_count', { shown: shownRows.length, total: snapshot.length })}
+            </p>
+          </div>
+          {loadFailed ? (
+            <div className="px-4 pt-3">
+              <Alert color="danger" role="alert">
+                <span>{t('control.load_failed')}</span>{' '}
+                <Button size="sm" variant="tertiary" onPress={() => void fetchSnapshot()}>
+                  {t('control.try_again')}
+                </Button>
+              </Alert>
+            </div>
+          ) : null}
           <p className="px-4 pt-2 text-xs text-muted">{t('billing.table_scrolls')}</p>
           <Table aria-label={t('billing.control_title')} removeWrapper classNames={{ table: 'min-w-[1500px]' }}>
             <TableHeader>
@@ -576,7 +674,10 @@ export function BillingControl() {
                 : <TableColumn>{''}</TableColumn>
               }
             </TableHeader>
-            <TableBody emptyContent={t('billing.failed_to_load')} items={snapshot}>
+            <TableBody
+              emptyContent={snapshot.length === 0 ? t('control.none_yet') : t('control.none_match')}
+              items={shownRows}
+            >
               {(row) => {
                 const price = row.current_plan?.effective_price ?? null;
                 const state = standingState(row);
@@ -619,6 +720,12 @@ export function BillingControl() {
                         >
                           {getPlanChipLabel(row)}
                         </Chip>
+                        {row.over_limit ? (
+                          <Chip size="sm" variant="soft" color="warning">{t('billing.over_limit')}</Chip>
+                        ) : null}
+                        {row.is_in_grace_period ? (
+                          <Chip size="sm" variant="soft" color="danger">{t('billing.in_grace_period')}</Chip>
+                        ) : null}
                         {row.current_plan && row.current_plan.assignment_status !== 'active' ? (
                           <Chip
                             size="sm"
@@ -640,16 +747,31 @@ export function BillingControl() {
                           {t('control.suggested', { plan: suggested })}
                         </span>
                       ) : null}
+                      {row.current_plan?.expires_at ? (
+                        <span className="mt-1 block text-xs text-muted">
+                          {t('control.review_on', { date: formatDate(row.current_plan.expires_at) })}
+                        </span>
+                      ) : null}
                     </TableCell>
 
                     {/* Effective price */}
                     <TableCell>
                       <div className="flex items-center gap-1 flex-wrap">
-                        <span className="text-sm text-foreground whitespace-nowrap">
-                          {price
-                            ? `${formatEur(price.yearly)}/${t('billing.yearly_suffix')}`
-                            : '—'
-                          }
+                        <span data-testid="billing-price" className="text-sm text-foreground whitespace-nowrap">
+                          {price && row.current_plan ? (
+                            <>
+                              {row.current_plan.billing_interval !== 'yearly' ? (
+                                <span className="block">
+                                  {t('billing.amount_per_month', { amount: money(price.monthly, row.current_plan.currency) })}
+                                </span>
+                              ) : null}
+                              {row.current_plan.billing_interval !== 'monthly' ? (
+                                <span className="block">
+                                  {t('billing.amount_per_year', { amount: money(price.yearly, row.current_plan.currency) })}
+                                </span>
+                              ) : null}
+                            </>
+                          ) : '—'}
                         </span>
                         {price && (price.has_custom || price.discount_pct > 0) ? (
                           <Chip size="sm" variant="soft" className="text-xs">
@@ -831,8 +953,15 @@ export function BillingControl() {
               </div>
             ) : (
               <div className="flex flex-col gap-4">
+                {selectedPaysByCard ? (
+                  <Alert color="warning">
+                    <span>{t('control.card_payer_note')}</span>
+                  </Alert>
+                ) : null}
+
                 <Select
                   label={t('billing.select_plan')}
+                  isDisabled={selectedPaysByCard && selectedTenant?.current_plan !== null}
                   selectedKeys={selectedPlanId ? new Set([selectedPlanId]) : new Set<string>()}
                   onSelectionChange={(keys) => {
                     const val = Array.from(keys)[0];
@@ -840,9 +969,9 @@ export function BillingControl() {
                   }}
                   isRequired
                 >
-                  {assignablePlans(plans).map((plan) => (
+                  {plansForDialog.map((plan) => (
                     <SelectItem key={String(plan.id)} id={String(plan.id)}>
-                      {plan.name}
+                      {assignablePlans([plan]).length === 0 ? t('control.retired_plan', { name: plan.name }) : plan.name}
                     </SelectItem>
                   ))}
                 </Select>
@@ -868,8 +997,11 @@ export function BillingControl() {
                   </div>
                 ) : null}
 
+                {/* Nothing acts on this date: it is a note of when to look
+                    again. It was labelled "Expiry Date", which it never was. */}
                 <Input
-                  label={t('billing.expiry_date')}
+                  label={t('control.review_date')}
+                  description={t('control.review_date_help')}
                   type="date"
                   value={expiresAt}
                   onValueChange={setExpiresAt}
@@ -883,24 +1015,28 @@ export function BillingControl() {
 
                 {/* The placeholder is the plan's own price: what applies when
                     this is left empty. It used to show the plan's user limit. */}
+                {/* The currency is the community's own, named in the label. A
+                    hard-coded euro sign stood here while the email that
+                    announces the price read the figure as the community's
+                    currency. */}
                 <Input
-                  label={t('billing.custom_price_monthly')}
+                  label={t('control.special_price_monthly', { currency: dialogCurrency })}
                   type="number"
                   min={0}
+                  isDisabled={selectedPaysByCard}
                   value={customPriceMonthly}
                   onValueChange={setCustomPriceMonthly}
-                  placeholder={selectedPlan?.price_monthly != null ? String(selectedPlan.price_monthly) : ''}
-                  startContent={<span className="text-muted text-sm">€</span>}
+                  placeholder={placeholderPrice('monthly')}
                 />
 
                 <Input
-                  label={t('billing.custom_price_yearly')}
+                  label={t('control.special_price_yearly', { currency: dialogCurrency })}
                   type="number"
                   min={0}
+                  isDisabled={selectedPaysByCard}
                   value={customPriceYearly}
                   onValueChange={setCustomPriceYearly}
-                  placeholder={selectedPlan?.price_yearly != null ? String(selectedPlan.price_yearly) : ''}
-                  startContent={<span className="text-muted text-sm">€</span>}
+                  placeholder={placeholderPrice('yearly')}
                 />
 
                 <Input
@@ -908,6 +1044,7 @@ export function BillingControl() {
                   type="number"
                   min={0}
                   max={100}
+                  isDisabled={selectedPaysByCard}
                   value={discountPct}
                   onValueChange={setDiscountPct}
                   endContent={<span className="text-muted text-sm">%</span>}
@@ -915,6 +1052,7 @@ export function BillingControl() {
 
                 <Input
                   label={t('billing.discount_reason')}
+                  isDisabled={selectedPaysByCard}
                   value={discountReason}
                   onValueChange={setDiscountReason}
                   placeholder={t('billing.discount_reason_placeholder')}
@@ -927,6 +1065,7 @@ export function BillingControl() {
                   </div>
                   <Switch
                     isSelected={nonprofitVerified}
+                    isDisabled={selectedPaysByCard}
                     onValueChange={setNonprofitVerified}
                     aria-label={t('billing.nonprofit_verified')}
                   />

@@ -2191,6 +2191,8 @@ return [
     'billing_change_same_plan' => 'This community is already on that plan.',
     'billing_change_plan_failed' => 'The plan could not be changed and nothing was charged. Try again, or ask the platform team.',
     'plan_has_history' => 'This plan cannot be deleted: :count communities are, or have been, on it. Switch it off instead.',
+    'billing_assign_card_plan' => 'This community pays by card, and its card is charged for the plan on its card payment. Change its plan from its own Billing page, so the card payment changes with it.',
+    'billing_assign_card_special_price' => 'This community pays by card, and a card is always charged the plan\'s own price. A special price, a discount or the non-profit reduction is for a community that pays by invoice.',
     'billing_plan_not_sold_monthly' => 'This plan is not sold monthly. Choose yearly billing instead.',
     'billing_plan_not_sold_yearly' => 'This plan is not sold yearly. Choose monthly billing instead.',
     'billing_standing_payment_paid_until_required' => 'Enter the date this payment pays up to.',
