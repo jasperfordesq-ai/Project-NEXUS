@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\Identity\RegistrationOrchestrationService;
 use App\Services\Identity\RegistrationPolicyService;
 use App\Support\Billing\BillingLock;
+use App\Support\Billing\JoiningGate;
 use App\Services\TenantSettingsService;
 use App\Services\TokenService;
 use App\Services\TotpService;
@@ -377,6 +378,17 @@ class SocialAuthService
             throw new ProviderSignInRefused(
                 ProviderSignInRefused::REGISTRATION_CLOSED,
                 'OAuth registration is not available while the community is paused.'
+            );
+        }
+
+        // "Stop new members joining" (JoiningGate), for the same reason: this
+        // path does not pass the register address. Surfaced as the "closed to
+        // sign-ups" outcome the website and the phone app already show, which
+        // says nothing about money, plans or limits.
+        if (JoiningGate::closedBy($tenantId) !== null) {
+            throw new ProviderSignInRefused(
+                ProviderSignInRefused::REGISTRATION_CLOSED,
+                'OAuth registration is not available while the community is not taking new members.'
             );
         }
 

@@ -365,6 +365,7 @@ final class PlanTerms
         self::$defaults = null;
         self::$readAt = 0;
         self::$hubRows = [];
+        JoiningGate::flush(); // a plan or a hub's terms changed: the member-limit door is asked afresh
     }
 
     /** @return array<int, object> the hub's rows by plan id */

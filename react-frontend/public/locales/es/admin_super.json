@@ -299,6 +299,7 @@
     "breadcrumb_tenants": "Inquilinos",
     "breadcrumb_users": "Usuarios de ruta de navegación",
     "bulk_move_failed": "Error en el movimiento masivo",
+    "bulk_move_not_taking_members": "Algunos usuarios no se movieron: la comunidad a la que se iban a mover ha alcanzado el límite de su plan de {{max}} miembros activos.",
     "bulk_users_moved_partial": "Se movieron {{moved}} usuarios; {{failed}} no se pudo mover",
     "breadcrumb_create": "Crear",
     "breadcrumb_edit": "Editar",

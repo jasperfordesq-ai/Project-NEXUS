@@ -1655,6 +1655,8 @@
                 "register_daily_limit": "Er zijn de afgelopen 24 uur te veel accounts gemaakt vanaf deze locatie. Probeer het morgen opnieuw of neem contact op met een communitybeheerder als u hulp nodig heeft.",
                 "register_tenant_paused": "Het aanmaken van een account voor deze community is tijdelijk onderbroken terwijl we de ongewoon hoge aanmeldingsactiviteit beoordelen. Probeer het later opnieuw of neem contact op met een communitybeheerder als u zich dringend moet registreren.",
                 "register_closed": "De inschrijving voor deze community is gesloten. Neem contact op met een communitybeheerder als u een account nodig heeft of een uitnodiging heeft gekregen.",
+                "register_not_taking_members": "Deze community neemt op dit moment geen nieuwe leden aan.",
+                "register_not_taking_members_next": "Probeer het later opnieuw, of neem contact op met de community als u een account nodig heeft.",
                 "register_validation": "Sommige gegevens die u heeft ingevoerd, zijn ongeldig. Controleer het formulier en probeer het opnieuw.",
                 "register_created": "Uw aanmelding is ontvangen. Controleer uw e-mail voor de volgende stap en log vervolgens in.",
                 "registration_closed_title": "De inschrijving is gesloten",

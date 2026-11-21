@@ -75,6 +75,7 @@ const REGISTER_ERROR_STATUS_KEYS = Object.freeze({
   'register-daily-limit': 'auth.register_daily_limit',
   'register-tenant-paused': 'auth.register_tenant_paused',
   'register-closed': 'auth.register_closed',
+  'register-not-taking-members': 'auth.register_not_taking_members',
   'register-validation': 'auth.register_validation'
 });
 
@@ -91,6 +92,10 @@ const REGISTRATION_ERROR_STATUS_BY_CODE = Object.freeze({
   REGISTRATION_DAILY_LIMIT: 'register-daily-limit',
   REGISTRATION_TENANT_PAUSED: 'register-tenant-paused',
   REGISTRATION_CLOSED: 'register-closed',
+  // The community is at its plan's member number: joining is closed for now.
+  // Its own page: no form to resubmit, and not the general closed banner,
+  // whose invitation hint is wrong here (invited people are refused too).
+  COMMUNITY_NOT_TAKING_MEMBERS: 'register-not-taking-members',
   VALIDATION_ERROR: 'register-validation'
 });
 
@@ -104,7 +109,8 @@ const REGISTRATION_ERROR_FIELD_BY_STATUS = Object.freeze({
   'register-invite-required': 'invite_code',
   'register-invite-invalid': 'invite_code',
   'register-location-unverified': 'location',
-  'register-closed': 'main-content'
+  'register-closed': 'main-content',
+  'register-not-taking-members': 'main-content'
 });
 
 const REGISTRATION_INPUT_FIELDS = new Set([
@@ -789,14 +795,16 @@ router.get('/register', asyncRoute(async (req, res) => {
     }
   }
 
-  const registrationClosed = status === 'register-closed' || isRegistrationClosed(policy);
+  // At its plan's member number the community takes nobody new, invited or not.
+  const notTakingMembers = status === 'register-not-taking-members';
+  const registrationClosed = !notTakingMembers && (status === 'register-closed' || isRegistrationClosed(policy));
   const requiresInviteCode = policy.requires_invite_code === true
     || policy.registration_mode === 'invite_only'
     || ['register-invite-required', 'register-invite-invalid'].includes(status);
   const errorState = registrationErrorViewState(req, status, rememberedFieldErrors);
 
   return res.render('register', {
-    title: translate(req, registrationClosed ? 'auth.registration_closed_title' : 'auth.register_title'),
+    title: translate(req, registrationClosed || notTakingMembers ? 'auth.registration_closed_title' : 'auth.register_title'),
     ...errorState,
     values: {
       ...rememberedValues,
@@ -805,6 +813,7 @@ router.get('/register', asyncRoute(async (req, res) => {
     },
     tenantSlug,
     registrationClosed,
+    notTakingMembers,
     requiresInviteCode,
     formStartedAt: Date.now(),
     csrfToken: req.csrfToken ? req.csrfToken() : ''

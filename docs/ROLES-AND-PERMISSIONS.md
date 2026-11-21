@@ -991,6 +991,28 @@ Nothing acts while the platform team's "Automatic checks" switch is off.
 Pinned in `tests/Laravel/Feature/Billing/OverLimitRuleEndpointsTest.php`,
 `BranchPaymentsEndpointsTest.php` and the platform team lock test.
 
+**What "stop new members joining" closes.** `App\Support\Billing\JoiningGate`
+shuts a community's door while it, or a community above it, has the
+`block_joining` rule, a watched plan limit, and active members at or over the
+limit (with the automatic checks on; never tenant 1). The walk upward stops at
+the first exempt community, itself included: an exempt community shields
+itself and everything below it, as for the pause.
+Shut doors answer 403 `COMMUNITY_NOT_TAKING_MEMBERS`: the sign-up form, sign-up
+through Google and the like (shown as "closed to sign-ups"), single sign-on
+creating an account, and every account an administrator creates
+(`AdminCreatedAccountAdmission::decide()`: adding a member, super admin create,
+assisted and paper sign-up, club import), letting a never-approved sign-up in
+(approve, a status change to active, reactivate; bulk approve takes the room
+left and lists the rest in `limit_refused_ids`), and a super admin moving
+someone in (bulk move takes the room left too). The CSV member import adds only
+the room left and reports the rest per row (`left_out_rows`). A door shut by a
+community above is explained without quoting that community's number. Left
+open on purpose, because the person already joined: reactivating or changing
+the status of a member who was approved before, the email confirmation link,
+password reset, identity-check results and an admin's approval of one. Pinned in
+`tests/Laravel/Feature/Billing/JoiningClosedDoorsTest.php` and
+`JoiningGateTest.php`.
+
 **Adding a page to the panel.** Mount it in `PlatformTeamRoutes.tsx`, add it to
 `PlatformTeamSidebar.tsx` in the zone that matches what the page acts on ("The
 whole platform" or "This community"), start each of its endpoints with

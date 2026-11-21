@@ -345,18 +345,44 @@ export function UserList() {
 
   const handleBulkResult = (res: { success: boolean; error?: string; data?: BulkActionResult | unknown }, actionLabel: string) => {
     if (!res.success) {
-      toast.error(t('users.result_failed'));
+      // A refused bulk action says why (e.g. the community is at its plan's
+      // member number), so the admin knows what would let it through.
+      // admin-i18n-ignore: localized server message — AdminUsersController (lang/*/api.php)
+      toast.error(res.error || t('users.result_failed'));
       return;
     }
     const data = (res.data as BulkActionResult) || { success: 0, failed: 0 };
     if (data.failed && data.failed > 0) {
-      toast.error(t('users.result_partial'));
+      toast.error(actionLabel === 'approve' ? bulkApproveSummary(data) : t('users.result_partial'));
     } else {
       toast.success(t('users.result_success'));
     }
     setSelectedIds(new Set());
     loadUsers();
-    void actionLabel;
+  };
+
+  /**
+   * A partial bulk approval, in full: how many were approved, how many the
+   * member limit kept back (with the server's reason) and how many failed for
+   * any other reason, so neither kind of failure hides the other.
+   */
+  const bulkApproveSummary = (data: BulkActionResult): string => {
+    const approved = data.success ?? 0;
+    const limited = data.limit_refused_ids?.length ?? 0;
+    const other = Math.max(0, (data.failed ?? 0) - limited);
+    const parts = [t('users.bulk_approve_result_approved', { count: approved, countFormatted: formatNumber(approved) })];
+    if (limited > 0) {
+      parts.push(t('users.bulk_approve_result_limit', {
+        count: limited,
+        countFormatted: formatNumber(limited),
+        // admin-i18n-ignore: localized server message — AdminUsersController (lang/*/api.php)
+        reason: data.limit_refused_message ?? '',
+      }));
+    }
+    if (other > 0) {
+      parts.push(t('users.bulk_approve_result_other', { count: other, countFormatted: formatNumber(other) }));
+    }
+    return parts.join(' ');
   };
 
   // Welcome invitations. Both actions only QUEUE the emails; the server sends
@@ -628,7 +654,10 @@ export function UserList() {
       }
       loadUsers();
     } else {
-      toast.error(t('users.user_action_failed'));
+      // The refusal says why (e.g. the community is at its plan's member
+      // number); a blanket "action failed" leaves the admin guessing.
+      // admin-i18n-ignore: localized server message — AdminUsersController (lang/*/api.php)
+      toast.error(res?.error || t('users.user_action_failed'));
     }
 
     setActionLoading(false);

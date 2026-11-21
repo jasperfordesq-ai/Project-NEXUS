@@ -175,8 +175,11 @@ export function UserShow() {
       loadUser();
     } else {
       // The API's message says WHY (email conflict, event records pin the
-      // user, inactive destination…) — a generic toast hides an actionable reason.
-      toast.error(res?.errors?.[0]?.message || t('super.failed_to_move_user'));
+      // user, inactive destination, destination not taking new members…) — a
+      // generic toast hides an actionable reason. Some refusals carry it only in
+      // `error`, with no `errors` array.
+      // admin-i18n-ignore: localized server message — AdminSuperController (lang/*/api.php)
+      toast.error(res?.errors?.[0]?.message || res?.error || t('super.failed_to_move_user'));
     }
     setMoveLoading(false);
   };
@@ -191,7 +194,8 @@ export function UserShow() {
       setPromoteTargetTenant('');
       loadUser();
     } else {
-      toast.error(res?.errors?.[0]?.message || t('super.failed_to_move_and_promote'));
+      // admin-i18n-ignore: localized server message — AdminSuperController (lang/*/api.php)
+      toast.error(res?.errors?.[0]?.message || res?.error || t('super.failed_to_move_and_promote'));
     }
     setPromoteLoading(false);
   };

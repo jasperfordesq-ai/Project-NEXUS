@@ -54,6 +54,9 @@ import type {
  */
 const VIEWER_CACHE_RESET_EVENT = 'nexus:viewer-caches-reset';
 
+/** Sign-up refused because the community is at its plan's member number. */
+const COMMUNITY_NOT_TAKING_MEMBERS = 'COMMUNITY_NOT_TAKING_MEMBERS';
+
 /** Discard every in-memory, viewer-specific cache. Never throws. */
 function resetViewerCaches(): void {
   try {
@@ -807,7 +810,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     if (!response.success) {
-      const registrationError = i18n.t('auth:register.failed');
+      // Failures stay generic, except a community that is open but not taking
+      // new members: there the server's localized sentence is the only useful
+      // explanation, and it names no account, so it cannot reveal one.
+      const serverExplains = response.code === COMMUNITY_NOT_TAKING_MEMBERS && typeof response.error === 'string' && response.error !== '';
+      // admin-i18n-ignore: localized server message — RegistrationController (lang/*/api.php)
+      const registrationError = serverExplains ? String(response.error) : i18n.t('auth:register.failed');
       setState((prev) => ({
         ...prev,
         status: 'error',

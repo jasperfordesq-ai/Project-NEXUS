@@ -26,7 +26,13 @@
 
       <h1 class="govuk-heading-xl">{{ title }}</h1>
 
-      {% if registrationClosed %}
+      {% if notTakingMembers %}
+        {# The reason is in the error summary above; say it once. #}
+        <p class="govuk-body">{{ t("auth.register_not_taking_members_next") }}</p>
+        <p class="govuk-body">
+          <a class="govuk-link" href="{{ urlFor('/login') }}">{{ t("auth.registration_closed_login") }}</a>
+        </p>
+      {% elif registrationClosed %}
         <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="registration-closed-title">
           <div class="govuk-notification-banner__header">
             <h2 class="govuk-notification-banner__title" id="registration-closed-title">{{ t("auth.registration_closed_title") }}</h2>

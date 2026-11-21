@@ -299,6 +299,7 @@
     "breadcrumb_tenants": "Inquilinos",
     "breadcrumb_users": "Usuários de localização atual",
     "bulk_move_failed": "Falha na movimentação em massa",
+    "bulk_move_not_taking_members": "Alguns usuários não foram movidos: a comunidade para onde iam atingiu o limite do seu plano de {{max}} membros ativos.",
     "bulk_users_moved_partial": "Usuário(s) {{moved}} movido(s); {{failed}} não pôde ser movido",
     "breadcrumb_create": "Criar",
     "breadcrumb_edit": "Editar",

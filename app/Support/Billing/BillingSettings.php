@@ -216,6 +216,7 @@ final class BillingSettings
         } catch (\Throwable $e) {
             self::reportCacheFailure($e);
         }
+        JoiningGate::flush(); // the switch or the platform rule may have changed
     }
 
     /**

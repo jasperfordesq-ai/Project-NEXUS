@@ -2168,6 +2168,9 @@ return [
     // Tenant
     'community_not_found_or_inactive'      => 'We can\'t find that community, or it isn\'t available right now. Please check the web address.',
     'community_paused'                     => 'This community is paused.',
+    'community_not_taking_members' => 'This community is not taking new members at the moment.',
+    'community_member_limit_reached' => 'No new members can be added: the plan\'s limit of :max active members has been reached. A bigger plan, or a different rule for going over the limit, is needed first.',
+    'community_member_limit_reached_above' => 'A community above this one has reached its member limit, so no new members can be added here for now.',
     'billing_standing_platform_tenant' => 'The platform\'s own community cannot be paused.',
     'billing_standing_community_is_exempt' => 'This community is exempt. Remove the exemption first.',
     'billing_standing_exempt_reason_required' => 'Give a reason for the exemption.',

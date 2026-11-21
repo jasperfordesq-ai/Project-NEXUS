@@ -40,6 +40,7 @@ function runnerState(overrides: Partial<RunnerState> = {}): RunnerState {
   return {
     phase: 'running', total: 125, nextIndex: 25, batchNumber: 1, batchSize: 25,
     created: 25, balance: '300.00', zeroed: 0, admissionIncomplete: 0, admissionIncompleteRows: [],
+    leftOut: 0, leftOutRows: [], leftOutMessage: null,
     held: false, stop: null, errorCode: null, startedAt: 0, secondsRemaining: 120,
     invitationsQueued: 0, invitationsEtaMinutes: 0,
     ...overrides,
@@ -637,6 +638,29 @@ describe('MemberImportModal', () => {
       const alert = await screen.findByText(/2 members were created but their identity step did not complete \(rows 3, 7\)/);
       expect(alert).toBeInTheDocument();
       expect(screen.getByText(/resend their identity check, or contact support/)).toBeInTheDocument();
+    });
+
+    // The member limit left some rows out: the admin sees the server's reason
+    // (it names the limit) and which rows were not imported.
+    it('warns, with the server reason and the rows, when the member limit left rows out', async () => {
+      const reason = "No new members can be added: the plan's limit of 250 active members has been reached.";
+      await finishWith({
+        phase: 'completed', nextIndex: 5, total: 5, created: 3,
+        leftOut: 2, leftOutRows: [5, 6], leftOutMessage: reason,
+      });
+      expect(await screen.findByText(reason)).toBeInTheDocument();
+      expect(screen.getByText('2 rows were not imported: 5, 6.')).toBeInTheDocument();
+    });
+
+    // A large import must not produce an endless alert: the count, the first
+    // ten rows, then how many more.
+    it('lists only the first ten left-out rows, then how many more', async () => {
+      const rows = Array.from({ length: 13 }, (_, i) => i + 2);
+      await finishWith({
+        phase: 'completed', nextIndex: 5, total: 5, created: 0,
+        leftOut: 13, leftOutRows: rows, leftOutMessage: 'No new members can be added.',
+      });
+      expect(await screen.findByText('13 rows were not imported: 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 and 3 more.')).toBeInTheDocument();
     });
 
     it('Close tells the member list to refresh when members were created', async () => {

@@ -102,6 +102,7 @@ function extractErrorMessage(data: unknown, fallback: string): string {
   const body = data as {
     message?: string;
     errors?: Record<string, string[]> | { message?: string }[];
+    error?: unknown;
   } | null;
 
   if (body?.message) {
@@ -113,6 +114,13 @@ function extractErrorMessage(data: unknown, fallback: string): string {
     if (firstMessage) {
       return firstMessage;
     }
+  }
+
+  // The flat envelope `{ success: false, error, code }` (e.g. a sign-up refused because the
+  // community is not taking new members) carries its localized sentence in `error`. Without
+  // this the member saw only "Request failed with status 403".
+  if (typeof body?.error === 'string' && body.error.trim() !== '') {
+    return body.error;
   }
 
   return fallback;

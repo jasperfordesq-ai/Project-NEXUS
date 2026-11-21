@@ -299,6 +299,7 @@
     "breadcrumb_tenants": "Tenants",
     "breadcrumb_users": "Breadcrumb Users",
     "bulk_move_failed": "Bulk Move failed",
+    "bulk_move_not_taking_members": "Some users were not moved: the community they were moving into has reached its plan's limit of {{max}} active members.",
     "bulk_users_moved_partial": "Moved {{moved}} user(s); {{failed}} could not be moved",
     "breadcrumb_create": "Create",
     "breadcrumb_edit": "Edit",

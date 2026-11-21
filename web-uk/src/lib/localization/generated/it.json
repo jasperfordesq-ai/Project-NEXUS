@@ -1655,6 +1655,8 @@
                 "register_daily_limit": "Sono stati creati troppi account da questa posizione nelle ultime 24 ore. Riprova domani o contatta un amministratore della community se hai bisogno di aiuto.",
                 "register_tenant_paused": "La creazione dell'account è temporaneamente sospesa per questa community mentre esaminiamo un'attività di registrazione insolitamente elevata. Riprova più tardi o contatta un amministratore della community se hai bisogno di registrarti urgentemente.",
                 "register_closed": "La registrazione per questa comunità è chiusa. Contatta un amministratore della community se hai bisogno di un account o se hai ricevuto un invito.",
+                "register_not_taking_members": "Questa comunità non accetta nuovi membri al momento.",
+                "register_not_taking_members_next": "Riprova più tardi, oppure contatta la comunità se hai bisogno di un account.",
                 "register_validation": "Alcuni dei dettagli inseriti non sono validi. Controlla il modulo e riprova.",
                 "register_created": "La tua registrazione è stata ricevuta. Controlla la tua email per il passaggio successivo, quindi accedi.",
                 "registration_closed_title": "La registrazione è chiusa",

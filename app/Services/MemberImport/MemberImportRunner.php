@@ -11,7 +11,9 @@ namespace App\Services\MemberImport;
 use App\Models\ActivityLog;
 use App\Services\AuditLogService;
 use App\Services\Identity\AdminCreatedAccountAdmission;
+use App\Support\Billing\JoiningGate;
 use App\Support\Wallet\OpeningBalance;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -34,6 +36,8 @@ final class MemberImportRunner
     public const MAX_BATCH = 200;
     public const TIME_BUDGET_SECONDS = 8.0;
     public const ACTION_IMPORT_COMPLETED = 'member_import_completed';
+    /** A row's code when the member limit left it out. */
+    public const LEFT_OUT_MEMBER_LIMIT = 'member_limit_reached';
 
     public function __construct(
         private readonly MemberImportWriter $writer,
@@ -71,6 +75,12 @@ final class MemberImportRunner
             // Imports saved before invitations existed send none.
             $session['send_invitations'] ??= false;
             $session['totals']['invitations_queued'] ??= 0;
+            // Imports saved before the member limit's door existed left nobody out.
+            $session['totals']['left_out'] ??= 0;
+            $session['left_out_rows'] ??= [];
+            $session['left_out_max'] ??= null;
+            $session['left_out_by'] ??= null;
+            $session['new_accounts'] ??= 0;
 
             // Every member was written but the request ended before the import was
             // marked complete: whatever position the browser names, finish it now.
@@ -112,19 +122,52 @@ final class MemberImportRunner
                     if ($sendInvitations !== null) {
                         $session['send_invitations'] = $sendInvitations;
                     }
-                    $session['admission'] = AdminCreatedAccountAdmission::decide($tenantId, (bool) $session['identity_attested']);
+                    $session['admission'] = AdminCreatedAccountAdmission::decide($tenantId, (bool) $session['identity_attested'], true);
                     $session['status'] = 'running';
                 }
                 // A running import saved before the decision was stored decides once, now.
-                $session['admission'] ??= AdminCreatedAccountAdmission::decide($tenantId, (bool) $session['identity_attested']);
+                $session['admission'] ??= AdminCreatedAccountAdmission::decide($tenantId, (bool) $session['identity_attested'], true);
                 $decision = $session['admission'];
                 $count = max(self::MIN_BATCH, min(self::MAX_BATCH, $count));
+
+                // "Stop new members joining" (JoiningGate): the import is the one
+                // door that knows its batch size, so it takes at most the room
+                // left and reports the rest, rather than refusing the file. A new
+                // account does not count as active until it signs in, so the
+                // accounts this import has already added are taken off the room
+                // as well; otherwise every batch would see the same room again.
+                $room = JoiningGate::roomLeft($tenantId);
+                $allowance = $room === null ? null : max(0, $room - (int) $session['new_accounts']);
 
                 while ($processed < $count && $session['next_index'] < $total) {
                     if ($processed > 0 && microtime(true) - $startedAt > self::TIME_BUDGET_SECONDS) {
                         break;
                     }
                     $row = $rows[$session['next_index']];
+                    if ($allowance !== null && $allowance <= 0 && !$this->emailInCommunity($row, $tenantId)) {
+                        // Left out, never written. A row whose address is already
+                        // here goes on to the writer, which either recognises this
+                        // import's own member or stops the import, as before.
+                        if ($session['left_out_max'] === null) {
+                            $cap = JoiningGate::tightest($tenantId);
+                            $session['left_out_max'] = (int) ($cap['max'] ?? 0);
+                            $session['left_out_by'] = (int) ($cap['tenant_id'] ?? $tenantId);
+                        }
+                        // A community above's member number is not this
+                        // community's to show: null when the limit is not its own.
+                        $ownLimit = (int) ($session['left_out_by'] ?? $tenantId) === $tenantId;
+                        $session['left_out_rows'][] = [
+                            'row' => (int) $row['source_row'],
+                            'column' => null,
+                            'code' => self::LEFT_OUT_MEMBER_LIMIT,
+                            'params' => ['max' => $ownLimit ? (int) $session['left_out_max'] : null],
+                        ];
+                        $session['totals']['left_out']++;
+                        $session['next_index']++;
+                        $processed++;
+                        MemberImportSession::save($session);
+                        continue;
+                    }
                     try {
                         $out = $this->writer->write($row, $tenantId, $adminId, $decision, $importId, (bool) $session['send_invitations'], (string) $session['file_sha256']);
                     } catch (MemberImportStopped $e) {
@@ -144,6 +187,14 @@ final class MemberImportRunner
                     }
                     $processed++;
                     $created += $out['already'] ? 0 : 1;
+                    if (!$out['already']) {
+                        // Only a new account uses up room; a row for a member
+                        // who already exists never does.
+                        $session['new_accounts']++;
+                        if ($allowance !== null) {
+                            $allowance--;
+                        }
+                    }
                     // Progress is saved after every member, so a crash loses at most
                     // the bookkeeping for one row — which the writer then recognises.
                     MemberImportSession::save($session);
@@ -186,6 +237,7 @@ final class MemberImportRunner
             'admission_incomplete' => $session['totals']['admission_incomplete'],
             'identity_attested' => (bool) $session['identity_attested'],
             'invitations_queued' => $session['totals']['invitations_queued'],
+            'members_left_out' => $session['totals']['left_out'],
         ]);
         $session['status'] = 'completed';
         $session['finished_at'] = now()->toIso8601String();
@@ -211,6 +263,21 @@ final class MemberImportRunner
     }
 
     /**
+     * Whether the row's address already belongs to an account here, as the
+     * writer matches it (TRIM). Such a row is never left out by the member
+     * limit: it adds nobody.
+     *
+     * @param array<string, mixed> $row
+     */
+    private function emailInCommunity(array $row, int $tenantId): bool
+    {
+        return DB::table('users')
+            ->where('tenant_id', $tenantId)
+            ->whereRaw('TRIM(email) = ?', [trim((string) $row['email'])])
+            ->exists();
+    }
+
+    /**
      * @param array<string, mixed> $session
      * @return array<string, mixed>
      */
@@ -219,8 +286,9 @@ final class MemberImportRunner
         // Before the first batch nothing is fixed yet, so say what would happen now.
         $held = isset($session['admission']['held'])
             ? (bool) $session['admission']['held']
-            : AdminCreatedAccountAdmission::decide((int) $session['tenant_id'], (bool) $session['identity_attested'])['held'];
+            : AdminCreatedAccountAdmission::decide((int) $session['tenant_id'], (bool) $session['identity_attested'], true)['held'];
         $queued = (int) $session['totals']['invitations_queued'];
+        $leftOut = (int) ($session['totals']['left_out'] ?? 0);
 
         return [
             'import_id' => $session['id'],
@@ -233,11 +301,21 @@ final class MemberImportRunner
                 'zeroed' => $session['totals']['zeroed'],
                 'admission_incomplete' => $session['totals']['admission_incomplete'],
                 'invitations_queued' => $queued,
+                'left_out' => $leftOut,
             ],
             // About how long until this import's invitations have gone. The sender's pace
             // is shared by every community, so it is read from the whole queue.
             'invitations_eta_minutes' => $queued > 0 ? $this->invitations->etaMinutes() : 0,
             'admission_incomplete_rows' => array_values($session['admission_incomplete_rows']),
+            // Rows the member limit left out ("stop new members joining"),
+            // shaped like the check's per-row problems, and why, for the admin.
+            'left_out_rows' => array_values($session['left_out_rows'] ?? []),
+            'left_out_message' => $leftOut > 0
+                ? JoiningGate::adminMessage(
+                    ['tenant_id' => (int) ($session['left_out_by'] ?? $session['tenant_id']), 'max' => (int) ($session['left_out_max'] ?? 0)],
+                    (int) $session['tenant_id']
+                )
+                : null,
             'stop' => $session['stop'],
             'held' => $held,
             'batch' => ['processed' => $processed, 'created' => $created, 'duration_ms' => (int) round((microtime(true) - $startedAt) * 1000)],

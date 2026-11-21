@@ -299,6 +299,7 @@
     "breadcrumb_tenants": "Huurders",
     "breadcrumb_users": "Breadcrumb-gebruikers",
     "bulk_move_failed": "Bulkverplaatsing mislukt",
+    "bulk_move_not_taking_members": "Sommige gebruikers zijn niet verplaatst: de community waarnaar ze zouden gaan heeft de limiet van haar abonnement van {{max}} actieve leden bereikt.",
     "bulk_users_moved_partial": "{{moved}} gebruiker(s) verplaatst; {{failed}} kan niet worden verplaatst",
     "breadcrumb_create": "Creëren",
     "breadcrumb_edit": "Bewerking",

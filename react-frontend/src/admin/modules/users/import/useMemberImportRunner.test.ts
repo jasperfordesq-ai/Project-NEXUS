@@ -215,6 +215,26 @@ describe('useMemberImportRunner', () => {
     expect(result.current.state.balance).toBe('5.00');
   });
 
+  // A community at its plan's member number takes only the room left; the
+  // server reports each row it left out, and why, without failing the batch.
+  it('carries the rows the member limit left out, and the server reason', async () => {
+    const reason = "No new members can be added: the plan's limit of 250 active members has been reached.";
+    batch.mockResolvedValue(ok(0, 12, 12, 100, {
+      totals: { created: 10, balance: '0.00', zeroed: 0, admission_incomplete: 0, invitations_queued: 0, left_out: 2 },
+      left_out_rows: [
+        { row: 12, column: null, code: 'member_limit_reached', params: { max: 250 } },
+        { row: 13, column: null, code: 'member_limit_reached', params: { max: 250 } },
+      ],
+      left_out_message: reason,
+    }));
+    const { result } = renderHook(() => useMemberImportRunner(FAST));
+    act(() => result.current.start('id', 12, true));
+    await waitFor(() => expect(result.current.state.phase).toBe('completed'));
+    expect(result.current.state.leftOut).toBe(2);
+    expect(result.current.state.leftOutRows).toEqual([12, 13]);
+    expect(result.current.state.leftOutMessage).toBe(reason);
+  });
+
   it('stops when the server stops, and reports the row', async () => {
     batch.mockResolvedValue(ok(0, 4, 12, 100, {
       status: 'stopped', stop: { row: 6, code: 'email_now_taken', params: {} },

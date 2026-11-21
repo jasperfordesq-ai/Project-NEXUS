@@ -109,6 +109,12 @@
     "invite_failed": "De uitnodigingen konden niet in de wachtrij worden gezet. Probeer het opnieuw.",
     "invite_rate_limited": "Te veel verzoeken achter elkaar. Wacht een minuut en probeer het opnieuw.",
     "bulk_approve_title": "Geselecteerde gebruikers goedkeuren",
+    "bulk_approve_result_approved_one": "{{countFormatted}} lid goedgekeurd.",
+    "bulk_approve_result_approved_other": "{{countFormatted}} leden goedgekeurd.",
+    "bulk_approve_result_limit_one": "{{countFormatted}} lid niet goedgekeurd: {{reason}}",
+    "bulk_approve_result_limit_other": "{{countFormatted}} leden niet goedgekeurd: {{reason}}",
+    "bulk_approve_result_other_one": "{{countFormatted}} lid kon om een andere reden niet worden goedgekeurd.",
+    "bulk_approve_result_other_other": "{{countFormatted}} leden konden om een andere reden niet worden goedgekeurd.",
     "bulk_suspend_message": "De geselecteerde gebruikers opschorten. Ze verliezen tijdelijk de toegang.",
     "bulk_suspend_title": "Geselecteerde gebruikers opschorten",
     "back_to_users": "Terug naar Gebruikers",
@@ -723,6 +729,10 @@
       "admission_incomplete_other": "{{countFormatted}} leden zijn aangemaakt, maar hun identiteitsstap is niet voltooid (rijen {{rows}}). Open elk lid vanuit de ledenlijst en stuur de identiteitscontrole opnieuw, of neem contact op met support.",
       "invitations_queued_one": "{{countFormatted}} welkomstmail staat klaar en wordt binnen {{duration}} verstuurd.",
       "invitations_queued_other": "{{countFormatted}} welkomstmails staan klaar en worden binnen {{duration}} verstuurd.",
+      "left_out_count_one": "{{countFormatted}} rij is niet geïmporteerd: {{rows}}.",
+      "left_out_count_other": "{{countFormatted}} rijen zijn niet geïmporteerd: {{rows}}.",
+      "left_out_more_one": "{{rows}} en nog {{countFormatted}}",
+      "left_out_more_other": "{{rows}} en nog {{countFormatted}}",
       "no_invitations": "Er zijn geen welkomstmails verstuurd."
     },
     "undo": {

@@ -10,6 +10,7 @@ namespace App\Services;
 
 use App\Support\Billing\BillingLock;
 use App\Support\Billing\BillingSettings;
+use App\Support\Billing\JoiningGate;
 use App\Support\Billing\OverLimitRule;
 use Illuminate\Support\Facades\DB;
 
@@ -345,6 +346,7 @@ final class BillingStandingService
         }
 
         BillingLock::flush();
+        JoiningGate::flush();
     }
 
     /**
@@ -532,6 +534,7 @@ final class BillingStandingService
             ['payer' => $payer],
             null
         );
+        JoiningGate::flush();
     }
 
     /**
@@ -570,6 +573,7 @@ final class BillingStandingService
 
             TenantBillingService::logAudit($tenantId, $actedBy, 'standing_over_limit_rule_set', $current, $next, null);
         });
+        JoiningGate::flush();
     }
 
     /**
@@ -600,6 +604,7 @@ final class BillingStandingService
 
             TenantBillingService::logAudit($hubTenantId, $actedBy, 'standing_children_over_limit_rule_set', $current, $next, null);
         });
+        JoiningGate::flush();
     }
 
     /**

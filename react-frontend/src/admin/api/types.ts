@@ -2014,7 +2014,8 @@ export interface BulkOperationResult {
   moved_count?: number;
   updated_count: number;
   total_requested: number;
-  errors: Array<string | { code: string; params?: Record<string, string | number> }>;
+  /** `message`: the server's localized reason, when it sends one (e.g. the member limit). */
+  errors: Array<string | { code: string; params?: Record<string, string | number>; message?: string }>;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

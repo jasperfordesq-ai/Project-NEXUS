@@ -619,6 +619,8 @@ return [
         'register_daily_limit' => 'Muitas contas foram criadas neste local nas últimas 24 horas. Tente novamente amanhã ou entre em contato com um administrador da comunidade se precisar de ajuda.',
         'register_tenant_paused' => 'A criação de conta está temporariamente pausada para esta comunidade enquanto analisamos atividades de inscrição excepcionalmente altas. Tente novamente mais tarde ou entre em contato com um administrador da comunidade se precisar se registrar com urgência.',
         'register_closed' => 'As inscrições estão encerradas para esta comunidade. Entre em contato com um administrador da comunidade se precisar de uma conta ou receber um convite.',
+        'register_not_taking_members' => 'Esta comunidade não está aceitando novos membros no momento.',
+        'register_not_taking_members_next' => 'Tente novamente mais tarde ou entre em contato com a comunidade se precisar de uma conta.',
         'register_validation' => 'Alguns dos detalhes que você inseriu são inválidos. Verifique o formulário e tente novamente.',
         'register_created' => 'Seu registro foi recebido. Verifique seu e-mail para a próxima etapa e faça login.',
         'registration_closed_title' => 'As inscrições estão encerradas',

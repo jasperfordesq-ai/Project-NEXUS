@@ -64,7 +64,8 @@ class AdminMemberImportController extends BaseApiController
         $fileName = preg_replace('/[^A-Za-z0-9._ -]/', '_', basename(is_string($rawName) ? $rawName : '')) ?: 'members.csv';
         $fileName = mb_substr($fileName, 0, 255);
 
-        $admission = AdminCreatedAccountAdmission::decide($tenantId, false);
+        // The batch takes the member limit's room left row by row (MemberImportRunner).
+        $admission = AdminCreatedAccountAdmission::decide($tenantId, false, true);
         $admissionOut = ['requires_identity_check' => $admission['requires_identity_check']];
 
         $encoded = request()->input('content_base64');

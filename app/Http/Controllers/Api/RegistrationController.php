@@ -7,6 +7,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Services\RegistrationService;
+use App\Support\Billing\JoiningGate;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -32,6 +33,13 @@ class RegistrationController extends BaseApiController
 
         $data = $this->getAllInput();
         $tenantId = $this->getTenantId();
+
+        // "Stop new members joining" (JoiningGate): while the community is at
+        // its plan's member number nobody new can join. Checked before the form
+        // is read, and worded with no mention of money, plans or limits.
+        if (JoiningGate::closedBy($tenantId) !== null) {
+            return $this->respondWithError(JoiningGate::CODE, JoiningGate::memberMessage(), null, 403);
+        }
 
         // Bot honeypot — normalise both `website` (Blade-style) and
         // `honeypot` (explicit) into the same key the service checks.

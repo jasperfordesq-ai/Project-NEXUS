@@ -299,6 +299,7 @@
     "breadcrumb_tenants": "Tónaí",
     "breadcrumb_users": "Úsáideoirí Breadcrumb",
     "bulk_move_failed": "Theip ar Bulk Move",
+    "bulk_move_not_taking_members": "Níor bogadh roinnt úsáideoirí: tá teorainn a plean de {{max}} ball gníomhach bainte amach ag an bpobal a raibh siad ag bogadh isteach ann.",
     "bulk_users_moved_partial": "Bogtha {{moved}} úsáideoir(í); Níorbh fhéidir {{failed}} a bhogadh",
     "breadcrumb_create": "Cruthaigh",
     "breadcrumb_edit": "Cuir in eagar",

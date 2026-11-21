@@ -5,7 +5,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent, within } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 import userEvent from '@testing-library/user-event';
 
@@ -340,6 +340,55 @@ describe('UserShow', () => {
       );
       expect(btn).toBeInTheDocument();
     });
+  });
+
+  // The community moved into may be at its plan's member number: the server
+  // answers 403 COMMUNITY_NOT_TAKING_MEMBERS with the reason in `error` (no
+  // `errors` array). The super admin must see that reason.
+  it('shows the server reason when moving a user into a full community is refused', async () => {
+    const message = 'Another Tenant has reached its member number (100) and is not taking new members.';
+    mockAdminSuper.moveUserTenant.mockResolvedValue({ success: false, error: message, code: 'COMMUNITY_NOT_TAKING_MEMBERS' });
+    const { UserShow } = await import('./UserShow');
+    render(<UserShow />);
+
+    await waitFor(() => screen.getByText('alice@example.com'));
+    const moveBtn = screen.getAllByRole('button').find((b) =>
+      b.textContent?.toLowerCase().includes('tenant') && b.textContent?.toLowerCase().includes('move')
+    );
+    fireEvent.click(moveBtn!);
+
+    const dialog = await screen.findByRole('dialog');
+    const trigger = within(dialog).getAllByRole('button').find((b) => b.getAttribute('aria-haspopup') === 'listbox');
+    fireEvent.click(trigger!);
+    fireEvent.click(await screen.findByRole('option', { name: 'Another Tenant' }));
+    const confirm = within(dialog).getAllByRole('button').filter((b) => !b.hasAttribute('aria-haspopup')).pop();
+    await waitFor(() => expect(confirm).not.toBeDisabled());
+    fireEvent.click(confirm!);
+
+    await waitFor(() => expect(mockAdminSuper.moveUserTenant).toHaveBeenCalledWith(42, 4));
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith(message));
+  });
+
+  it('shows the server reason when moving and promoting a user into a full community is refused', async () => {
+    const message = 'Hub Tenant has reached its member number (100) and is not taking new members.';
+    mockAdminSuper.moveAndPromote.mockResolvedValue({ success: false, error: message, code: 'COMMUNITY_NOT_TAKING_MEMBERS' });
+    const { UserShow } = await import('./UserShow');
+    render(<UserShow />);
+
+    await waitFor(() => screen.getByText('alice@example.com'));
+    const promoteBtn = screen.getAllByRole('button').find((b) => /move and promote/i.test(b.textContent ?? ''));
+    fireEvent.click(promoteBtn!);
+
+    const dialog = await screen.findByRole('dialog');
+    const trigger = within(dialog).getAllByRole('button').find((b) => b.getAttribute('aria-haspopup') === 'listbox');
+    fireEvent.click(trigger!);
+    fireEvent.click(await screen.findByRole('option', { name: 'Hub Tenant' }));
+    const confirm = within(dialog).getAllByRole('button').filter((b) => !b.hasAttribute('aria-haspopup')).pop();
+    await waitFor(() => expect(confirm).not.toBeDisabled());
+    fireEvent.click(confirm!);
+
+    await waitFor(() => expect(mockAdminSuper.moveAndPromote).toHaveBeenCalledWith(42, 3));
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith(message));
   });
 
   it('shows error toast when grantSuperAdmin fails', async () => {

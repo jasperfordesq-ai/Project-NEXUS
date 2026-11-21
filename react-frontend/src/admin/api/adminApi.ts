@@ -381,6 +381,10 @@ export interface BulkActionResult {
   failed: number;
   skipped_ids?: number[];
   errors?: string[];
+  /** Bulk approve: accounts kept back because the community is at its plan's member limit. */
+  limit_refused_ids?: number[];
+  /** Why, in the admin's language, naming the limit; null when none were kept back. */
+  limit_refused_message?: string | null;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

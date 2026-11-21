@@ -15,6 +15,9 @@ import { describeStop } from './issueText';
 import { useFocusOnMount } from './useFocusOnMount';
 import type { CheckResult, RunnerState } from './types';
 
+/** How many left-out row numbers are listed before "and N more". */
+const LEFT_OUT_ROWS_SHOWN = 10;
+
 interface Props {
   state: RunnerState;
   check: CheckResult;
@@ -73,6 +76,18 @@ export function ImportFinished({ state, check, onClose }: Props) {
     })
     : t('member_import.done.no_invitations');
 
+  // The member limit's left-out rows: the count, the first rows, then how many
+  // more, so a large import does not produce an endless alert.
+  const leftOutShown = state.leftOutRows.slice(0, LEFT_OUT_ROWS_SHOWN).map((row) => formatNumber(row)).join(', ');
+  const leftOutMore = Math.max(0, state.leftOutRows.length - LEFT_OUT_ROWS_SHOWN);
+  const leftOutDescription = t('member_import.done.left_out_count', {
+    count: state.leftOut,
+    countFormatted: formatNumber(state.leftOut),
+    rows: leftOutMore > 0
+      ? t('member_import.done.left_out_more', { count: leftOutMore, countFormatted: formatNumber(leftOutMore), rows: leftOutShown })
+      : leftOutShown,
+  });
+
   const imported = t('member_import.failed.imported_so_far', { created: formatNumber(created), total: formatNumber(total) });
 
   let alert: { color: 'success' | 'warning' | 'danger'; title: string; description?: ReactNode };
@@ -129,6 +144,16 @@ export function ImportFinished({ state, check, onClose }: Props) {
                 countFormatted: formatNumber(incomplete),
                 rows: state.admissionIncompleteRows.map((row) => formatNumber(row)).join(', '),
               })}
+            />
+          )}
+
+          {state.leftOut > 0 && (
+            <Alert
+              color="warning"
+              role="alert"
+              // admin-i18n-ignore: localized server message — MemberImportRunner via JoiningGate (lang/*/api.php)
+              title={state.leftOutMessage ?? undefined}
+              description={leftOutDescription}
             />
           )}
 

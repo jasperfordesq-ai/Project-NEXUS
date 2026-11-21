@@ -1655,6 +1655,8 @@
                 "register_daily_limit": "Trop de comptes ont été créés à partir de cet emplacement au cours des dernières 24 heures. Veuillez réessayer demain ou contacter un administrateur de communauté si vous avez besoin d'aide.",
                 "register_tenant_paused": "La création de compte est temporairement suspendue pour cette communauté pendant que nous examinons une activité d'inscription inhabituellement élevée. Veuillez réessayer plus tard ou contacter un administrateur de la communauté si vous devez vous inscrire de toute urgence.",
                 "register_closed": "Les inscriptions sont closes pour cette communauté. Contactez un administrateur de communauté si vous avez besoin d'un compte ou si vous avez reçu une invitation.",
+                "register_not_taking_members": "Cette communauté n'accepte pas de nouveaux membres pour le moment.",
+                "register_not_taking_members_next": "Veuillez réessayer plus tard, ou contactez la communauté si vous avez besoin d'un compte.",
                 "register_validation": "Certaines des informations que vous avez saisies ne sont pas valides. Vérifiez le formulaire et réessayez.",
                 "register_created": "Votre inscription a été reçue. Vérifiez votre courrier électronique pour connaître l'étape suivante, puis connectez-vous.",
                 "registration_closed_title": "Les inscriptions sont closes",

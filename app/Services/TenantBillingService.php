@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use App\Core\Mailer;
+use App\Support\Billing\JoiningGate;
 use App\Support\Billing\OverLimitRule;
 use App\Support\Billing\PlanTerms;
 use App\Support\Billing\StandardPlans;
@@ -696,6 +697,7 @@ class TenantBillingService
         ];
 
         self::logAudit($tenantId, $assignedBy, 'plan_assigned', $oldValue, $newValue, $notes);
+        JoiningGate::flush();
 
         // A new plan is new terms: the days over start again, with a fresh
         // notice (DESIGN 6.4). Only when the plan itself changed: a new
@@ -816,6 +818,7 @@ class TenantBillingService
             // fresh notice (DESIGN 6.4).
             BillingStandingService::restartLimitClock([$tenantId]);
         });
+        JoiningGate::flush();
     }
 
     /**

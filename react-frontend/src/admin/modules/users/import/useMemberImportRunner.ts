@@ -42,11 +42,22 @@ const DEFAULT_TIMINGS: RunnerTimings = {
 const initial: RunnerState = {
   phase: 'idle', total: 0, nextIndex: 0, batchNumber: 0, batchSize: FIRST_BATCH,
   created: 0, balance: '0.00', zeroed: 0, admissionIncomplete: 0, admissionIncompleteRows: [],
+  leftOut: 0, leftOutRows: [], leftOutMessage: null,
   invitationsQueued: 0, invitationsEtaMinutes: 0,
   held: false, stop: null, errorCode: null, startedAt: null, secondsRemaining: null,
 };
 
 const sleep = (ms: number) => new Promise<void>((resolve) => { setTimeout(resolve, ms); });
+
+/** The member limit's left-out rows; the server sends the whole import's list on every batch. */
+function leftOutFrom(d: BatchResult): Pick<RunnerState, 'leftOut' | 'leftOutRows' | 'leftOutMessage'> {
+  const rows = (d.left_out_rows ?? []).map((issue) => issue.row);
+  return {
+    leftOut: d.totals.left_out ?? rows.length,
+    leftOutRows: rows,
+    leftOutMessage: d.left_out_message ?? null,
+  };
+}
 
 /**
  * Drives a checked member import batch by batch. The browser only names rows
@@ -185,6 +196,7 @@ export function useMemberImportRunner(options?: { timings?: Partial<RunnerTiming
               created: d.totals.created, balance: d.totals.balance, zeroed: d.totals.zeroed,
               admissionIncomplete: d.totals.admission_incomplete ?? 0,
               admissionIncompleteRows: d.admission_incomplete_rows ?? [],
+              ...leftOutFrom(d),
               invitationsQueued: d.totals.invitations_queued ?? 0,
               invitationsEtaMinutes: d.invitations_eta_minutes ?? 0,
               held: d.held, stop: d.stop,
@@ -216,6 +228,7 @@ export function useMemberImportRunner(options?: { timings?: Partial<RunnerTiming
                 created: d.totals.created, balance: d.totals.balance, zeroed: d.totals.zeroed,
                 admissionIncomplete: d.totals.admission_incomplete ?? 0,
                 admissionIncompleteRows: d.admission_incomplete_rows ?? [],
+                ...leftOutFrom(d),
                 invitationsQueued: d.totals.invitations_queued ?? 0,
                 invitationsEtaMinutes: d.invitations_eta_minutes ?? 0,
                 held: d.held, stop: d.stop,

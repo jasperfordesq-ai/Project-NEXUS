@@ -55,11 +55,16 @@ export interface BatchResult {
   status: 'ready' | 'running' | 'stopped' | 'completed';
   next_index: number;
   total: number;
-  totals: { created: number; balance: string; zeroed: number; admission_incomplete: number; invitations_queued: number };
+  /** `left_out`: rows the member limit kept out ("stop new members joining"). */
+  totals: { created: number; balance: string; zeroed: number; admission_incomplete: number; invitations_queued: number; left_out?: number };
   /** About how long until the queued invitations have gone (the sender's pace is shared); 0 when none were queued. */
   invitations_eta_minutes: number;
   /** Spreadsheet rows of members created without their identity step. */
   admission_incomplete_rows: number[];
+  /** Every row the member limit left out so far, never written (code `member_limit_reached`). */
+  left_out_rows?: ImportIssue[];
+  /** Why, in the admin's language, naming the limit; null when nothing was left out. */
+  left_out_message?: string | null;
   stop: { row: number; code: string; params: Record<string, string | number | string[]> } | null;
   held: boolean;
   batch: { processed: number; created: number; duration_ms: number };
@@ -78,6 +83,10 @@ export interface RunnerState {
   zeroed: number;
   admissionIncomplete: number;
   admissionIncompleteRows: number[];
+  /** Rows the member limit left out, their spreadsheet rows, and the server's reason. */
+  leftOut: number;
+  leftOutRows: number[];
+  leftOutMessage: string | null;
   invitationsQueued: number;
   invitationsEtaMinutes: number;
   held: boolean;

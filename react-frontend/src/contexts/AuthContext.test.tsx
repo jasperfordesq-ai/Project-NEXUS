@@ -1064,6 +1064,36 @@ describe('AuthContext', () => {
         expect(screen.getByTestId('error')).toHaveTextContent(i18next.t('auth:register.failed'));
       });
     });
+
+    // The community is open but full: the server's own localized sentence is
+    // the explanation, so the form shows it instead of the generic failure.
+    it('shows the server message when the community is not taking new members', async () => {
+      const user = userEvent.setup();
+      vi.mocked(tokenManager.hasAccessToken).mockReturnValue(false);
+      vi.mocked(api.post).mockResolvedValueOnce({
+        success: false,
+        error: 'This community is not taking new members at the moment.',
+        code: 'COMMUNITY_NOT_TAKING_MEMBERS',
+      });
+
+      render(
+        <AuthProvider>
+          <TestAuthActions />
+        </AuthProvider>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('status')).toHaveTextContent('idle');
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Register' }));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('status')).toHaveTextContent('error');
+      });
+      expect(screen.getByTestId('error')).toHaveTextContent('This community is not taking new members at the moment.');
+      expect(screen.getByTestId('error')).not.toHaveTextContent(i18next.t('auth:register.failed'));
+    });
   });
 
   describe('session expiration', () => {

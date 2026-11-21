@@ -109,6 +109,12 @@
     "invite_failed": "Die Einladungen konnten nicht in die Warteschlange gestellt werden. Bitte versuchen Sie es erneut.",
     "invite_rate_limited": "Zu viele Anfragen hintereinander. Warten Sie eine Minute und versuchen Sie es erneut.",
     "bulk_approve_title": "Genehmigen Sie ausgewählte Benutzer",
+    "bulk_approve_result_approved_one": "{{countFormatted}} Mitglied freigegeben.",
+    "bulk_approve_result_approved_other": "{{countFormatted}} Mitglieder freigegeben.",
+    "bulk_approve_result_limit_one": "{{countFormatted}} Mitglied nicht freigegeben: {{reason}}",
+    "bulk_approve_result_limit_other": "{{countFormatted}} Mitglieder nicht freigegeben: {{reason}}",
+    "bulk_approve_result_other_one": "{{countFormatted}} Mitglied konnte aus einem anderen Grund nicht freigegeben werden.",
+    "bulk_approve_result_other_other": "{{countFormatted}} Mitglieder konnten aus einem anderen Grund nicht freigegeben werden.",
     "bulk_suspend_message": "Sperren Sie die ausgewählten Benutzer. Sie verlieren vorübergehend den Zugriff.",
     "bulk_suspend_title": "Ausgewählte Benutzer sperren",
     "back_to_users": "Zurück zu Benutzer",
@@ -723,6 +729,10 @@
       "admission_incomplete_other": "{{countFormatted}} Mitglieder wurden angelegt, aber ihr Identitätsschritt wurde nicht abgeschlossen (Zeilen {{rows}}). Öffnen Sie jedes Mitglied in der Mitgliederliste und senden Sie die Identitätsprüfung erneut, oder wenden Sie sich an den Support.",
       "invitations_queued_one": "{{countFormatted}} Willkommens-E-Mail ist in der Warteschlange und wird innerhalb von {{duration}} versendet.",
       "invitations_queued_other": "{{countFormatted}} Willkommens-E-Mails sind in der Warteschlange und werden innerhalb von {{duration}} versendet.",
+      "left_out_count_one": "{{countFormatted}} Zeile wurde nicht importiert: {{rows}}.",
+      "left_out_count_other": "{{countFormatted}} Zeilen wurden nicht importiert: {{rows}}.",
+      "left_out_more_one": "{{rows}} und {{countFormatted}} weitere",
+      "left_out_more_other": "{{rows}} und {{countFormatted}} weitere",
       "no_invitations": "Es wurden keine Willkommens-E-Mails gesendet."
     },
     "undo": {

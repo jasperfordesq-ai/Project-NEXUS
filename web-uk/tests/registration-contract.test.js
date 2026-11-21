@@ -328,6 +328,46 @@ describe('Laravel registration contract', () => {
     expect(response.headers.location).toBe(`/acme/accessible/register?status=${status}`);
   });
 
+  // A community at its plan's member number stays open but takes nobody new:
+  // Laravel answers 403 COMMUNITY_NOT_TAKING_MEMBERS in the flat envelope. The
+  // person lands on the closed-registration notice (no form to resubmit), not
+  // on "check the details", not on the paused page, and stays signed out.
+  it.each([
+    ['flat', {
+      success: false,
+      error: 'This community is not taking new members at the moment.',
+      code: 'COMMUNITY_NOT_TAKING_MEMBERS'
+    }],
+    // RegistrationController answers through respondWithError().
+    ['v2 errors', {
+      errors: [{ code: 'COMMUNITY_NOT_TAKING_MEMBERS', message: 'This community is not taking new members at the moment.' }]
+    }]
+  ])('shows its own closed page when the community is not taking new members (%s envelope)', async (_shape, body) => {
+    api.register.mockRejectedValueOnce(new api.ApiError('This community is not taking new members at the moment.', 403, body));
+    const agent = request.agent(createApp());
+
+    const response = await agent
+      .post('/acme/accessible/register')
+      .type('form')
+      .send(completeBody());
+
+    expect(response.status).toBe(302);
+    expect(response.headers.location).toBe('/acme/accessible/register?status=register-not-taking-members');
+    expect(api.register).toHaveBeenCalledTimes(1);
+
+    const rendered = await agent.get(response.headers.location);
+    expect(rendered.body.view).toBe('register');
+    // No form to resubmit, and not the general "registration is closed" banner,
+    // whose invitation hint is wrong here: an invited person is refused too.
+    expect(rendered.body.locals.notTakingMembers).toBe(true);
+    expect(rendered.body.locals.registrationClosed).toBe(false);
+    expect(rendered.body.locals.errors).toEqual([{
+      text: createTranslator('en')('auth.register_not_taking_members'),
+      href: '#main-content'
+    }]);
+    expect(rendered.body.locals.fieldErrors).toEqual({});
+  });
+
   it('retains a safe first Laravel validation error field for inline rendering', async () => {
     api.register.mockRejectedValueOnce(new api.ApiError('Invalid phone', 422, {
       errors: [{ code: 'VALIDATION_ERROR', message: 'Invalid phone', field: 'phone' }]

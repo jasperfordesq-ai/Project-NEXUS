@@ -299,6 +299,7 @@
     "breadcrumb_tenants": "المستأجرون",
     "breadcrumb_users": "مستخدمي مسار التنقل",
     "bulk_move_failed": "فشل النقل المجمع",
+    "bulk_move_not_taking_members": "لم يُنقل بعض المستخدمين: بلغ المجتمع الذي كانوا سينتقلون إليه حدّ خطته البالغ {{max}} عضوًا نشطًا.",
     "bulk_users_moved_partial": "تم نقل مستخدم (مستخدمين) {{moved}}؛ لا يمكن نقل {{failed}}",
     "breadcrumb_create": "إنشاء",
     "breadcrumb_edit": "تعديل",

@@ -109,6 +109,12 @@
     "invite_failed": "The invitations could not be queued. Please try again.",
     "invite_rate_limited": "Too many requests in a row. Wait a minute and try again.",
     "bulk_approve_title": "Approve selected users",
+    "bulk_approve_result_approved_one": "{{countFormatted}} member approved.",
+    "bulk_approve_result_approved_other": "{{countFormatted}} members approved.",
+    "bulk_approve_result_limit_one": "{{countFormatted}} member not approved: {{reason}}",
+    "bulk_approve_result_limit_other": "{{countFormatted}} members not approved: {{reason}}",
+    "bulk_approve_result_other_one": "{{countFormatted}} member could not be approved for another reason.",
+    "bulk_approve_result_other_other": "{{countFormatted}} members could not be approved for another reason.",
     "bulk_suspend_message": "Suspend the selected users. They will temporarily lose access.",
     "bulk_suspend_title": "Suspend selected users",
     "back_to_users": "Back to Users",
@@ -723,6 +729,10 @@
       "admission_incomplete_other": "{{countFormatted}} members were created but their identity step did not complete (rows {{rows}}). Open each one from the member list and resend their identity check, or contact support.",
       "invitations_queued_one": "{{countFormatted}} welcome email is queued and will go out over {{duration}}.",
       "invitations_queued_other": "{{countFormatted}} welcome emails are queued and will go out over {{duration}}.",
+      "left_out_count_one": "{{countFormatted}} row was not imported: {{rows}}.",
+      "left_out_count_other": "{{countFormatted}} rows were not imported: {{rows}}.",
+      "left_out_more_one": "{{rows}} and {{countFormatted}} more",
+      "left_out_more_other": "{{rows}} and {{countFormatted}} more",
       "no_invitations": "No welcome emails were sent."
     },
     "undo": {

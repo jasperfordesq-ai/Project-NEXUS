@@ -1655,6 +1655,8 @@
                 "register_daily_limit": "In den letzten 24 Stunden wurden von diesem Standort aus zu viele Konten erstellt. Bitte versuchen Sie es morgen erneut oder wenden Sie sich an einen Community-Administrator, wenn Sie Hilfe benötigen.",
                 "register_tenant_paused": "Die Kontoerstellung wird für diese Community vorübergehend unterbrochen, da wir ungewöhnlich hohe Anmeldeaktivitäten überprüfen. Bitte versuchen Sie es später noch einmal oder wenden Sie sich an einen Community-Administrator, wenn Sie sich dringend registrieren müssen.",
                 "register_closed": "Die Registrierung für diese Community ist geschlossen. Wenden Sie sich an einen Community-Administrator, wenn Sie ein Konto benötigen oder eine Einladung erhalten haben.",
+                "register_not_taking_members": "Diese Community nimmt derzeit keine neuen Mitglieder auf.",
+                "register_not_taking_members_next": "Bitte versuchen Sie es später erneut oder wenden Sie sich an die Community, wenn Sie ein Konto benötigen.",
                 "register_validation": "Einige der von Ihnen eingegebenen Daten sind ungültig. Überprüfen Sie das Formular und versuchen Sie es erneut.",
                 "register_created": "Ihre Anmeldung ist eingegangen. Überprüfen Sie Ihre E-Mails für den nächsten Schritt und melden Sie sich dann an.",
                 "registration_closed_title": "Die Anmeldung ist geschlossen",

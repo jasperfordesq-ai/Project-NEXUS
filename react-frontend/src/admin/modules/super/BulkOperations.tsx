@@ -64,6 +64,19 @@ export function BulkOperations() {
     setLoading(false);
   };
 
+  /**
+   * Why the member limit kept someone back, or null. The server's own
+   * sentence when it sends one (it also covers a community higher up being
+   * full); otherwise our wording, naming the limit.
+   */
+  const memberLimitReason = (result: BulkOperationResult | undefined): string | null => {
+    const refusal = result?.errors?.find((e) => typeof e === 'object' && e.code === 'COMMUNITY_NOT_TAKING_MEMBERS');
+    if (!refusal || typeof refusal !== 'object') return null;
+    // admin-i18n-ignore: localized server message — AdminSuperController (lang/*/api.php)
+    if (refusal.message) return refusal.message;
+    return t('super.bulk_move_not_taking_members', { max: refusal.params?.max ?? '' });
+  };
+
   const handleBulkMoveUsers = async () => {
     setMoveLoading(true);
     const res = await adminSuper.bulkMoveUsers({
@@ -75,19 +88,24 @@ export function BulkOperations() {
       const result = res.data as BulkOperationResult | undefined;
       const moved = result?.moved_count ?? result?.updated_count ?? 0;
       const failed = result?.errors?.length ?? 0;
+      const limitReason = memberLimitReason(result);
       // The endpoint returns 200 even when every user failed pre-validation,
       // so a green "moved (0)" toast here used to hide total failure.
+      // One toast per outcome, carrying the member limit's reason when it applies.
       if (moved > 0 && failed === 0) {
         toast.success(t('super.bulk_users_moved_count', { count: moved }));
       } else if (moved > 0) {
-        toast.warning(t('super.bulk_users_moved_partial', { moved, failed }));
+        const partial = t('super.bulk_users_moved_partial', { moved, failed });
+        toast.warning(limitReason ? `${partial} ${limitReason}` : partial);
       } else {
-        toast.error(t('super.bulk_move_failed'));
+        toast.error(limitReason ?? t('super.bulk_move_failed'));
       }
       setSelectedUserIds(new Set());
       loadUsersForTenant(sourceTenant);
     } else {
-      toast.error(t('super.bulk_move_failed'));
+      // A refusal says why (e.g. the destination is at its plan's member number).
+      // admin-i18n-ignore: localized server message — AdminSuperController (lang/*/api.php)
+      toast.error(res?.error || t('super.bulk_move_failed'));
     }
     setMoveLoading(false);
     setMoveConfirm(false);

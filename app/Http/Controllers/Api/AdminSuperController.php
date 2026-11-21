@@ -23,6 +23,8 @@ use App\Services\BillingStandingService;
 use App\Support\Billing\BillingSettings;
 use App\Support\Billing\BranchPayments;
 use App\Support\Billing\BranchPlans;
+use App\Support\Billing\JoiningClosed;
+use App\Support\Billing\JoiningGate;
 use App\Support\Billing\OverLimitRule;
 use App\Support\Billing\PlanTerms;
 use App\Services\SuperAdminAuditService;
@@ -310,6 +312,20 @@ class AdminSuperController extends BaseApiController
         };
 
         throw new HttpResponseException($this->respondWithError($code, $message, null, $status));
+    }
+
+    /**
+     * "Stop new members joining" for a move: the 403 when the community moved
+     * INTO has its door shut, else null. Moving a person out is never refused,
+     * and a community the person already counts towards is not asked again.
+     */
+    private function joiningClosedResponse(int $destinationTenantId, int $sourceTenantId): ?JsonResponse
+    {
+        $closedBy = JoiningGate::closedBy($destinationTenantId, $sourceTenantId);
+
+        return $closedBy === null
+            ? null
+            : $this->respondWithError(JoiningGate::CODE, JoiningGate::adminMessage($closedBy, $destinationTenantId), null, 403);
     }
 
     /** @param array{success:bool,moved:int,failed:array<string>,pinned?:array<string,int>,details?:array<string,mixed>} $moveResult */
@@ -1182,10 +1198,15 @@ class AdminSuperController extends BaseApiController
 
         // E-062 F-278: approved immediately, but held for the target community's
         // identity check when it requires one, unless the admin attests it.
-        $admission = \App\Services\Identity\AdminCreatedAccountAdmission::decide(
-            $tenantId,
-            \App\Services\Identity\AdminCreatedAccountAdmission::attestationFromInput($input)
-        );
+        // Refused while "stop new members joining" has shut the door.
+        try {
+            $admission = \App\Services\Identity\AdminCreatedAccountAdmission::decide(
+                $tenantId,
+                \App\Services\Identity\AdminCreatedAccountAdmission::attestationFromInput($input)
+            );
+        } catch (JoiningClosed $closed) {
+            return $this->respondWithError(JoiningGate::CODE, $closed->adminMessage(), null, 403);
+        }
 
         $options = [
             'location' => $input['location'] ?? null,
@@ -1788,6 +1809,11 @@ class AdminSuperController extends BaseApiController
             return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, __('api.super_move_target_tenant_inactive'), 'new_tenant_id', 422);
         }
 
+        $closed = $this->joiningClosedResponse($newTenantId, (int) $user['tenant_id']);
+        if ($closed !== null) {
+            return $closed;
+        }
+
         return DB::transaction(function () use ($userId, $id, $user, $newTenantId): JsonResponse {
             $boundary = $this->requireLockedUserMoveBoundary(
                 $userId,
@@ -1913,6 +1939,11 @@ class AdminSuperController extends BaseApiController
             return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, __('api.super_move_target_tenant_inactive'), 'target_tenant_id', 422);
         }
 
+        $closed = $this->joiningClosedResponse($targetTenantId, (int) $user['tenant_id']);
+        if ($closed !== null) {
+            return $closed;
+        }
+
         return DB::transaction(function () use (
             $userId,
             $id,
@@ -2018,6 +2049,8 @@ class AdminSuperController extends BaseApiController
         $validatedUsers = [];
         $errors = [];
         $actor = User::findById($userId, true) ?? [];
+        /** @var array<int, int> $placesUsed member-limit places this request has used, by capped community */
+        $placesUsed = [];
 
         foreach ($userIds as $uid) {
             $uid = (int) $uid;
@@ -2043,7 +2076,33 @@ class AdminSuperController extends BaseApiController
                 continue;
             }
 
-            $validatedUsers[] = ['id' => $uid, 'tenant_id' => (int) $user['tenant_id']];
+            // "Stop new members joining", for the community moved INTO: move up
+            // to the room left and refuse the rest, as bulk approve does. Asked
+            // per person because a move from inside a capped branch adds nobody
+            // to it (JoiningGate::limits()'s second argument); each accepted
+            // move uses up one place in every limit it counts towards.
+            $limits = JoiningGate::limits($targetTenantId, (int) $user['tenant_id']);
+            $blockedBy = null;
+            foreach ($limits as $cap) {
+                if ($cap['max'] - $cap['active'] - ($placesUsed[$cap['tenant_id']] ?? 0) <= 0) {
+                    $blockedBy = $cap;
+                    break;
+                }
+            }
+            if ($blockedBy !== null) {
+                $ownLimit = (int) $blockedBy['tenant_id'] === $targetTenantId;
+                $errors[] = [
+                    'code' => JoiningGate::CODE,
+                    'params' => ['user_id' => $uid, 'max' => $ownLimit ? (int) $blockedBy['max'] : null],
+                    'message' => JoiningGate::adminMessage($blockedBy, $targetTenantId),
+                ];
+                continue;
+            }
+            foreach ($limits as $cap) {
+                $placesUsed[$cap['tenant_id']] = ($placesUsed[$cap['tenant_id']] ?? 0) + 1;
+            }
+
+            $validatedUsers[] =['id' => $uid, 'tenant_id' => (int) $user['tenant_id']];
         }
 
         // If pre-validation found errors and no valid users, return early

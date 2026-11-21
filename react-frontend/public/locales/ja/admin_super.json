@@ -299,6 +299,7 @@
     "breadcrumb_tenants": "テナント",
     "breadcrumb_users": "ブレッドクラムのユーザー",
     "bulk_move_failed": "一括移動に失敗しました",
+    "bulk_move_not_taking_members": "一部のユーザーは移動されませんでした。移動先のコミュニティがプランの上限である{{max}}人のアクティブメンバーに達しています。",
     "bulk_users_moved_partial": "{{moved}} 人のユーザーを移動しました。 {{failed}} を移動できませんでした",
     "breadcrumb_create": "作成する",
     "breadcrumb_edit": "編集",

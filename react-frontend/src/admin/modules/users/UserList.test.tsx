@@ -5,7 +5,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent, within } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 
 // ─── Hoist mocks ─────────────────────────────────────────────────────────────
@@ -159,8 +159,19 @@ vi.mock('@/admin/components/ConfirmModal', () => ({
 }));
 
 vi.mock('@/admin/components/BulkActionToolbar', () => ({
-  BulkActionToolbar: ({ selectedCount }: { selectedCount: number }) => (
-    <div data-testid="bulk-toolbar">{selectedCount} selected</div>
+  BulkActionToolbar: ({
+    selectedCount,
+    actions = [],
+  }: {
+    selectedCount: number;
+    actions?: Array<{ key: string; onConfirm: (reason?: string) => Promise<void> | void }>;
+  }) => (
+    <div data-testid="bulk-toolbar">
+      {selectedCount} selected
+      {actions.map((action) => (
+        <button key={action.key} type="button" data-testid={`bulk-${action.key}`} onClick={() => { void action.onConfirm(); }} />
+      ))}
+    </div>
   ),
 }));
 
@@ -254,6 +265,78 @@ describe('UserList', () => {
     const message = String(mockToast.error.mock.calls[0]?.[0]);
     expect(message).toMatch(/importing elsewhere|export_for_import_failed/i);
     expect(message).not.toContain('429');
+  });
+
+  // A community at its plan's member number refuses an approval with 403
+  // COMMUNITY_NOT_TAKING_MEMBERS and a localized sentence naming the number.
+  // The admin must see that sentence, not a blanket "action failed".
+  const notTakingMembers = {
+    success: false,
+    error: 'This community has reached its member number (250) and is not taking new members.',
+    code: 'COMMUNITY_NOT_TAKING_MEMBERS',
+  };
+
+  it('shows the server reason when approving a waiting member is refused', async () => {
+    mockAdminUsers.list.mockResolvedValue({ success: true, data: [makeUser({ id: 55, status: 'pending' })] });
+    mockAdminUsers.approve.mockResolvedValue(notTakingMembers);
+    const { UserList } = await import('./UserList');
+    render(<UserList />);
+
+    await screen.findByText('Alice Member');
+    fireEvent.click(screen.getByRole('button', { name: /actions/i }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: /approv/i }));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.click(within(dialog).getAllByRole('button')[0]!);
+
+    await waitFor(() => expect(mockAdminUsers.approve).toHaveBeenCalledWith(55));
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith(notTakingMembers.error));
+  });
+
+  // AdminUsersController::bulkApprove approves up to the room left and
+  // reports the rest in a 200, with the reason in limit_refused_message.
+  it('says how many were approved, kept back by the member limit (with the reason) and failed otherwise', async () => {
+    const reason = "No new members can be added: the plan's limit of 250 active members has been reached.";
+    mockAdminUsers.bulkApprove.mockResolvedValue({
+      success: true,
+      data: { success: 3, failed: 3, skipped_ids: [7, 8, 9], limit_refused_ids: [7, 8], limit_refused_message: reason },
+    });
+    const { UserList } = await import('./UserList');
+    render(<UserList />);
+
+    fireEvent.click(await screen.findByTestId('bulk-approve'));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledTimes(1));
+    const message = String(mockToast.error.mock.calls[0]?.[0]);
+    expect(message).toContain('3 members approved.');
+    expect(message).toContain(`2 members not approved: ${reason}`);
+    expect(message).toContain('1 member could not be approved for another reason.');
+  });
+
+  it('does not hide other bulk-approval failures when none were kept back by the member limit', async () => {
+    mockAdminUsers.bulkApprove.mockResolvedValue({
+      success: true,
+      data: { success: 1, failed: 2, skipped_ids: [7, 8], limit_refused_ids: [], limit_refused_message: null },
+    });
+    const { UserList } = await import('./UserList');
+    render(<UserList />);
+
+    fireEvent.click(await screen.findByTestId('bulk-approve'));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledTimes(1));
+    const message = String(mockToast.error.mock.calls[0]?.[0]);
+    expect(message).toContain('1 member approved.');
+    expect(message).toContain('2 members could not be approved for another reason.');
+    expect(message).not.toContain('not approved:');
+  });
+
+  it('shows the server reason when a bulk approval is refused', async () => {
+    mockAdminUsers.bulkApprove.mockResolvedValue(notTakingMembers);
+    const { UserList } = await import('./UserList');
+    render(<UserList />);
+
+    fireEvent.click(await screen.findByTestId('bulk-approve'));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith(notTakingMembers.error));
   });
 
   it('calls adminUsers.list on mount', async () => {

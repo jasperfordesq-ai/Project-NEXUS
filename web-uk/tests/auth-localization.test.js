@@ -173,6 +173,35 @@ describe('Laravel-first auth localization', () => {
     }
   });
 
+  // A community at its plan's member number: one sentence in the error
+  // summary, a line on what to do, no form and no "registration closed"
+  // banner (its invitation hint does not apply: invited people are refused too).
+  it.each(['en', 'ga'])('register.njk renders the not-taking-members page once, without a form (%s)', (locale) => {
+    const t = createTranslator(locale);
+    const sentence = t('auth.register_not_taking_members');
+    const html = templateEnvironment.render('register.njk', {
+      csrfToken: 'test-csrf',
+      errors: [{ text: sentence, href: '#main-content' }],
+      fieldErrors: {},
+      notTakingMembers: true,
+      registrationClosed: false,
+      serviceName: 'Project NEXUS',
+      t,
+      title: t('auth.registration_closed_title'),
+      tenantName: 'Test',
+      urlFor: (pathname) => pathname,
+      values: {}
+    });
+
+    expect(sentence).not.toBe('auth.register_not_taking_members');
+    expect(html.split(sentence)).toHaveLength(2);
+    expect(html).toContain(t('auth.register_not_taking_members_next'));
+    expect(html).toContain('govuk-error-summary');
+    expect(html).not.toContain('<form method="post" action="/register"');
+    expect(html).not.toContain('registration-closed-title');
+    expect(html).not.toContain(t('auth.registration_closed_body'));
+  });
+
   it('persists a successfully saved profile language in the current session', async () => {
     api.callUserSettingsApi.mockResolvedValueOnce({ data: { language: 'ga' } });
     const { app, state } = testApp();

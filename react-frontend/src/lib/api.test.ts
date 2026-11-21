@@ -555,6 +555,42 @@ describe('API Client', () => {
       expect(tokenManager.getAccessToken()).toBe('member-session');
     });
 
+    // A community at its plan's member number stays open but takes nobody
+    // new: sign-up answers 403 COMMUNITY_NOT_TAKING_MEMBERS. The client hands
+    // the server's localized message and code to the sign-up form, once, and
+    // neither signs anyone out nor retries.
+    it.each([
+      ['flat', {
+        success: false,
+        error: 'This community is not taking new members at the moment.',
+        code: 'COMMUNITY_NOT_TAKING_MEMBERS',
+      }],
+      // RegistrationController answers through respondWithError().
+      ['v2 errors', {
+        errors: [{ code: 'COMMUNITY_NOT_TAKING_MEMBERS', message: 'This community is not taking new members at the moment.' }],
+      }],
+    ])('hands a sign-up 403 COMMUNITY_NOT_TAKING_MEMBERS (%s envelope) to the caller with its message', async (_shape, body) => {
+      tokenManager.setAccessToken('unrelated-session');
+      const ended = vi.fn();
+      window.addEventListener('nexus:session_expired', ended);
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: false,
+        status: 403,
+        headers: new Headers(),
+        json: () => Promise.resolve(body),
+      } as Response);
+
+      const result = await api.post('/v2/auth/register', { email: 'new@example.com' }, { skipAuth: true });
+
+      window.removeEventListener('nexus:session_expired', ended);
+      expect(result.success).toBe(false);
+      expect(result.code).toBe('COMMUNITY_NOT_TAKING_MEMBERS');
+      expect(result.error).toBe('This community is not taking new members at the moment.');
+      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(ended).not.toHaveBeenCalled();
+      expect(tokenManager.getAccessToken()).toBe('unrelated-session');
+    });
+
     it('leaves a public (skipAuth) 403 ACCOUNT_UNDER_MINIMUM_AGE to the caller', async () => {
       tokenManager.setAccessToken('unrelated-session');
       const listener = vi.fn();

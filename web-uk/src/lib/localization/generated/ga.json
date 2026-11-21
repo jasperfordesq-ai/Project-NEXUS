@@ -1655,6 +1655,8 @@
                 "register_daily_limit": "Cruthaíodh an iomarca cuntas ón suíomh seo le 24 huaire anuas. Bain triail eile as amárach, nó déan teagmháil le riarthóir pobail má tá cabhair uait.",
                 "register_tenant_paused": "Cuirtear cruthú cuntais ar sos go sealadach don phobal seo agus muid ag déanamh athbhreithniú ar ghníomhaíocht clárúcháin neamhghnách. Bain triail eile as ar ball, nó déan teagmháil le riarthóir pobail más gá duit clárú go práinneach.",
                 "register_closed": "Tá clárú dúnta don phobal seo. Déan teagmháil le riarthóir pobail má tá cuntas uait nó má tugadh cuireadh duit.",
+                "register_not_taking_members": "Níl an pobal seo ag glacadh le baill nua faoi láthair.",
+                "register_not_taking_members_next": "Bain triail eile as ar ball, nó déan teagmháil leis an bpobal má tá cuntas uait.",
                 "register_validation": "Tá cuid de na sonraí a d’iontráil tú neamhbhailí. Seiceáil an fhoirm agus bain triail eile as.",
                 "register_created": "Tá do chlárú faighte. Seiceáil do ríomhphost don chéad chéim eile, ansin sínigh isteach.",
                 "registration_closed_title": "Tá an clárú dúnta",

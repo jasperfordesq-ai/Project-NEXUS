@@ -330,3 +330,107 @@ describe('BulkOperations — error handling', () => {
     });
   });
 });
+
+describe('BulkOperations — moving users into a community that is not taking members', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockAdminSuper.listTenants.mockResolvedValue(TENANTS_RESPONSE);
+    mockAdminSuper.listUsers.mockResolvedValue(USERS_RESPONSE);
+  });
+
+  // The destination may be at its plan's member number: the server answers
+  // 403 COMMUNITY_NOT_TAKING_MEMBERS with a localized reason in `error`.
+  it('shows the server reason when the bulk move is refused', async () => {
+    const message = 'Platform has reached its member number (100) and is not taking new members.';
+    mockAdminSuper.bulkMoveUsers.mockResolvedValue({ success: false, error: message, code: 'COMMUNITY_NOT_TAKING_MEMBERS' });
+    const user = userEvent.setup();
+    render(<BulkOperations />);
+
+    await waitFor(() => expect(mockAdminSuper.listTenants).toHaveBeenCalled());
+    const triggers = () => screen.getAllByRole('button').filter((b) => b.getAttribute('aria-haspopup') === 'listbox');
+    await waitFor(() => expect(triggers().length).toBeGreaterThanOrEqual(2));
+
+    await user.click(triggers()[0]!);
+    await user.click(await screen.findByRole('option', { name: 'hOUR Timebank' }));
+    await user.click(await screen.findByRole('checkbox', { name: /Alice Smith/ }));
+    await user.click(triggers()[1]!);
+    await user.click(await screen.findByRole('option', { name: 'Platform' }));
+
+    const moveButton = await waitFor(() => {
+      const btn = screen.getAllByRole('button').find((b) => b.textContent?.includes('1') && !b.hasAttribute('disabled') && !b.hasAttribute('aria-haspopup') && /move/i.test(b.textContent ?? ''));
+      expect(btn).toBeDefined();
+      return btn!;
+    });
+    await user.click(moveButton);
+    await user.click(await screen.findByTestId('confirm-modal-confirm'));
+
+    await waitFor(() => expect(mockAdminSuper.bulkMoveUsers).toHaveBeenCalled());
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith(message));
+  });
+});
+
+describe('BulkOperations — some users kept back by the destination member limit', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockAdminSuper.listTenants.mockResolvedValue(TENANTS_RESPONSE);
+    mockAdminSuper.listUsers.mockResolvedValue(USERS_RESPONSE);
+  });
+
+  async function moveAlice(response: unknown) {
+    mockAdminSuper.bulkMoveUsers.mockResolvedValue(response);
+    const user = userEvent.setup();
+    render(<BulkOperations />);
+
+    await waitFor(() => expect(mockAdminSuper.listTenants).toHaveBeenCalled());
+    const triggers = () => screen.getAllByRole('button').filter((b) => b.getAttribute('aria-haspopup') === 'listbox');
+    await waitFor(() => expect(triggers().length).toBeGreaterThanOrEqual(2));
+    await user.click(triggers()[0]!);
+    await user.click(await screen.findByRole('option', { name: 'hOUR Timebank' }));
+    await user.click(await screen.findByRole('checkbox', { name: /Alice Smith/ }));
+    await user.click(triggers()[1]!);
+    await user.click(await screen.findByRole('option', { name: 'Platform' }));
+    const moveButton = await waitFor(() => {
+      const btn = screen.getAllByRole('button').find((b) => b.textContent?.includes('1') && !b.hasAttribute('disabled') && !b.hasAttribute('aria-haspopup') && /move/i.test(b.textContent ?? ''));
+      expect(btn).toBeDefined();
+      return btn!;
+    });
+    await user.click(moveButton);
+    await user.click(await screen.findByTestId('confirm-modal-confirm'));
+    await waitFor(() => expect(mockAdminSuper.bulkMoveUsers).toHaveBeenCalled());
+  }
+
+  const refused = (extra: Record<string, unknown> = {}) => ({
+    code: 'COMMUNITY_NOT_TAKING_MEMBERS', params: { user_id: 10, max: 100 }, ...extra,
+  });
+
+  // AdminSuperController::bulkMoveUsers answers 200 and lists each person it
+  // did not move. Older entries carry only a code and the limit, so the
+  // screen words it itself; nobody moved means one toast, not two.
+  it('shows one toast, in its own words, when nobody was moved and the entry has no message', async () => {
+    await moveAlice({ success: true, data: { success: true, moved_count: 0, updated_count: 0, total_requested: 1, errors: [refused()] } });
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledTimes(1));
+    expect(mockToast.error).toHaveBeenCalledWith(
+      "Some users were not moved: the community they were moving into has reached its plan's limit of 100 active members.",
+    );
+    expect(mockToast.warning).not.toHaveBeenCalled();
+    expect(mockToast.success).not.toHaveBeenCalled();
+  });
+
+  it('prefers the server message on the refused entry', async () => {
+    const message = 'A community above this one has reached its member limit, so no new members can be added.';
+    await moveAlice({ success: true, data: { success: true, moved_count: 0, updated_count: 0, total_requested: 1, errors: [refused({ message })] } });
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledTimes(1));
+    expect(mockToast.error).toHaveBeenCalledWith(message);
+  });
+
+  it('adds the reason to the partial-move warning, in one toast', async () => {
+    const message = "No new members can be added: the plan's limit of 100 active members has been reached.";
+    await moveAlice({ success: true, data: { success: true, moved_count: 1, updated_count: 1, total_requested: 2, errors: [refused({ message })] } });
+
+    await waitFor(() => expect(mockToast.warning).toHaveBeenCalledTimes(1));
+    expect(String(mockToast.warning.mock.calls[0]?.[0])).toContain(message);
+    expect(mockToast.error).not.toHaveBeenCalled();
+  });
+});

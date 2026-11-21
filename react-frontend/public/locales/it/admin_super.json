@@ -299,6 +299,7 @@
     "breadcrumb_tenants": "Inquilini",
     "breadcrumb_users": "Utenti breadcrumb",
     "bulk_move_failed": "Lo spostamento collettivo non è riuscito",
+    "bulk_move_not_taking_members": "Alcuni utenti non sono stati spostati: la comunità in cui dovevano essere spostati ha raggiunto il limite del suo piano di {{max}} membri attivi.",
     "bulk_users_moved_partial": "Spostato {{moved}} utente/i; Impossibile spostare {{failed}}",
     "breadcrumb_create": "Creare",
     "breadcrumb_edit": "Modificare",

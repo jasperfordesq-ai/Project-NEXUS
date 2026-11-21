@@ -781,6 +781,33 @@ describe('a community paused for non-payment', () => {
     expect(communityPausedStore.getSnapshot()).toBeNull();
   });
 
+  /**
+   * A community at its plan's member number stays open; only joining is closed. Sign-up
+   * answers 403 COMMUNITY_NOT_TAKING_MEMBERS. That is not a pause: the paused screen must
+   * not appear, nobody is signed out, and the server's sentence reaches the form once.
+   */
+  it.each([
+    ['flat', { success: false, error: 'This community is not taking new members at the moment.', code: 'COMMUNITY_NOT_TAKING_MEMBERS' }],
+    // RegistrationController answers through respondWithError().
+    ['v2 errors', { errors: [{ code: 'COMMUNITY_NOT_TAKING_MEMBERS', message: 'This community is not taking new members at the moment.' }] }],
+  ])('hands a sign-up refusal for a full community (%s envelope) to the form, not to the paused screen', async (_shape, body) => {
+    const onUnauthorized = jest.fn();
+    registerUnauthorizedCallback(onUnauthorized);
+    const message = 'This community is not taking new members at the moment.';
+    fetchMock.mockResolvedValueOnce(mockResponse(body, { status: 403 }));
+
+    await expect(api.post('/api/v2/auth/register', { email: 'new@example.com' })).rejects.toMatchObject({
+      status: 403,
+      code: 'COMMUNITY_NOT_TAKING_MEMBERS',
+      message,
+    });
+
+    expect(communityPausedStore.getSnapshot()).toBeNull();
+    expect(onUnauthorized).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    registerUnauthorizedCallback(() => {});
+  });
+
   it('ignores an ordinary 403', async () => {
     fetchMock.mockResolvedValueOnce(mockResponse({ errors: [{ code: 'FORBIDDEN', message: 'No' }] }, { status: 403 }));
 

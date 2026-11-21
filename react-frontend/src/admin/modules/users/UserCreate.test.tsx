@@ -149,6 +149,20 @@ describe('UserCreate', () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
+  it('shows the server reason when the community is not taking new members', async () => {
+    const message = 'This community has reached its member number (250) and is not taking new members.';
+    mockAdminUsersCreate.mockResolvedValue({ success: false, error: message, code: 'COMMUNITY_NOT_TAKING_MEMBERS' });
+
+    render(<UserCreate />);
+    await fillRequiredFields();
+    fireEvent.submit(document.querySelector('form')!);
+
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalledWith(message);
+    });
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
   it('shows generic error toast on network exception', async () => {
     mockAdminUsersCreate.mockRejectedValue(new Error('Network failure'));
 

@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\Identity\RegistrationOrchestrationService;
 use App\Services\Identity\RegistrationPolicyService;
 use App\Support\Billing\BillingLock;
+use App\Support\Billing\JoiningGate;
 use App\Support\OutboundUrlGuard;
 use Firebase\JWT\JWK;
 use Firebase\JWT\JWT;
@@ -986,6 +987,11 @@ class SsoOidcService
         // A community paused for non-payment takes no new members: treated
         // exactly like a closed one, and so refused the same way below.
         if (BillingLock::isLocked($tenantId)) {
+            $registrationMode = 'closed';
+        }
+        // So does one whose "stop new members joining" rule has shut its door
+        // (JoiningGate): refused the same way, so it reveals nothing either.
+        if (JoiningGate::closedBy($tenantId) !== null) {
             $registrationMode = 'closed';
         }
         if (in_array($registrationMode, ['closed', 'invite_only'], true)) {

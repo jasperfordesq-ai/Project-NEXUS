@@ -503,6 +503,20 @@ describe('RegisterScreen', () => {
     expect(await findByText('Email already in use')).toBeTruthy();
   });
 
+  it('shows the server sentence when the community is not taking new members', async () => {
+    const message = 'This community is not taking new members at the moment.';
+    mockApiRegister.mockRejectedValue(new ApiResponseError(403, message, undefined, 'COMMUNITY_NOT_TAKING_MEMBERS'));
+    const { getAllByText, getByTestId, getByText, findByText, queryByText } = render(<RegisterScreen />);
+
+    fillRequiredRegistrationFields(getByTestId, getByText);
+    pressSubmit(getAllByText);
+
+    expect(await findByText(message)).toBeTruthy();
+    expect(getAllByText(message)).toHaveLength(1);
+    expect(queryByText('errors.unableToRegister')).toBeNull();
+    expect(mockApiRegister).toHaveBeenCalledTimes(1);
+  });
+
   /**
    * 🔴 The banner renders at the top of a form taller than the screen, so a member who has
    * just pressed "Create account" at the bottom sees nothing happen. Measured on a device

@@ -27,6 +27,8 @@ use App\Services\TokenService;
 use App\Core\EmailTemplateBuilder;
 use Illuminate\Support\Facades\Log;
 use App\Support\Authorization\CrossTenantEntry;
+use App\Support\Billing\JoiningClosed;
+use App\Support\Billing\JoiningGate;
 use App\Support\Tenancy\UserTenantResolver;
 use App\Support\Members\PendingApproval;
 use App\Support\UserDisplayName;
@@ -528,6 +530,11 @@ class AdminUsersController extends BaseApiController
                 // so we can grant welcome credits and send the approval email below.
                 if (empty($user['is_approved'])) {
                     $approvingViaStatusChange = true;
+                    // A first-time approval: refused like Approve while the door is shut.
+                    $closed = $this->joiningClosedForWaitingSignUp($user, (int) $tenantId);
+                    if ($closed !== null) {
+                        return $closed;
+                    }
                 }
             } elseif ($newStatus === 'pending') {
                 $updates[] = 'is_approved = 0';
@@ -743,10 +750,15 @@ class AdminUsersController extends BaseApiController
 
         // E-062 F-278: approved immediately, but held for the community's
         // identity check when it requires one, unless the admin attests it.
-        $admission = \App\Services\Identity\AdminCreatedAccountAdmission::decide(
-            $tenantId,
-            \App\Services\Identity\AdminCreatedAccountAdmission::attestationFromInput($input)
-        );
+        // Refused while "stop new members joining" has shut the door.
+        try {
+            $admission = \App\Services\Identity\AdminCreatedAccountAdmission::decide(
+                $tenantId,
+                \App\Services\Identity\AdminCreatedAccountAdmission::attestationFromInput($input)
+            );
+        } catch (JoiningClosed $closed) {
+            return $this->respondWithError(JoiningGate::CODE, $closed->adminMessage(), null, 403);
+        }
 
         // Create user via createWithTenant (direct DB insert, not Eloquent::create)
         $newUserId = User::createWithTenant([
@@ -989,6 +1001,11 @@ class AdminUsersController extends BaseApiController
             return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.insufficient_permissions'), null, 403);
         }
 
+        $closed = $this->joiningClosedForWaitingSignUp($user, (int) $tenantId);
+        if ($closed !== null) {
+            return $closed;
+        }
+
         $approval = DB::transaction(function () use ($adminId, $id, $tenantId): array {
             $target = $this->lockManageableSecurityTarget($adminId, $id, $tenantId);
             if ($target === null || $this->brokerMayNotAdmit($target, $tenantId)) {
@@ -1044,6 +1061,28 @@ class AdminUsersController extends BaseApiController
             'email_sent' => $emailSent,
             'welcome_credits' => $creditsAwarded,
         ]);
+    }
+
+    /**
+     * "Stop new members joining" for the three ways an admin can let a waiting
+     * sign-up in (approve, a status change to active, reactivate): the 403
+     * while the door is shut, else null. Only for a person who was never
+     * approved: someone approved before has already joined, so suspending and
+     * reactivating them, or editing their status, stays open on purpose.
+     *
+     * @param array<string, mixed> $user
+     */
+    private function joiningClosedForWaitingSignUp(array $user, int $tenantId): ?JsonResponse
+    {
+        if (!empty($user['is_approved'])) {
+            return null;
+        }
+
+        $closedBy = JoiningGate::closedBy($tenantId);
+
+        return $closedBy === null
+            ? null
+            : $this->respondWithError(JoiningGate::CODE, JoiningGate::adminMessage($closedBy, $tenantId), null, 403);
     }
 
     /**
@@ -1256,6 +1295,13 @@ class AdminUsersController extends BaseApiController
         $callerIsAdmin = $this->callerIsAdminTier();
         if (($user['status'] ?? '') === 'banned' && !$callerIsAdmin) {
             return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.insufficient_permissions'), null, 403);
+        }
+
+        // Reactivate also approves: for a never-approved sign-up it is an
+        // approval, and refused like Approve while the door is shut.
+        $closed = $this->joiningClosedForWaitingSignUp($user, $tenantId);
+        if ($closed !== null) {
+            return $closed;
         }
 
         $lockedUser = DB::transaction(function () use ($adminId, $id, $tenantId, $callerIsAdmin): ?array {
@@ -2903,6 +2949,13 @@ class AdminUsersController extends BaseApiController
         $skippedIds = [];
         $touchedIds = [];
 
+        // "Stop new members joining": approve up to the room left and report
+        // the rest, rather than failing the whole request. An approved account
+        // does not count as active until it signs in, so the room is used up
+        // here as each one is approved.
+        $room = JoiningGate::roomLeft((int) $tenantId);
+        $limitRefusedIds = [];
+
         foreach ($ids as $id) {
             if (!isset($eligibleById[$id])) {
                 $skippedIds[] = $id;
@@ -2926,6 +2979,12 @@ class AdminUsersController extends BaseApiController
                 // Repair pre-fix approvals that left status='pending'.
                 $this->activatePendingStatus((int) $id, (int) $tenantId);
                 $skippedIds[] = $id;
+                continue;
+            }
+            if ($room !== null && $room <= 0) {
+                $limitRefusedIds[] = $id;
+                $skippedIds[] = $id;
+                $failed++;
                 continue;
             }
             try {
@@ -2960,6 +3019,9 @@ class AdminUsersController extends BaseApiController
                 $this->sendApprovalInAppNotification($userArr, $creditsAwarded);
                 $touchedIds[] = $id;
                 $success++;
+                if ($room !== null) {
+                    $room--;
+                }
             } catch (\Throwable $e) {
                 Log::warning("[AdminUsers] bulk-approve failed for user #{$id}: " . $e->getMessage());
                 $failed++;
@@ -2975,14 +3037,22 @@ class AdminUsersController extends BaseApiController
         $this->auditLogService->log('admin_bulk_approve_users', null, $adminId, [
             'user_ids' => $touchedIds,
             'skipped_ids' => $skippedIds,
+            'limit_refused_ids' => $limitRefusedIds,
             'success' => $success,
             'failed' => $failed,
         ]);
+
+        $tightest = $limitRefusedIds !== [] ? JoiningGate::tightest((int) $tenantId) : null;
 
         return $this->respondWithData([
             'success' => $success,
             'failed' => $failed,
             'skipped_ids' => $skippedIds,
+            // Refused because "stop new members joining" had no room left.
+            'limit_refused_ids' => $limitRefusedIds,
+            'limit_refused_message' => $limitRefusedIds !== []
+                ? JoiningGate::adminMessage($tightest ?? ['tenant_id' => (int) $tenantId, 'max' => 0], (int) $tenantId)
+                : null,
         ]);
     }
 

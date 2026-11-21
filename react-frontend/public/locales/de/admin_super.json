@@ -299,6 +299,7 @@
     "breadcrumb_tenants": "Mieter",
     "breadcrumb_users": "Breadcrumb-Benutzer",
     "bulk_move_failed": "Massenverschiebung fehlgeschlagen",
+    "bulk_move_not_taking_members": "Einige Benutzer wurden nicht verschoben: Die Community, in die sie wechseln sollten, hat das Limit ihres Tarifs von {{max}} aktiven Mitgliedern erreicht.",
     "bulk_users_moved_partial": "{{moved}} Benutzer(s) verschoben; {{failed}} konnte nicht verschoben werden",
     "breadcrumb_create": "Erstellen",
     "breadcrumb_edit": "Bearbeiten",

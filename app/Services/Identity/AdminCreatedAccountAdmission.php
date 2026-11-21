@@ -9,6 +9,8 @@ declare(strict_types=1);
 namespace App\Services\Identity;
 
 use App\Services\AuditLogService;
+use App\Support\Billing\JoiningClosed;
+use App\Support\Billing\JoiningGate;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -25,6 +27,11 @@ use Illuminate\Support\Facades\Log;
  *
  * Usage: call decide() before the insert and write its `columns`; call
  * afterCreate() once the row exists.
+ *
+ * decide() also refuses, with JoiningClosed, an account for a community whose
+ * "stop new members joining" door is shut (JoiningGate). afterCreate() never
+ * makes an account count as a new member that decide() had not admitted: it
+ * only records an attestation or starts the identity check.
  */
 final class AdminCreatedAccountAdmission
 {
@@ -57,8 +64,19 @@ final class AdminCreatedAccountAdmission
      *   columns: array{is_approved:int, status:string}
      * }
      */
-    public static function decide(int $tenantId, bool $identityAttested): array
+    public static function decide(int $tenantId, bool $identityAttested, bool $roomCheckedByCaller = false): array
     {
+        // "Stop new members joining" (DESIGN 6.7): every admin-created account
+        // passes here, so the door is checked here once. The member import
+        // passes $roomCheckedByCaller: it takes the room left row by row
+        // (JoiningGate::roomLeft()) rather than refusing the whole file.
+        if (!$roomCheckedByCaller) {
+            $closedBy = JoiningGate::closedBy($tenantId);
+            if ($closedBy !== null) {
+                throw new JoiningClosed($closedBy, $tenantId);
+            }
+        }
+
         $mode = (string) (RegistrationPolicyService::getEffectivePolicy($tenantId)['registration_mode'] ?? '');
         $requiresIdentityCheck = in_array($mode, RegistrationPolicyService::IDENTITY_VERIFICATION_MODES, true);
         $held = $requiresIdentityCheck && !$identityAttested;

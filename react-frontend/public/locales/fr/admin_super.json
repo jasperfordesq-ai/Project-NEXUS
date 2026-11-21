@@ -299,6 +299,7 @@
     "breadcrumb_tenants": "Locataires",
     "breadcrumb_users": "Utilisateurs du fil d'Ariane",
     "bulk_move_failed": "Échec du déplacement groupé",
+    "bulk_move_not_taking_members": "Certains utilisateurs n'ont pas été déplacés : la communauté vers laquelle ils devaient être déplacés a atteint la limite de son forfait, soit {{max}} membres actifs.",
     "bulk_users_moved_partial": "Utilisateur(s) {{moved}} déplacé(s) ; {{failed}} n'a pas pu être déplacé",
     "breadcrumb_create": "Créer",
     "breadcrumb_edit": "Modifier",
