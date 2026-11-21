@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Support\Billing\BillingLock;
 use App\Support\Billing\BillingSettings;
 use App\Support\Billing\OverLimitRule;
 use App\Support\Billing\PlanTerms;
@@ -43,8 +44,10 @@ use Illuminate\Support\Facades\Log;
  *   or the platform's; default pause 30 days after the present episode's
  *   "over" notice, never without one). A community paused
  *   for that is opened again when it is back under, on a bigger package, no
- *   longer has a limit, or its rule no longer pauses. Stop new members and
- *   move up are only named in the notices here; later stages carry them out.
+ *   longer has a limit, or its rule no longer pauses. Move up happens on the
+ *   day a pause would (moveStep()): to the smallest offered plan that fits,
+ *   or, when it cannot be moved automatically, a person is told once. Stop
+ *   new members is only named in the notices here.
  *
  * `run()` acts only while the master switch (`automation_enabled`) is on, and
  * otherwise does nothing at all. `preview()` never acts and never sends: it is
@@ -59,7 +62,12 @@ final class BillingAutomationService
 {
     private const PAYMENT_STAGES = ['reminder' => 1, 'due' => 2, 'final_warning' => 3, 'suspend' => 4];
 
-    private const LIMIT_STAGES = ['approaching' => 1, 'reached' => 2, 'over' => 3];
+    /**
+     * `needs_decision`: the community was over on its move day and could not
+     * be moved up automatically, and a person has been told (once per
+     * episode). Ranked above "over", which it follows.
+     */
+    private const LIMIT_STAGES = ['approaching' => 1, 'reached' => 2, 'over' => 3, 'needs_decision' => 4];
 
     /**
      * Stripe's subscription statuses that mean "the payment has not arrived
@@ -245,7 +253,7 @@ final class BillingAutomationService
         // count again today, so nothing on record counts. No notice on record
         // for this episode: it goes out at the next check, so today.
         $day = self::day($today);
-        $restartPending = ($row?->limit_terms_key ?? null) !== OverLimitRule::termsKey($tenantId, $limit, $rule);
+        $restartPending = ($row?->limit_terms_key ?? null) !== OverLimitRule::termsKey($tenantId, $limit, $rule, $active);
         $warnedOn = $restartPending ? null : self::episodeOverNoticeDay($row);
 
         return self::later(($warnedOn ?? $day)->addDays((int) $rule['grace_days']), $day)->toDateString();
@@ -309,14 +317,44 @@ final class BillingAutomationService
             return [];
         }
 
-        $tenants = DB::table('tenants')->whereIn('id', $ids)->get(['id', 'name', 'is_active'])->keyBy('id');
+        $tenants = DB::table('tenants')->whereIn('id', $ids)->get(['id', 'name', 'is_active', 'depth'])->keyBy('id');
+
+        // Nearest the top first: a hub paused in this run then locks its
+        // children before they are visited, so none is warned, moved or
+        // paused for being over in the same run (suspend() forgets the lock
+        // cache, so the children's lock check sees the new pause).
+        usort($ids, static function (int $a, int $b) use ($tenants): int {
+            $depthA = (int) ($tenants->get($a)->depth ?? 0);
+            $depthB = (int) ($tenants->get($b)->depth ?? 0);
+
+            return $depthA <=> $depthB ?: $a <=> $b;
+        });
 
         $outcome = [];
         foreach ($ids as $id) {
             $tenant = $tenants->get($id);
             // A deactivated community is off for everyone already; there is
-            // nobody to warn and nothing to pause.
+            // nobody to warn and nothing to pause. Its member-limit count is
+            // not kept either: frozen, it would pause the community the day
+            // after it is switched back on, on a notice months old.
+            // Reactivated, it starts a new episode with a fresh notice.
             if (!$tenant || (int) $tenant->is_active !== 1) {
+                $row = $standing[$id] ?? null;
+                $kept = $row !== null && ($row->over_limit_since !== null || $row->limit_notice_stage !== null || $row->limit_notice_at !== null);
+                if ($act && $tenant && $kept) {
+                    try {
+                        BillingStandingService::recordCheckState($id, [
+                            'over_limit_since' => null,
+                            'limit_notice_stage' => null,
+                            'limit_notice_at' => null,
+                        ]);
+                    } catch (\Throwable $e) {
+                        Log::error('[BillingAutomation] could not clear the member-limit count of a deactivated community', [
+                            'tenant_id' => $id,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                }
                 continue;
             }
 
@@ -751,6 +789,26 @@ final class BillingAutomationService
             return [];
         }
 
+        // Locked by a community above it (its hub is paused, say): nobody can
+        // use it anyway, so it is treated like a pause for something else.
+        // No warning, no pause of its own, no count kept; when the lock above
+        // is lifted it starts a new episode with a fresh notice and the full
+        // days.
+        $lock = BillingLock::reasonFor($id);
+        if ($lock !== null && !$lock['own']) {
+            $kept = $row !== null && ($row->over_limit_since !== null || $row->limit_notice_stage !== null
+                || $row->limit_notice_at !== null);
+            if ($act && $kept) {
+                BillingStandingService::recordCheckState($id, [
+                    'over_limit_since' => null,
+                    'limit_notice_stage' => null,
+                    'limit_notice_at' => null,
+                ]);
+            }
+
+            return [];
+        }
+
         if ($limit === null) {
             // No limit applies any more (no plan, or not a standard one), so
             // no count survives it: a plan with a member number later starts
@@ -793,7 +851,13 @@ final class BillingAutomationService
         //
         // A community paused for being over is not restarted: it stays paused
         // unless a lift condition below holds. Only the terms are recorded.
-        $key = OverLimitRule::termsKey($id, $limit, $rule);
+        //
+        // For "move up" the terms include what the "over" notice promises
+        // (the plan and price, or that a person must decide): a hub offering
+        // or hiding a plan, a price change, a custom price added or removed,
+        // members crossing into another plan's range all restart the count
+        // with a fresh notice naming the new outcome.
+        $key = OverLimitRule::termsKey($id, $limit, $rule, $active);
         $storedKey = $row?->limit_terms_key ?? null;
         $restart = false;
         if ($storedKey !== $key) {
@@ -906,14 +970,26 @@ final class BillingAutomationService
             $facts['over_limit_since'] = $overSince->toDateString();
         }
 
-        // Move up is not carried out yet (a later stage): the "over" notice
-        // already says which plan it would move to, and when, or that no plan
-        // fits and a person must decide.
-        if ($stage === 'over' && $rule['effective_action'] === 'upgrade') {
-            $target = PlanTerms::smallestFitting($id, $active);
-            if ($target !== null) {
+        // Move up (rule `upgrade`, DESIGN 6.4): on the same day a pause would
+        // come (this episode's notice day + days), to the smallest offered
+        // plan that fits, unless it cannot be moved automatically; then a
+        // person is told once per episode. "Move up" chosen for a card payer
+        // is followed as warn only, but reaches its move day all the same, so
+        // the platform team is told to move it by hand. The "over" notice
+        // names the plan, its price and the day only when the move will
+        // really happen; otherwise it says a person must decide.
+        $move = null;
+        $moveOn = null;
+        if ($stage === 'over' && ($rule['effective_action'] === 'upgrade' || $rule['action'] === 'upgrade')) {
+            $move = self::moveOutcome($id, $limit, $rule, $active);
+            if ($move['reason'] === null && $move['target'] !== null && $move['price'] !== null) {
                 $facts['move_date'] = $warnedOn->addDays($rule['grace_days'])->toDateString();
-                $facts['move_plan'] = $target['name'];
+                $facts['move_plan'] = $move['target']['name'];
+                $facts['move_plan_id'] = $move['target']['plan_id'];
+                $facts += $move['price'];
+            }
+            if ($overNoticeDay !== null) {
+                $moveOn = $overNoticeDay->addDays($rule['grace_days']);
             }
         }
 
@@ -945,7 +1021,7 @@ final class BillingAutomationService
                     $state['limit_notice_at'] = self::stamp($today);
                 }
             }
-            if ($stage === 'over' && $pausedForLimit && $recorded !== self::LIMIT_STAGES['over']) {
+            if ($stage === 'over' && $pausedForLimit && $recorded < self::LIMIT_STAGES['over']) {
                 // Paused for being over already: the stage is noted, silently
                 // and with no date, so it never stands for a warning.
                 $state['limit_notice_stage'] = 'over';
@@ -969,16 +1045,18 @@ final class BillingAutomationService
         // here) is told nothing: it would be told it "will be paused on" a
         // date while already paused.
         if (!$pausedForLimit && $overDue) {
-            // Recorded as sent only once it was sent: a notice that failed
+            // Recorded as sent only once the mailer accepted it for at least
+            // one person: a notice that threw, or that every send of was
+            // refused (a provider outage answers false, it does not throw),
             // is due again at the next run, and the days start from the day
             // it does go out. A community nobody can be mailed about (no
-            // admin address, no payee) "succeeds" with no recipients: there
-            // is nobody to wait for, and holding it back would mean it is
-            // never paused at all. A preview sends nothing and assumes the
-            // send would succeed.
+            // admin address, no payee: nobody was even tried) counts as
+            // told and the rule proceeds: there is nobody to wait for, and
+            // holding it back would exempt it for ever. A preview sends
+            // nothing and assumes the send would succeed.
             if ($act) {
-                $sent = self::tell(fn () => BillingStandingNotifier::limitOver($id, $facts), $id);
-                if ($sent) {
+                $counts = self::tellCounted(fn () => BillingStandingNotifier::limitOver($id, $facts), $id);
+                if (self::reachedSomeone($counts)) {
                     BillingStandingService::recordCheckState($id, [
                         'limit_notice_stage' => 'over',
                         'limit_notice_at' => self::stamp($today),
@@ -986,6 +1064,7 @@ final class BillingAutomationService
                 } else {
                     Log::error('[BillingAutomation] the "over" member-limit notice was not sent; it is due again at the next run', [
                         'tenant_id' => $id,
+                        'tried' => $counts['tried'] ?? null,
                     ]);
                 }
             }
@@ -999,18 +1078,262 @@ final class BillingAutomationService
             $out[] = self::entry($id, $name, 'member_limit', 'suspend', $facts);
         }
 
+        // Counted from the notice, like the pause: a notice sent in this run
+        // cannot be `grace_days` old, so a community is never warned and
+        // moved in the same run.
+        if ($move !== null && $moveOn !== null && !$pausedForLimit && $today->greaterThanOrEqualTo($moveOn)) {
+            foreach (self::moveStep($id, $name, $row, $limit, $rule, $move, $facts, $active, $settings, $today, $act) as $entry) {
+                $out[] = $entry;
+            }
+        }
+
         return $out;
     }
 
     /**
+     * What going over promises a community whose chosen rule is "move up":
+     * the plan it would move to, at what price, or why it cannot be moved
+     * automatically (`reason`):
+     *
+     * - `card_subscription`: it pays the platform by card (its rule is
+     *   followed as warn only), so Stripe would keep charging the old plan;
+     * - `no_plan_fits`: no plan offered to it is big enough (never a move to
+     *   the same plan or down);
+     * - `custom_price`: its assignment has a specially agreed price, which a
+     *   move would either keep for a bigger plan or quietly replace.
+     *
+     * Members are counted as at least one over the member number, so the
+     * answer is the same while it sits under its number as on the day it
+     * goes over: a community does not restart its count by crossing its own
+     * line, only by crossing into another plan's range.
+     *
+     * The promise is part of the terms the count runs under
+     * (OverLimitRule::termsKey(), via promiseText()): any change to it
+     * between the "over" notice and the move day restarts the episode, so a
+     * move or a "needs a decision" mail only ever follows a notice that
+     * named exactly that outcome.
+     *
+     * `price` is what the notice names (movePrice()); `assignment` the newest
+     * active assignment's price fields.
+     *
+     * @param array{plan_id:int, plan_name:string, max_users:int} $limit
+     * @param array{action?:string, effective_action:string, grace_days:int} $rule
+     * @return array{target:?array<string, mixed>, reason:?string, assignment:?object, price:?array{move_price_monthly:?float, move_price_yearly:?float, move_currency:string}}
+     */
+    public static function moveOutcome(int $id, array $limit, array $rule, int $active): array
+    {
+        if ($rule['effective_action'] !== 'upgrade') {
+            return ['target' => null, 'reason' => 'card_subscription', 'assignment' => null, 'price' => null];
+        }
+
+        $assignment = DB::table('tenant_plan_assignments')
+            ->where('tenant_id', $id)
+            ->where('status', 'active')
+            ->orderByDesc('id')
+            ->first(['custom_price_monthly', 'custom_price_yearly', 'discount_percentage', 'nonprofit_verified']);
+
+        $target = PlanTerms::smallestFitting($id, max($active, $limit['max_users'] + 1));
+        if (
+            $target === null
+            || $target['plan_id'] === $limit['plan_id']
+            || ($target['max_users'] !== null && $target['max_users'] <= $limit['max_users'])
+        ) {
+            return ['target' => null, 'reason' => 'no_plan_fits', 'assignment' => $assignment, 'price' => null];
+        }
+
+        if ($assignment !== null && ($assignment->custom_price_monthly !== null || $assignment->custom_price_yearly !== null)) {
+            return ['target' => $target, 'reason' => 'custom_price', 'assignment' => $assignment, 'price' => null];
+        }
+
+        return ['target' => $target, 'reason' => null, 'assignment' => $assignment, 'price' => self::movePrice($id, $target, $assignment)];
+    }
+
+    /**
+     * The promise of moveOutcome() as a stable string: `decision:<reason>`, or
+     * `move:<plan id>:<monthly>:<yearly>:<currency>` as the notice names them.
+     *
+     * @param array{target:?array<string, mixed>, reason:?string, assignment:?object, price:?array<string, mixed>} $outcome
+     */
+    public static function promiseText(array $outcome): string
+    {
+        if ($outcome['reason'] !== null || $outcome['target'] === null || $outcome['price'] === null) {
+            return 'decision:' . ($outcome['reason'] ?? 'no_plan_fits');
+        }
+
+        $money = static fn (mixed $v): string => $v === null ? '-' : number_format((float) $v, 2, '.', '');
+
+        return implode(':', [
+            'move',
+            (int) $outcome['target']['plan_id'],
+            $money($outcome['price']['move_price_monthly']),
+            $money($outcome['price']['move_price_yearly']),
+            (string) $outcome['price']['move_currency'],
+        ]);
+    }
+
+    /**
+     * The price a community would pay on $target, in its billing currency,
+     * worked out as TenantBillingService::planChangedFacts() works out the
+     * price it then tells it: for a community that pays its hub, the hub's
+     * price as it is; for one that pays the platform, with its discount and
+     * non-profit reduction (which a move keeps).
+     *
+     * @param array<string, mixed> $target PlanTerms Terms
+     * @return array{move_price_monthly:?float, move_price_yearly:?float, move_currency:string}
+     */
+    private static function movePrice(int $id, array $target, ?object $assignment): array
+    {
+        $monthly = $target['price_monthly'] !== null ? (float) $target['price_monthly'] : null;
+        $yearly = $target['price_yearly'] !== null ? (float) $target['price_yearly'] : null;
+
+        if ($assignment !== null && PlanTerms::hubFor($id) === null) {
+            $effective = TenantBillingService::getEffectivePrice([
+                'custom_price_monthly' => null,
+                'custom_price_yearly' => null,
+                'discount_percentage' => $assignment->discount_percentage,
+                'nonprofit_verified' => $assignment->nonprofit_verified,
+                'price_monthly' => $monthly ?? 0.0,
+                'price_yearly' => $yearly ?? 0.0,
+            ]);
+            $monthly = $monthly !== null ? $effective['monthly'] : null;
+            $yearly = $yearly !== null ? $effective['yearly'] : null;
+        }
+
+        return [
+            'move_price_monthly' => $monthly,
+            'move_price_yearly' => $yearly,
+            'move_currency' => (string) ($target['currency'] ?? 'eur'),
+        ];
+    }
+
+    /**
+     * The move day has come: move the community up, or tell a person once
+     * per episode why it cannot be moved.
+     *
+     * After a move the episode is over: the plan changed (so the terms key
+     * did too, and changePlanOnly() emptied the count). The new terms and the
+     * stage the community is at under them are recorded at once, so the next
+     * run neither sends a second "over" notice (it fits now) nor an
+     * "approaching"/"reached" notice the move email already stands for; one
+     * still over the next morning starts a fresh episode.
+     *
+     * A decision sent is recorded as the stage `needs_decision` (the episode's
+     * notice day is kept, so the dates do not move), only once the mailer
+     * accepted it, and is cleared like any stage by every end of an episode.
+     *
+     * Only what the episode's notice promised can happen here: the outcome
+     * is part of the terms key, so a different outcome has already restarted
+     * the episode earlier in this run, and there is no notice day to reach.
+     * A move goes to exactly the promised plan at the promised price; a
+     * "needs a decision" mail is sent only when a decision was promised.
+     *
+     * @param array{plan_id:int, plan_name:string, max_users:int} $limit
+     * @param array{action:string, effective_action:string, grace_days:int} $rule
+     * @param array{target:?array<string, mixed>, reason:?string, assignment:?object, price:?array<string, mixed>} $move
+     * @param array<string, mixed> $facts
+     * @param array<string, int|bool|string> $settings
+     * @return list<array{tenant_id:int, tenant_name:string, clock:string, action:string, detail:array<string, mixed>}>
+     */
+    private static function moveStep(int $id, string $name, ?object $row, array $limit, array $rule, array $move, array $facts, int $active, array $settings, CarbonImmutable $today, bool $act): array
+    {
+        $reason = $move['reason'];
+
+        if ($reason === null && $move['target'] !== null) {
+            $target = $move['target'];
+            if (!$act) {
+                return [self::entry($id, $name, 'member_limit', 'move_up', $facts)];
+            }
+
+            // Read again at the moment of the move: if the plan or its price
+            // is no longer the one the notice named, nothing moves, and the
+            // next run restarts the episode with a fresh notice.
+            PlanTerms::flush();
+            $now = self::moveOutcome($id, $limit, $rule, $active);
+            if (self::promiseText($now) !== self::promiseText($move)) {
+                Log::warning('[BillingAutomation] the plan a community was told it would move to changed at the last moment; not moved', [
+                    'tenant_id' => $id,
+                    'promised' => self::promiseText($move),
+                    'now' => self::promiseText($now),
+                ]);
+
+                return [];
+            }
+
+            try {
+                TenantBillingService::changePlanOnly($id, (int) $target['plan_id'], null, 'auto');
+            } catch (\DomainException $e) {
+                if ($e->getMessage() !== 'billing_card_subscription') {
+                    throw $e;
+                }
+                // A card subscription started since the rule was read: only
+                // the platform team can move it now.
+                $reason = 'card_subscription';
+            }
+
+            if ($reason === null) {
+                PlanTerms::flush();
+                $write = ['over_limit_since' => null, 'limit_notice_stage' => null, 'limit_notice_at' => null];
+                $newLimit = self::watchedLimit($id);
+                if ($newLimit !== null) {
+                    $write['limit_terms_key'] = OverLimitRule::termsKey($id, $newLimit, null, $active);
+                    $newStage = self::limitStage($active, $newLimit['max_users'], (int) $settings['limit_warning_percent']);
+                    if ($newStage !== null && $newStage !== 'over') {
+                        $write['limit_notice_stage'] = $newStage;
+                        $write['limit_notice_at'] = self::stamp($today);
+                    }
+                }
+                BillingStandingService::recordCheckState($id, $write);
+
+                $sent = self::tellCounted(
+                    fn () => BillingStandingNotifier::movedUp($id, TenantBillingService::planChangedFacts($id, $limit['plan_name']) + ['active_members' => $active]),
+                    $id
+                );
+                if (!self::reachedSomeone($sent)) {
+                    // The move stands: it is recorded in the audit log and on
+                    // every billing screen. Only the email is missing.
+                    Log::error('[BillingAutomation] a community was moved up but nobody could be told', ['tenant_id' => $id]);
+                }
+
+                return [self::entry($id, $name, 'member_limit', 'move_up', $facts)];
+            }
+        }
+
+        // Told already in this episode: silent until the episode ends.
+        if (($row?->limit_notice_stage ?? null) === 'needs_decision') {
+            return [];
+        }
+
+        $facts['decision_reason'] = $reason;
+        if ($act) {
+            $counts = self::tellCounted(fn () => BillingStandingNotifier::moveNeedsDecision($id, $facts + ['reason' => $reason]), $id);
+            if (self::reachedSomeone($counts)) {
+                BillingStandingService::recordCheckState($id, ['limit_notice_stage' => 'needs_decision']);
+            } else {
+                Log::error('[BillingAutomation] the "needs a decision" notice was not sent; it is due again at the next run', [
+                    'tenant_id' => $id,
+                    'tried' => $counts['tried'] ?? null,
+                ]);
+            }
+        }
+
+        return [self::entry($id, $name, 'member_limit', 'needs_decision', $facts)];
+    }
+
+    /**
      * The day this episode's "over" notice was sent, or null when none is on
-     * record for it: the stage is "over" and the notice's day is on or after
-     * the first day over. With no first day over on record the episode starts
-     * in this run, so nothing on record can belong to it.
+     * record for it: the stage is "over" (or `needs_decision`, which follows
+     * it in the same episode) and the notice's day is on or after the first
+     * day over. With no first day over on record the episode starts in this
+     * run, so nothing on record can belong to it; nor can a stage from an
+     * earlier episode, whose notice day is before this one's first day.
      */
     private static function episodeOverNoticeDay(?object $row): ?CarbonImmutable
     {
-        if ($row === null || ($row->limit_notice_stage ?? null) !== 'over' || ($row->over_limit_since ?? null) === null) {
+        if (
+            $row === null
+            || !in_array($row->limit_notice_stage ?? null, ['over', 'needs_decision'], true)
+            || ($row->over_limit_since ?? null) === null
+        ) {
             return null;
         }
 
@@ -1115,6 +1438,37 @@ final class BillingAutomationService
 
             return false;
         }
+    }
+
+    /**
+     * tell() for a notice that reports what the mailer did
+     * (BillingStandingNotifier's limit notices): its counts, or null when the
+     * send threw (logged, as tell() does).
+     *
+     * @param callable(): array{tried:int, accepted:int} $send
+     * @return array{tried:int, accepted:int}|null
+     */
+    private static function tellCounted(callable $send, int $tenantId): ?array
+    {
+        $counts = null;
+        $ok = self::tell(static function () use ($send, &$counts): void {
+            $counts = $send();
+        }, $tenantId);
+
+        return $ok ? $counts : null;
+    }
+
+    /**
+     * Whether a notice counts as told: the mailer accepted it for at least
+     * one person, or there was nobody at all to try (no admin address, no
+     * payee). Tried and refused for everyone (a provider outage) is not
+     * told; nor is a send that threw (null).
+     *
+     * @param array{tried:int, accepted:int}|null $counts
+     */
+    private static function reachedSomeone(?array $counts): bool
+    {
+        return $counts !== null && ($counts['accepted'] >= 1 || $counts['tried'] === 0);
     }
 
     /**

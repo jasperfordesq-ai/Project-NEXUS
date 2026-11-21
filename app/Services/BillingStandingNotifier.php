@@ -163,17 +163,19 @@ final class BillingStandingNotifier
      * Close to the limit. The admins and whoever the community pays (DESIGN
      * 6.5), with what its rule will do if it goes over.
      *
-     * @param array<string, int|string|null> $facts active_members, max_users, plan_name, window_days, rule?, grace_days?
+     * @param array<string, mixed> $facts active_members, max_users, plan_name, window_days, rule?, grace_days?
+     * @return array{tried:int, accepted:int} see deliverCounted()
      */
-    public static function limitApproaching(int $tenantId, array $facts): int
+    public static function limitApproaching(int $tenantId, array $facts): array
     {
         return self::limitNotice($tenantId, $facts, 'limit_approaching', true, self::ruleLine($facts), 'default');
     }
 
     /**
-     * @param array<string, int|string|null> $facts active_members, max_users, plan_name, window_days, rule?, grace_days?
+     * @param array<string, mixed> $facts active_members, max_users, plan_name, window_days, rule?, grace_days?
+     * @return array{tried:int, accepted:int} see deliverCounted()
      */
-    public static function limitReached(int $tenantId, array $facts): int
+    public static function limitReached(int $tenantId, array $facts): array
     {
         return self::limitNotice($tenantId, $facts, 'limit_reached', true, self::ruleLine($facts), 'warning');
     }
@@ -186,15 +188,18 @@ final class BillingStandingNotifier
      *   card (`rule_action` `upgrade`), when a person must move it;
      * - `block_joining`: new members cannot join until it is back under;
      * - `pause`: paused on `pause_date` if still over;
-     * - `upgrade`: moved to `move_plan` on `move_date` if still over, or a
-     *   person must decide when no plan fits (no `move_plan`).
+     * - `upgrade`: moved to `move_plan` on `move_date` if still over, with
+     *   its price (`move_price_monthly` / `move_price_yearly`, in
+     *   `move_currency`) when one is recorded; or a person must decide when
+     *   it cannot be moved automatically (no `move_plan`).
      *
      * Without `rule` (a caller from before the rules existed): a
      * `pause_date` means pause, else warn only.
      *
-     * @param array<string, int|string|null> $facts active_members, max_users, plan_name, window_days, rule?, rule_action?, pause_date?, move_date?, move_plan?
+     * @param array<string, mixed> $facts active_members, max_users, plan_name, window_days, rule?, rule_action?, pause_date?, move_date?, move_plan?, move_price_monthly?, move_price_yearly?, move_currency?
+     * @return array{tried:int, accepted:int} see deliverCounted()
      */
-    public static function limitOver(int $tenantId, array $facts): int
+    public static function limitOver(int $tenantId, array $facts): array
     {
         $pauseDate = isset($facts['pause_date']) ? (string) $facts['pause_date'] : null;
         $rule = isset($facts['rule']) ? (string) $facts['rule'] : ($pauseDate !== null ? 'pause' : 'none');
@@ -203,7 +208,7 @@ final class BillingStandingNotifier
             'pause' => [self::KEY . 'limit_over_will_pause', ['date' => (string) $pauseDate]],
             'block_joining' => [self::KEY . 'limit_over_joining_closed', []],
             'upgrade' => isset($facts['move_plan'], $facts['move_date'])
-                ? [self::KEY . 'limit_over_will_move_up', ['date' => (string) $facts['move_date'], 'plan' => (string) $facts['move_plan']]]
+                ? self::moveUpLine($facts)
                 : [self::KEY . 'limit_over_needs_decision', []],
             default => ($facts['rule_action'] ?? null) === 'upgrade'
                 ? [self::KEY . 'limit_over_needs_decision', []]
@@ -211,6 +216,168 @@ final class BillingStandingNotifier
         };
 
         return self::limitNotice($tenantId, $facts, 'limit_over', true, $closing, 'warning');
+    }
+
+    /**
+     * "It will be moved to PLAN (price) on DATE" (DESIGN 6.5); without the
+     * price when none is recorded for the plan.
+     *
+     * @param array<string, mixed> $facts
+     * @return array{0:string, 1:array<string, string|\Closure>}
+     */
+    private static function moveUpLine(array $facts): array
+    {
+        $params = ['date' => (string) $facts['move_date'], 'plan' => (string) $facts['move_plan']];
+        $price = self::priceText($facts['move_price_monthly'] ?? null, $facts['move_price_yearly'] ?? null, $facts['move_currency'] ?? null);
+        if ($price === null) {
+            return [self::KEY . 'limit_over_will_move_up', $params];
+        }
+
+        return [self::KEY . 'limit_over_will_move_up_priced', $params + ['price' => $price]];
+    }
+
+    /**
+     * A plan's price as a short phrase ("€229.00 a month"), written in the
+     * reader's locale: the monthly price when one is recorded, else the
+     * yearly one. Null when neither is (missing or 0).
+     */
+    private static function priceText(mixed $monthly, mixed $yearly, mixed $currency): ?\Closure
+    {
+        $code = strtoupper((string) ($currency ?? 'eur')) === 'GBP' ? 'GBP' : 'EUR';
+        $month = self::chargedAmount($monthly);
+        $year = self::chargedAmount($yearly);
+
+        if ($month !== null) {
+            return static fn (): string => __(self::KEY . 'price_a_month', ['amount' => self::money($month, $code)]);
+        }
+        if ($year !== null) {
+            return static fn (): string => __(self::KEY . 'price_a_year', ['amount' => self::money($year, $code)]);
+        }
+
+        return null;
+    }
+
+    /**
+     * The daily check moved the community up to a bigger plan (DESIGN 6.5).
+     * Its admins and whoever it pays: the old plan, the new plan, its member
+     * number and its price in the community's billing currency (for one that
+     * pays its hub, the hub's price; TenantBillingService::planChangedFacts()).
+     *
+     * @param array<string, mixed> $facts old_plan_name, plan_name, max_users, price_monthly, price_yearly, currency, active_members
+     * @return array{tried:int, accepted:int} see deliverCounted()
+     */
+    public static function movedUp(int $tenantId, array $facts): array
+    {
+        $about = self::community($tenantId);
+        if ($about === null) {
+            return ['tried' => 0, 'accepted' => 0];
+        }
+
+        $plan = (string) ($facts['plan_name'] ?? '');
+        $maxUsers = isset($facts['max_users']) ? (int) $facts['max_users'] : null;
+        $currency = strtoupper((string) ($facts['currency'] ?? 'eur')) === 'GBP' ? 'GBP' : 'EUR';
+        $monthly = self::chargedAmount($facts['price_monthly'] ?? null);
+        $yearly = self::chargedAmount($facts['price_yearly'] ?? null);
+
+        $paragraphs = [
+            $maxUsers !== null
+                ? [self::KEY . 'moved_up_body', [
+                    'community' => $about['name'],
+                    'count' => self::number((int) ($facts['active_members'] ?? 0)),
+                    'old' => (string) ($facts['old_plan_name'] ?? ''),
+                    'plan' => $plan,
+                    'max' => self::number($maxUsers),
+                ]]
+                : [self::KEY . 'plan_changed_body_no_limit', ['community' => $about['name'], 'plan' => $plan]],
+        ];
+
+        $monthlyText = static fn (): string => self::money((float) $monthly, $currency);
+        $yearlyText = static fn (): string => self::money((float) $yearly, $currency);
+        $paragraphs[] = match (true) {
+            $monthly !== null && $yearly !== null => [self::KEY . 'plan_changed_price', ['monthly' => $monthlyText, 'yearly' => $yearlyText]],
+            $monthly !== null => [self::KEY . 'plan_changed_price_monthly', ['monthly' => $monthlyText]],
+            $yearly !== null => [self::KEY . 'plan_changed_price_yearly', ['yearly' => $yearlyText]],
+            default => [self::KEY . 'plan_changed_no_charge', []],
+        };
+
+        $adminParagraphs = $paragraphs;
+        if ($about['payee_name'] !== null) {
+            $adminParagraphs[] = [self::KEY . 'pay_to_parent', ['payee' => $about['payee_name']]];
+        }
+
+        $admins = self::admins($tenantId);
+        $subjectParams = ['plan' => $plan];
+        $counts = self::deliverCounted($admins, $about['name'], self::KEY . 'moved_up_subject', self::KEY . 'moved_up_title', $adminParagraphs, 'default', '/admin', $subjectParams);
+
+        return self::add($counts, self::toPayeesCounted($tenantId, $about, $admins, self::KEY . 'moved_up_subject', self::KEY . 'moved_up_title', $paragraphs, 'default', $subjectParams));
+    }
+
+    /**
+     * The daily check could not move the community up, so a person must
+     * decide (DESIGN 6.4). `reason`:
+     *
+     * - `no_plan_fits`: no plan offered to it is big enough;
+     * - `custom_price`: its assignment has a specially agreed price;
+     * - `card_subscription`: it pays the platform by card, so only the
+     *   platform team can move it.
+     *
+     * Whoever it pays and the platform team, nobody twice; for
+     * `card_subscription` the platform team only. Its admins were told in
+     * its "over" notice that it would not be moved automatically.
+     *
+     * @param array<string, mixed> $facts reason, active_members, max_users, plan_name, window_days
+     * @return array{tried:int, accepted:int} see deliverCounted()
+     */
+    public static function moveNeedsDecision(int $tenantId, array $facts): array
+    {
+        $about = self::community($tenantId);
+        if ($about === null) {
+            return ['tried' => 0, 'accepted' => 0];
+        }
+
+        $reason = (string) ($facts['reason'] ?? 'no_plan_fits');
+        $reasonKey = match ($reason) {
+            'custom_price' => 'move_decision_custom_price',
+            'card_subscription' => 'move_decision_card_subscription',
+            default => 'move_decision_no_plan_fits',
+        };
+
+        $paragraphs = [
+            [self::KEY . 'limit_usage', [
+                'community' => $about['name'],
+                'count' => self::number((int) ($facts['active_members'] ?? 0)),
+                'max' => self::number((int) ($facts['max_users'] ?? 0)),
+                'plan' => (string) ($facts['plan_name'] ?? ''),
+            ]],
+            [self::KEY . 'active_member_note', ['days' => self::number((int) ($facts['window_days'] ?? 0))]],
+            [self::KEY . $reasonKey, []],
+        ];
+
+        $counts = ['tried' => 0, 'accepted' => 0];
+        $told = [];
+        if ($reason !== 'card_subscription' && $about['pays_parent']) {
+            $payees = self::payees($about);
+            $told = $payees->pluck('id')->map(static fn ($id): int => (int) $id)->all();
+            $counts = self::deliverCounted($payees, $about['name'], self::KEY . 'move_decision_subject', self::KEY . 'move_decision_title', $paragraphs, 'warning', '/super-admin/branch-payments');
+        }
+
+        // For a community that pays the platform, whoever it pays IS the
+        // platform team: one mail each, never two.
+        $team = self::platformTeam()
+            ->reject(static fn ($person): bool => in_array((int) $person->id, $told, true))
+            ->values();
+
+        return self::add($counts, self::deliverCounted($team, $about['name'], self::KEY . 'move_decision_subject', self::KEY . 'move_decision_title', $paragraphs, 'warning', '/platform-team/billing'));
+    }
+
+    /**
+     * @param array{tried:int, accepted:int} $a
+     * @param array{tried:int, accepted:int} $b
+     * @return array{tried:int, accepted:int}
+     */
+    private static function add(array $a, array $b): array
+    {
+        return ['tried' => $a['tried'] + $b['tried'], 'accepted' => $a['accepted'] + $b['accepted']];
     }
 
     /**
@@ -378,14 +545,15 @@ final class BillingStandingNotifier
     }
 
     /**
-     * @param array<string, int|string|null> $facts
-     * @param array{0:string, 1:array<string, string>}|null $closing
+     * @param array<string, mixed> $facts
+     * @param array{0:string, 1:array<string, string|\Closure>}|null $closing
+     * @return array{tried:int, accepted:int}
      */
-    private static function limitNotice(int $tenantId, array $facts, string $stage, bool $tellPayee, ?array $closing, string $theme): int
+    private static function limitNotice(int $tenantId, array $facts, string $stage, bool $tellPayee, ?array $closing, string $theme): array
     {
         $about = self::community($tenantId);
         if ($about === null) {
-            return 0;
+            return ['tried' => 0, 'accepted' => 0];
         }
 
         $paragraphs = [
@@ -402,13 +570,13 @@ final class BillingStandingNotifier
         }
 
         $admins = self::admins($tenantId);
-        $sent = self::deliver($admins, $about['name'], self::KEY . "{$stage}_subject", self::KEY . "{$stage}_title", $paragraphs, $theme, '/admin');
+        $counts = self::deliverCounted($admins, $about['name'], self::KEY . "{$stage}_subject", self::KEY . "{$stage}_title", $paragraphs, $theme, '/admin');
 
         if ($tellPayee) {
-            $sent += self::toPayees($tenantId, $about, $admins, self::KEY . "{$stage}_subject", self::KEY . "{$stage}_title", $paragraphs, $theme);
+            $counts = self::add($counts, self::toPayeesCounted($tenantId, $about, $admins, self::KEY . "{$stage}_subject", self::KEY . "{$stage}_title", $paragraphs, $theme));
         }
 
-        return $sent;
+        return $counts;
     }
 
     /**
@@ -500,6 +668,27 @@ final class BillingStandingNotifier
         string $theme,
         array $subjectParams = []
     ): int {
+        return self::toPayeesCounted($tenantId, $about, $admins, $subjectKey, $titleKey, $paragraphs, $theme, $subjectParams)['tried'];
+    }
+
+    /**
+     * toPayees(), with the mailer's answer as deliverCounted() gives it.
+     *
+     * @param array{id:int, name:string, parent_id:?int, pays_parent:bool, payee_name:?string} $about
+     * @param list<array{0:string, 1:array<string, string|\Closure>}> $paragraphs
+     * @param array<string, string> $subjectParams
+     * @return array{tried:int, accepted:int}
+     */
+    private static function toPayeesCounted(
+        int $tenantId,
+        array $about,
+        Collection $admins,
+        string $subjectKey,
+        string $titleKey,
+        array $paragraphs,
+        string $theme,
+        array $subjectParams = []
+    ): array {
         if ($about['pays_parent']) {
             $note = [self::KEY . 'payee_note_parent', ['community' => $about['name']]];
             $path = '/super-admin/branch-payments';
@@ -515,7 +704,7 @@ final class BillingStandingNotifier
 
         $paragraphs[] = $note;
 
-        return self::deliver($payees, $about['name'], $subjectKey, $titleKey, $paragraphs, $theme, $path, $subjectParams);
+        return self::deliverCounted($payees, $about['name'], $subjectKey, $titleKey, $paragraphs, $theme, $path, $subjectParams);
     }
 
     /**
@@ -532,8 +721,32 @@ final class BillingStandingNotifier
         string $path,
         array $subjectParams = []
     ): int {
+        return self::deliverCounted($people, $communityName, $subjectKey, $titleKey, $paragraphs, $theme, $path, $subjectParams)['tried'];
+    }
+
+    /**
+     * deliver(), also saying how many sends the mailer accepted. `tried` is
+     * every person a send was attempted for; `accepted` those for whom
+     * EmailDispatchService answered true. A provider outage does not throw
+     * (the dispatch service catches it and answers false), so a caller that
+     * records a notice as sent must read `accepted`, not `tried`.
+     *
+     * @param list<array{0:string, 1:array<string, string|\Closure>}> $paragraphs
+     * @param array<string, string> $subjectParams
+     * @return array{tried:int, accepted:int}
+     */
+    private static function deliverCounted(
+        Collection $people,
+        string $communityName,
+        string $subjectKey,
+        string $titleKey,
+        array $paragraphs,
+        string $theme,
+        string $path,
+        array $subjectParams = []
+    ): array {
         if ($people->isEmpty()) {
-            return 0;
+            return ['tried' => 0, 'accepted' => 0];
         }
 
         // Bodies are HTML: every value put into one is escaped. The subject is
@@ -555,14 +768,17 @@ final class BillingStandingNotifier
         };
         $subjectParams = ['community' => $communityName] + $subjectParams;
 
-        $sent = 0;
+        $tried = 0;
+        $accepted = 0;
         foreach ($people->groupBy('tenant_id') as $contextTenantId => $group) {
-            $sent += (int) TenantContext::runForTenant((int) $contextTenantId, static function () use ($group, $subjectKey, $subjectParams, $titleKey, $safeParagraphs, $theme, $path): int {
+            /** @var array{tried:int, accepted:int} $counts */
+            $counts = TenantContext::runForTenant((int) $contextTenantId, static function () use ($group, $subjectKey, $subjectParams, $titleKey, $safeParagraphs, $theme, $path): array {
                 $url = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . $path;
                 $count = 0;
+                $ok = 0;
 
                 foreach ($group as $person) {
-                    $ok = LocaleContext::withLocale($person, static function () use ($person, $subjectKey, $subjectParams, $titleKey, $safeParagraphs, $theme, $url): bool {
+                    $took = LocaleContext::withLocale($person, static function () use ($person, $subjectKey, $subjectParams, $titleKey, $safeParagraphs, $theme, $url): bool {
                         $builder = EmailTemplateBuilder::make();
                         if ($theme !== 'default') {
                             $builder->theme($theme);
@@ -587,10 +803,22 @@ final class BillingStandingNotifier
                         );
                     });
 
-                    // Counted when it reached the mailer, whatever the provider said.
-                    $count++;
+                    // `tried` counts every send that could reach a mail
+                    // provider, whatever it then said; `accepted` only what
+                    // the mailer took. An address the dispatcher refuses
+                    // before the transport (empty, or a reserved domain that
+                    // can never be delivered) is nobody to wait for, so it is
+                    // not counted as tried: a community whose only contacts
+                    // are like that is treated as having nobody to tell.
+                    $routable = trim((string) $person->email) !== ''
+                        && !EmailDispatchService::isUnroutableRecipient((string) $person->email);
+                    if ($routable) {
+                        $count++;
+                    }
 
-                    if (!$ok) {
+                    if ($took && $routable) {
+                        $ok++;
+                    } elseif ($routable) {
                         Log::warning('[BillingStandingNotifier] billing notice was not accepted by the mailer', [
                             'tenant_id' => (int) $person->tenant_id,
                             'user_id' => (int) $person->id,
@@ -598,10 +826,12 @@ final class BillingStandingNotifier
                     }
                 }
 
-                return $count;
+                return ['tried' => $count, 'accepted' => $ok];
             });
+            $tried += (int) ($counts['tried'] ?? 0);
+            $accepted += (int) ($counts['accepted'] ?? 0);
         }
 
-        return $sent;
+        return ['tried' => $tried, 'accepted' => $accepted];
     }
 }

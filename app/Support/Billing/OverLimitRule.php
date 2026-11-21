@@ -88,14 +88,32 @@ final class OverLimitRule
      * count starts again with a fresh notice. Structural on purpose: no list
      * of callers to forget.
      *
+     * When the chosen rule is "move up" (whether the check follows it or, for
+     * a card payer, treats it as warn only), a fifth field carries what the
+     * "over" notice promises: the plan and price it would move to, or that a
+     * person must decide and why (BillingAutomationService::moveOutcome()).
+     * A change in that promise is a change of terms like any other. It is
+     * hashed (`o` + 12 hex) so the key stays within its 64-character column;
+     * the first four fields stay readable.
+     *
      * @param array{plan_id:int, plan_name:string, max_users:int} $limit BillingAutomationService::watchedLimit()
-     * @param array{effective_action:string, grace_days:int}|null $rule for(), when the caller has it
+     * @param array{action?:string, effective_action:string, grace_days:int}|null $rule for(), when the caller has it
+     * @param int|null $active the community's active members, when the caller has counted them
      */
-    public static function termsKey(int $tenantId, array $limit, ?array $rule = null): string
+    public static function termsKey(int $tenantId, array $limit, ?array $rule = null, ?int $active = null): string
     {
         $rule ??= self::for($tenantId);
+        $chosen = $rule['action'] ?? self::for($tenantId)['action'];
 
-        return implode('|', [$rule['effective_action'], (int) $rule['grace_days'], (int) $limit['max_users'], (int) $limit['plan_id']]);
+        $key = implode('|', [$rule['effective_action'], (int) $rule['grace_days'], (int) $limit['max_users'], (int) $limit['plan_id']]);
+        if ($chosen !== 'upgrade') {
+            return $key;
+        }
+
+        $active ??= TenantBillingService::getSubtreeActiveMemberCount($tenantId, StandardPlans::ACTIVE_WINDOW_DAYS);
+        $promise = BillingAutomationService::promiseText(BillingAutomationService::moveOutcome($tenantId, $limit, $rule, $active));
+
+        return $key . '|o' . substr(sha1($promise), 0, 12);
     }
 
     /**

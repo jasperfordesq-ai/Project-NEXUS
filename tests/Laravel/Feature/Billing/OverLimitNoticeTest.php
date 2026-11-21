@@ -202,6 +202,66 @@ final class OverLimitNoticeTest extends TestCase
         }
     }
 
+    public function test_the_move_up_line_names_the_plans_price_in_the_communitys_currency(): void
+    {
+        // DESIGN 6.5: "it will move to PLAN (price) on DATE".
+        BillingStandingNotifier::limitOver($this->child, $this->facts([
+            'active_members' => 101, 'grace_days' => 30, 'rule' => 'upgrade', 'rule_action' => 'upgrade',
+            'move_date' => '2027-04-09', 'move_plan' => 'Local', 'move_price_monthly' => 199.0, 'move_price_yearly' => 1990.0, 'move_currency' => 'gbp',
+        ]));
+
+        $body = $this->body($this->childAdmin);
+        $this->assertStringContainsString('<strong>Local</strong> package (£199.00 a month)', $body);
+        $this->assertStringContainsString('2027-04-09', $body);
+        $this->assertStringNotContainsString('€', $body);
+    }
+
+    public function test_the_move_up_line_without_a_price_names_only_the_plan(): void
+    {
+        BillingStandingNotifier::limitOver($this->child, $this->facts([
+            'active_members' => 101, 'rule' => 'upgrade', 'move_date' => '2027-04-09', 'move_plan' => 'Local', 'move_price_monthly' => 0,
+        ]));
+
+        $this->assertStringContainsString('<strong>Local</strong> package, the smallest that fits', $this->body($this->childAdmin));
+    }
+
+    public function test_the_limit_notices_say_how_many_sends_the_mailer_accepted(): void
+    {
+        // Task 5A C1: an outage answers false, it does not throw.
+        $counts = BillingStandingNotifier::limitOver($this->child, $this->facts(['active_members' => 101, 'rule' => 'none']));
+        $this->assertSame(['tried' => 2, 'accepted' => 2], $counts, 'The child admin and the hub manager.');
+
+        app()->instance(EmailDispatchService::class, new class () extends EmailDispatchService {
+            public function send(string $to, string $subject, string $body, array $options = []): bool
+            {
+                return false;
+            }
+        });
+        $this->assertSame(['tried' => 2, 'accepted' => 0], BillingStandingNotifier::limitOver($this->child, $this->facts(['active_members' => 101, 'rule' => 'none'])));
+        $this->assertSame(['tried' => 2, 'accepted' => 0], BillingStandingNotifier::limitApproaching($this->child, $this->facts(['rule' => 'none'])));
+    }
+
+    public function test_an_address_refused_before_the_mailer_is_not_counted_as_tried(): void
+    {
+        $hub = $this->makeCommunity('Unroutable notice hub', 1, '/1/', true);
+        $child = $this->makeCommunity('Unroutable notice child', $hub, "/1/{$hub}/");
+        User::factory()->forTenant($child)->create([
+            'email' => 'admin.' . bin2hex(random_bytes(4)) . '@nowhere.test',
+            'status' => 'active', 'is_approved' => true, 'role' => 'admin', 'preferred_language' => 'en',
+        ]);
+
+        $this->assertSame(['tried' => 0, 'accepted' => 0], BillingStandingNotifier::limitOver($child, $this->facts(['active_members' => 101, 'rule' => 'none'])));
+    }
+
+    public function test_the_decision_mail_writes_numbers_in_the_readers_format(): void
+    {
+        BillingStandingNotifier::moveNeedsDecision($this->child, $this->facts(['reason' => 'no_plan_fits', 'active_members' => 12345, 'max_users' => 10000]));
+
+        $body = $this->body($this->manager);
+        $this->assertStringContainsString('12,345', $body);
+        $this->assertStringContainsString('10,000', $body);
+    }
+
     public function test_a_caller_without_a_rule_is_read_as_before(): void
     {
         BillingStandingNotifier::limitOver($this->child, $this->facts(['pause_date' => '2027-04-09']));

@@ -518,7 +518,9 @@ final class BillingAutomationMemberLimitTest extends TestCase
         return [
             'warn only' => ['none'],
             'stop new members (carried out by a later stage)' => ['block_joining'],
-            'move up (carried out by a later stage)' => ['upgrade'],
+            // Task 5A: 'move up' left this list. It now moves the community
+            // on the day a pause would come (BillingAutomationMoveUpTest),
+            // and still never pauses it.
         ];
     }
 
@@ -1144,15 +1146,15 @@ final class BillingAutomationMemberLimitTest extends TestCase
         $this->pauseAfterThirtyDays();
         $this->addActiveMembers($this->community, 101);
 
-        // The mail service cannot even be built for one run: the notifier
-        // throws, as it would with the mail system down.
-        $this->app->bind(\App\Services\EmailDispatchService::class, static function (): never {
-            throw new \RuntimeException('mail system down (test)');
-        });
+        // Task 5A C1: a provider outage does not throw. EmailDispatchService
+        // catches every failure and answers false, so the double does exactly
+        // that for one run (the mailer under it is built with `new`, so the
+        // dispatch service is the narrowest seam the container offers).
+        $this->app->instance(\App\Services\EmailDispatchService::class, new RefusingEmailDispatch());
         try {
             BillingAutomationService::run($this->today);
         } finally {
-            $this->app->offsetUnset(\App\Services\EmailDispatchService::class);
+            $this->app->instance(\App\Services\EmailDispatchService::class, new ProviderAcceptsEmailDispatch());
         }
         $row = $this->standingRow($this->community);
         $this->assertNull($row->limit_notice_stage, 'Not recorded as sent.');
@@ -1331,6 +1333,94 @@ final class BillingAutomationMemberLimitTest extends TestCase
         $this->assertSame([], $this->actionsFor(BillingAutomationService::run($this->day(15)), $this->community));
         $this->assertFalse(BillingLock::isLocked($this->community));
         $this->assertSame(['member_limit:suspend'], $this->actionsFor(BillingAutomationService::run($this->day(16)), $this->community));
+    }
+
+    // ── Task 5A, carried findings C1 to C3 ──────────────────────────────────
+
+    public function test_with_nobody_to_tell_the_notice_still_counts_and_the_pause_follows(): void
+    {
+        // C1: tried === 0. A community that pays its hub, with no admin and a
+        // hub with no manager: nobody can be mailed. Waiting for a send that
+        // can never happen would exempt it for ever, so the rule proceeds.
+        $this->pauseAfterTenDays();
+        $hub = $this->makeCommunity('Nobody hub', 1, '/1/', true);
+        $child = $this->makeCommunity('Nobody child', $hub, "/1/{$hub}/");
+        $this->assignPlan($child, $this->plan100);
+        $this->addActiveMembers($child, 101);
+
+        $this->assertSame(['member_limit:over'], $this->actionsFor(BillingAutomationService::run($this->today), $child));
+        $this->assertSame('over', $this->standingRow($child)->limit_notice_stage);
+        $this->assertSame([], $this->actionsFor(BillingAutomationService::run($this->day(9)), $child));
+        $this->assertSame(['member_limit:suspend'], $this->actionsFor(BillingAutomationService::run($this->day(10)), $child));
+    }
+
+    public function test_contacts_that_can_never_be_mailed_count_as_nobody_to_tell(): void
+    {
+        // Fix round 1, item 5: an address the dispatcher refuses before the
+        // transport is not a send that failed. With only such contacts the
+        // community has nobody to tell, and the rule proceeds (a provider
+        // outage still holds the notice back: see the test above).
+        $this->pauseAfterTenDays();
+        $hub = $this->makeCommunity('Unroutable hub', 1, '/1/', true);
+        $child = $this->makeCommunity('Unroutable child', $hub, "/1/{$hub}/");
+        $this->assignPlan($child, $this->plan100);
+        \App\Models\User::factory()->forTenant($child)->create([
+            'email' => 'admin.' . bin2hex(random_bytes(4)) . '@nowhere.test',
+            'status' => 'active', 'is_approved' => true, 'role' => 'admin', 'preferred_language' => 'en',
+        ]);
+        $this->addActiveMembers($child, 101);
+
+        $this->assertSame(['member_limit:over'], $this->actionsFor(BillingAutomationService::run($this->today), $child));
+        $this->assertSame('over', $this->standingRow($child)->limit_notice_stage, 'Nobody to wait for: counted as told.');
+        $this->assertSame(['member_limit:suspend'], $this->actionsFor(BillingAutomationService::run($this->day(10)), $child));
+    }
+
+    public function test_a_deactivated_community_starts_a_new_episode_when_reactivated(): void
+    {
+        // C2
+        $this->pauseAfterThirtyDays();
+        $this->addActiveMembers($this->community, 101);
+        $this->assertSame(['member_limit:over'], $this->actionsFor(BillingAutomationService::run($this->today), $this->community));
+
+        DB::table('tenants')->where('id', $this->community)->update(['is_active' => 0]);
+        $this->assertSame([], $this->actionsFor(BillingAutomationService::run($this->day(3)), $this->community));
+        $row = $this->standingRow($this->community);
+        $this->assertNull($row->over_limit_since, 'Deactivated: the count is not kept.');
+        $this->assertNull($row->limit_notice_stage);
+        $this->assertNull($row->limit_notice_at);
+
+        DB::table('tenants')->where('id', $this->community)->update(['is_active' => 1]);
+        $this->assertSame(['member_limit:over'], $this->actionsFor(BillingAutomationService::run($this->day(90)), $this->community), 'A fresh warning, not a pause on a 90-day-old one.');
+        $this->assertFalse(BillingLock::isLocked($this->community));
+        $this->assertCount(2, $this->overMail($this->admin));
+        $this->assertSame([], $this->actionsFor(BillingAutomationService::run($this->day(119)), $this->community));
+        $this->assertSame(['member_limit:suspend'], $this->actionsFor(BillingAutomationService::run($this->day(120)), $this->community));
+    }
+
+    public function test_a_community_locked_from_above_runs_no_clock_of_its_own(): void
+    {
+        // C3
+        $this->pauseAfterThirtyDays();
+        [$hub, $child, $childAdmin] = $this->hubAndChild();
+        $this->addActiveMembers($child, 101);
+        $this->assertSame(['member_limit:over'], $this->actionsFor(BillingAutomationService::run($this->today), $child));
+
+        BillingStandingService::suspend($hub, null, 'auto', 'Payment late', 'non_payment');
+        $this->assertSame([], $this->actionsFor(BillingAutomationService::preview($this->day(1)), $child));
+        $this->assertSame([], $this->actionsFor(BillingAutomationService::run($this->day(1)), $child));
+        $row = $this->standingRow($child);
+        $this->assertNull($row->over_limit_since, 'Locked from above: no count is kept.');
+        $this->assertNull($row->limit_notice_stage);
+        $this->assertNull($row->limit_notice_at);
+        $this->assertSame([], $this->actionsFor(BillingAutomationService::run($this->day(30)), $child));
+        $this->assertSame([], $this->actionsFor(BillingAutomationService::run($this->day(40)), $child));
+        $this->assertNull(BillingStandingService::get($child)['suspension_reason'], 'Never paused for being over while locked from above.');
+
+        BillingStandingService::restore($hub, null, 'Paid');
+        $this->assertSame(['member_limit:over'], $this->actionsFor(BillingAutomationService::run($this->day(41)), $child));
+        $this->assertCount(2, $this->overMail($childAdmin));
+        $this->assertSame([], $this->actionsFor(BillingAutomationService::run($this->day(70)), $child));
+        $this->assertSame(['member_limit:suspend'], $this->actionsFor(BillingAutomationService::run($this->day(71)), $child));
     }
 
     private function day(int $offset): CarbonImmutable

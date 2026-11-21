@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Tests\Laravel\Feature\Billing;
 
 use App\Models\User;
+use App\Services\EmailDispatchService;
 use App\Support\Billing\BillingLock;
 use App\Support\Billing\BillingSettings;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +27,11 @@ trait BillingAutomationFixtures
         putenv('MAILER_PER_RECIPIENT_HOURLY_LIMIT=0');
         BillingLock::flush();
         BillingSettings::flush();
+        // The test environment has no mail server, so every real send ends
+        // "failed" at the transport. The member-limit clock now records a
+        // notice only when the mailer accepted it (task 5A, C1), so these
+        // tests stand in a provider that accepts: see ProviderAcceptsEmailDispatch.
+        app()->instance(EmailDispatchService::class, new ProviderAcceptsEmailDispatch());
     }
 
     private function tearDownAutomation(): void
@@ -115,5 +121,39 @@ trait BillingAutomationFixtures
     private function switchOn(): void
     {
         BillingSettings::set('automation_enabled', true, null);
+    }
+}
+
+/** A mail provider that is down: every send is refused, as EmailDispatchService answers then. */
+final class RefusingEmailDispatch extends EmailDispatchService
+{
+    public function send(string $to, string $subject, string $body, array $options = []): bool
+    {
+        return false;
+    }
+}
+
+/**
+ * The real dispatch pipeline (refusals, the paused-community check, the
+ * per-recipient limit, the email_log row the tests count), with a mail
+ * provider that accepts. Only a send that went all the way to the transport
+ * and failed there because no mail server runs in tests is answered true;
+ * every earlier refusal still answers false.
+ */
+final class ProviderAcceptsEmailDispatch extends EmailDispatchService
+{
+    public function send(string $to, string $subject, string $body, array $options = []): bool
+    {
+        $before = (int) DB::table('email_log')->max('id');
+        if (parent::send($to, $subject, $body, $options)) {
+            return true;
+        }
+
+        return DB::table('email_log')
+            ->where('id', '>', $before)
+            ->where('recipient_email', $to)
+            ->where('status', 'failed')
+            ->where('error', 'SMTP failed')
+            ->exists();
     }
 }
