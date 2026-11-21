@@ -10,6 +10,7 @@ namespace App\Services;
 
 use App\Support\Billing\BillingLock;
 use App\Support\Billing\BillingSettings;
+use App\Support\Billing\JoiningGate;
 use App\Support\Billing\OverLimitRule;
 use App\Support\Billing\PlanTerms;
 use App\Support\Billing\StandardPlans;
@@ -47,7 +48,10 @@ use Illuminate\Support\Facades\Log;
  *   longer has a limit, or its rule no longer pauses. Move up happens on the
  *   day a pause would (moveStep()): to the smallest offered plan that fits,
  *   or, when it cannot be moved automatically, a person is told once. Stop
- *   new members is only named in the notices here.
+ *   new members is named in the notices here; the door itself is
+ *   JoiningGate's. After both clocks, one pass tells the communities BELOW a
+ *   full community that their door is shut too, and again when it opens
+ *   (joiningNoticeClock()): such a door shuts only once they are told.
  *
  * `run()` acts only while the master switch (`automation_enabled`) is on, and
  * otherwise does nothing at all. `preview()` never acts and never sends: it is
@@ -317,7 +321,9 @@ final class BillingAutomationService
         sort($ids);
 
         if ($ids === []) {
-            return [];
+            // A community told of a door shut above it may still need to be
+            // told that it has opened.
+            return self::joiningNoticeClock($act);
         }
 
         $tenants = DB::table('tenants')->whereIn('id', $ids)->get(['id', 'name', 'is_active', 'depth'])->keyBy('id');
@@ -396,7 +402,223 @@ final class BillingAutomationService
             }
         }
 
+        // After every community's own clocks: a community told in this run
+        // that it is at its number is already recorded as told, so the
+        // communities below it are told in the same run.
+        foreach (self::joiningNoticeClock($act) as $entry) {
+            $outcome[] = $entry;
+        }
+
         return $outcome;
+    }
+
+    /**
+     * "Stop new members joining" shut from above (task 7A). A community whose
+     * door a full community ABOVE it would shut (JoiningGate) has that door
+     * shut only once its own admins have been told. This pass tells them,
+     * and tells them again when joining opens.
+     *
+     * - Told: the nearest community above whose door is shut (block_joining,
+     *   at or over its number, told under its present terms, no exempt
+     *   community in between) is A, and this community's
+     *   `joining_closed_notice_key` is not A's present key
+     *   (JoiningGate::noticeKeyFor()). Its admins get joiningClosedByAbove()
+     *   and the key is recorded once the mailer accepted it for at least one
+     *   of them, or nobody could be tried (reachedSomeone(), as for "over");
+     *   otherwise it is due again at the next run. A new key from A (A told
+     *   again under new terms) is "not told" until this community is told
+     *   again under it.
+     * - Opened again: no community above shuts the door any more, and the
+     *   community named in the stored key no longer holds it shut: its key
+     *   changed, it is no longer counted above this one (its rule, plan,
+     *   exemption, an exempt community in between), or it is clearly under
+     *   its number (below LIMIT_LEAVE_REACHED_PERCENT, the line the
+     *   community's own "reached" stage is left at, so a community hovering
+     *   at its number does not mail the communities below it every day).
+     *   Its admins get joiningOpenedAgain() and the key is cleared, on the
+     *   same counted-send rule.
+     * - Not told and never shut: tenant 1, a deactivated community, one
+     *   paused for any reason (its own pause or one above it: its key is
+     *   kept until it is open again), an exempt one (a key it holds is
+     *   cleared silently, so lifting the exemption starts afresh), one
+     *   shielded by an exempt community in between.
+     *
+     * Nothing runs while the automatic checks are off, in a run or a preview:
+     * the door is open for everyone then, and nothing is sent or cleared. A
+     * preview lists what a run would do and writes and sends nothing; it does
+     * not see a community above that this same run would tell first.
+     *
+     * Cost: one query for the communities told they are at their number,
+     * their rule for each (OverLimitRule::for(), 2–3 queries), and for each
+     * whose rule is "stop new members joining" one query for the communities
+     * below it (`tenants.path` prefix); one for the communities holding a key, and two for the
+     * candidates' rows. Then, per candidate, its standing (2–3 queries, the
+     * lock read from BillingLock's cache), its line (1 query, more for a
+     * community without a path) and JoiningGate's answer for each community
+     * in the line: about 7 queries each the first time, cached for the rest
+     * of the run. A send adds the admin lookup and two community reads.
+     *
+     * @return list<array{tenant_id:int, tenant_name:string, clock:string, action:string, detail:array<string, mixed>}>
+     */
+    private static function joiningNoticeClock(bool $act): array
+    {
+        if (!BillingSettings::get('automation_enabled')) {
+            return [];
+        }
+
+        // This run may just have recorded a community as told: the gate's
+        // cached answers must not hide it.
+        JoiningGate::flush();
+
+        $candidates = [];
+        $full = DB::table('tenant_billing_standing as s')
+            ->join('tenants as t', 't.id', '=', 's.tenant_id')
+            ->whereIn('s.limit_notice_stage', ['reached', 'over'])
+            ->whereNotNull('s.limit_notice_at')
+            ->where('s.tenant_id', '>', 1)
+            ->get(['s.tenant_id', 't.path']);
+        foreach ($full as $row) {
+            // Only "stop new members joining" closes doors below a community.
+            if (OverLimitRule::for((int) $row->tenant_id)['effective_action'] !== 'block_joining') {
+                continue;
+            }
+            $path = trim((string) ($row->path ?? ''));
+            if ($path === '') {
+                Log::error('[BillingAutomation] a community has no materialised path; the communities below it are not checked for a door shut from above', [
+                    'tenant_id' => (int) $row->tenant_id,
+                ]);
+                continue;
+            }
+            foreach (DB::table('tenants')->where('path', 'like', $path . '%')->where('id', '!=', (int) $row->tenant_id)->pluck('id') as $below) {
+                $candidates[] = (int) $below;
+            }
+        }
+        foreach (DB::table('tenant_billing_standing')->whereNotNull('joining_closed_notice_key')->pluck('tenant_id') as $holder) {
+            $candidates[] = (int) $holder;
+        }
+
+        $candidates = array_values(array_unique(array_filter($candidates, static fn (int $id): bool => $id > 1)));
+        if ($candidates === []) {
+            return [];
+        }
+        sort($candidates);
+
+        $tenants = DB::table('tenants')->whereIn('id', $candidates)->get(['id', 'name', 'is_active'])->keyBy('id');
+        $stored = DB::table('tenant_billing_standing')->whereIn('tenant_id', $candidates)->pluck('joining_closed_notice_key', 'tenant_id');
+
+        $out = [];
+        foreach ($candidates as $id) {
+            $tenant = $tenants->get($id);
+            if (!$tenant || (int) $tenant->is_active !== 1) {
+                continue;
+            }
+
+            try {
+                $key = $stored->get($id);
+                $key = is_string($key) && $key !== '' ? $key : null;
+
+                $standing = BillingStandingService::get($id);
+                if ($standing['exempt']) {
+                    if ($act && $key !== null) {
+                        BillingStandingService::recordCheckState($id, ['joining_closed_notice_key' => null]);
+                        JoiningGate::flush();
+                    }
+                    continue;
+                }
+                if ($standing['locked']) {
+                    continue;
+                }
+
+                $above = JoiningGate::capsAbove($id);
+                $closer = null;
+                foreach ($above as $cap) {
+                    if ($cap['active'] >= $cap['max']) {
+                        $closer = $cap;
+                        break;
+                    }
+                }
+
+                if ($closer !== null) {
+                    if ($key === $closer['notice_key']) {
+                        continue;
+                    }
+                    $facts = self::aboveFacts($closer['tenant_id']);
+                    if ($act) {
+                        $counts = self::tellCounted(fn () => BillingStandingNotifier::joiningClosedByAbove($id, $facts), $id);
+                        if (self::reachedSomeone($counts)) {
+                            BillingStandingService::recordCheckState($id, ['joining_closed_notice_key' => $closer['notice_key']]);
+                            JoiningGate::flush();
+                        } else {
+                            Log::error('[BillingAutomation] the "joining closed by a community above" notice was not sent; the door stays open and the notice is due again at the next run', [
+                                'tenant_id' => $id,
+                                'above_tenant_id' => $closer['tenant_id'],
+                                'tried' => $counts['tried'] ?? null,
+                            ]);
+                        }
+                    }
+                    $out[] = self::entry($id, (string) $tenant->name, 'member_limit', 'joining_closed_by_above', self::closedByDetail($facts));
+                    continue;
+                }
+
+                if ($key === null) {
+                    continue;
+                }
+
+                foreach ($above as $cap) {
+                    if ($cap['notice_key'] === $key) {
+                        if ($cap['active'] * 100 >= self::LIMIT_LEAVE_REACHED_PERCENT * $cap['max']) {
+                            // Just under its number: the door below is open
+                            // (the gate asks for a full community), but not
+                            // clearly, so nobody is mailed yet.
+                            continue 2;
+                        }
+                        break;
+                    }
+                }
+
+                $facts = self::aboveFacts((int) explode('|', $key, 2)[0]);
+                if ($act) {
+                    $counts = self::tellCounted(fn () => BillingStandingNotifier::joiningOpenedAgain($id, $facts), $id);
+                    if (self::reachedSomeone($counts)) {
+                        BillingStandingService::recordCheckState($id, ['joining_closed_notice_key' => null]);
+                        JoiningGate::flush();
+                    } else {
+                        Log::error('[BillingAutomation] the "joining open again" notice was not sent; it is due again at the next run', [
+                            'tenant_id' => $id,
+                            'tried' => $counts['tried'] ?? null,
+                        ]);
+                    }
+                }
+                $out[] = self::entry($id, (string) $tenant->name, 'member_limit', 'joining_opened_again', self::closedByDetail($facts));
+            } catch (\Throwable $e) {
+                Log::error('[BillingAutomation] the check for a door shut from above failed for a community', [
+                    'tenant_id' => $id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * @return array{above_tenant_id:int, above_name:string}
+     */
+    private static function aboveFacts(int $aboveId): array
+    {
+        return [
+            'above_tenant_id' => $aboveId,
+            'above_name' => (string) (DB::table('tenants')->where('id', $aboveId)->value('name') ?? ''),
+        ];
+    }
+
+    /**
+     * @param array{above_tenant_id:int, above_name:string} $facts
+     * @return array{closed_by:array{tenant_id:int, tenant_name:string}}
+     */
+    private static function closedByDetail(array $facts): array
+    {
+        return ['closed_by' => ['tenant_id' => $facts['above_tenant_id'], 'tenant_name' => $facts['above_name']]];
     }
 
     /**

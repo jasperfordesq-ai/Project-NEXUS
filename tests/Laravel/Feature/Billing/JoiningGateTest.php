@@ -105,9 +105,40 @@ final class JoiningGateTest extends TestCase
         // Members of a child count towards its parent's number.
         $this->cap($this->hub, 3, 'block_joining');
         $this->addActiveMembers($this->child, 3);
+        $this->tellCommunityOfDoorShutAbove($this->child, $this->hub);
 
         $this->assertSame(['tenant_id' => $this->hub, 'active' => 3, 'max' => 3], JoiningGate::closedBy($this->child));
         $this->assertSame(0, JoiningGate::roomLeft($this->child));
+    }
+
+    public function test_a_door_shut_from_above_needs_the_child_told(): void
+    {
+        // Warning first, for the community below too (task 7A).
+        $this->cap($this->hub, 3, 'block_joining');
+        $this->addActiveMembers($this->child, 3);
+
+        $this->assertNotNull(JoiningGate::closedBy($this->hub), 'the full hub itself is shut');
+        $this->assertNull(JoiningGate::closedBy($this->child), 'the child has not been told: open');
+        $this->assertNull(JoiningGate::roomLeft($this->child), 'no cap applies to an untold child of a full hub');
+
+        $this->tellCommunityOfDoorShutAbove($this->child, $this->hub);
+        $this->assertSame($this->hub, JoiningGate::closedBy($this->child)['tenant_id'] ?? null, 'told: shut');
+        $this->assertNull(JoiningGate::closedBy($this->sibling), 'telling one child shuts no other');
+
+        // The hub's terms change (its days): the child was told under the old
+        // terms, so its door opens until it is told again.
+        $this->standing($this->hub, ['over_limit_grace_days' => 45]);
+        $this->tellCommunityOfMemberLimit($this->hub);
+        $this->assertNotNull(JoiningGate::closedBy($this->hub), 'precondition: the hub is told under its new terms');
+        $this->assertNull(JoiningGate::closedBy($this->child), 'told under old terms: open');
+
+        $this->tellCommunityOfDoorShutAbove($this->child, $this->hub);
+        $this->assertNotNull(JoiningGate::closedBy($this->child));
+
+        // A key naming another community does not count.
+        $this->standing($this->child, ['joining_closed_notice_key' => $this->sibling . '|' . explode('|', (string) JoiningGate::noticeKeyFor($this->hub), 2)[1]]);
+        JoiningGate::flush();
+        $this->assertNull(JoiningGate::closedBy($this->child));
     }
 
     public function test_a_siblings_rule_does_not_shut_the_door(): void
@@ -127,9 +158,30 @@ final class JoiningGateTest extends TestCase
         $this->addActiveMembers($this->sibling, 7);
         $this->addActiveMembers($this->child, 1);
 
+        // The hub limits the child only once the child has been told under
+        // the hub's present terms (task 7A): until then, only its own.
+        $this->assertSame(19, JoiningGate::roomLeft($this->child));
+        $this->tellCommunityOfDoorShutAbove($this->child, $this->hub);
+
         // Hub: 10 - 8 = 2; child: 20 - 1 = 19.
         $this->assertSame(2, JoiningGate::roomLeft($this->child));
         $this->assertNull(JoiningGate::closedBy($this->child));
+    }
+
+    public function test_an_untold_child_is_not_capped_by_the_community_above(): void
+    {
+        // The hub has room for 2 more; the child has no limit of its own.
+        $this->cap($this->hub, 10, 'block_joining');
+        $this->addActiveMembers($this->child, 8);
+
+        $this->assertSame(2, JoiningGate::roomLeft($this->hub), 'the hub itself is capped');
+        $this->assertNull(JoiningGate::roomLeft($this->child), 'not told: no cap from above');
+        $this->assertNull(JoiningGate::tightest($this->child));
+        $this->assertSame([], JoiningGate::limits($this->child));
+
+        $this->tellCommunityOfDoorShutAbove($this->child, $this->hub);
+        $this->assertSame(2, JoiningGate::roomLeft($this->child), 'told: the hub limits it');
+        $this->assertNull(JoiningGate::roomLeft($this->sibling), 'telling one child caps no other');
     }
 
     public function test_an_exempt_community_does_not_shut_its_door(): void
@@ -148,7 +200,8 @@ final class JoiningGateTest extends TestCase
         $this->cap($this->hub, 3, 'block_joining');
         $this->addActiveMembers($this->child, 3);
         $this->standing($this->child, ['exempt' => 1, 'exempt_reason' => 'Pilot']);
-        JoiningGate::flush();
+        $this->tellCommunityOfDoorShutAbove($this->child, $this->hub);
+        $this->tellCommunityOfDoorShutAbove($this->sibling, $this->hub);
 
         $this->assertNotNull(JoiningGate::closedBy($this->sibling), 'control: the non-exempt sibling is shut by the full parent');
         $this->assertNull(JoiningGate::closedBy($this->child));
@@ -185,6 +238,7 @@ final class JoiningGateTest extends TestCase
     {
         $this->cap($this->hub, 3, 'block_joining');
         $this->addActiveMembers($this->child, 3);
+        $this->tellCommunityOfDoorShutAbove($this->child, $this->hub);
 
         $own = JoiningGate::closedBy($this->hub);
         $above = JoiningGate::closedBy($this->child);
@@ -299,6 +353,7 @@ final class JoiningGateTest extends TestCase
         // the hub's members, so the hub's full count does not shut the move.
         $this->cap($this->hub, 3, 'block_joining');
         $this->addActiveMembers($this->child, 3);
+        $this->tellCommunityOfDoorShutAbove($this->sibling, $this->hub);
 
         $this->assertNotNull(JoiningGate::closedBy($this->sibling));
         $this->assertNull(JoiningGate::closedBy($this->sibling, $this->child));

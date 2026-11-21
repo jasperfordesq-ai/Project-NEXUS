@@ -613,7 +613,8 @@ final class BillingStandingService
     /**
      * Every community's member-limit count starts again, as
      * restartLimitClock() does for a few. Only the member-limit clock's
-     * memory is cleared; the payment clock is not touched.
+     * memory is cleared (with every `joining_closed_notice_key`, task 7A);
+     * the payment clock is not touched.
      */
     public static function restartAllLimitClocks(): void
     {
@@ -637,6 +638,19 @@ final class BillingStandingService
                 'over_limit_since' => null,
                 'limit_notice_stage' => null,
                 'limit_notice_at' => null,
+                'updated_at' => now(),
+            ]);
+
+        // Nobody is told any more that a community above closed their door
+        // (task 7A): the community above is warned afresh on the first run,
+        // under terms that may read the same, and a notice from before the
+        // checks were off must not shut a door. No email: nothing acted while
+        // they were off. The first run tells each community below again
+        // before its door shuts.
+        DB::table('tenant_billing_standing')
+            ->whereNotNull('joining_closed_notice_key')
+            ->update([
+                'joining_closed_notice_key' => null,
                 'updated_at' => now(),
             ]);
     }
@@ -684,14 +698,16 @@ final class BillingStandingService
 
     /**
      * The daily check's own memory for a community: which notice it sent last
-     * and since when it has been over its member limit. Not a change in
-     * standing, so not audited (the notices themselves are in the mail log).
+     * and since when it has been over its member limit, and whether it has
+     * been told that a community above it closed its door
+     * (`joining_closed_notice_key`, task 7A). Not a change in standing, so
+     * not audited (the notices themselves are in the mail log).
      *
      * @param array<string, mixed> $values
      */
     public static function recordCheckState(int $tenantId, array $values): void
     {
-        $allowed = ['last_notice_stage', 'last_notice_at', 'over_limit_since', 'limit_notice_stage', 'limit_notice_at', 'limit_terms_key'];
+        $allowed = ['last_notice_stage', 'last_notice_at', 'over_limit_since', 'limit_notice_stage', 'limit_notice_at', 'limit_terms_key', 'joining_closed_notice_key'];
         $unknown = array_diff(array_keys($values), $allowed);
         if ($unknown !== []) {
             throw new \InvalidArgumentException('Not check state: ' . implode(', ', $unknown));

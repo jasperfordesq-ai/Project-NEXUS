@@ -567,6 +567,8 @@ final class JoiningClosedDoorsTest extends TestCase
         ]);
         DB::table('tenants')->where('id', $child)->update(['path' => "/1/{$hub}/{$child}/"]);
         $max = $this->limit($hub, 'at');
+        // A door shut from above shuts once the child has been told (task 7A).
+        $this->tellCommunityOfDoorShutAbove($child, $hub);
         $email = 'door-above-' . bin2hex(random_bytes(4)) . '@nexus.test';
 
         $r = $this->apiPost('/v2/admin/super/users', ['tenant_id' => $child] + $this->newMember($email), $this->bearer($actor));

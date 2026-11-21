@@ -43,6 +43,14 @@ use Illuminate\Support\Facades\Log;
  * shuts its children's doors; a sibling's never does. Tenant 1 never shuts a
  * door and is never shut.
  *
+ * A community above shuts a door only once the community below has been told
+ * too (task 7A): its `joining_closed_notice_key` must be the full community's
+ * noticeKeyFor(), recorded by the daily check when the notice to its admins
+ * was accepted. Until then that door stays open, while the full community's
+ * own door is shut, and the community above does not cap an import below it
+ * either (limits(), tightest(), roomLeft()): only the community's own limit
+ * applies.
+ *
  * Open again by itself when the count drops or the terms change. Existing members
  * are never touched: this only answers "may a NEW member come to exist here".
  * The billing pause is a separate thing (BillingLock) and refuses sign-ups on
@@ -147,6 +155,7 @@ final class JoiningGate
                 : [];
 
             $caps = [];
+            $toldOf = null;
             foreach (BillingLock::lineNearestFirst($tenantId) as $id) {
                 if ($id <= 1) {
                     continue;
@@ -156,9 +165,26 @@ final class JoiningGate
                     // An exempt community shields itself and everything below it.
                     break;
                 }
-                if ($answer['cap'] !== null && !isset($skip[$id])) {
-                    $caps[] = $answer['cap'];
+                if ($id === $tenantId) {
+                    $toldOf = $answer['told_of_above'];
                 }
+                if ($answer['cap'] === null || isset($skip[$id])) {
+                    continue;
+                }
+                // Warning first, for the community below too (task 7A): a
+                // community above limits this one at all, by shutting its
+                // door or by capping an import at its room left, only once
+                // this community's admins have been told, under that
+                // community's present terms. Until then only this
+                // community's own limit applies.
+                if (
+                    $id !== $tenantId
+                    && self::$answerOverride === null
+                    && $toldOf !== $answer['notice_key']
+                ) {
+                    continue;
+                }
+                $caps[] = $answer['cap'];
             }
 
             return $caps;
@@ -173,6 +199,70 @@ final class JoiningGate
 
             return [];
         }
+    }
+
+    /**
+     * For the daily check's notice to the communities below (task 7A): every
+     * community ABOVE this one whose rule applies to it, nearest first, with
+     * its count and the key this community must hold to be shut by it
+     * (noticeKeyFor()), whether or not this community has been told. Empty
+     * when the switch is off, for tenant 1 and its direct line, when this
+     * community or one between is exempt (the shield), and when the check
+     * fails (logged, as limits() logs it).
+     *
+     * @return list<array{tenant_id:int, active:int, max:int, notice_key:string}>
+     */
+    public static function capsAbove(int $tenantId): array
+    {
+        if ($tenantId <= 1) {
+            return [];
+        }
+
+        try {
+            if (!(bool) BillingSettings::get('automation_enabled')) {
+                return [];
+            }
+
+            $caps = [];
+            foreach (BillingLock::lineNearestFirst($tenantId) as $id) {
+                if ($id <= 1) {
+                    continue;
+                }
+                $answer = self::answerFor($id);
+                if ($answer['exempt']) {
+                    break;
+                }
+                if ($id !== $tenantId && $answer['cap'] !== null && $answer['notice_key'] !== null) {
+                    $caps[] = $answer['cap'] + ['notice_key' => $answer['notice_key']];
+                }
+            }
+
+            return $caps;
+        } catch (\Throwable $e) {
+            Log::error('[JoiningGate] could not read the member limits above a community', [
+                'tenant_id' => $tenantId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [];
+        }
+    }
+
+    /**
+     * What a community below must have recorded (`joining_closed_notice_key`)
+     * for this community's full member number to shut its door:
+     * `<this community's id>|<its present terms key>`, the terms key built
+     * exactly as toldUnderPresentTerms() builds it for this community. Null
+     * when no member number is watched for it.
+     */
+    public static function noticeKeyFor(int $tenantId): ?string
+    {
+        $limit = BillingAutomationService::watchedLimit($tenantId);
+        if ($limit === null) {
+            return null;
+        }
+
+        return self::noticeKey($tenantId, OverLimitRule::for($tenantId), $limit);
     }
 
     /**
@@ -227,12 +317,16 @@ final class JoiningGate
      * One community's own answer, ignoring the line. Cached; a cache that is
      * down is read through, never fatal.
      *
-     * @return array{exempt:bool, cap:array{tenant_id:int, active:int, max:int}|null}
+     * `notice_key` is the key a community below must hold to be shut by this
+     * one (null when it has no cap); `told_of_above` is this community's own
+     * `joining_closed_notice_key`.
+     *
+     * @return array{exempt:bool, cap:array{tenant_id:int, active:int, max:int}|null, notice_key:?string, told_of_above:?string}
      */
     private static function answerFor(int $tenantId): array
     {
         if (self::$answerOverride !== null) {
-            return ['exempt' => false, 'cap' => (self::$answerOverride)($tenantId)];
+            return ['exempt' => false, 'cap' => (self::$answerOverride)($tenantId), 'notice_key' => null, 'told_of_above' => null];
         }
 
         try {
@@ -249,7 +343,14 @@ final class JoiningGate
             return self::compute($tenantId);
         }
 
-        if (is_array($cached) && array_key_exists('exempt', $cached) && array_key_exists('cap', $cached)) {
+        // An answer cached before a field existed is computed again.
+        if (
+            is_array($cached)
+            && array_key_exists('exempt', $cached)
+            && array_key_exists('cap', $cached)
+            && array_key_exists('notice_key', $cached)
+            && array_key_exists('told_of_above', $cached)
+        ) {
             return $cached;
         }
 
@@ -265,37 +366,67 @@ final class JoiningGate
     }
 
     /**
-     * @return array{exempt:bool, cap:array{tenant_id:int, active:int, max:int}|null}
+     * @return array{exempt:bool, cap:array{tenant_id:int, active:int, max:int}|null, notice_key:?string, told_of_above:?string}
      */
     private static function compute(int $tenantId): array
     {
         if (BillingStandingService::get($tenantId)['exempt']) {
-            return ['exempt' => true, 'cap' => null];
+            return ['exempt' => true, 'cap' => null, 'notice_key' => null, 'told_of_above' => null];
         }
+
+        $toldOfAbove = DB::table('tenant_billing_standing')->where('tenant_id', $tenantId)->value('joining_closed_notice_key');
+        $toldOfAbove = is_string($toldOfAbove) && $toldOfAbove !== '' ? $toldOfAbove : null;
+        $open = ['exempt' => false, 'cap' => null, 'notice_key' => null, 'told_of_above' => $toldOfAbove];
 
         $rule = OverLimitRule::for($tenantId);
         if ($rule['effective_action'] !== 'block_joining') {
-            return ['exempt' => false, 'cap' => null];
+            return $open;
         }
 
         // The same definition of "a limit is watched" the daily check uses.
         $limit = BillingAutomationService::watchedLimit($tenantId);
         if ($limit === null) {
-            return ['exempt' => false, 'cap' => null];
+            return $open;
         }
 
         // Warning first (DESIGN 6.4): the door shuts only once its admins
         // have been told, under the terms in force now, that it is at or
         // over its number.
         if (!self::toldUnderPresentTerms($tenantId, $rule, $limit)) {
-            return ['exempt' => false, 'cap' => null];
+            return $open;
         }
 
-        return ['exempt' => false, 'cap' => [
-            'tenant_id' => $tenantId,
-            'active' => TenantBillingService::getSubtreeActiveMemberCount($tenantId),
-            'max' => (int) $limit['max_users'],
-        ]];
+        return [
+            'exempt' => false,
+            'cap' => [
+                'tenant_id' => $tenantId,
+                'active' => TenantBillingService::getSubtreeActiveMemberCount($tenantId),
+                'max' => (int) $limit['max_users'],
+            ],
+            'notice_key' => self::noticeKey($tenantId, $rule, $limit),
+            'told_of_above' => $toldOfAbove,
+        ];
+    }
+
+    /**
+     * @param array{action?:string, effective_action:string, grace_days:int} $rule
+     * @param array{plan_id:int, plan_name:string, max_users:int} $limit
+     */
+    private static function noticeKey(int $tenantId, array $rule, array $limit): string
+    {
+        return $tenantId . '|' . self::presentTermsKey($tenantId, $rule, $limit);
+    }
+
+    /**
+     * The terms key the community is told under, built once for the door
+     * and for the notice to the communities below (noticeKey()).
+     *
+     * @param array{action?:string, effective_action:string, grace_days:int} $rule
+     * @param array{plan_id:int, plan_name:string, max_users:int} $limit
+     */
+    private static function presentTermsKey(int $tenantId, array $rule, array $limit): string
+    {
+        return OverLimitRule::termsKey($tenantId, $limit, $rule);
     }
 
     /**
@@ -322,7 +453,7 @@ final class JoiningGate
             return false;
         }
 
-        return $row->limit_terms_key === OverLimitRule::termsKey($tenantId, $limit, $rule);
+        return $row->limit_terms_key === self::presentTermsKey($tenantId, $rule, $limit);
     }
 
     private static function reportCacheFailure(\Throwable $e): void

@@ -54,6 +54,28 @@ trait TellsCommunityOfMemberLimit
     }
 
     /**
+     * Put a community into the state the daily check leaves it in once it has
+     * told the community's admins that $aboveId, a community above it, is full
+     * and has closed its door (task 7A): its `joining_closed_notice_key` is
+     * the gate's own key for $aboveId under $aboveId's present terms. A door
+     * shut from above shuts only in that state. Call again after changing the
+     * terms of $aboveId, as the next run would have to tell it again.
+     */
+    private function tellCommunityOfDoorShutAbove(int $tenantId, int $aboveId): void
+    {
+        $values = ['joining_closed_notice_key' => JoiningGate::noticeKeyFor($aboveId)];
+
+        if (DB::table('tenant_billing_standing')->where('tenant_id', $tenantId)->exists()) {
+            DB::table('tenant_billing_standing')->where('tenant_id', $tenantId)->update($values);
+        } else {
+            DB::table('tenant_billing_standing')->insert($values + ['tenant_id' => $tenantId, 'created_at' => now(), 'updated_at' => now()]);
+        }
+
+        BillingLock::flush();
+        JoiningGate::flush();
+    }
+
+    /**
      * For a test that lets a real daily run tell the community: a mail
      * provider that accepts, as BillingAutomationFixtures stands in.
      */

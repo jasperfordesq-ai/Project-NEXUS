@@ -1001,6 +1001,11 @@ A door is shut only after the daily check has told that community's admins,
 under the terms in force now, that it is at or over its number (its recorded
 terms key matches, and a `reached` or `over` notice was sent and accepted), so
 a change of terms or switching the checks on shuts nothing until the next run.
+A door shut because of a community ABOVE it also needs that lower community's
+own admins to have been told (`joining_closed_notice_key` records the upper
+community and the terms it was told under; written only when the mailer
+accepted the email); until then the community above neither shuts its door nor
+caps its imports. Its admins are told again when joining opens.
 Shut doors answer 403 `COMMUNITY_NOT_TAKING_MEMBERS`: the sign-up form, sign-up
 through Google and the like (shown as "closed to sign-ups"), single sign-on
 creating an account, and every account an administrator creates

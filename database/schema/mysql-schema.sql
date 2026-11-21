@@ -19293,6 +19293,7 @@ CREATE TABLE `tenant_billing_standing` (
   `children_over_limit_action` varchar(20) DEFAULT NULL,
   `children_over_limit_grace_days` smallint(5) unsigned DEFAULT NULL,
   `limit_terms_key` varchar(64) DEFAULT NULL,
+  `joining_closed_notice_key` varchar(80) DEFAULT NULL,
   PRIMARY KEY (`tenant_id`),
   KEY `idx_tbs_suspended_at` (`suspended_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

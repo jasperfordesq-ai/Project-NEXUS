@@ -372,6 +372,65 @@ final class BillingStandingNotifier
     }
 
     /**
+     * A community above this one (`above_name`) is at its member number under
+     * "stop new members joining", so this community's door is shut too
+     * (task 7A). Every admin of this community, nobody else: the community
+     * above was told in its own notice. No member number, price or plan name:
+     * those belong to the other community.
+     *
+     * @param array<string, mixed> $facts above_tenant_id, above_name
+     * @return array{tried:int, accepted:int} see deliverCounted()
+     */
+    public static function joiningClosedByAbove(int $tenantId, array $facts): array
+    {
+        $about = self::community($tenantId);
+        if ($about === null) {
+            return ['tried' => 0, 'accepted' => 0];
+        }
+
+        $params = ['community' => $about['name'], 'above' => (string) ($facts['above_name'] ?? '')];
+
+        return self::deliverCounted(
+            self::admins($tenantId),
+            $about['name'],
+            self::KEY . 'joining_closed_above_subject',
+            self::KEY . 'joining_closed_above_title',
+            [
+                [self::KEY . 'joining_closed_above_body', $params],
+                [self::KEY . 'joining_closed_above_members', []],
+                [self::KEY . 'joining_closed_above_reopens', $params],
+            ],
+            'warning',
+            '/admin'
+        );
+    }
+
+    /**
+     * The community above that shut this community's door no longer does
+     * (task 7A): new members can join again. Every admin of this community.
+     *
+     * @param array<string, mixed> $facts above_tenant_id, above_name
+     * @return array{tried:int, accepted:int} see deliverCounted()
+     */
+    public static function joiningOpenedAgain(int $tenantId, array $facts): array
+    {
+        $about = self::community($tenantId);
+        if ($about === null) {
+            return ['tried' => 0, 'accepted' => 0];
+        }
+
+        return self::deliverCounted(
+            self::admins($tenantId),
+            $about['name'],
+            self::KEY . 'joining_opened_again_subject',
+            self::KEY . 'joining_opened_again_title',
+            [[self::KEY . 'joining_opened_again_body', ['community' => $about['name'], 'above' => (string) ($facts['above_name'] ?? '')]]],
+            'default',
+            '/admin'
+        );
+    }
+
+    /**
      * @param array{tried:int, accepted:int} $a
      * @param array{tried:int, accepted:int} $b
      * @return array{tried:int, accepted:int}
