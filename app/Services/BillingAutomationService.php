@@ -103,6 +103,61 @@ final class BillingAutomationService
         return self::evaluate(self::day($today), true);
     }
 
+    /** The rows of `platform_billing_settings` that hold the last run. Not settings: never in BillingSettings. */
+    private const LAST_RUN_KEYS = ['last_run_at', 'last_run_result', 'last_run_actions'];
+
+    /**
+     * Note that the daily check ran (the `billing:apply-standing` command).
+     *
+     * @param 'ok'|'off'|'failed' $result `off`: the switch was off, so nothing was looked at
+     */
+    public static function recordRun(string $result, int $actions): void
+    {
+        $now = now();
+        $values = [
+            'last_run_at' => $now->copy()->utc()->format('Y-m-d\\TH:i:s\\Z'),
+            'last_run_result' => in_array($result, ['ok', 'off', 'failed'], true) ? $result : 'failed',
+            'last_run_actions' => (string) max(0, $actions),
+        ];
+
+        try {
+            foreach ($values as $key => $value) {
+                DB::table('platform_billing_settings')->updateOrInsert(
+                    ['setting_key' => $key],
+                    ['setting_value' => $value, 'updated_at' => $now, 'created_at' => $now]
+                );
+            }
+        } catch (\Throwable $e) {
+            // The record is for people to read. Failing to write it must not
+            // turn a check that worked into one that "failed".
+            Log::error('[BillingAutomationService] the last-run record could not be written', ['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * When the daily check last ran, and how it went. Null when it never has.
+     *
+     * @return array{at: string, result: 'ok'|'off'|'failed', actions: int}|null
+     */
+    public static function lastRun(): ?array
+    {
+        $rows = DB::table('platform_billing_settings')
+            ->whereIn('setting_key', self::LAST_RUN_KEYS)
+            ->pluck('setting_value', 'setting_key');
+
+        $at = (string) ($rows['last_run_at'] ?? '');
+        if ($at === '') {
+            return null;
+        }
+        $result = (string) ($rows['last_run_result'] ?? 'ok');
+
+        return [
+            'at' => $at,
+            'result' => in_array($result, ['ok', 'off', 'failed'], true) ? $result : 'failed',
+            'actions' => (int) ($rows['last_run_actions'] ?? 0),
+        ];
+    }
+
     /**
      * What `run()` would do today, without doing any of it.
      *

@@ -77,6 +77,7 @@ final class AdminSuperControllerPlatformTeamLockTest extends PlatformTeamLockTes
             'daily check settings' => ['GET', '/v2/admin/super/billing/settings'],
             'save daily check settings' => ['PUT', '/v2/admin/super/billing/settings', 'refusal-only'],
             'what would happen today' => ['GET', '/v2/admin/super/billing/standing/preview'],
+            'when the daily check last ran' => ['GET', '/v2/admin/super/billing/standing/last-run'],
             'set a paid-until date' => ['POST', '/v2/admin/super/billing/standing/paid-until', 'refusal-only'],
             // Payments by hand and how a community pays (Stage 6). The two
             // writes are refusal-only: their success path changes a

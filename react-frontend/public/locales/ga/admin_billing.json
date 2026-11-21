@@ -306,7 +306,11 @@
     "action_member_limit_needs_decision": "Tá cinneadh ag teastáil: {{reason}}",
     "decision_no_plan_fits": "níl aon phlean a thairgtear dó mór go leor",
     "decision_custom_price": "tá praghas speisialta comhaontaithe aige",
-    "decision_card_subscription": "íocann sé le cárta, mar sin aistríonn foireann an ardáin é de láimh"
+    "decision_card_subscription": "íocann sé le cárta, mar sin aistríonn foireann an ardáin é de láimh",
+    "last_run_never": "Níor ritheadh seiceáil na maidine fós.",
+    "last_run_ok": "An rith deireanach: {{date}}. Gníomhartha a rinneadh: {{actions}}.",
+    "last_run_off": "An rith deireanach: {{date}}. Bhí na seiceálacha múchta, mar sin níor breathnaíodh ar aon rud.",
+    "last_run_failed": "Theip ar an rith deireanach, ar {{date}}. B’fhéidir nach ndearnadh rud éigin. Tá an earráid i logchomhad an fhreastalaí."
   },
   "control": {
     "amount_invalid": "Cuir isteach an méid mar ghnáthuimhir le dhá ionad dheachúlacha ar a mhéad.",

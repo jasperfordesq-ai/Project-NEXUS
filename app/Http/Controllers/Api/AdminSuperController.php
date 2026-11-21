@@ -3375,6 +3375,21 @@ class AdminSuperController extends BaseApiController
         return $this->respondWithData(BillingAutomationService::preview());
     }
 
+    /**
+     * GET /api/v2/admin/super/billing/standing/last-run
+     *
+     * When the daily check last ran and how it went: `{at, result, actions}`,
+     * or `{at: null}` when it never has. Read-only.
+     */
+    public function lastBillingAutomationRun(): JsonResponse
+    {
+        $this->requireGodPlatformAdmin();
+
+        return $this->respondWithData(
+            BillingAutomationService::lastRun() ?? ['at' => null, 'result' => null, 'actions' => 0]
+        );
+    }
+
     // =====================================================================
     // BRANCH PAYMENTS — a parent's manager and the communities below it
     // =====================================================================

@@ -304,7 +304,11 @@
     "action_member_limit_needs_decision": "Serve una decisione: {{reason}}",
     "decision_no_plan_fits": "nessun piano offerto è abbastanza grande",
     "decision_custom_price": "ha un prezzo concordato appositamente",
-    "decision_card_subscription": "paga con carta, quindi il team della piattaforma la sposta a mano"
+    "decision_card_subscription": "paga con carta, quindi il team della piattaforma la sposta a mano",
+    "last_run_never": "Il controllo del mattino non è ancora stato eseguito.",
+    "last_run_ok": "Ultima esecuzione: {{date}}. Azioni eseguite: {{actions}}.",
+    "last_run_off": "Ultima esecuzione: {{date}}. I controlli erano disattivati, quindi non è stato esaminato nulla.",
+    "last_run_failed": "L’ultima esecuzione, il {{date}}, non è riuscita. Qualcosa potrebbe non essere stato fatto. L’errore è nel registro del server."
   },
   "control": {
     "amount_invalid": "Inserisci l’importo come numero semplice con al massimo due decimali.",

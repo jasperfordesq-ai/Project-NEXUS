@@ -24,7 +24,7 @@ import CalendarClock from 'lucide-react/icons/calendar-clock';
 import { Button, Card, CardBody, CardHeader, Input, Radio, RadioGroup, Spinner, Switch } from '@/components/ui';
 import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
-import { formatDate, formatNumber } from '@/lib/helpers';
+import { formatDate, formatDateTime, formatNumber } from '@/lib/helpers';
 import {
   OVER_LIMIT_ACTIONS,
   isOverLimitAction,
@@ -51,6 +51,13 @@ interface BillingAutomationSettings {
 type NumberKey = Exclude<keyof BillingAutomationSettings, 'automation_enabled' | 'over_limit_action' | 'reminder_days'>;
 
 /** One entry of GET /v2/admin/super/billing/standing/preview */
+/** GET /v2/admin/super/billing/standing/last-run. `at` is null when the check has never run. */
+interface LastRun {
+  at: string | null;
+  result: 'ok' | 'off' | 'failed' | null;
+  actions: number;
+}
+
 interface PreviewEntry {
   tenant_id: number;
   tenant_name: string;
@@ -136,6 +143,7 @@ export function BillingAutomationCard({ onWarningPercent }: BillingAutomationCar
 
   const [preview, setPreview] = useState<PreviewEntry[] | null>(null);
   const [previewFailed, setPreviewFailed] = useState(false);
+  const [lastRun, setLastRun] = useState<LastRun | null>(null);
 
   const loadPreview = useCallback(async () => {
     const response = await api.get<PreviewEntry[]>('/v2/admin/super/billing/standing/preview');
@@ -160,6 +168,12 @@ export function BillingAutomationCard({ onWarningPercent }: BillingAutomationCar
       }
     })();
     void loadPreview();
+    void (async () => {
+      const response = await api.get<LastRun>('/v2/admin/super/billing/standing/last-run');
+      if (alive && response.success && response.data && typeof response.data === 'object' && !Array.isArray(response.data)) {
+        setLastRun(response.data);
+      }
+    })();
     return () => {
       alive = false;
     };
@@ -243,6 +257,23 @@ export function BillingAutomationCard({ onWarningPercent }: BillingAutomationCar
                 <p className="text-sm text-muted">
                   {draft.automation_enabled ? t('automation.on_note') : t('automation.off_note')}
                 </p>
+                {/* When the morning check last ran, and how it went. There
+                    was no way to tell it had run at all. */}
+                {lastRun ? (
+                  <p
+                    data-testid="billing-last-run"
+                    role={lastRun.result === 'failed' ? 'alert' : undefined}
+                    className={`text-sm ${lastRun.result === 'failed' ? 'font-semibold text-danger' : 'text-muted'}`}
+                  >
+                    {lastRun.at === null
+                      ? t('automation.last_run_never')
+                      : lastRun.result === 'failed'
+                        ? t('automation.last_run_failed', { date: formatDateTime(lastRun.at) })
+                        : lastRun.result === 'off'
+                          ? t('automation.last_run_off', { date: formatDateTime(lastRun.at) })
+                          : t('automation.last_run_ok', { date: formatDateTime(lastRun.at), actions: formatNumber(lastRun.actions) })}
+                  </p>
+                ) : null}
               </div>
               <Switch
                 aria-label={t('automation.switch_label')}

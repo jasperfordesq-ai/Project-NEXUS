@@ -303,7 +303,11 @@
     "action_member_limit_needs_decision": "Entscheidung nötig: {{reason}}",
     "decision_no_plan_fits": "kein angebotener Plan ist groß genug",
     "decision_custom_price": "es gilt ein eigens vereinbarter Preis",
-    "decision_card_subscription": "es zahlt per Karte, daher stuft das Plattform-Team es von Hand hoch"
+    "decision_card_subscription": "es zahlt per Karte, daher stuft das Plattform-Team es von Hand hoch",
+    "last_run_never": "Die morgendliche Prüfung ist noch nicht gelaufen.",
+    "last_run_ok": "Zuletzt gelaufen: {{date}}. Durchgeführte Aktionen: {{actions}}.",
+    "last_run_off": "Zuletzt gelaufen: {{date}}. Die Prüfungen waren ausgeschaltet, daher wurde nichts geprüft.",
+    "last_run_failed": "Der letzte Lauf am {{date}} ist fehlgeschlagen. Möglicherweise wurde etwas nicht erledigt. Der Fehler steht im Serverprotokoll."
   },
   "control": {
     "amount_invalid": "Geben Sie den Betrag als einfache Zahl mit höchstens zwei Nachkommastellen ein.",

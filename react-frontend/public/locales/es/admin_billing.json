@@ -304,7 +304,11 @@
     "action_member_limit_needs_decision": "Necesita una decisión: {{reason}}",
     "decision_no_plan_fits": "ningún plan que se le ofrece es lo bastante grande",
     "decision_custom_price": "tiene un precio acordado especialmente",
-    "decision_card_subscription": "paga con tarjeta, así que el equipo de la plataforma lo cambia a mano"
+    "decision_card_subscription": "paga con tarjeta, así que el equipo de la plataforma lo cambia a mano",
+    "last_run_never": "La comprobación de la mañana todavía no se ha ejecutado.",
+    "last_run_ok": "Última ejecución: {{date}}. Acciones realizadas: {{actions}}.",
+    "last_run_off": "Última ejecución: {{date}}. Las comprobaciones estaban desactivadas, así que no se revisó nada.",
+    "last_run_failed": "La última ejecución, el {{date}}, falló. Puede que algo no se haya hecho. El error está en el registro del servidor."
   },
   "control": {
     "amount_invalid": "Escribe el importe como un número simple con dos decimales como máximo.",

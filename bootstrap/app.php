@@ -658,9 +658,10 @@ $app = Application::configure(basePath: dirname(__DIR__))
         // all until the platform team turns its master switch on
         // (platform_billing_settings.automation_enabled, default off). Runs
         // before the two subscription reminders below.
-        $schedule->call(function () {
-            \App\Services\BillingAutomationService::run();
-        })
+        // A command since 21 Nov 2026, so it can also be run by hand
+        // (`php artisan billing:apply-standing`, `--dry-run` to only look),
+        // leaves a "last ran" record, and logs an error when it fails.
+        $schedule->command('billing:apply-standing')
             ->dailyAt('08:00')
             ->name('billing:apply-standing')
             ->withoutOverlapping(5);

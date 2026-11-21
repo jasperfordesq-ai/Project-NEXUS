@@ -93,10 +93,15 @@ const limitWarning = {
   detail: { active_members: 85, max_users: 100, percent: 85, plan_name: 'Spark', window_days: 90, stage: 'approaching' },
 };
 
-const serve = (settings: unknown, preview: unknown[]) => {
+// GET /v2/admin/super/billing/standing/last-run: the three keys
+// BillingApplyStandingCommandTest pins. `at` is null when it has never run.
+const NEVER_RAN = { at: null, result: null, actions: 0 };
+
+const serve = (settings: unknown, preview: unknown[], lastRun: unknown = NEVER_RAN) => {
   mockApi.get.mockImplementation((url: string) => {
     if (url === '/v2/admin/super/billing/settings') return Promise.resolve({ success: true, data: settings });
     if (url === '/v2/admin/super/billing/standing/preview') return Promise.resolve({ success: true, data: preview });
+    if (url === '/v2/admin/super/billing/standing/last-run') return Promise.resolve({ success: true, data: lastRun });
     return Promise.resolve({ success: false, error: 'unexpected' });
   });
 };
@@ -357,6 +362,37 @@ describe('BillingAutomationCard', () => {
     await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('One of the settings is not valid, so nothing was saved.'));
     expect(mockToast.success).not.toHaveBeenCalled();
     expect((screen.getByLabelText('Pause: days late') as HTMLInputElement).value).toBe('2');
+  });
+
+  it('says the morning check has not run yet', async () => {
+    await renderCard();
+
+    expect(await screen.findByTestId('billing-last-run')).toHaveTextContent('The morning check has not run yet.');
+  });
+
+  it('says when the check last ran and how many actions it took', async () => {
+    serve(makeSettings({ automation_enabled: true }), [], { at: '2026-11-21T08:00:04Z', result: 'ok', actions: 3 });
+    await renderCard();
+
+    const line = await screen.findByTestId('billing-last-run');
+    expect(line).toHaveTextContent(/^Last ran .*2026.*\. Actions taken: 3\.$/);
+    expect(line).not.toHaveAttribute('role', 'alert');
+  });
+
+  it('says the check ran while switched off, and so looked at nothing', async () => {
+    serve(makeSettings(), [], { at: '2026-11-21T08:00:04Z', result: 'off', actions: 0 });
+    await renderCard();
+
+    expect(await screen.findByTestId('billing-last-run')).toHaveTextContent(/The checks were switched off, so nothing was looked at\./);
+  });
+
+  it('warns plainly when the last run failed', async () => {
+    serve(makeSettings({ automation_enabled: true }), [], { at: '2026-11-21T08:00:04Z', result: 'failed', actions: 0 });
+    await renderCard();
+
+    const line = await screen.findByTestId('billing-last-run');
+    expect(line).toHaveTextContent(/failed\. Something may not have been done\./);
+    expect(line).toHaveAttribute('role', 'alert');
   });
 
   it('says so when the settings cannot be loaded', async () => {

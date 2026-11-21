@@ -3503,6 +3503,7 @@ Route::get('/v2/admin/super/billing/standing/payments', [\App\Http\Controllers\A
 Route::post('/v2/admin/super/billing/standing/payer', [\App\Http\Controllers\Api\AdminSuperController::class, 'setCommunityPayer']);
 Route::post('/v2/admin/super/billing/standing/over-limit', [\App\Http\Controllers\Api\AdminSuperController::class, 'setCommunityOverLimitRule']);
 Route::get('/v2/admin/super/billing/standing/preview', [\App\Http\Controllers\Api\AdminSuperController::class, 'previewBillingAutomation']);
+Route::get('/v2/admin/super/billing/standing/last-run', [\App\Http\Controllers\Api\AdminSuperController::class, 'lastBillingAutomationRun']);
 Route::get('/v2/admin/super/billing/settings', [\App\Http\Controllers\Api\AdminSuperController::class, 'getBillingAutomationSettings']);
 Route::put('/v2/admin/super/billing/settings', [\App\Http\Controllers\Api\AdminSuperController::class, 'updateBillingAutomationSettings']);
 

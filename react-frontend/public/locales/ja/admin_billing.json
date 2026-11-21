@@ -303,7 +303,11 @@
     "action_member_limit_needs_decision": "判断が必要です: {{reason}}",
     "decision_no_plan_fits": "提供されているプランに十分な大きさのものがありません",
     "decision_custom_price": "個別に合意した料金が設定されています",
-    "decision_card_subscription": "カード払いのため、プラットフォームチームが手作業で移行します"
+    "decision_card_subscription": "カード払いのため、プラットフォームチームが手作業で移行します",
+    "last_run_never": "朝のチェックはまだ実行されていません。",
+    "last_run_ok": "最終実行: {{date}}。実行した処理: {{actions}} 件。",
+    "last_run_off": "最終実行: {{date}}。チェックはオフだったため、何も確認していません。",
+    "last_run_failed": "{{date}} の最終実行は失敗しました。処理されていないものがある可能性があります。エラーはサーバーログにあります。"
   },
   "control": {
     "amount_invalid": "金額は小数点以下2桁までの数値で入力してください。",

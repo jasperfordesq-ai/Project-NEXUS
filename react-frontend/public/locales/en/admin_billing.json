@@ -303,7 +303,11 @@
     "action_member_limit_needs_decision": "Needs a decision: {{reason}}",
     "decision_no_plan_fits": "no plan offered to it is big enough",
     "decision_custom_price": "it has a specially agreed price",
-    "decision_card_subscription": "it pays by card, so the platform team moves it by hand"
+    "decision_card_subscription": "it pays by card, so the platform team moves it by hand",
+    "last_run_never": "The morning check has not run yet.",
+    "last_run_ok": "Last ran {{date}}. Actions taken: {{actions}}.",
+    "last_run_off": "Last ran {{date}}. The checks were switched off, so nothing was looked at.",
+    "last_run_failed": "The last run, on {{date}}, failed. Something may not have been done. The error is in the server log."
   },
   "control": {
     "amount_invalid": "Enter the amount as a plain number with at most two decimal places.",

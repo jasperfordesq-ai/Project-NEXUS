@@ -304,7 +304,11 @@
     "action_member_limit_needs_decision": "Une décision est nécessaire : {{reason}}",
     "decision_no_plan_fits": "aucune formule qui lui est proposée n’est assez grande",
     "decision_custom_price": "elle a un prix convenu spécialement",
-    "decision_card_subscription": "elle paie par carte, donc l’équipe de la plateforme la change à la main"
+    "decision_card_subscription": "elle paie par carte, donc l’équipe de la plateforme la change à la main",
+    "last_run_never": "La vérification du matin n’a pas encore été exécutée.",
+    "last_run_ok": "Dernière exécution : {{date}}. Actions effectuées : {{actions}}.",
+    "last_run_off": "Dernière exécution : {{date}}. Les vérifications étaient désactivées, donc rien n’a été examiné.",
+    "last_run_failed": "La dernière exécution, le {{date}}, a échoué. Quelque chose n’a peut-être pas été fait. L’erreur figure dans le journal du serveur."
   },
   "control": {
     "amount_invalid": "Saisissez le montant sous forme de nombre simple, avec deux décimales au maximum.",

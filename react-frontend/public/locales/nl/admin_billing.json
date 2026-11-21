@@ -303,7 +303,11 @@
     "action_member_limit_needs_decision": "Er is een beslissing nodig: {{reason}}",
     "decision_no_plan_fits": "geen aangeboden plan is groot genoeg",
     "decision_custom_price": "er geldt een speciaal afgesproken prijs",
-    "decision_card_subscription": "ze betaalt per kaart, dus het platformteam zet haar met de hand over"
+    "decision_card_subscription": "ze betaalt per kaart, dus het platformteam zet haar met de hand over",
+    "last_run_never": "De ochtendcontrole is nog niet uitgevoerd.",
+    "last_run_ok": "Laatst uitgevoerd: {{date}}. Uitgevoerde acties: {{actions}}.",
+    "last_run_off": "Laatst uitgevoerd: {{date}}. De controles stonden uit, dus er is niets bekeken.",
+    "last_run_failed": "De laatste uitvoering, op {{date}}, is mislukt. Mogelijk is iets niet gedaan. De fout staat in het serverlogboek."
   },
   "control": {
     "amount_invalid": "Voer het bedrag in als een gewoon getal met hoogstens twee decimalen.",

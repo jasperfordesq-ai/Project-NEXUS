@@ -307,7 +307,11 @@
     "action_member_limit_needs_decision": "يحتاج إلى قرار: {{reason}}",
     "decision_no_plan_fits": "لا توجد خطة معروضة عليه كبيرة بما يكفي",
     "decision_custom_price": "لديه سعر متفق عليه خصيصًا",
-    "decision_card_subscription": "يدفع بالبطاقة، لذا ينقله فريق المنصة يدويًا"
+    "decision_card_subscription": "يدفع بالبطاقة، لذا ينقله فريق المنصة يدويًا",
+    "last_run_never": "لم يُشغَّل فحص الصباح بعد.",
+    "last_run_ok": "آخر تشغيل: {{date}}. الإجراءات المنفذة: {{actions}}.",
+    "last_run_off": "آخر تشغيل: {{date}}. كانت الفحوص متوقفة، لذا لم يُفحص شيء.",
+    "last_run_failed": "فشل آخر تشغيل في {{date}}. ربما لم يُنفَّذ شيء ما. الخطأ موجود في سجل الخادم."
   },
   "control": {
     "amount_invalid": "أدخل المبلغ رقمًا عاديًا بخانتين عشريتين على الأكثر.",
