@@ -766,7 +766,12 @@ class AdminContentController extends BaseApiController
     {
         $columns = [];
 
-        if (array_key_exists('description', $input)) { $columns['description'] = $input['description']; }
+        if (array_key_exists('description', $input)) {
+            if (is_string($input['description']) && mb_strlen($input['description']) > PlanTerms::MAX_DESCRIPTION_LENGTH) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.plan_text_too_long', ['field' => __('api.plan_field_description'), 'max' => PlanTerms::MAX_DESCRIPTION_LENGTH]), 'description', 422);
+            }
+            $columns['description'] = $input['description'];
+        }
         if (isset($input['tier_level'])) { $columns['tier_level'] = (int) $input['tier_level']; }
         if (array_key_exists('features', $input)) { $columns['features'] = json_encode($input['features'] ?? []); }
         if (isset($input['max_menus'])) { $columns['max_menus'] = (int) $input['max_menus']; }
@@ -782,6 +787,9 @@ class AdminContentController extends BaseApiController
                 if ($number === false || $number < 1) {
                     return $this->respondWithError('VALIDATION_ERROR', __('api.plan_member_number_invalid', ['field' => __('api.plan_field_max_users')]), 'max_users', 422);
                 }
+                if ($number > PlanTerms::MAX_MEMBER_NUMBER) {
+                    return $this->respondWithError('VALIDATION_ERROR', __('api.plan_value_too_large', ['field' => __('api.plan_field_max_users'), 'max' => PlanTerms::MAX_MEMBER_NUMBER]), 'max_users', 422);
+                }
                 $columns['max_users'] = $number;
             }
         }
@@ -795,6 +803,9 @@ class AdminContentController extends BaseApiController
             }
             if (!is_numeric($value) || (float) $value < 0 || !is_finite((float) $value)) {
                 return $this->respondWithError('VALIDATION_ERROR', __('api.plan_price_invalid', ['field' => __("api.plan_field_{$field}")]), $field, 422);
+            }
+            if (round((float) $value, 2) > PlanTerms::MAX_MONEY) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.plan_value_too_large', ['field' => __("api.plan_field_{$field}"), 'max' => PlanTerms::MAX_MONEY]), $field, 422);
             }
             $columns[$field] = round((float) $value, 2);
         }
@@ -820,6 +831,11 @@ class AdminContentController extends BaseApiController
         }
 
         return $columns;
+    }
+
+    private function planNameTooLong(): JsonResponse
+    {
+        return $this->respondWithError('VALIDATION_ERROR', __('api.plan_text_too_long', ['field' => __('api.plan_field_name'), 'max' => PlanTerms::MAX_NAME_LENGTH]), 'name', 422);
     }
 
     public function getPlans(): JsonResponse
@@ -887,6 +903,7 @@ class AdminContentController extends BaseApiController
         $input = $this->getAllInput();
         $name = trim($input['name'] ?? '');
         if (empty($name)) { return $this->respondWithError('VALIDATION_ERROR', __('api.name_required'), 'name', 422); }
+        if (mb_strlen($name) > PlanTerms::MAX_NAME_LENGTH) { return $this->planNameTooLong(); }
 
         $fields = $this->planFields($input);
         if ($fields instanceof JsonResponse) { return $fields; }
@@ -956,7 +973,10 @@ class AdminContentController extends BaseApiController
         $input = $this->getAllInput();
         $columns = [];
 
-        if (isset($input['name'])) { $columns['name'] = trim($input['name']); }
+        if (isset($input['name'])) {
+            $columns['name'] = trim((string) $input['name']);
+            if (mb_strlen($columns['name']) > PlanTerms::MAX_NAME_LENGTH) { return $this->planNameTooLong(); }
+        }
         if (isset($input['slug'])) {
             $slug = $this->generateSlug($input['slug']);
             $conflict = DB::selectOne("SELECT id FROM pay_plans WHERE slug = ? AND id != ?", [$slug, $id]);

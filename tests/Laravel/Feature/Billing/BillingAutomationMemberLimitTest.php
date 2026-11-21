@@ -391,6 +391,39 @@ final class BillingAutomationMemberLimitTest extends TestCase
         $this->assertSame([], $this->actionsFor(BillingAutomationService::preview($this->today), $this->community));
     }
 
+    public function test_the_limit_is_the_hubs_member_number(): void
+    {
+        $local = (int) DB::table('pay_plans')->where('slug', 'local')->value('id');
+        $hub = $this->makeCommunity('Limit hub', 1, '/1/', true);
+        $child = $this->makeCommunity('Limit hub child', $hub, "/1/{$hub}/");
+        $platformPayer = $this->makeCommunity('Limit platform payer', 1, '/1/');
+        $this->assignPlan($child, $local);
+        $this->assignPlan($platformPayer, $local);
+        $this->addActiveMembers($child, 60);
+        $this->addActiveMembers($platformPayer, 60);
+
+        // The hub lets its children have 50 on Local (the default is far more).
+        DB::table('hub_plan_terms')->insert([
+            'hub_tenant_id' => $hub, 'pay_plan_id' => $local, 'max_users' => 50, 'name' => 'Hub local',
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+        \App\Support\Billing\PlanTerms::flush();
+
+        $preview = BillingAutomationService::preview($this->today);
+
+        $this->assertSame(['member_limit:over'], $this->actionsFor($preview, $child));
+        $entry = array_values(array_filter($preview, fn ($e) => $e['tenant_id'] === $child))[0];
+        $this->assertSame(50, $entry['detail']['max_users']);
+        $this->assertSame('Hub local', $entry['detail']['plan_name']);
+
+        // The same plan, for a community that pays the platform: the default number.
+        $this->assertSame([], $this->actionsFor($preview, $platformPayer));
+
+        $state = BillingAutomationService::memberLimitState($child);
+        $this->assertSame(50, $state['max']);
+        $this->assertSame('over', $state['stage']);
+    }
+
     public function test_switched_off_the_preview_lists_the_member_limit_actions_and_nothing_happens(): void
     {
         DB::table('platform_billing_settings')->where('setting_key', 'automation_enabled')->delete();

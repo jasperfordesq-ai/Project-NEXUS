@@ -352,6 +352,18 @@ class TenantBillingService
                 'assignment_status'     => (string) ($row->assignment_status ?? 'active'),
             ];
             $assignmentArr['effective_price'] = self::getEffectivePrice($assignmentArr);
+
+            // The name and member number as they apply to the community: its
+            // hub's when it pays its parent and the parent changed this plan.
+            // Prices stay the platform's: they are what the platform is owed.
+            $applied = PlanTerms::applyHubChanges((int) $row->tenant_id, (int) $row->plan_id, [
+                'name'      => $assignmentArr['name'],
+                'max_users' => $assignmentArr['max_users'],
+            ]);
+            $assignmentArr['name'] = $applied['values']['name'];
+            $assignmentArr['max_users'] = $applied['values']['max_users'];
+            $assignmentArr['terms'] = $applied['terms'];
+
             $planMap[(int) $row->tenant_id] = $assignmentArr;
         }
 
@@ -388,8 +400,10 @@ class TenantBillingService
 
             // Packages are sized by ACTIVE members (DESIGN §11). Null above the
             // largest package: that is a bespoke quote, not a package. Read
-            // from the plans as edited, not from the seed constant.
-            $suggested = PlanTerms::smallestDefaultFitting($activeCount)['slug'] ?? null;
+            // from the plans this community can be put on, on the terms that
+            // apply to it (its hub's, when it pays its parent), so the
+            // suggestion and `over_limit` measure against the same numbers.
+            $suggested = PlanTerms::smallestFitting($id, $activeCount)['slug'] ?? null;
 
             $overLimit    = false;
             $usagePercent = null;

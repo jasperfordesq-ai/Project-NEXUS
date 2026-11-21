@@ -275,9 +275,9 @@ keep their own checks.
 **Frontend.** `GET /v2/users/me` returns `super_panel_level`
 (`master`/`regional`/`none`), resolved server-side — the UI must not infer it from
 flags, because eligibility also depends on `allows_subtenants` and the path.
-`SuperAdminRoute` admits both levels, and the panel now shows both the **same seven
+`SuperAdminRoute` admits both levels, and the panel now shows both the **same eight
 pages** (dashboard, communities, hierarchy, users, bulk operations, audit log,
-branch payments).
+branch payments, branch plans).
 `PlatformOnlyRoute` and the menu's tier-B sections no longer exist: the old
 `/super-admin/...` addresses of the moved screens are redirects that send the
 platform team to the new page and anyone else to the super admin home page.
@@ -909,6 +909,37 @@ Both ends are pinned in `tests/Laravel/Feature/Billing/BranchPaymentsEndpointsTe
 The super admin panel stays open for a community that is itself paused, so a
 paused parent's manager can still manage the communities below it; the broker
 panel does not.
+
+**A hub's own version of the plans (21 November 2026).** The super admin
+panel's Branch plans page (`/super-admin/branch-plans`) lets a hub change, for
+the communities that pay it, the name, description, member number and prices
+of each default plan, or stop offering a plan:
+`GET /v2/admin/super/branch-plans?hub_id=`,
+`PUT /v2/admin/super/branch-plans/{hubId}/plans/{planId}` and
+`DELETE /v2/admin/super/branch-plans/{hubId}/plans/{planId}` (back to the
+default). These are in the panel's regional tier and are **not**
+platform-team-only. Each one confines itself through
+`App\Support\Billing\BranchPlans::refusalForHub()`, which the list of hubs
+shares:
+
+- a tenant super admin may change **its own community's** version and that of
+  any community below it, never one above or beside. Its own community is
+  allowed here, unlike Branch payments, because these terms are about the
+  communities below it: they change nothing about the hub's own plan, limit or
+  standing;
+- a global super admin, and the platform team, may change any community's;
+- **the platform's own community (tenant 1) has no version, for anyone.** The
+  communities directly under it pay the platform and are always on the default
+  plans;
+- out of reach, tenant 1 and "does not exist" answer the same 404
+  `NOT_IN_REACH`. A community admin, broker or member gets 403.
+
+A hub's version applies only to a community that pays that hub directly
+(`App\Support\Billing\PlanTerms`): never to a grandchild, never to a community
+that pays the platform. A plan a paying community is on cannot be hidden
+(422 `PLAN_IN_USE`). Every change is in the hub's billing audit log
+(`hub_plan_terms_changed`). Pinned in
+`tests/Laravel/Feature/Billing/BranchPlansEndpointsTest.php`.
 
 **Adding a page to the panel.** Mount it in `PlatformTeamRoutes.tsx`, add it to
 `PlatformTeamSidebar.tsx` in the zone that matches what the page acts on ("The

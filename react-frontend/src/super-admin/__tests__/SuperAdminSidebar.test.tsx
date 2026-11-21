@@ -112,7 +112,7 @@ describe('SuperAdminSidebar', () => {
   /**
    * 🔴 One tier since 15 Nov 2026. The platform-wide pages moved to the Platform
    * team panel, so a global super admin ('master') and a tenant super admin
-   * ('regional') are offered exactly the same seven pages here.
+   * ('regional') are offered exactly the same eight pages here.
    */
   function panelLinks(user: Record<string, unknown>): string[] {
     vi.mocked(useAuth).mockReturnValue({ user } as never);
@@ -140,13 +140,16 @@ describe('SuperAdminSidebar', () => {
     // signed-in manager. A branch page, not a platform-wide one, so it
     // belongs here and both levels see it.
     '/test/super-admin/branch-payments',
+    // Added 21 Nov 2026: the standard plans as the manager's hub offers them
+    // to the communities that pay it. Confined to the caller's own branch.
+    '/test/super-admin/branch-plans',
   ];
 
-  it('offers a global super admin exactly the seven branch pages', () => {
+  it('offers a global super admin exactly the eight branch pages', () => {
     expect(panelLinks({ is_super_admin: true, super_panel_level: 'master' })).toEqual(BRANCH_PAGES);
   });
 
-  it('offers a tenant super admin the same seven pages', () => {
+  it('offers a tenant super admin the same eight pages', () => {
     expect(panelLinks({ is_tenant_super_admin: true, super_panel_level: 'regional' })).toEqual(BRANCH_PAGES);
   });
 

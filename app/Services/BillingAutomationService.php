@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Support\Billing\BillingSettings;
+use App\Support\Billing\PlanTerms;
 use App\Support\Billing\StandardPlans;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
@@ -834,10 +835,15 @@ final class BillingAutomationService
     }
 
     /**
-     * Communities on a standard package with a member limit, with that limit.
+     * Communities on a standard package with a member limit, with that limit
+     * and the plan's name as they apply to the community: for one that pays
+     * its parent, the parent's version of the plan (PlanTerms).
      *
      * Only standard packages: a community on a retired plan keeps the terms it
-     * had, and nobody promised it a limit would be watched.
+     * had, and nobody promised it a limit would be watched. The member number
+     * is filtered after the hub's changes are applied, so a hub can give an
+     * unlimited plan a limit. It cannot take one away: a hub's null means
+     * "follow the default", and a member number it sets is 1 or more.
      *
      * @return array<int, array{plan_name:string, max_users:int}>
      */
@@ -846,21 +852,32 @@ final class BillingAutomationService
         $query = DB::table('tenant_plan_assignments as tpa')
             ->join('pay_plans as pp', 'pp.id', '=', 'tpa.pay_plan_id')
             ->where('tpa.status', 'active')
-            ->where('pp.is_standard', 1)
-            ->whereNotNull('pp.max_users')
-            ->where('pp.max_users', '>', 0);
+            ->where('pp.is_standard', 1);
         if ($onlyTenantId !== null) {
             $query->where('tpa.tenant_id', $onlyTenantId);
         }
         $rows = $query
             ->orderBy('tpa.id')
-            ->get(['tpa.tenant_id', 'pp.name', 'pp.max_users']);
+            ->get(['tpa.tenant_id', 'tpa.pay_plan_id', 'pp.name', 'pp.max_users']);
+
+        // One active assignment per community is the rule; if there are
+        // more, the newest wins.
+        $newest = [];
+        foreach ($rows as $row) {
+            $newest[(int) $row->tenant_id] = $row;
+        }
 
         $limits = [];
-        foreach ($rows as $row) {
-            // One active assignment per community is the rule; if there are
-            // more, the newest wins.
-            $limits[(int) $row->tenant_id] = ['plan_name' => (string) $row->name, 'max_users' => (int) $row->max_users];
+        foreach ($newest as $tenantId => $row) {
+            $applied = PlanTerms::applyHubChanges($tenantId, (int) $row->pay_plan_id, [
+                'name' => (string) $row->name,
+                'max_users' => $row->max_users !== null ? (int) $row->max_users : null,
+            ])['values'];
+
+            if ($applied['max_users'] === null || $applied['max_users'] <= 0) {
+                continue;
+            }
+            $limits[$tenantId] = ['plan_name' => (string) $applied['name'], 'max_users' => (int) $applied['max_users']];
         }
 
         return $limits;

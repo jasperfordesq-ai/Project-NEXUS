@@ -50,7 +50,7 @@ describe('staysOpenDuringMaintenance', () => {
 
 describe('staysOpenWhilePaused', () => {
   it('keeps the admin, Platform team and super admin panels open, with or without a community prefix', () => {
-    for (const path of ['/admin', '/admin/billing', '/platform-team', '/super-admin', '/super-admin/branch-payments']) {
+    for (const path of ['/admin', '/admin/billing', '/platform-team', '/super-admin', '/super-admin/branch-payments', '/super-admin/branch-plans']) {
       expect(staysOpenWhilePaused(path)).toBe(true);
       expect(staysOpenWhilePaused(`/riverside${path}`, 'riverside')).toBe(true);
     }

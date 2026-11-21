@@ -3121,4 +3121,11 @@ XP: :xp | المستوى: :level | التبادلات المكتملة: :complet
     'plan_field_storage_gb' => 'مساحة التخزين المشمولة (غيغابايت)',
     'plan_field_emails_per_month' => 'رسائل البريد الإلكتروني شهريًا',
     'plan_field_max_users' => 'عدد الأعضاء',
+    'hub_plan_in_use' => 'أحد المجتمعات التي تدفع لهذا المجتمع مشترك في هذه الخطة. انقله إلى خطة أخرى قبل أن تتوقف عن عرض هذه الخطة.',
+    'hub_plan_offered_invalid' => 'يجب أن تكون قيمة «معروضة» نعم أو لا.',
+    'hub_plan_text_invalid' => ':field: أدخل ما يصل إلى :max حرفًا، أو اتركه فارغًا لاستخدام الصياغة القياسية.',
+    'plan_field_name' => 'اسم الخطة',
+    'plan_field_description' => 'الوصف',
+    'plan_value_too_large' => ':field: أدخل رقمًا لا يزيد على :max.',
+    'plan_text_too_long' => ':field: أدخل ما يصل إلى :max حرفًا.',
 ];

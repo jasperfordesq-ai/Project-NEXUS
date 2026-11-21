@@ -2,11 +2,11 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2903,
-  "api_route_rows": 2868,
-  "distinct_api_paths": 2396,
+  "total_registered_routes": 2906,
+  "api_route_rows": 2871,
+  "distinct_api_paths": 2398,
   "route_source_fingerprint": {
-    "digest": "d64fdb50f54994a4c28015a9901d1473d4e6ab5e080360929e17ed3dbac12367",
+    "digest": "2cddaaa014339f2f3f34c0543a4cef0fcfb72bc424a620e417c5356ddef26d4a",
     "files": [
       {
         "file": "routes/api-marketplace-admin.php",
@@ -18,7 +18,7 @@
       },
       {
         "file": "routes/api.php",
-        "sha256": "5d26c3478da637ab0c0468e1da1bc6d965e91880f5027d7762291101ca4d48bb"
+        "sha256": "49f3066a9680a3fa564c6392fe2dda5d08c383021751c52d31bb9072c6bf7477"
       },
       {
         "file": "routes/channels.php",
@@ -3130,6 +3130,13 @@
     ],
     "/api/v2/admin/super/branch-payments/{id}/suspend": [
       "POST"
+    ],
+    "/api/v2/admin/super/branch-plans": [
+      "GET"
+    ],
+    "/api/v2/admin/super/branch-plans/{hubId}/plans/{planId}": [
+      "DELETE",
+      "PUT"
     ],
     "/api/v2/admin/super/bulk/move-users": [
       "POST"

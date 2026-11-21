@@ -61,6 +61,10 @@ final class BillingSnapshotContractTest extends TestCase
         // A failed card payment leaves the plan `expired`; the screen shows it
         // beside the plan rather than reporting "No plan" (Stage 5).
         'assignment_status',
+        // Stage 2 of the hub plans work: 'default', or 'hub' when the
+        // community pays its parent and the parent changed this plan. `name`
+        // and `max_users` are then the hub's.
+        'terms',
     ];
 
     /** Read off `current_plan.effective_price`. */
@@ -129,6 +133,30 @@ final class BillingSnapshotContractTest extends TestCase
         return $id;
     }
 
+    /** Add $count active members who signed in recently. */
+    private function addActiveMembers(int $tenantId, int $count): void
+    {
+        $rows = [];
+        for ($i = 0; $i < $count; $i++) {
+            $rows[] = [
+                'tenant_id' => $tenantId,
+                'first_name' => 'Active',
+                'last_name' => 'Member',
+                'name' => 'Active Member',
+                'email' => 'contract.' . bin2hex(random_bytes(7)) . '@example.com',
+                'password_hash' => 'x',
+                'role' => 'member',
+                'status' => 'active',
+                'is_approved' => 1,
+                'last_login_at' => now()->subDays(5),
+                'created_at' => now(),
+            ];
+        }
+        foreach (array_chunk($rows, 200) as $chunk) {
+            DB::table('users')->insert($chunk);
+        }
+    }
+
     public function test_every_row_carries_the_keys_the_screen_reads(): void
     {
         $this->actAsPlatformTeam();
@@ -175,6 +203,60 @@ final class BillingSnapshotContractTest extends TestCase
         $this->assertSame('Contract plan', $plan['name']);
         $this->assertEquals(400, $plan['effective_price']['yearly']);
         $this->assertSame('active', $plan['assignment_status']);
+        $this->assertSame('default', $plan['terms']);
+    }
+
+    public function test_a_community_that_pays_its_hub_shows_the_hubs_name_and_member_number(): void
+    {
+        $this->actAsPlatformTeam();
+        $local = DB::table('pay_plans')->where('slug', 'local')->first();
+        $hub = $this->makeCommunity('Contract hub');
+        $child = (int) DB::table('tenants')->insertGetId([
+            'name' => 'Contract hub child', 'slug' => 'contract-' . bin2hex(random_bytes(5)),
+            'is_active' => 1, 'parent_id' => $hub, 'depth' => 2,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+        DB::table('tenants')->where('id', $child)->update(['path' => "/1/{$hub}/{$child}/"]);
+        foreach ([$hub, $child] as $id) {
+            DB::table('tenant_plan_assignments')->insert(['tenant_id' => $id, 'pay_plan_id' => $local->id, 'status' => 'active']);
+        }
+        DB::table('hub_plan_terms')->insert([
+            'hub_tenant_id' => $hub, 'pay_plan_id' => $local->id, 'name' => 'Hub local', 'max_users' => 40,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+        \App\Support\Billing\PlanTerms::flush();
+
+        $rows = collect($this->apiGet('/v2/admin/super/billing/snapshot')->json('data'));
+
+        $childPlan = $rows->firstWhere('id', $child)['current_plan'];
+        $this->assertSame('hub', $childPlan['terms']);
+        $this->assertSame('Hub local', $childPlan['name']);
+        $this->assertSame(40, $childPlan['max_users']);
+        $this->assertSame((int) $local->id, $childPlan['id']);
+
+        // The suggestion is worked out on the same terms as the limit: the
+        // plans this community can be put on, with the hub's member numbers.
+        DB::table('hub_plan_terms')->where('hub_tenant_id', $hub)->update(['max_users' => 500]);
+        \App\Support\Billing\PlanTerms::flush();
+        $platformPayer = $this->makeCommunity('Contract platform payer');
+        $this->addActiveMembers($child, 400);
+        $this->addActiveMembers($platformPayer, 400);
+
+        $rows = collect($this->apiGet('/v2/admin/super/billing/snapshot')->json('data'));
+        $this->assertSame(400, $rows->firstWhere('id', $child)['active_member_count']);
+        $this->assertSame('local', $rows->firstWhere('id', $child)['suggested_plan'], 'The hub lets Local hold 500.');
+        $this->assertSame(
+            \App\Support\Billing\PlanTerms::smallestDefaultFitting(400)['slug'],
+            $rows->firstWhere('id', $platformPayer)['suggested_plan'],
+            'A community that pays the platform is suggested by the default numbers.'
+        );
+        $this->assertNotSame('local', $rows->firstWhere('id', $platformPayer)['suggested_plan']);
+
+        // The hub itself pays the platform: its own plan is on the default terms.
+        $hubPlan = $rows->firstWhere('id', $hub)['current_plan'];
+        $this->assertSame('default', $hubPlan['terms']);
+        $this->assertSame((string) $local->name, $hubPlan['name']);
+        $this->assertSame((int) $local->max_users, $hubPlan['max_users']);
     }
 
     /**

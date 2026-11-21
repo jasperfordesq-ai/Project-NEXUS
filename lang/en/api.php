@@ -3630,4 +3630,11 @@ return [
     'plan_field_storage_gb' => 'Storage included (GB)',
     'plan_field_emails_per_month' => 'Emails per month',
     'plan_field_max_users' => 'Member number',
+    'hub_plan_in_use' => 'A community that pays this one is on this plan. Move it to another plan before you stop offering this plan.',
+    'hub_plan_offered_invalid' => 'Offered must be yes or no.',
+    'hub_plan_text_invalid' => ':field: enter up to :max characters, or leave it empty to use the standard wording.',
+    'plan_field_name' => 'Plan name',
+    'plan_field_description' => 'Description',
+    'plan_value_too_large' => ':field: enter a number no larger than :max.',
+    'plan_text_too_long' => ':field: enter up to :max characters.',
 ];

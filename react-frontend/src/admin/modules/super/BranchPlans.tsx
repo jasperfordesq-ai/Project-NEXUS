@@ -1,0 +1,509 @@
+// Copyright © 2024–2026 Jasper Ford
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Author: Jasper Ford
+// See NOTICE file for attribution and acknowledgements.
+
+/**
+ * Branch plans
+ *
+ * A hub's manager and the platform's standard plans as their hub offers them
+ * to the communities that pay it: the name, description, member number and
+ * prices of each, and whether it is offered at all. A value left empty follows
+ * the platform's standard, so a later change to the standard reaches the hub.
+ *
+ * 🔴 The screen decides nothing about who may act. The server lists only the
+ * hubs the caller may edit (App\Support\Billing\BranchPlans::hubs()) and
+ * refuses everything else with its own words, which are shown as sent.
+ *
+ * 🔴 The types are the server's shape, key for key (PlanTerms::offeredBy(),
+ * AdminSuperController::branchPlans()), pinned by
+ * tests/Laravel/Feature/Billing/BranchPlansEndpointsTest.php. No mapping layer.
+ */
+
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import Layers from 'lucide-react/icons/layers';
+import { Alert, Button, Card, CardBody, CardHeader, Chip, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Select, SelectItem, Spinner, Switch, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@/components/ui';
+import { usePageTitle } from '@/hooks';
+import { useToast } from '@/contexts';
+import { api } from '@/lib/api';
+import { formatCurrency, formatNumber } from '@/lib/helpers';
+import { PageHeader } from '../../components/PageHeader';
+
+/** Money arrives as a number, or as a numeric string from a decimal column. */
+type Money = number | string | null;
+
+interface PlanValues {
+  name: string;
+  description: string | null;
+  max_users: number | null;
+  price_monthly: Money;
+  price_yearly: Money;
+  setup_fee: Money;
+  price_monthly_gbp: Money;
+  price_yearly_gbp: Money;
+  setup_fee_gbp: Money;
+}
+
+interface HubPlan extends PlanValues {
+  plan_id: number;
+  slug: string;
+  is_offered: boolean;
+  changed: boolean;
+  changed_fields: string[];
+  default: PlanValues;
+  communities_on_plan: number;
+}
+
+interface Hub {
+  id: number;
+  name: string;
+  depth: number;
+  children_paying: number;
+}
+
+interface BranchPlansResponse {
+  hubs: Hub[];
+  hub_id: number | null;
+  /** The selected hub's own billing currency; its column leads the table. */
+  hub_currency: 'eur' | 'gbp' | null;
+  plans: HubPlan[];
+}
+
+const MONEY_FIELDS = ['price_monthly', 'price_yearly', 'setup_fee', 'price_monthly_gbp', 'price_yearly_gbp', 'setup_fee_gbp'] as const;
+const FIELDS = ['name', 'description', 'max_users', ...MONEY_FIELDS] as const;
+
+type MoneyField = typeof MONEY_FIELDS[number];
+type Field = typeof FIELDS[number];
+type Form = Record<Field, string>;
+type FormErrors = Partial<Record<Field, string>>;
+
+const FIELD_LABEL: Record<Field, string> = {
+  name: 'branch_plans.field_name',
+  description: 'branch_plans.field_description',
+  max_users: 'branch_plans.col_members',
+  price_monthly: 'branch_plans.col_monthly_eur',
+  price_yearly: 'branch_plans.field_yearly_eur',
+  setup_fee: 'branch_plans.field_setup_eur',
+  price_monthly_gbp: 'branch_plans.col_monthly_gbp',
+  price_yearly_gbp: 'branch_plans.field_yearly_gbp',
+  setup_fee_gbp: 'branch_plans.field_setup_gbp',
+};
+
+const WHOLE_NUMBER = /^\d+$/;
+const AMOUNT = /^\d+(\.\d{1,2})?$/;
+
+// The server's limits (AdminSuperController::branchPlansUpdate), refused here
+// first so the manager learns which field is wrong before anything is sent.
+const MAX_NAME = 100;
+const MAX_DESCRIPTION = 5000;
+const MAX_MEMBERS = 10_000_000;
+const MAX_AMOUNT = 99_999_999.99;
+
+function toNumber(value: unknown): number | null {
+  if (value === null || value === undefined || value === '') return null;
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+function currencyOf(field: MoneyField): 'EUR' | 'GBP' {
+  return field.endsWith('_gbp') ? 'GBP' : 'EUR';
+}
+
+/** Whole amounts without ".00" (a plan reads "£199"), anything else to the penny. */
+function money(value: unknown, currency: 'EUR' | 'GBP'): string | null {
+  const n = toNumber(value);
+  if (n === null) return null;
+  return Number.isInteger(n)
+    ? formatCurrency(n, currency, { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+    : formatCurrency(n, currency);
+}
+
+function asText(value: unknown): string {
+  return value === null || value === undefined ? '' : String(value);
+}
+
+/** Only a field the hub has changed starts filled; the rest show the standard as a hint. */
+function formFor(plan: HubPlan): Form {
+  const form = {} as Form;
+  for (const field of FIELDS) {
+    form[field] = plan.changed_fields.includes(field) ? asText(plan[field]) : '';
+  }
+  return form;
+}
+
+export function BranchPlans() {
+  const { t } = useTranslation(['super_admin', 'admin_billing']);
+  usePageTitle(t('branch_plans.title'));
+  const toast = useToast();
+
+  const [data, setData] = useState<BranchPlansResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [reloadFailed, setReloadFailed] = useState(false);
+  // After the first good load, a failed reload keeps the last good table on
+  // screen, so the manager can pick another hub or try again.
+  const loadedOnce = useRef(false);
+  const lastAsked = useRef<number | null>(null);
+  const [dialog, setDialog] = useState<HubPlan | null>(null);
+  const [form, setForm] = useState<Form | null>(null);
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [busyId, setBusyId] = useState<number | null>(null);
+
+  const load = useCallback(async (hubId?: number | null) => {
+    lastAsked.current = hubId ?? null;
+    const path = hubId ? `/v2/admin/super/branch-plans?hub_id=${hubId}` : '/v2/admin/super/branch-plans';
+    const response = await api.get<BranchPlansResponse>(path);
+    if (response.success && response.data && Array.isArray(response.data.plans) && Array.isArray(response.data.hubs)) {
+      setData(response.data);
+      setLoadFailed(false);
+      setReloadFailed(false);
+      loadedOnce.current = true;
+    } else if (loadedOnce.current) {
+      setReloadFailed(true);
+    } else {
+      setLoadFailed(true);
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const hubId = data?.hub_id ?? null;
+  const hub = data?.hubs.find((h) => h.id === hubId) ?? null;
+
+  const write = async (
+    plan: HubPlan,
+    method: 'put' | 'delete',
+    body: Record<string, unknown> | null,
+    doneKey: string,
+  ): Promise<boolean> => {
+    if (hubId === null) return false;
+    const path = `/v2/admin/super/branch-plans/${hubId}/plans/${plan.plan_id}`;
+    setBusyId(plan.plan_id);
+    const response = method === 'put' ? await api.put(path, body ?? {}) : await api.delete(path);
+    setBusyId(null);
+
+    if (response.success) {
+      toast.success(t(doneKey));
+      void load(hubId);
+      return true;
+    }
+
+    // The server explains its own refusals in the reader's language.
+    // admin-i18n-ignore: localized server message — AdminSuperController Branch plans refusals (lang/*/api.php)
+    toast.error(response.error || t('branch_plans.save_failed'));
+    return false;
+  };
+
+  const openDialog = (plan: HubPlan) => {
+    setForm(formFor(plan));
+    setErrors({});
+    setDialog(plan);
+  };
+
+  const closeDialog = () => {
+    setDialog(null);
+    setForm(null);
+    setErrors({});
+  };
+
+  const setField = (field: Field, value: string) => {
+    setForm((current) => (current ? { ...current, [field]: value } : current));
+  };
+
+  const confirmDialog = async () => {
+    if (!dialog || !form) return;
+
+    const found: FormErrors = {};
+    const body: Record<string, string | number | null> = {};
+
+    for (const field of FIELDS) {
+      const value = form[field].trim();
+      if (value === '') {
+        // Empty means "follow the standard", never zero.
+        body[field] = null;
+      } else if (field === 'name' || field === 'description') {
+        const max = field === 'name' ? MAX_NAME : MAX_DESCRIPTION;
+        if (value.length > max) found[field] = t('branch_plans.error_too_long', { field: t(FIELD_LABEL[field]), max: formatNumber(max) });
+        else body[field] = value;
+      } else if (field === 'max_users') {
+        if (!WHOLE_NUMBER.test(value) || Number(value) < 1 || Number(value) > MAX_MEMBERS) {
+          found[field] = t('branch_plans.error_members', { field: t(FIELD_LABEL[field]), max: formatNumber(MAX_MEMBERS) });
+        } else {
+          body[field] = Number(value);
+        }
+      } else if (!AMOUNT.test(value) || Number(value) > MAX_AMOUNT) {
+        found[field] = t('branch_plans.error_price', {
+          field: t(FIELD_LABEL[field]),
+          max: formatNumber(MAX_AMOUNT, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+        });
+      } else {
+        body[field] = Number(value);
+      }
+    }
+
+    setErrors(found);
+    if (Object.keys(found).length > 0) return;
+
+    if (await write(dialog, 'put', body, 'branch_plans.done_saved')) closeDialog();
+  };
+
+  /** "Standard: £199" under each field, so the manager sees what empty means. */
+  const standardLine = (plan: HubPlan, field: Field): string => {
+    const standard = plan.default[field];
+    let shown: string;
+    if (field === 'max_users') {
+      const n = toNumber(standard);
+      shown = n === null ? t('branch_plans.no_limit') : formatNumber(n);
+    } else if (field === 'name' || field === 'description') {
+      shown = asText(standard) || '—';
+    } else {
+      shown = money(standard, currencyOf(field)) ?? '—';
+    }
+    return t('branch_plans.standard_value', { value: shown });
+  };
+
+  const placeholderFor = (plan: HubPlan, field: Field): string => {
+    const standard = plan.default[field];
+    if (field === 'max_users' || field === 'name' || field === 'description') return asText(standard);
+    const n = toNumber(standard);
+    return n === null ? '' : String(n);
+  };
+
+  const hubPicker = data && data.hubs.length > 1 ? (
+    <Select
+      label={t('branch_plans.hub_picker')}
+      size="sm"
+      className="min-w-[220px]"
+      selectedKeys={hubId !== null ? [String(hubId)] : []}
+      onSelectionChange={(keys) => {
+        if (keys === 'all') return;
+        const picked = Number(Array.from(keys)[0]);
+        if (Number.isInteger(picked) && picked > 0 && picked !== hubId) void load(picked);
+      }}
+    >
+      {data.hubs.map((h) => (
+        <SelectItem key={String(h.id)} id={String(h.id)}>{h.name}</SelectItem>
+      ))}
+    </Select>
+  ) : null;
+
+  const header = (
+    <PageHeader title={t('branch_plans.title')} description={t('branch_plans.description')} actions={hubPicker} />
+  );
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        {header}
+        <div role="status" aria-busy="true" aria-label={t('admin_billing:common.loading')} className="flex justify-center py-12">
+          <Spinner size="lg" />
+        </div>
+      </div>
+    );
+  }
+
+  if (loadFailed || !data) {
+    return (
+      <div className="space-y-6">
+        {header}
+        <p role="alert" className="text-sm text-danger">{t('branch_plans.load_failed')}</p>
+      </div>
+    );
+  }
+
+  if (hubId === null) {
+    return (
+      <div className="space-y-6">
+        {header}
+        <p className="text-sm text-muted">{t('branch_plans.no_hub')}</p>
+      </div>
+    );
+  }
+
+  const fieldInput = (plan: HubPlan, field: Field) => {
+    if (!form) return null;
+    const isNumber = field !== 'name' && field !== 'description';
+    return (
+      <Input
+        key={field}
+        label={t(FIELD_LABEL[field])}
+        value={form[field]}
+        onValueChange={(value: string) => setField(field, value)}
+        placeholder={placeholderFor(plan, field)}
+        description={standardLine(plan, field)}
+        inputMode={isNumber ? (field === 'max_users' ? 'numeric' : 'decimal') : undefined}
+        maxLength={field === 'name' ? MAX_NAME : field === 'description' ? MAX_DESCRIPTION : 12}
+        isInvalid={errors[field] !== undefined}
+        errorMessage={errors[field]}
+      />
+    );
+  };
+
+  // The hub's own currency leads; the other stays beside it.
+  const monthlyOrder: MoneyField[] = data.hub_currency === 'gbp'
+    ? ['price_monthly_gbp', 'price_monthly']
+    : ['price_monthly', 'price_monthly_gbp'];
+
+  return (
+    <div className="space-y-6">
+      {header}
+
+      {reloadFailed ? (
+        <Alert color="danger" title={t('branch_plans.reload_failed')}>
+          <Button size="sm" variant="secondary" onPress={() => void load(lastAsked.current ?? hubId)}>
+            {t('branch_plans.try_again')}
+          </Button>
+        </Alert>
+      ) : null}
+
+      <Card>
+        <CardHeader className="flex items-center gap-2 pb-0">
+          <Layers size={18} className="text-accent" aria-hidden="true" />
+          <span className="font-semibold text-sm">
+            {hub ? t('branch_plans.for_hub', { hub: hub.name }) : t('branch_plans.title')}
+          </span>
+        </CardHeader>
+        <CardBody className="p-0">
+          <Table aria-label={t('branch_plans.title')} removeWrapper>
+            <TableHeader>
+              <TableColumn>{t('branch_plans.col_plan')}</TableColumn>
+              <TableColumn>{t('branch_plans.col_members')}</TableColumn>
+              {monthlyOrder.map((field) => (
+                <TableColumn key={field}>{t(FIELD_LABEL[field])}</TableColumn>
+              ))}
+              <TableColumn>{t('branch_plans.col_offered')}</TableColumn>
+              <TableColumn>{t('branch_plans.col_terms')}</TableColumn>
+              <TableColumn>{t('admin_billing:billing.col_actions')}</TableColumn>
+            </TableHeader>
+            <TableBody emptyContent={t('branch_plans.empty')} items={data.plans.map((plan) => ({ ...plan, id: plan.plan_id }))}>
+              {(plan) => {
+                const busy = busyId === plan.plan_id;
+                const members = toNumber(plan.max_users);
+                // Showing a plan again is always allowed; hiding one a community is on is not.
+                const inUse = plan.is_offered && plan.communities_on_plan > 0;
+
+                return (
+                  <TableRow key={plan.plan_id}>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium">{plan.name}</span>
+                        {plan.description ? (
+                          <span className="text-xs text-muted line-clamp-2">{plan.description}</span>
+                        ) : null}
+                      </div>
+                    </TableCell>
+
+                    <TableCell>
+                      <span className="text-sm">{members === null ? t('branch_plans.no_limit') : formatNumber(members)}</span>
+                    </TableCell>
+
+                    {monthlyOrder.map((field) => (
+                      <TableCell key={field}>
+                        <span className="text-sm">{money(plan[field], currencyOf(field)) ?? '—'}</span>
+                      </TableCell>
+                    ))}
+
+                    <TableCell>
+                      <div className="flex flex-col items-start gap-1">
+                        <Switch
+                          size="sm"
+                          aria-label={t('branch_plans.offered_aria', { plan: plan.name })}
+                          isSelected={plan.is_offered}
+                          isDisabled={busy || inUse}
+                          onValueChange={(offered: boolean) => void write(
+                            plan,
+                            'put',
+                            { is_offered: offered },
+                            offered ? 'branch_plans.done_offered' : 'branch_plans.done_hidden',
+                          )}
+                        />
+                        {inUse ? (
+                          <span className="text-xs text-muted">{t('branch_plans.in_use_note')}</span>
+                        ) : null}
+                      </div>
+                    </TableCell>
+
+                    <TableCell>
+                      <Chip size="sm" variant="soft" color={plan.changed ? 'warning' : 'default'}>
+                        {plan.changed ? t('branch_plans.changed') : t('branch_plans.standard')}
+                      </Chip>
+                    </TableCell>
+
+                    <TableCell>
+                      <div className="flex items-center gap-1 flex-wrap">
+                        <Button size="sm" variant="secondary" isDisabled={busy} onPress={() => openDialog(plan)}>
+                          {t('branch_plans.change')}
+                        </Button>
+                        {plan.changed ? (
+                          <Button
+                            size="sm"
+                            variant="tertiary"
+                            isLoading={busy}
+                            onPress={() => void write(plan, 'delete', null, 'branch_plans.done_reset')}
+                          >
+                            {t('branch_plans.back_to_standard')}
+                          </Button>
+                        ) : null}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              }}
+            </TableBody>
+          </Table>
+        </CardBody>
+      </Card>
+
+      {/* A later stage adds a second card here: what happens when a community
+          that pays this hub goes over its member number. */}
+
+      <Modal isOpen={dialog !== null} onClose={closeDialog} size="lg" scrollBehavior="inside">
+        <ModalContent>
+          <ModalHeader>
+            {t('branch_plans.change')}
+            {dialog && (
+              <span className="text-muted text-sm font-normal ml-2">— {dialog.default.name}</span>
+            )}
+          </ModalHeader>
+          <ModalBody>
+            {dialog ? (
+              <div className="flex flex-col gap-3">
+                <p className="text-sm text-muted">{t('branch_plans.dialog_help')}</p>
+                {/* Lowering the member number can put a community that pays
+                    this hub over its limit at once, so say so before saving. */}
+                {dialog.communities_on_plan > 0 ? (
+                  <Alert color="warning" title={t('branch_plans.caution_in_use', { count: dialog.communities_on_plan })} />
+                ) : null}
+                {fieldInput(dialog, 'name')}
+                {fieldInput(dialog, 'description')}
+                {fieldInput(dialog, 'max_users')}
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {fieldInput(dialog, 'price_monthly')}
+                  {fieldInput(dialog, 'price_monthly_gbp')}
+                  {fieldInput(dialog, 'price_yearly')}
+                  {fieldInput(dialog, 'price_yearly_gbp')}
+                  {fieldInput(dialog, 'setup_fee')}
+                  {fieldInput(dialog, 'setup_fee_gbp')}
+                </div>
+              </div>
+            ) : null}
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="tertiary" onPress={closeDialog} isDisabled={busyId !== null}>
+              {t('admin_billing:billing.cancel')}
+            </Button>
+            <Button color="primary" onPress={() => void confirmDialog()} isLoading={busyId !== null}>
+              {t('branch_plans.save')}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </div>
+  );
+}
+
+export default BranchPlans;

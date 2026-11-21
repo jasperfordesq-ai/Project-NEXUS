@@ -3121,4 +3121,11 @@ XP: :xp |レベル: :level |完了した交換: :completed_exchanges
     'plan_field_storage_gb' => '含まれるストレージ（GB）',
     'plan_field_emails_per_month' => '月間メール数',
     'plan_field_max_users' => '会員数',
+    'hub_plan_in_use' => 'このコミュニティに支払っているコミュニティがこのプランを利用しています。このプランの提供をやめる前に、そのコミュニティを別のプランに移してください。',
+    'hub_plan_offered_invalid' => '「提供中」は「はい」か「いいえ」で指定してください。',
+    'hub_plan_text_invalid' => ':field：:max文字以内で入力するか、標準の文言を使う場合は空欄にしてください。',
+    'plan_field_name' => 'プラン名',
+    'plan_field_description' => '説明',
+    'plan_value_too_large' => ':field：:max以下の数値を入力してください。',
+    'plan_text_too_long' => ':field：:max文字以内で入力してください。',
 ];

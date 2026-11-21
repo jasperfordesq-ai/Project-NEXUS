@@ -22,7 +22,10 @@ use App\Services\BillingStandingNotifier;
 use App\Services\BillingStandingService;
 use App\Support\Billing\BillingSettings;
 use App\Support\Billing\BranchPayments;
+use App\Support\Billing\BranchPlans;
+use App\Support\Billing\PlanTerms;
 use App\Services\SuperAdminAuditService;
+use App\Services\StripeSubscriptionService;
 use App\Services\TenantBillingService;
 use App\Services\TenantHierarchyService;
 use App\Services\TenantVisibilityService;
@@ -3350,6 +3353,192 @@ class AdminSuperController extends BaseApiController
             // Out of reach, and "does not exist", answer the same way.
             default => $this->respondWithError(ApiErrorCodes::SUPER_PANEL_ACCESS_DENIED, __('api.super_no_access_tenant'), null, 403),
         };
+    }
+
+    // =====================================================================
+    // BRANCH PLANS — a hub's own version of the default plans
+    // =====================================================================
+    //
+    // Not platform-team-only, like Branch payments: BranchPlans decides, per
+    // hub, whether THIS caller may change it — its own community or one below
+    // it, never tenant 1. Pinned at both ends by BranchPlansEndpointsTest.
+
+    /** GET /api/v2/admin/super/branch-plans?hub_id= */
+    public function branchPlans(): JsonResponse
+    {
+        $this->requireSuperAdmin();
+
+        $hubs = BranchPlans::hubs();
+        $asked = request()->query('hub_id');
+
+        if ($asked !== null && $asked !== '') {
+            $hubId = filter_var($asked, FILTER_VALIDATE_INT);
+            if ($hubId === false || BranchPlans::refusalForHub((int) $hubId) !== null) {
+                return $this->branchPlansNotInReach();
+            }
+            $hubId = (int) $hubId;
+        } else {
+            $own = (int) (SuperPanelAccess::getAccess()['tenant_id'] ?? 0);
+            $hubId = BranchPlans::refusalForHub($own) === null ? $own : ($hubs[0]['id'] ?? null);
+        }
+
+        return $this->respondWithData([
+            'hubs' => $hubs,
+            'hub_id' => $hubId,
+            // The page leads with the hub's own currency; both are editable.
+            'hub_currency' => $hubId !== null ? StripeSubscriptionService::billingCurrencyFor($hubId) : null,
+            'plans' => $hubId !== null ? PlanTerms::offeredBy($hubId) : [],
+        ]);
+    }
+
+    /** PUT /api/v2/admin/super/branch-plans/{hubId}/plans/{planId} */
+    public function branchPlansUpdate(int $hubId, int $planId): JsonResponse
+    {
+        $userId = $this->requireSuperAdmin();
+        if (BranchPlans::refusalForHub($hubId) !== null) {
+            return $this->branchPlansNotInReach();
+        }
+        if (!$this->isOfferablePlan($planId)) {
+            return $this->respondWithError('NOT_FOUND', __('api.plan_not_found'), 'plan_id', 404);
+        }
+
+        $input = $this->getAllInput();
+        $values = $this->branchPlanValues($input);
+        if ($values instanceof JsonResponse) {
+            return $values;
+        }
+
+        $isOffered = null;
+        if (array_key_exists('is_offered', $input)) {
+            $isOffered = filter_var($input['is_offered'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            if ($isOffered === null) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.hub_plan_offered_invalid'), 'is_offered', 422);
+            }
+        }
+
+        if ($values === [] && $isOffered === null) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.no_fields_to_update'), null, 422);
+        }
+
+        try {
+            BranchPlans::saveTerms($hubId, $planId, $values, $isOffered, $userId);
+        } catch (\DomainException $e) {
+            if ($e->getMessage() !== BranchPlans::PLAN_IN_USE) {
+                throw $e;
+            }
+
+            return $this->respondWithError('PLAN_IN_USE', __('api.hub_plan_in_use'), 'is_offered', 422);
+        }
+
+        return $this->respondWithData(['plan' => $this->hubPlan($hubId, $planId)]);
+    }
+
+    /** DELETE /api/v2/admin/super/branch-plans/{hubId}/plans/{planId} */
+    public function branchPlansReset(int $hubId, int $planId): JsonResponse
+    {
+        $userId = $this->requireSuperAdmin();
+        if (BranchPlans::refusalForHub($hubId) !== null) {
+            return $this->branchPlansNotInReach();
+        }
+        if (!$this->isOfferablePlan($planId)) {
+            return $this->respondWithError('NOT_FOUND', __('api.plan_not_found'), 'plan_id', 404);
+        }
+
+        BranchPlans::resetTerms($hubId, $planId, $userId);
+
+        return $this->respondWithData(['plan' => $this->hubPlan($hubId, $planId)]);
+    }
+
+    /** Out of reach, tenant 1, and "does not exist" all answer the same way. */
+    private function branchPlansNotInReach(): JsonResponse
+    {
+        return $this->respondWithError('NOT_IN_REACH', __('api.super_no_access_tenant'), null, 404);
+    }
+
+    /** Hubs change only the active standard plans. */
+    private function isOfferablePlan(int $planId): bool
+    {
+        return in_array($planId, array_column(PlanTerms::defaults(), 'plan_id'), true);
+    }
+
+    /** @return array<string, mixed>|null */
+    private function hubPlan(int $hubId, int $planId): ?array
+    {
+        foreach (PlanTerms::offeredBy($hubId) as $plan) {
+            if ($plan['plan_id'] === $planId) {
+                return $plan;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * The hub's values present in $input, validated as the default plans'
+     * are (AdminContentController::planFields): a member number from 1 to
+     * PlanTerms::MAX_MEMBER_NUMBER, money from 0 to PlanTerms::MAX_MONEY
+     * rounded to cents. Empty or null = follow the default.
+     *
+     * @param array<string, mixed> $input
+     * @return array<string, mixed>|JsonResponse
+     */
+    private function branchPlanValues(array $input): array|JsonResponse
+    {
+        $values = [];
+
+        foreach (['name' => PlanTerms::MAX_NAME_LENGTH, 'description' => PlanTerms::MAX_DESCRIPTION_LENGTH] as $field => $max) {
+            if (!array_key_exists($field, $input)) {
+                continue;
+            }
+            $value = $input[$field];
+            if ($value === null || (is_string($value) && trim($value) === '')) {
+                $values[$field] = null;
+                continue;
+            }
+            if (!is_string($value) || mb_strlen(trim($value)) > $max) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.hub_plan_text_invalid', [
+                    'field' => __("api.plan_field_{$field}"),
+                    'max' => $max,
+                ]), $field, 422);
+            }
+            $values[$field] = trim($value);
+        }
+
+        if (array_key_exists('max_users', $input)) {
+            $value = $input['max_users'];
+            if ($value === null || $value === '') {
+                $values['max_users'] = null;
+            } else {
+                $number = filter_var($value, FILTER_VALIDATE_INT);
+                if ($number === false || $number < 1) {
+                    return $this->respondWithError('VALIDATION_ERROR', __('api.plan_member_number_invalid', ['field' => __('api.plan_field_max_users')]), 'max_users', 422);
+                }
+                if ($number > PlanTerms::MAX_MEMBER_NUMBER) {
+                    return $this->respondWithError('VALIDATION_ERROR', __('api.plan_value_too_large', ['field' => __('api.plan_field_max_users'), 'max' => PlanTerms::MAX_MEMBER_NUMBER]), 'max_users', 422);
+                }
+                $values['max_users'] = $number;
+            }
+        }
+
+        foreach (['price_monthly', 'price_yearly', 'setup_fee', 'price_monthly_gbp', 'price_yearly_gbp', 'setup_fee_gbp'] as $field) {
+            if (!array_key_exists($field, $input)) {
+                continue;
+            }
+            $value = $input[$field];
+            if ($value === null || $value === '') {
+                $values[$field] = null;
+                continue;
+            }
+            if (!is_numeric($value) || (float) $value < 0 || !is_finite((float) $value)) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.plan_price_invalid', ['field' => __("api.plan_field_{$field}")]), $field, 422);
+            }
+            if (round((float) $value, 2) > PlanTerms::MAX_MONEY) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.plan_value_too_large', ['field' => __("api.plan_field_{$field}"), 'max' => PlanTerms::MAX_MONEY]), $field, 422);
+            }
+            $values[$field] = round((float) $value, 2);
+        }
+
+        return $values;
     }
 
     private function communityIsClosed(int $tenantId): bool

@@ -12169,6 +12169,31 @@ CREATE TABLE `help_faqs` (
   KEY `idx_tenant_category` (`tenant_id`,`category`)
 ) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `hub_plan_terms`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `hub_plan_terms` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `hub_tenant_id` int(11) NOT NULL,
+  `pay_plan_id` int(11) NOT NULL,
+  `name` varchar(100) DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `max_users` int(10) unsigned DEFAULT NULL,
+  `price_monthly` decimal(10,2) DEFAULT NULL,
+  `price_yearly` decimal(10,2) DEFAULT NULL,
+  `setup_fee` decimal(10,2) DEFAULT NULL,
+  `price_monthly_gbp` decimal(10,2) DEFAULT NULL,
+  `price_yearly_gbp` decimal(10,2) DEFAULT NULL,
+  `setup_fee_gbp` decimal(10,2) DEFAULT NULL,
+  `is_offered` tinyint(1) NOT NULL DEFAULT 1,
+  `updated_by_user_id` int(10) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_hpt_hub_plan` (`hub_tenant_id`,`pay_plan_id`),
+  KEY `idx_hpt_plan` (`pay_plan_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `idea_media`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;

@@ -219,6 +219,32 @@ final class PlanEndpointsTest extends TestCase
         }
     }
 
+    public function test_values_too_large_for_the_database_are_refused_not_a_server_error(): void
+    {
+        $this->actAsPlatformTeam();
+        $before = (array) DB::table('pay_plans')->where('id', $this->planId)->first();
+
+        foreach ([
+            ['max_users' => 10000001],
+            ['price_monthly' => '100000000'],
+            ['setup_fee_gbp' => 99999999.999],
+            ['description' => str_repeat('x', 5001)],
+            ['name' => str_repeat('x', 101)],
+        ] as $body) {
+            $response = $this->apiPut("/v2/admin/plans/{$this->planId}", $body);
+            $this->assertSame(422, $response->getStatusCode(), json_encode(array_map(static fn ($v) => is_string($v) ? substr($v, 0, 20) : $v, $body)));
+            $this->assertSame((string) array_key_first($body), $response->json('errors.0.field'));
+        }
+        $this->assertSame(422, $this->apiPost('/v2/admin/plans', ['name' => str_repeat('x', 101)])->getStatusCode());
+        $this->assertEquals($before, (array) DB::table('pay_plans')->where('id', $this->planId)->first());
+
+        // The largest allowed values are stored.
+        $this->apiPut("/v2/admin/plans/{$this->planId}", [
+            'max_users' => 10000000, 'price_yearly' => '99999999.99', 'description' => str_repeat('y', 5000),
+        ])->assertStatus(200);
+        $this->assertSame(10000000, (int) DB::table('pay_plans')->where('id', $this->planId)->value('max_users'));
+    }
+
     public function test_zero_communities_is_refused(): void
     {
         $this->actAsPlatformTeam();
