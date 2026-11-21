@@ -242,6 +242,22 @@ describe('PlansAdmin', () => {
     await waitFor(() => expect(mockToast.error).toHaveBeenCalled());
   });
 
+  it('shows the member number and the monthly price in both currencies', async () => {
+    resolveList([
+      // Decimals arrive from the API as strings.
+      { ...PRO_PLAN, max_users: 250, price_monthly: '49.00', price_monthly_gbp: '42.00' },
+      { ...FREE_PLAN, max_users: null, price_monthly_gbp: null },
+    ]);
+    render(<PlansAdmin />);
+    await waitFor(() => screen.getByText('Pro Plan'));
+
+    expect(screen.getByText('250')).toBeInTheDocument();
+    expect(screen.getByText(/unlimited/i)).toBeInTheDocument();
+    expect(screen.getByText(/^€\s?49\.00$/)).toBeInTheDocument();
+    expect(screen.getByText(/^£\s?42\.00$/)).toBeInTheDocument();
+    expect(screen.getByText(/no pound price/i)).toBeInTheDocument();
+  });
+
   it('shows error toast when initial load fails', async () => {
     mockPlansList.mockRejectedValue(new Error('Network error'));
     render(<PlansAdmin />);

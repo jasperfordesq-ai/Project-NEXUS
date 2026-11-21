@@ -79,9 +79,10 @@ class StripeSubscriptionService
     /**
      * Where each currency's amount and Stripe price id live on a `pay_plans`
      * row. The euro columns are the original ones, so a price id stored before
-     * pound prices existed is read as the euro price.
+     * pound prices existed is read as the euro price. Public so the plan
+     * update can tell which amounts it changed without a second copy.
      */
-    private const PRICE_COLUMNS = [
+    public const PRICE_COLUMNS = [
         'eur' => [
             'monthly' => ['amount' => 'price_monthly', 'price_id' => 'stripe_price_id_monthly', 'interval' => 'month'],
             'yearly' => ['amount' => 'price_yearly', 'price_id' => 'stripe_price_id_yearly', 'interval' => 'year'],
@@ -162,7 +163,9 @@ class StripeSubscriptionService
      * button, plan create/edit) every currency the plan has a price in is
      * synced; checkout passes the one currency it needs.
      *
-     * Idempotent: a price id already stored is never replaced.
+     * Idempotent: a price id already stored is never replaced. An edited
+     * amount reaches Stripe through replacePlanPrice(), which the plan update
+     * calls only for the amounts that update changed.
      */
     public static function syncPlanToStripe(int $planId, ?string $currency = null): void
     {
@@ -252,6 +255,228 @@ class StripeSubscriptionService
             ]);
             throw $e;
         }
+    }
+
+    /**
+     * Bring a plan's stored Stripe price for one currency and interval in
+     * line with the plan's current amount.
+     *
+     * Stripe prices cannot be edited, so an edited amount gets a new price
+     * and the stored id is replaced. An amount taken to 0 or cleared is not
+     * sold by card at all, so the stored id is retired and the column
+     * emptied: checkout can no longer charge it. syncPlanToStripe never does
+     * either; it stays idempotent.
+     *
+     * A community already paying by card keeps the price it signed up at;
+     * nothing here touches a subscription. The retired id is kept in
+     * `pay_plan_stripe_prices`, with what Stripe says it charged, so a
+     * subscription update still naming it is recognised as this plan.
+     *
+     * Replacing creates the new price first: if Stripe refuses, nothing is
+     * written, the old id stays, and the exception is thrown for the caller
+     * to report.
+     */
+    public static function replacePlanPrice(int $planId, string $currency, string $interval): void
+    {
+        if (!isset(self::PRICE_COLUMNS[$currency][$interval])) {
+            throw new \InvalidArgumentException("Plans are not priced in '{$currency}' / '{$interval}'");
+        }
+        $columns = self::PRICE_COLUMNS[$currency][$interval];
+
+        $plan = DB::selectOne("SELECT * FROM pay_plans WHERE id = ?", [$planId]);
+        if (!$plan) {
+            Log::warning('StripeSubscriptionService::replacePlanPrice — plan not found', ['plan_id' => $planId]);
+            return;
+        }
+
+        $oldPriceId = self::planPriceId($plan, $currency, $interval);
+        if ($oldPriceId === null) {
+            // Nothing stored: the ordinary sync creates a price when one is needed.
+            return;
+        }
+        $amount = self::planAmount($plan, $currency, $interval);
+
+        if ($amount <= 0) {
+            // Retiring needs no Stripe call and must happen even when Stripe
+            // cannot be reached or has no key here: leaving the id would keep
+            // charging an amount the plan no longer has. Stripe is asked only
+            // what the price charged; failing that, the record says 0.00 and
+            // the log says why.
+            try {
+                $retiredAmount = self::stripePriceAmount(StripeService::client(), $oldPriceId);
+            } catch (\Exception $e) {
+                $retiredAmount = 0.0;
+                Log::warning('StripeSubscriptionService::replacePlanPrice — could not read the retired price from Stripe; recorded as 0.00', [
+                    'plan_id' => $planId, 'price_id' => $oldPriceId, 'error' => $e->getMessage(),
+                ]);
+            }
+
+            self::swapStoredPrice($planId, $columns['price_id'], $oldPriceId, null, $currency, $interval, $retiredAmount);
+            Log::info('Stripe price retired: the plan no longer charges this amount', [
+                'plan_id' => $planId, 'currency' => $currency, 'interval' => $interval, 'old_price_id' => $oldPriceId,
+            ]);
+            return;
+        }
+
+        try {
+            $client = StripeService::client();
+            if (empty($plan->stripe_product_id)) {
+                throw new \RuntimeException('The plan has a Stripe price but no Stripe product');
+            }
+            $retiredAmount = self::stripePriceAmount($client, $oldPriceId);
+
+            $price = $client->prices->create([
+                'product' => $plan->stripe_product_id,
+                'unit_amount' => (int) round($amount * 100),
+                'currency' => $currency,
+                'recurring' => ['interval' => $columns['interval']],
+                'metadata' => [
+                    'nexus_plan_id' => (string) $planId,
+                    'interval' => $interval,
+                    'currency' => $currency,
+                    'replaces' => $oldPriceId,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            Log::error('StripeSubscriptionService::replacePlanPrice failed; the old price is still sold', [
+                'plan_id' => $planId,
+                'currency' => $currency,
+                'interval' => $interval,
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+
+        self::swapStoredPrice($planId, $columns['price_id'], $oldPriceId, (string) $price->id, $currency, $interval, $retiredAmount);
+        Log::info('Stripe price replaced', [
+            'plan_id' => $planId,
+            'currency' => $currency,
+            'interval' => $interval,
+            'old_price_id' => $oldPriceId,
+            'new_price_id' => $price->id,
+        ]);
+    }
+
+    /**
+     * Compare every stored Stripe price of a plan with the plan's amounts and
+     * replace or retire what differs. This is how a replacement that failed
+     * at save time is retried: the platform team's Sync button calls it.
+     *
+     * Never throws: a currency/interval Stripe refuses is reported 'failed'
+     * and logged at error, and the others still run.
+     *
+     * @return list<array{currency: string, interval: string, outcome: 'replaced'|'retired'|'unchanged'|'failed'}>
+     */
+    public static function reconcilePlanPrices(int $planId): array
+    {
+        $plan = DB::selectOne("SELECT * FROM pay_plans WHERE id = ?", [$planId]);
+        if (!$plan) {
+            return [];
+        }
+
+        $results = [];
+        $client = null;
+        foreach (self::PRICE_COLUMNS as $currency => $intervals) {
+            foreach (array_keys($intervals) as $interval) {
+                $storedId = self::planPriceId($plan, $currency, $interval);
+                if ($storedId === null) {
+                    continue;
+                }
+                $amount = self::planAmount($plan, $currency, $interval);
+
+                try {
+                    if ($amount <= 0) {
+                        self::replacePlanPrice($planId, $currency, $interval);
+                        $outcome = 'retired';
+                    } else {
+                        $client ??= StripeService::client();
+                        $charged = (int) round(self::stripePriceAmount($client, $storedId) * 100);
+                        if ($charged === (int) round($amount * 100)) {
+                            $outcome = 'unchanged';
+                        } else {
+                            self::replacePlanPrice($planId, $currency, $interval);
+                            $outcome = 'replaced';
+                        }
+                    }
+                } catch (\Exception $e) {
+                    Log::error('StripeSubscriptionService::reconcilePlanPrices — price not brought in line', [
+                        'plan_id' => $planId,
+                        'currency' => $currency,
+                        'interval' => $interval,
+                        'error' => $e->getMessage(),
+                    ]);
+                    $outcome = 'failed';
+                }
+
+                $results[] = ['currency' => $currency, 'interval' => $interval, 'outcome' => $outcome];
+            }
+        }
+
+        return $results;
+    }
+
+    /** What a Stripe price charges, in the currency's main unit. */
+    private static function stripePriceAmount(\Stripe\StripeClient $client, string $priceId): float
+    {
+        $price = $client->prices->retrieve($priceId);
+
+        return ((int) ($price->unit_amount ?? 0)) / 100;
+    }
+
+    /**
+     * Store $newPriceId (null = none) in place of $oldPriceId and record the
+     * old one as retired, in one transaction. Only where the old id is still
+     * the stored one: a second editor racing this one keeps its own result.
+     */
+    private static function swapStoredPrice(int $planId, string $priceColumn, string $oldPriceId, ?string $newPriceId, string $currency, string $interval, float $retiredAmount): void
+    {
+        DB::transaction(function () use ($planId, $priceColumn, $oldPriceId, $newPriceId, $currency, $interval, $retiredAmount): void {
+            $moved = DB::update(
+                "UPDATE pay_plans SET {$priceColumn} = ?, updated_at = NOW()
+                 WHERE id = ? AND {$priceColumn} = ?",
+                [$newPriceId, $planId, $oldPriceId]
+            );
+            if ($moved === 0) {
+                return;
+            }
+
+            DB::insert(
+                "INSERT IGNORE INTO pay_plan_stripe_prices
+                     (pay_plan_id, stripe_price_id, currency, billing_interval, amount, retired_at)
+                 VALUES (?, ?, ?, ?, ?, NOW())",
+                [$planId, $oldPriceId, $currency, $interval, round($retiredAmount, 2)]
+            );
+        });
+    }
+
+    /**
+     * The plan a Stripe price belongs to: one it sells at now, or one it
+     * used to sell at (a community still paying an older price). Null when
+     * no plan has ever used it.
+     */
+    public static function planIdForStripePrice(string $priceId): ?int
+    {
+        if ($priceId === '') {
+            return null;
+        }
+
+        $current = DB::selectOne(
+            "SELECT id FROM pay_plans
+             WHERE stripe_price_id_monthly = ? OR stripe_price_id_yearly = ?
+                OR stripe_price_id_monthly_gbp = ? OR stripe_price_id_yearly_gbp = ?
+             LIMIT 1",
+            [$priceId, $priceId, $priceId, $priceId]
+        );
+        if ($current) {
+            return (int) $current->id;
+        }
+
+        $retired = DB::selectOne(
+            "SELECT pay_plan_id FROM pay_plan_stripe_prices WHERE stripe_price_id = ? LIMIT 1",
+            [$priceId]
+        );
+
+        return $retired ? (int) $retired->pay_plan_id : null;
     }
 
     /**
@@ -631,15 +856,9 @@ class StripeSubscriptionService
         $stripeItems = $subscription->items->data ?? [];
         $newPriceId = !empty($stripeItems) ? ($stripeItems[0]->price->id ?? null) : null;
         if ($newPriceId) {
-            $pricedPlan = DB::selectOne(
-                "SELECT id FROM pay_plans
-                 WHERE stripe_price_id_monthly = ? OR stripe_price_id_yearly = ?
-                    OR stripe_price_id_monthly_gbp = ? OR stripe_price_id_yearly_gbp = ?
-                 LIMIT 1",
-                [$newPriceId, $newPriceId, $newPriceId, $newPriceId]
-            );
-            if ($pricedPlan) {
-                $newPlanId = (int) $pricedPlan->id;
+            $pricedPlanId = self::planIdForStripePrice((string) $newPriceId);
+            if ($pricedPlanId !== null) {
+                $newPlanId = $pricedPlanId;
             } else {
                 Log::warning('Stripe subscription.updated — price matches no plan; plan left unchanged', [
                     'subscription_id' => $stripeSubId,

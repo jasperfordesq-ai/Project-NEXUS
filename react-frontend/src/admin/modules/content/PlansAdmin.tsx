@@ -29,7 +29,7 @@ import { EmptyState } from '../../components/EmptyState';
 import { ConfirmModal } from '../../components/ConfirmModal';
 import { useTranslation } from 'react-i18next';
 import { Button, Chip, Spinner, Tooltip } from '@/components/ui';
-import { getFormattingLocale } from '@/lib/helpers';
+import { formatCurrency, formatNumber } from '@/lib/helpers';
 
 const TIER_COLORS: Record<number, 'default' | 'primary' | 'secondary' | 'success' | 'warning'> = {
   0: 'default',
@@ -37,8 +37,6 @@ const TIER_COLORS: Record<number, 'default' | 'primary' | 'secondary' | 'success
   2: 'secondary',
   3: 'warning',
 };
-
-const planPriceFormatter = new Intl.NumberFormat(getFormattingLocale(), { style: 'currency', currency: 'EUR' });
 
 export function PlansAdmin() {
   const { t } = useTranslation('admin_content');
@@ -113,9 +111,11 @@ export function PlansAdmin() {
     }
   };
 
-  const formatPrice = (price: number) => {
-    if (!price) return t('content.free');
-    return planPriceFormatter.format(Number(price));
+  // Decimals arrive as strings ("49.00"), so 0 must be checked after conversion.
+  const formatPrice = (price: number | string | null | undefined, currency: 'EUR' | 'GBP' = 'EUR') => {
+    const amount = Number(price ?? 0);
+    if (!amount) return t('content.free');
+    return formatCurrency(amount, currency);
   };
 
   const columns: Column<PlanListItem>[] = [
@@ -164,8 +164,23 @@ export function PlansAdmin() {
       render: (item) => (
         <div className="flex flex-col gap-0.5">
           <span className="text-sm font-medium">{formatPrice(item.price_monthly)}</span>
+          {item.price_monthly_gbp != null ? (
+            <span className="text-sm font-medium">{formatPrice(item.price_monthly_gbp, 'GBP')}</span>
+          ) : (
+            <span className="text-xs text-muted">{t('content.plan_no_gbp_price')}</span>
+          )}
           <span className="text-xs text-muted">{t('content.yearly_price_suffix', { price: formatPrice(item.price_yearly) })}</span>
         </div>
+      ),
+    },
+    {
+      key: 'max_users',
+      label: t('content.max_users'),
+      sortable: true,
+      render: (item) => (
+        <span className="text-sm">
+          {item.max_users != null ? formatNumber(item.max_users) : t('content.plan_unlimited')}
+        </span>
       ),
     },
     {

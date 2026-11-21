@@ -13,6 +13,7 @@ use App\Core\EmailTemplateBuilder;
 use App\Core\Mailer;
 use App\Core\TenantContext;
 use App\I18n\LocaleContext;
+use App\Support\Billing\PlanTerms;
 use App\Support\Billing\StandardPlans;
 
 /**
@@ -386,8 +387,9 @@ class TenantBillingService
             $currentPlan  = $planMap[$id] ?? null;
 
             // Packages are sized by ACTIVE members (DESIGN §11). Null above the
-            // largest package: that is a bespoke quote, not a package.
-            $suggested = StandardPlans::slugForMemberCount($activeCount);
+            // largest package: that is a bespoke quote, not a package. Read
+            // from the plans as edited, not from the seed constant.
+            $suggested = PlanTerms::smallestDefaultFitting($activeCount)['slug'] ?? null;
 
             $overLimit    = false;
             $usagePercent = null;

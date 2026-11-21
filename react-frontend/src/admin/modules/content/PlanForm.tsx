@@ -1,17 +1,18 @@
-import { Card, CardBody, CardHeader, Input, Textarea, Button, Spinner, Chip, Switch } from '@/components/ui';
+import { Alert, Card, CardBody, CardHeader, Input, Textarea, Button, Spinner, Chip, Switch } from '@/components/ui';
 import { useState, useEffect } from 'react';
 
 import { Separator } from '@/components/ui';
+import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import CreditCard from 'lucide-react/icons/credit-card';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import Save from 'lucide-react/icons/save';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import CheckCircle from 'lucide-react/icons/circle-check-big';
 import AlertCircle from 'lucide-react/icons/circle-alert';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { usePageTitle } from '@/hooks';
 import { useTenant, useToast } from '@/contexts';
-import { adminPlans, type PlanDetail } from '../../api/adminApi';
+import { adminPlans, type PlanDetail, type PlanStripePriceWarning } from '../../api/adminApi';
 import { PageHeader } from '../../components/PageHeader';
 import { useTranslation } from 'react-i18next';
 // Copyright © 2024–2026 Jasper Ford
@@ -31,8 +32,15 @@ interface PlanFormData {
   description: string;
   price_monthly: string;
   price_yearly: string;
+  price_monthly_gbp: string;
+  price_yearly_gbp: string;
+  setup_fee: string;
+  setup_fee_gbp: string;
   tier_level: string;
   max_users: string;
+  max_communities: string;
+  storage_gb: string;
+  emails_per_month: string;
   max_menus: string;
   max_menu_items: string;
   /** One feature per line */
@@ -40,11 +48,56 @@ interface PlanFormData {
   is_active: boolean;
 }
 
+/** A stored value as form text; null and undefined become an empty field. */
+function toField(value: number | string | null | undefined): string {
+  return value != null ? String(value) : '';
+}
+
+/** Empty means "not set" (null); the API must not read it as 0. */
+function toNullableNumber(value: string): number | null {
+  return value.trim() !== '' ? Number(value) : null;
+}
+
 interface StripeStatus {
   stripe_product_id?: string | null;
   stripe_price_id_monthly?: string | null;
   stripe_price_id_yearly?: string | null;
+  stripe_price_id_monthly_gbp?: string | null;
+  stripe_price_id_yearly_gbp?: string | null;
 }
+
+/** Carried to the edit page when a new plan's prices did not reach Stripe. */
+interface PlanFormLocationState {
+  stripePriceWarnings?: PlanStripePriceWarning[];
+}
+
+const STRIPE_WARNING_KEYS = {
+  eur: {
+    monthly: 'content.plan_stripe_warning_eur_monthly',
+    yearly: 'content.plan_stripe_warning_eur_yearly',
+  },
+  gbp: {
+    monthly: 'content.plan_stripe_warning_gbp_monthly',
+    yearly: 'content.plan_stripe_warning_gbp_yearly',
+  },
+} as const;
+
+/** Keeps only well-formed entries, so an unexpected shape never renders a key name. */
+function cleanWarnings(value: unknown): PlanStripePriceWarning[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((w): w is PlanStripePriceWarning =>
+    !!w && typeof w === 'object'
+    && ((w as PlanStripePriceWarning).currency === 'eur' || (w as PlanStripePriceWarning).currency === 'gbp')
+    && ((w as PlanStripePriceWarning).interval === 'monthly' || (w as PlanStripePriceWarning).interval === 'yearly'));
+}
+
+/** Whole-number fields: the server refuses a fraction or a value below its minimum. */
+const WHOLE_NUMBER_RULES = [
+  { field: 'max_users', labelKey: 'content.max_users', min: 1 },
+  { field: 'max_communities', labelKey: 'content.plan_max_communities', min: 1 },
+  { field: 'storage_gb', labelKey: 'content.plan_storage_gb', min: 0 },
+  { field: 'emails_per_month', labelKey: 'content.plan_emails_per_month', min: 0 },
+] as const;
 
 export function PlanForm() {
   const { t } = useTranslation('admin_content');
@@ -52,16 +105,27 @@ export function PlanForm() {
   const isEdit = Boolean(id);
   usePageTitle(t(isEdit ? 'content.plan_edit_page_title' : 'content.plan_create_page_title'));
   const navigate = useNavigate();
+  const location = useLocation();
   const { tenantPath } = useTenant();
   const toast = useToast();
+  const [stripeWarnings, setStripeWarnings] = useState<PlanStripePriceWarning[]>(
+    () => cleanWarnings((location.state as PlanFormLocationState | null)?.stripePriceWarnings),
+  );
 
   const [formData, setFormData] = useState<PlanFormData>({
     name: '',
     description: '',
     price_monthly: '0',
     price_yearly: '0',
+    price_monthly_gbp: '',
+    price_yearly_gbp: '',
+    setup_fee: '0',
+    setup_fee_gbp: '',
     tier_level: '1',
     max_users: '',
+    max_communities: '',
+    storage_gb: '',
+    emails_per_month: '',
     max_menus: '',
     max_menu_items: '',
     features: '',
@@ -83,8 +147,15 @@ export function PlanForm() {
             description: plan.description ?? '',
             price_monthly: plan.price_monthly != null ? String(plan.price_monthly) : '0',
             price_yearly: plan.price_yearly != null ? String(plan.price_yearly) : '0',
+            price_monthly_gbp: toField(plan.price_monthly_gbp),
+            price_yearly_gbp: toField(plan.price_yearly_gbp),
+            setup_fee: plan.setup_fee != null ? String(plan.setup_fee) : '0',
+            setup_fee_gbp: toField(plan.setup_fee_gbp),
             tier_level: plan.tier_level != null ? String(plan.tier_level) : '1',
             max_users: plan.max_users != null ? String(plan.max_users) : '',
+            max_communities: toField(plan.max_communities),
+            storage_gb: toField(plan.storage_gb),
+            emails_per_month: toField(plan.emails_per_month),
             max_menus: plan.max_menus != null ? String(plan.max_menus) : '',
             max_menu_items: plan.max_menu_items != null ? String(plan.max_menu_items) : '',
             // One feature per line
@@ -95,6 +166,8 @@ export function PlanForm() {
             stripe_product_id: plan.stripe_product_id,
             stripe_price_id_monthly: plan.stripe_price_id_monthly,
             stripe_price_id_yearly: plan.stripe_price_id_yearly,
+            stripe_price_id_monthly_gbp: plan.stripe_price_id_monthly_gbp,
+            stripe_price_id_yearly_gbp: plan.stripe_price_id_yearly_gbp,
           });
         }
       })
@@ -117,8 +190,16 @@ export function PlanForm() {
       description: formData.description || undefined,
       price_monthly: formData.price_monthly !== '' ? Number(formData.price_monthly) : 0,
       price_yearly: formData.price_yearly !== '' ? Number(formData.price_yearly) : 0,
+      price_monthly_gbp: toNullableNumber(formData.price_monthly_gbp),
+      price_yearly_gbp: toNullableNumber(formData.price_yearly_gbp),
+      // The euro setup fee column is NOT NULL DEFAULT 0, so empty means no fee.
+      setup_fee: formData.setup_fee.trim() !== '' ? Number(formData.setup_fee) : 0,
+      setup_fee_gbp: toNullableNumber(formData.setup_fee_gbp),
       tier_level: formData.tier_level ? Number(formData.tier_level) : 0,
       max_users: formData.max_users !== '' ? Number(formData.max_users) : null,
+      max_communities: toNullableNumber(formData.max_communities),
+      storage_gb: toNullableNumber(formData.storage_gb),
+      emails_per_month: toNullableNumber(formData.emails_per_month),
       max_menus: formData.max_menus ? Number(formData.max_menus) : undefined,
       max_menu_items: formData.max_menu_items ? Number(formData.max_menu_items) : undefined,
       features: featuresArr,
@@ -133,8 +214,12 @@ export function PlanForm() {
     }
 
     const numericChecks: Array<{ label: string; value: string }> = [
-      { label: t('content.monthly_price'), value: formData.price_monthly },
-      { label: t('content.annual_price'), value: formData.price_yearly },
+      { label: t('content.plan_price_monthly_eur'), value: formData.price_monthly },
+      { label: t('content.plan_price_yearly_eur'), value: formData.price_yearly },
+      { label: t('content.plan_setup_fee_eur'), value: formData.setup_fee },
+      { label: t('content.plan_price_monthly_gbp'), value: formData.price_monthly_gbp },
+      { label: t('content.plan_price_yearly_gbp'), value: formData.price_yearly_gbp },
+      { label: t('content.plan_setup_fee_gbp'), value: formData.setup_fee_gbp },
       { label: t('content.tier_level'), value: formData.tier_level },
     ];
     for (const check of numericChecks) {
@@ -145,6 +230,15 @@ export function PlanForm() {
         return;
       }
     }
+    for (const rule of WHOLE_NUMBER_RULES) {
+      const raw = formData[rule.field].trim();
+      if (raw === '') continue;
+      const n = Number(raw);
+      if (!Number.isInteger(n) || n < rule.min) {
+        toast.error(t('content.plan_whole_number_min', { field: t(rule.labelKey), min: rule.min }));
+        return;
+      }
+    }
 
     setSaving(true);
     try {
@@ -152,7 +246,10 @@ export function PlanForm() {
         const res = await adminPlans.update(Number(id), buildPayload());
         if (res?.success) {
           toast.success(t('content.plan_updated'));
-          navigate(tenantPath('/platform-team/plans'));
+          const warnings = cleanWarnings(res.data?.stripe_price_warnings);
+          setStripeWarnings(warnings);
+          // A price that did not reach Stripe needs the sync button on this page.
+          if (warnings.length === 0) navigate(tenantPath('/platform-team/plans'));
         } else {
           toast.error(t('content.failed_to_update_plan'));
         }
@@ -160,7 +257,14 @@ export function PlanForm() {
         const res = await adminPlans.create(buildPayload());
         if (res?.success) {
           toast.success(t('content.plan_created'));
-          navigate(tenantPath('/platform-team/plans'));
+          const warnings = cleanWarnings(res.data?.stripe_price_warnings);
+          const newId = res.data?.id;
+          if (warnings.length > 0 && newId) {
+            const state: PlanFormLocationState = { stripePriceWarnings: warnings };
+            navigate(tenantPath(`/platform-team/plans/edit/${newId}`), { state });
+          } else {
+            navigate(tenantPath('/platform-team/plans'));
+          }
         } else {
           toast.error(t('content.failed_to_create_plan'));
         }
@@ -178,12 +282,17 @@ export function PlanForm() {
     try {
       const res = await adminPlans.syncStripe(Number(id));
       if (res.success && res.data) {
-        const d = res.data as unknown as { stripe_product_id: string | null; stripe_price_id_monthly: string | null; stripe_price_id_yearly: string | null };
+        const d = res.data;
         setStripeStatus({
           stripe_product_id: d.stripe_product_id,
           stripe_price_id_monthly: d.stripe_price_id_monthly,
           stripe_price_id_yearly: d.stripe_price_id_yearly,
+          stripe_price_id_monthly_gbp: d.stripe_price_id_monthly_gbp,
+          stripe_price_id_yearly_gbp: d.stripe_price_id_yearly_gbp,
         });
+        setStripeWarnings(cleanWarnings(
+          (d.price_changes ?? []).filter((change) => change.outcome === 'failed'),
+        ));
         toast.success(t('content.stripe_sync_success'));
       } else {
         toast.error(t('content.stripe_sync_failed'));
@@ -220,6 +329,27 @@ export function PlanForm() {
         }
       />
 
+      {stripeWarnings.length > 0 && (
+        <Alert
+          color="warning"
+          variant="tertiary"
+          startContent={<AlertTriangle aria-hidden="true" className="h-4 w-4" />}
+          title={t('content.plan_stripe_warning_title')}
+          description={
+            <span className="flex flex-col gap-1">
+              {stripeWarnings.map((w) => (
+                <span key={`${w.currency}-${w.interval}`}>{t(STRIPE_WARNING_KEYS[w.currency][w.interval])}</span>
+              ))}
+              <span>
+                {t('content.plan_stripe_warning_action', {
+                  button: stripeSynced ? t('content.resync_stripe') : t('content.sync_stripe'),
+                })}
+              </span>
+            </span>
+          }
+        />
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main form */}
         <div className="lg:col-span-2 flex flex-col gap-6">
@@ -246,9 +376,9 @@ export function PlanForm() {
                 value={formData.description}
                 onValueChange={(v) => handleChange('description', v)}
               />
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <Input
-                  label={t('content.monthly_price')}
+                  label={t('content.plan_price_monthly_eur')}
                   type="number" min="0" step="0.01"
                   variant="secondary"
                   startContent={<span className="text-muted text-sm">EUR</span>}
@@ -256,7 +386,7 @@ export function PlanForm() {
                   onValueChange={(v) => handleChange('price_monthly', v)}
                 />
                 <Input
-                  label={t('content.annual_price')}
+                  label={t('content.plan_price_yearly_eur')}
                   type="number" min="0" step="0.01"
                   variant="secondary"
                   startContent={<span className="text-muted text-sm">EUR</span>}
@@ -264,7 +394,45 @@ export function PlanForm() {
                   value={formData.price_yearly}
                   onValueChange={(v) => handleChange('price_yearly', v)}
                 />
+                <Input
+                  label={t('content.plan_setup_fee_eur')}
+                  type="number" min="0" step="0.01"
+                  variant="secondary"
+                  startContent={<span className="text-muted text-sm">EUR</span>}
+                  value={formData.setup_fee}
+                  onValueChange={(v) => handleChange('setup_fee', v)}
+                />
               </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Input
+                  label={t('content.plan_price_monthly_gbp')}
+                  type="number" min="0" step="0.01"
+                  variant="secondary"
+                  startContent={<span className="text-muted text-sm">GBP</span>}
+                  placeholder={t('content.plan_gbp_not_sold')}
+                  value={formData.price_monthly_gbp}
+                  onValueChange={(v) => handleChange('price_monthly_gbp', v)}
+                />
+                <Input
+                  label={t('content.plan_price_yearly_gbp')}
+                  type="number" min="0" step="0.01"
+                  variant="secondary"
+                  startContent={<span className="text-muted text-sm">GBP</span>}
+                  placeholder={t('content.plan_gbp_not_sold')}
+                  value={formData.price_yearly_gbp}
+                  onValueChange={(v) => handleChange('price_yearly_gbp', v)}
+                />
+                <Input
+                  label={t('content.plan_setup_fee_gbp')}
+                  type="number" min="0" step="0.01"
+                  variant="secondary"
+                  startContent={<span className="text-muted text-sm">GBP</span>}
+                  placeholder={t('content.plan_gbp_not_sold')}
+                  value={formData.setup_fee_gbp}
+                  onValueChange={(v) => handleChange('setup_fee_gbp', v)}
+                />
+              </div>
+              <p className="text-xs text-muted">{t('content.plan_price_change_note')}</p>
               <div className="grid grid-cols-2 gap-4">
                 <Input
                   label={t('content.tier_level')}
@@ -282,6 +450,40 @@ export function PlanForm() {
                   description={t('content.max_users_description')}
                   value={formData.max_users}
                   onValueChange={(v) => handleChange('max_users', v)}
+                />
+              </div>
+            </CardBody>
+          </Card>
+
+          <Card >
+            <CardHeader>
+              <h3 className="text-lg font-semibold">{t('content.plan_allowances')}</h3>
+            </CardHeader>
+            <CardBody className="gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Input
+                  label={t('content.plan_max_communities')}
+                  type="number" min="1" step="1"
+                  variant="secondary"
+                  placeholder={t('content.leave_blank_unlimited')}
+                  value={formData.max_communities}
+                  onValueChange={(v) => handleChange('max_communities', v)}
+                />
+                <Input
+                  label={t('content.plan_storage_gb')}
+                  type="number" min="0" step="1"
+                  variant="secondary"
+                  placeholder={t('content.leave_blank_unlimited')}
+                  value={formData.storage_gb}
+                  onValueChange={(v) => handleChange('storage_gb', v)}
+                />
+                <Input
+                  label={t('content.plan_emails_per_month')}
+                  type="number" min="0" step="1"
+                  variant="secondary"
+                  placeholder={t('content.leave_blank_unlimited')}
+                  value={formData.emails_per_month}
+                  onValueChange={(v) => handleChange('emails_per_month', v)}
                 />
               </div>
             </CardBody>
@@ -371,12 +573,14 @@ export function PlanForm() {
                     {stripeStatus.stripe_product_id && (
                       <span><span className="font-medium">{t('content.product')}:</span> {stripeStatus.stripe_product_id}</span>
                     )}
-                    {stripeStatus.stripe_price_id_monthly && (
-                      <span><span className="font-medium">{t('content.monthly')}:</span> {stripeStatus.stripe_price_id_monthly}</span>
-                    )}
-                    {stripeStatus.stripe_price_id_yearly && (
-                      <span><span className="font-medium">{t('content.yearly')}:</span> {stripeStatus.stripe_price_id_yearly}</span>
-                    )}
+                    {([
+                      ['content.plan_price_monthly_eur', stripeStatus.stripe_price_id_monthly],
+                      ['content.plan_price_yearly_eur', stripeStatus.stripe_price_id_yearly],
+                      ['content.plan_price_monthly_gbp', stripeStatus.stripe_price_id_monthly_gbp],
+                      ['content.plan_price_yearly_gbp', stripeStatus.stripe_price_id_yearly_gbp],
+                    ] as const).map(([labelKey, priceId]) => priceId ? (
+                      <span key={labelKey}><span className="font-medium">{t(labelKey)}:</span> <span>{priceId}</span></span>
+                    ) : null)}
                   </div>
                 )}
 

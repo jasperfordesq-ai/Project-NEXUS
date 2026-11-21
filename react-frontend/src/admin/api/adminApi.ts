@@ -2454,12 +2454,34 @@ export interface PlanListItem {
   max_users?: number | null;
   price_monthly: number;
   price_yearly: number;
+  /** Pounds. Decimals may arrive as strings ("16.00"); null = not sold in pounds. */
+  price_monthly_gbp?: number | string | null;
+  price_yearly_gbp?: number | string | null;
+  /** Euro, NOT NULL in the database. */
+  setup_fee?: number | string;
+  setup_fee_gbp?: number | string | null;
+  /** Allowances; null = unlimited. */
+  max_communities?: number | null;
+  storage_gb?: number | null;
+  emails_per_month?: number | null;
   is_active: boolean;
   stripe_synced: boolean;
   stripe_product_id?: string | null;
   stripe_price_id_monthly?: string | null;
   stripe_price_id_yearly?: string | null;
+  stripe_price_id_monthly_gbp?: string | null;
+  stripe_price_id_yearly_gbp?: string | null;
   tenant_count: number;
+}
+
+/** A price whose change was saved but did not reach Stripe. */
+export interface PlanStripePriceWarning {
+  currency: 'eur' | 'gbp';
+  interval: 'monthly' | 'yearly';
+}
+
+export interface PlanStripePriceChange extends PlanStripePriceWarning {
+  outcome: 'replaced' | 'retired' | 'unchanged' | 'failed';
 }
 
 export interface PlanDetail extends PlanListItem {
@@ -2471,13 +2493,13 @@ export interface PlanDetail extends PlanListItem {
 export const adminPlans = {
   list: () => api.get<PlanListItem[]>('/v2/admin/plans'),
   get: (id: number) => api.get<PlanDetail>(`/v2/admin/plans/${id}`),
-  create: (data: { name: string; description?: string; price_monthly?: number; price_yearly?: number; tier_level?: number; max_users?: number | null; max_menus?: number; max_menu_items?: number; features?: string[]; is_active?: boolean }) =>
-    api.post<{ id: number }>('/v2/admin/plans', data),
+  create: (data: { name: string; description?: string; price_monthly?: number; price_yearly?: number; price_monthly_gbp?: number | null; price_yearly_gbp?: number | null; setup_fee?: number; setup_fee_gbp?: number | null; tier_level?: number; max_users?: number | null; max_communities?: number | null; storage_gb?: number | null; emails_per_month?: number | null; max_menus?: number; max_menu_items?: number; features?: string[]; is_active?: boolean }) =>
+    api.post<{ id: number; stripe_price_warnings?: PlanStripePriceWarning[] }>('/v2/admin/plans', data),
   update: (id: number, data: Record<string, unknown>) =>
-    api.put<{ success: boolean }>(`/v2/admin/plans/${id}`, data),
+    api.put<{ success?: boolean; stripe_price_warnings?: PlanStripePriceWarning[] }>(`/v2/admin/plans/${id}`, data),
   delete: (id: number) => api.delete<{ success: boolean }>(`/v2/admin/plans/${id}`),
   syncStripe: (id: number) =>
-    api.post<{ synced: boolean; stripe_product_id: string | null; stripe_price_id_monthly: string | null; stripe_price_id_yearly: string | null }>(`/v2/admin/plans/${id}/sync-stripe`, {}),
+    api.post<{ synced: boolean; stripe_product_id: string | null; stripe_price_id_monthly: string | null; stripe_price_id_yearly: string | null; stripe_price_id_monthly_gbp?: string | null; stripe_price_id_yearly_gbp?: string | null; price_changes?: PlanStripePriceChange[] }>(`/v2/admin/plans/${id}/sync-stripe`, {}),
   getSubscriptions: () => api.get<Array<{ id: number; tenant_id: number; tenant_name: string; plan_id: number; plan_name: string; status: string; created_at: string }>>('/v2/admin/subscriptions'),
 };
 

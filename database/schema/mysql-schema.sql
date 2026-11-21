@@ -16416,6 +16416,22 @@ CREATE TABLE `password_resets` (
   KEY `password_resets_tenant_email_idx` (`tenant_id`,`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `pay_plan_stripe_prices`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `pay_plan_stripe_prices` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `pay_plan_id` int(11) NOT NULL,
+  `stripe_price_id` varchar(255) NOT NULL,
+  `currency` char(3) NOT NULL,
+  `billing_interval` varchar(10) NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `retired_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_ppsp_price` (`stripe_price_id`),
+  KEY `idx_ppsp_plan` (`pay_plan_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `pay_plans`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;

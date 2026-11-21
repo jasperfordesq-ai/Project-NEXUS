@@ -17,6 +17,7 @@ use App\Services\PageContentPolicy;
 use App\Services\RedisCache;
 use App\Services\PrerenderContentInvalidator;
 use App\Services\StripeSubscriptionService;
+use App\Support\Billing\PlanTerms;
 
 /**
  * AdminContentController -- Content moderation, pages, menus, plans, subscriptions.
@@ -697,33 +698,135 @@ class AdminContentController extends BaseApiController
     // Plans
     // ─────────────────────────────────────────────────────────────────────────
 
-    public function getPlans(): JsonResponse
-    {
-        $this->requireGodPlatformAdmin();
-
-        $plans = array_map(fn($r) => (array)$r, DB::select(
-            "SELECT pp.id, pp.name, pp.slug, pp.description, pp.tier_level, pp.features,
+    /**
+     * What every plan endpoint answers with, so GET one, POST and PUT carry
+     * exactly the fields the list does and the edit form can read any of them.
+     */
+    private const PLAN_COLUMNS = 'pp.id, pp.name, pp.slug, pp.description, pp.tier_level, pp.features,
                     pp.max_menus, pp.max_menu_items, pp.max_users, pp.price_monthly, pp.price_yearly,
                     pp.is_active, pp.stripe_product_id, pp.stripe_price_id_monthly, pp.stripe_price_id_yearly,
+                    pp.stripe_price_id_monthly_gbp, pp.stripe_price_id_yearly_gbp,
                     pp.created_at, pp.updated_at,
                     pp.is_standard, pp.price_monthly_gbp, pp.price_yearly_gbp, pp.setup_fee, pp.setup_fee_gbp,
                     pp.max_communities, pp.storage_gb, pp.emails_per_month,
-                    (SELECT COUNT(*) FROM tenant_plan_assignments tpa WHERE tpa.pay_plan_id = pp.id AND tpa.status IN ('active','trialing','trial')) AS tenant_count
-             FROM pay_plans pp ORDER BY pp.tier_level ASC, pp.name ASC"
-        ));
+                    (SELECT COUNT(*) FROM tenant_plan_assignments tpa WHERE tpa.pay_plan_id = pp.id AND tpa.status IN (\'active\',\'trialing\',\'trial\')) AS tenant_count';
 
+    /** Money fields: a number of 0 or more, or empty. */
+    private const PLAN_MONEY_FIELDS = [
+        'price_monthly', 'price_yearly', 'setup_fee',
+        'price_monthly_gbp', 'price_yearly_gbp', 'setup_fee_gbp',
+    ];
+
+    /** Recorded and shown, never enforced: a whole number, or empty (no limit). */
+    private const PLAN_ALLOWANCE_FIELDS = ['max_communities', 'storage_gb', 'emails_per_month'];
+
+    /**
+     * The smallest value each allowance accepts (0 when not listed). A plan
+     * including no community at all makes no sense; empty means unlimited.
+     */
+    private const PLAN_ALLOWANCE_MINIMUM = ['max_communities' => 1];
+
+    /** Columns that cannot hold null; an empty value there means 0. */
+    private const PLAN_NOT_NULL_MONEY = ['setup_fee'];
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function readPlans(?int $id = null): array
+    {
+        $rows = $id === null
+            ? DB::select('SELECT ' . self::PLAN_COLUMNS . ' FROM pay_plans pp ORDER BY pp.tier_level ASC, pp.name ASC')
+            : DB::select('SELECT ' . self::PLAN_COLUMNS . ' FROM pay_plans pp WHERE pp.id = ?', [$id]);
+
+        $plans = array_map(fn($r) => (array) $r, $rows);
         foreach ($plans as &$plan) {
             if (isset($plan['features'])) { $plan['features'] = json_decode($plan['features'], true) ?: []; }
             $plan['stripe_synced'] = !empty($plan['stripe_product_id']);
             $plan['tenant_count'] = (int) $plan['tenant_count'];
             $plan['is_standard'] = (bool) $plan['is_standard'];
-            foreach (['max_communities', 'storage_gb', 'emails_per_month'] as $allowance) {
+            foreach (self::PLAN_ALLOWANCE_FIELDS as $allowance) {
                 $plan[$allowance] = $plan[$allowance] !== null ? (int) $plan[$allowance] : null;
             }
         }
         unset($plan);
 
-        return $this->respondWithData($plans);
+        return $plans;
+    }
+
+    /**
+     * Validate the plan fields present in $input and map them to columns.
+     * Create and update share it, so both accept and refuse the same things.
+     * Name and slug are handled by each caller (create requires a name and
+     * makes the slug; update checks a changed slug is free).
+     *
+     * @param array<string, mixed> $input
+     * @return array<string, mixed>|JsonResponse column => value, or the refusal
+     */
+    private function planFields(array $input): array|JsonResponse
+    {
+        $columns = [];
+
+        if (array_key_exists('description', $input)) { $columns['description'] = $input['description']; }
+        if (isset($input['tier_level'])) { $columns['tier_level'] = (int) $input['tier_level']; }
+        if (array_key_exists('features', $input)) { $columns['features'] = json_encode($input['features'] ?? []); }
+        if (isset($input['max_menus'])) { $columns['max_menus'] = (int) $input['max_menus']; }
+        if (isset($input['max_menu_items'])) { $columns['max_menu_items'] = (int) $input['max_menu_items']; }
+        if (isset($input['is_active'])) { $columns['is_active'] = (int) $input['is_active']; }
+
+        if (array_key_exists('max_users', $input)) {
+            $value = $input['max_users'];
+            if ($value === null || $value === '') {
+                $columns['max_users'] = null;
+            } else {
+                $number = filter_var($value, FILTER_VALIDATE_INT);
+                if ($number === false || $number < 1) {
+                    return $this->respondWithError('VALIDATION_ERROR', __('api.plan_member_number_invalid', ['field' => __('api.plan_field_max_users')]), 'max_users', 422);
+                }
+                $columns['max_users'] = $number;
+            }
+        }
+
+        foreach (self::PLAN_MONEY_FIELDS as $field) {
+            if (!array_key_exists($field, $input)) { continue; }
+            $value = $input[$field];
+            if ($value === null || $value === '') {
+                $columns[$field] = in_array($field, self::PLAN_NOT_NULL_MONEY, true) ? 0.0 : null;
+                continue;
+            }
+            if (!is_numeric($value) || (float) $value < 0 || !is_finite((float) $value)) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.plan_price_invalid', ['field' => __("api.plan_field_{$field}")]), $field, 422);
+            }
+            $columns[$field] = round((float) $value, 2);
+        }
+
+        foreach (self::PLAN_ALLOWANCE_FIELDS as $field) {
+            if (!array_key_exists($field, $input)) { continue; }
+            $value = $input[$field];
+            if ($value === null || $value === '') {
+                $columns[$field] = null;
+                continue;
+            }
+            $number = filter_var($value, FILTER_VALIDATE_INT);
+            $minimum = self::PLAN_ALLOWANCE_MINIMUM[$field] ?? 0;
+            if ($number === false || $number < $minimum) {
+                // Named in the reader's words: the column name means nothing to them.
+                // "1 or more, or empty for no limit" is the member-number wording,
+                // which says exactly what a minimum of 1 means here too.
+                $key = $minimum >= 1 ? 'api.plan_member_number_invalid' : 'api.plan_allowance_invalid';
+
+                return $this->respondWithError('VALIDATION_ERROR', __($key, ['field' => __("api.plan_field_{$field}")]), $field, 422);
+            }
+            $columns[$field] = $number;
+        }
+
+        return $columns;
+    }
+
+    public function getPlans(): JsonResponse
+    {
+        $this->requireGodPlatformAdmin();
+
+        return $this->respondWithData($this->readPlans());
     }
 
     public function syncPlanToStripe($id): JsonResponse
@@ -738,6 +841,10 @@ class AdminContentController extends BaseApiController
 
         try {
             StripeSubscriptionService::syncPlanToStripe($id);
+            // The Sync button is also the retry for a price change that
+            // failed when the plan was saved: compare every stored price with
+            // Stripe and replace or retire what differs. Never throws.
+            $priceChanges = StripeSubscriptionService::reconcilePlanPrices($id);
             $plan = DB::selectOne(
                 "SELECT stripe_product_id, stripe_price_id_monthly, stripe_price_id_yearly,
                         stripe_price_id_monthly_gbp, stripe_price_id_yearly_gbp
@@ -752,6 +859,7 @@ class AdminContentController extends BaseApiController
                 'stripe_price_id_yearly'      => $plan->stripe_price_id_yearly ?? null,
                 'stripe_price_id_monthly_gbp' => $plan->stripe_price_id_monthly_gbp ?? null,
                 'stripe_price_id_yearly_gbp'  => $plan->stripe_price_id_yearly_gbp ?? null,
+                'price_changes'               => $priceChanges,
             ]);
         } catch (\Exception $e) {
             Log::warning('Manual Stripe sync failed', ['plan_id' => $id, 'error' => $e->getMessage()]);
@@ -766,16 +874,8 @@ class AdminContentController extends BaseApiController
 
         if ($id < 1) { return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_plan_id'), 'id', 400); }
 
-        $result = DB::selectOne(
-            "SELECT id, name, slug, description, tier_level, features,
-                    max_menus, max_menu_items, max_users, price_monthly, price_yearly, is_active, created_at, updated_at
-             FROM pay_plans WHERE id = ?", [$id]
-        );
-
-        if (!$result) { return $this->respondWithError('NOT_FOUND', __('api.plan_not_found'), 'id', 404); }
-
-        $plan = (array)$result;
-        if (isset($plan['features'])) { $plan['features'] = json_decode($plan['features'], true) ?: []; }
+        $plan = $this->readPlans($id)[0] ?? null;
+        if ($plan === null) { return $this->respondWithError('NOT_FOUND', __('api.plan_not_found'), 'id', 404); }
 
         return $this->respondWithData($plan);
     }
@@ -788,6 +888,9 @@ class AdminContentController extends BaseApiController
         $name = trim($input['name'] ?? '');
         if (empty($name)) { return $this->respondWithError('VALIDATION_ERROR', __('api.name_required'), 'name', 422); }
 
+        $fields = $this->planFields($input);
+        if ($fields instanceof JsonResponse) { return $fields; }
+
         $slug = $this->generateSlug($name);
         $counter = 0;
         $originalSlug = $slug;
@@ -796,20 +899,29 @@ class AdminContentController extends BaseApiController
             $slug = $originalSlug . '-' . $counter;
         }
 
+        // Defaults as the create endpoint has always applied them; anything
+        // sent overrides them.
+        $columns = array_merge([
+            'description' => '',
+            'tier_level' => 0,
+            'features' => '[]',
+            'max_menus' => null,
+            'max_menu_items' => null,
+            'max_users' => null,
+            'price_monthly' => null,
+            'price_yearly' => null,
+            'is_active' => 1,
+        ], $fields, ['name' => $name, 'slug' => $slug]);
+        if (($columns['description'] ?? null) === null) { $columns['description'] = ''; }
+
         DB::insert(
-            "INSERT INTO pay_plans (name, slug, description, tier_level, features, max_menus, max_menu_items, max_users, price_monthly, price_yearly, is_active, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())",
-            [$name, $slug, $input['description'] ?? '', (int)($input['tier_level'] ?? 0),
-             isset($input['features']) ? json_encode($input['features']) : '[]',
-             isset($input['max_menus']) ? (int)$input['max_menus'] : null,
-             isset($input['max_menu_items']) ? (int)$input['max_menu_items'] : null,
-             isset($input['max_users']) && $input['max_users'] !== '' ? (int)$input['max_users'] : null,
-             isset($input['price_monthly']) ? (float)$input['price_monthly'] : null,
-             isset($input['price_yearly']) ? (float)$input['price_yearly'] : null,
-             (int)($input['is_active'] ?? 1)]
+            'INSERT INTO pay_plans (' . implode(', ', array_keys($columns)) . ', created_at, updated_at)
+             VALUES (' . implode(', ', array_fill(0, count($columns), '?')) . ', NOW(), NOW())',
+            array_values($columns)
         );
 
         $newPlanId = (int) DB::getPdo()->lastInsertId();
+        PlanTerms::flush();
 
         // Sync to Stripe (non-blocking — don't fail plan creation if Stripe is unreachable)
         try {
@@ -821,15 +933,10 @@ class AdminContentController extends BaseApiController
             ]);
         }
 
-        $result = DB::selectOne(
-            "SELECT id, name, slug, description, tier_level, features, max_menus, max_menu_items, max_users, price_monthly, price_yearly, is_active, created_at, updated_at
-             FROM pay_plans WHERE id = ?", [$newPlanId]
-        );
-
-        $plan = $result ? (array)$result : null;
-        if ($plan) {
-            if (isset($plan['features'])) { $plan['features'] = json_decode($plan['features'], true) ?: []; }
-        }
+        // A new plan has no stored Stripe price to replace, so nothing can
+        // fail here; the key is sent so create and update answer alike.
+        $plan = $this->readPlans($newPlanId)[0] ?? [];
+        $plan['stripe_price_warnings'] = [];
 
         return $this->respondWithData($plan, null, 201);
     }
@@ -841,36 +948,35 @@ class AdminContentController extends BaseApiController
 
         if ($id < 1) { return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_plan_id'), 'id', 400); }
 
-        $existing = DB::selectOne("SELECT id FROM pay_plans WHERE id = ?", [$id]);
-        if (!$existing) { return $this->respondWithError('NOT_FOUND', __('api.plan_not_found'), 'id', 404); }
+        // Read in full before the update: which amounts changed, and which
+        // already had a Stripe price, decide what is replaced in Stripe.
+        $before = DB::selectOne("SELECT * FROM pay_plans WHERE id = ?", [$id]);
+        if (!$before) { return $this->respondWithError('NOT_FOUND', __('api.plan_not_found'), 'id', 404); }
 
         $input = $this->getAllInput();
-        $updates = [];
-        $params = [];
+        $columns = [];
 
-        if (isset($input['name'])) { $updates[] = 'name = ?'; $params[] = trim($input['name']); }
+        if (isset($input['name'])) { $columns['name'] = trim($input['name']); }
         if (isset($input['slug'])) {
             $slug = $this->generateSlug($input['slug']);
             $conflict = DB::selectOne("SELECT id FROM pay_plans WHERE slug = ? AND id != ?", [$slug, $id]);
             if ($conflict) { return $this->respondWithError('VALIDATION_ERROR', __('api.slug_already_in_use'), 'slug', 422); }
-            $updates[] = 'slug = ?'; $params[] = $slug;
+            $columns['slug'] = $slug;
         }
-        if (array_key_exists('description', $input)) { $updates[] = 'description = ?'; $params[] = $input['description']; }
-        if (isset($input['tier_level'])) { $updates[] = 'tier_level = ?'; $params[] = (int)$input['tier_level']; }
-        if (array_key_exists('features', $input)) { $updates[] = 'features = ?'; $params[] = json_encode($input['features'] ?? []); }
-        if (isset($input['max_menus'])) { $updates[] = 'max_menus = ?'; $params[] = (int)$input['max_menus']; }
-        if (isset($input['max_menu_items'])) { $updates[] = 'max_menu_items = ?'; $params[] = (int)$input['max_menu_items']; }
-        if (array_key_exists('max_users', $input)) { $updates[] = 'max_users = ?'; $params[] = ($input['max_users'] !== '' && $input['max_users'] !== null) ? (int)$input['max_users'] : null; }
-        if (array_key_exists('price_monthly', $input)) { $updates[] = 'price_monthly = ?'; $params[] = isset($input['price_monthly']) ? (float)$input['price_monthly'] : null; }
-        if (array_key_exists('price_yearly', $input)) { $updates[] = 'price_yearly = ?'; $params[] = isset($input['price_yearly']) ? (float)$input['price_yearly'] : null; }
-        if (isset($input['is_active'])) { $updates[] = 'is_active = ?'; $params[] = (int)$input['is_active']; }
 
-        if (empty($updates)) { return $this->respondWithError('VALIDATION_ERROR', __('api.no_fields_to_update'), null, 422); }
+        $fields = $this->planFields($input);
+        if ($fields instanceof JsonResponse) { return $fields; }
+        $columns = array_merge($columns, $fields);
 
+        if (empty($columns)) { return $this->respondWithError('VALIDATION_ERROR', __('api.no_fields_to_update'), null, 422); }
+
+        $updates = array_map(static fn (string $column): string => "{$column} = ?", array_keys($columns));
         $updates[] = 'updated_at = NOW()';
+        $params = array_values($columns);
         $params[] = $id;
 
         DB::update("UPDATE pay_plans SET " . implode(', ', $updates) . " WHERE id = ?", $params);
+        PlanTerms::flush();
 
         // Sync to Stripe (non-blocking — don't fail plan update if Stripe is unreachable)
         try {
@@ -882,15 +988,38 @@ class AdminContentController extends BaseApiController
             ]);
         }
 
-        $result = DB::selectOne(
-            "SELECT id, name, slug, description, tier_level, features, max_menus, max_menu_items, max_users, price_monthly, price_yearly, is_active, created_at, updated_at
-             FROM pay_plans WHERE id = ?", [$id]
-        );
+        // The sync never replaces a stored price, so an amount this update
+        // changed gets a new Stripe price here (or, taken to 0, loses its
+        // price). Each one on its own: Stripe refusing one leaves its old
+        // price in place, the plan saved, and the failure in the response so
+        // the platform team knows to press Sync, which retries it.
+        $warnings = [];
+        foreach (StripeSubscriptionService::PRICE_COLUMNS as $currency => $intervals) {
+            foreach ($intervals as $interval => $priceColumns) {
+                $amountColumn = $priceColumns['amount'];
+                $hadPrice = !empty($before->{$priceColumns['price_id']});
+                if (!$hadPrice || !array_key_exists($amountColumn, $fields)) { continue; }
 
-        $plan = $result ? (array)$result : null;
-        if ($plan) {
-            if (isset($plan['features'])) { $plan['features'] = json_decode($plan['features'], true) ?: []; }
+                $oldAmount = round((float) ($before->{$amountColumn} ?? 0), 2);
+                $newAmount = round((float) ($fields[$amountColumn] ?? 0), 2);
+                if ($oldAmount === $newAmount) { continue; }
+
+                try {
+                    StripeSubscriptionService::replacePlanPrice($id, $currency, $interval);
+                } catch (\Exception $e) {
+                    Log::error('Stripe price replacement failed after plan update; card checkout still charges the old price', [
+                        'plan_id' => $id,
+                        'currency' => $currency,
+                        'interval' => $interval,
+                        'error' => $e->getMessage(),
+                    ]);
+                    $warnings[] = ['currency' => $currency, 'interval' => $interval];
+                }
+            }
         }
+
+        $plan = $this->readPlans($id)[0] ?? [];
+        $plan['stripe_price_warnings'] = $warnings;
 
         return $this->respondWithData($plan);
     }
@@ -911,6 +1040,7 @@ class AdminContentController extends BaseApiController
         }
 
         DB::delete("DELETE FROM pay_plans WHERE id = ?", [$id]);
+        PlanTerms::flush();
 
         return $this->respondWithData(['deleted' => true]);
     }
