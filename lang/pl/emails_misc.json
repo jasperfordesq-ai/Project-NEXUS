@@ -1012,6 +1012,7 @@
     "final_warning_subject": "Ostatnie przypomnienie: społeczność {{community}} zostanie wstrzymana {{pause_date}}",
     "final_warning_title": "Ostatnie przypomnienie przed wstrzymaniem",
     "final_warning_body": "Płatność za społeczność <strong>{{community}}</strong> jest opóźniona o <strong>{{days}}</strong> dni. Jeśli nie zostanie odnotowana przed <strong>{{pause_date}}</strong>, społeczność zostanie tego dnia automatycznie wstrzymana, a jej członkowie nie będą mogli z niej korzystać, dopóki płatność nie zostanie odnotowana.",
+    "pay_by_card": "Płatność jest pobierana z zapisanej karty. Otwórz „Rozliczenia” w panelu administracyjnym i użyj opcji „Zarządzaj płatnościami”, aby sprawdzić lub zmienić kartę.",
     "pay_to_parent": "Płatność trafia do <strong>{{payee}}</strong>, gdzie zostaje odnotowana na platformie.",
     "pay_to_platform": "Płatność trafia do zespołu platformy, który odnotowuje ją na platformie.",
     "payee_note_parent": "Otrzymujesz tę wiadomość, ponieważ społeczność <strong>{{community}}</strong> płaci Twojej społeczności. Jej administratorzy również zostali powiadomieni.",

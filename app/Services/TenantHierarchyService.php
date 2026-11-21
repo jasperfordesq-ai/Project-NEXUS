@@ -1032,6 +1032,18 @@ class TenantHierarchyService
                 "Moved tenant '{$tenantName}' from parent ID {$oldParentId} to {$newParentId}"
             );
 
+            // Who a community pays follows where it sits in the tree. The move
+            // itself is done and audited; a fault here must not undo it.
+            try {
+                \App\Services\BillingStandingService::communityMoved($tenantId, $newParentId);
+            } catch (\Throwable $e) {
+                Log::error('TenantHierarchyService::moveTenant: billing record not updated after the move', [
+                    'tenant_id' => $tenantId,
+                    'new_parent_id' => $newParentId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
             // The moved tenant's parent_domain changed, and both parent switcher lists changed.
             self::bustBootstrapCache($tenantId, (int) ($oldParentId ?? 0), $newParentId);
 

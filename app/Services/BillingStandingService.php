@@ -618,6 +618,48 @@ final class BillingStandingService
     }
 
     /**
+     * A community has been moved under another parent.
+     *
+     * The move had no billing code at all. Two things follow from it:
+     *
+     *  - A stored "pays its parent" on a community now directly under the
+     *    platform names a payee it no longer has: notices went to tenant 1's
+     *    managers as if they were its hub. The stored payer is cleared, so it
+     *    pays the platform by default.
+     *  - Whoever it pays, and the plans that apply to it, may have changed.
+     *    Its payment warnings and its member-limit count start again, so
+     *    nothing reached under the old arrangement pauses it under the new.
+     *
+     * The paid-until date is left alone: it is a date a person recorded, and
+     * only a person knows whether it still stands with the new payee.
+     */
+    public static function communityMoved(int $tenantId, int $newParentId): void
+    {
+        if ($tenantId <= 1) {
+            return;
+        }
+
+        $row = self::row($tenantId);
+        if ($row !== null && ($row->payer ?? null) === 'parent' && $newParentId <= 1) {
+            self::write($tenantId, ['payer' => null]);
+            TenantBillingService::logAudit(
+                $tenantId,
+                null,
+                'standing_payer_set',
+                ['payer' => 'parent'],
+                ['payer' => null],
+                'Moved directly under the platform: it has no parent community to pay'
+            );
+        }
+
+        self::restartPaymentClock([$tenantId]);
+        self::restartLimitClock([$tenantId]);
+        \App\Support\Billing\PlanTerms::flush();
+        BillingLock::flush();
+        JoiningGate::flush();
+    }
+
+    /**
      * Start the payment warnings again for these communities: the recorded
      * stage and its date are cleared, so the next run begins with "now due"
      * and a pause comes only after a final warning has stood its time.

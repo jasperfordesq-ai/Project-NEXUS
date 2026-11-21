@@ -1012,6 +1012,7 @@
     "final_warning_subject": "Dernier rappel : {{community}} sera mise en pause le {{pause_date}}",
     "final_warning_title": "Dernier rappel avant une mise en pause",
     "final_warning_body": "Le paiement de <strong>{{community}}</strong> a <strong>{{days}}</strong> jours de retard. S’il n’est pas enregistré avant le <strong>{{pause_date}}</strong>, la communauté sera mise en pause automatiquement ce jour-là, et ses membres ne pourront plus l’utiliser tant que le paiement ne sera pas enregistré.",
+    "pay_by_card": "Le paiement est prélevé sur la carte enregistrée. Ouvrez « Facturation » dans le panneau d’administration et utilisez « Gérer le paiement » pour vérifier ou changer la carte.",
     "pay_to_parent": "Le paiement est versé à <strong>{{payee}}</strong>, qui l’enregistre sur la plateforme.",
     "pay_to_platform": "Le paiement est versé à l’équipe de la plateforme, qui l’enregistre sur la plateforme.",
     "payee_note_parent": "Vous recevez ce message parce que <strong>{{community}}</strong> paie votre communauté. Ses propres administrateurs ont également été prévenus.",

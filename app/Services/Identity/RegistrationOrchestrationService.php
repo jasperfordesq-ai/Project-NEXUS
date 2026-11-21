@@ -449,6 +449,23 @@ class RegistrationOrchestrationService
      */
     private static function approveAndRelease(int $userId, int $tenantId): void
     {
+        // A shut joining door (the community, or one above it, is at its
+        // plan's member number under "stop new members joining") lets nobody
+        // new in by any route. An account not yet approved waits; an admin
+        // lets it in once there is room. One already approved is an existing
+        // member finishing a check, and goes through.
+        if (\App\Support\Billing\JoiningGate::closedBy($tenantId) !== null) {
+            $alreadyApproved = (int) DB::table('users')->where('id', $userId)->where('tenant_id', $tenantId)->value('is_approved') === 1;
+            if (!$alreadyApproved) {
+                \Illuminate\Support\Facades\Log::info('Registration held: the joining door is shut', [
+                    'tenant_id' => $tenantId,
+                    'user_id' => $userId,
+                ]);
+
+                return;
+            }
+        }
+
         $emailRequired = app(\App\Services\TenantSettingsService::class)->requiresEmailVerification($tenantId);
         DB::statement(
             "UPDATE users SET is_approved = 1,

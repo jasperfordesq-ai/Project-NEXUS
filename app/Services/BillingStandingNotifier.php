@@ -630,6 +630,12 @@ final class BillingStandingNotifier
         $payTo = $about['payee_name'] !== null
             ? [self::KEY . 'pay_to_parent', ['payee' => $about['payee_name']]]
             : [self::KEY . 'pay_to_platform', []];
+        // A card payer has nobody to pay by hand: its card is charged. It was
+        // told "payment is made to the platform team", which sends it looking
+        // for an invoice when the thing to do is check the card.
+        if ($about['payee_name'] === null && BillingStandingService::get($tenantId)['payer'] === 'platform_card') {
+            $payTo = [self::KEY . 'pay_by_card', []];
+        }
 
         $admins = self::admins($tenantId);
         $subjectParams = ['date' => $params['date'], 'pause_date' => $params['pause_date']];

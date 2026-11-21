@@ -67,6 +67,19 @@ final class EmailConfirmationService
                  WHERE id = ? AND tenant_id = ? AND email_verified_at IS NULL",
                 [$userId, $tenantId]
             );
+        } elseif (\App\Support\Billing\JoiningGate::closedBy($tenantId) !== null) {
+            // The community (or one above it) has shut its door: it is at
+            // its plan's member number and its rule is "stop new members
+            // joining". Confirming an address would have approved and
+            // activated the account here, with nobody asked, which is one more
+            // member through a shut door. The address is still recorded as
+            // confirmed; the account waits, and an admin lets it in once
+            // there is room (that button asks the same door).
+            $affected = DB::update(
+                "UPDATE users SET email_verified_at = NOW(), is_verified = 1
+                 WHERE id = ? AND tenant_id = ? AND email_verified_at IS NULL",
+                [$userId, $tenantId]
+            );
         } else {
             $affected = DB::update(
                 "UPDATE users SET email_verified_at = NOW(), is_verified = 1, is_approved = 1,

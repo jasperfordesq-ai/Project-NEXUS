@@ -465,6 +465,44 @@ final class BillingStandingServiceTest extends TestCase
         $this->assertSame('parent', BillingStandingService::defaultPayer($this->child));
     }
 
+    public function test_a_community_moved_directly_under_the_platform_stops_paying_a_parent_it_no_longer_has(): void
+    {
+        // It was set, by hand, to pay its parent; then it was moved to sit
+        // directly under the platform. Its notices went to tenant 1's
+        // managers as if they were its hub.
+        DB::table('tenant_billing_standing')->insert([
+            'tenant_id' => $this->child, 'payer' => 'parent',
+            'last_notice_stage' => 'final_warning', 'last_notice_at' => now()->subDays(20),
+            'paid_until' => now()->subDays(40)->toDateString(),
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+        DB::table('tenants')->where('id', $this->child)->update(['parent_id' => 1, 'path' => "/1/{$this->child}/"]);
+        BillingLock::flush();
+
+        BillingStandingService::communityMoved($this->child, 1);
+
+        $row = DB::table('tenant_billing_standing')->where('tenant_id', $this->child)->first();
+        $this->assertNull($row->payer, 'the stored payer is cleared');
+        $this->assertSame('platform_invoice', BillingStandingService::get($this->child)['payer']);
+        $this->assertNull($row->last_notice_stage, 'and its payment warnings start again');
+        $this->assertNotNull($row->paid_until, 'the paid-until date was recorded by a person and is kept');
+    }
+
+    public function test_a_community_moved_under_another_hub_keeps_paying_its_parent(): void
+    {
+        DB::table('tenant_billing_standing')->insert([
+            'tenant_id' => $this->child, 'payer' => 'parent',
+            'last_notice_stage' => 'due', 'last_notice_at' => now()->subDays(3),
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        BillingStandingService::communityMoved($this->child, $this->top);
+
+        $row = DB::table('tenant_billing_standing')->where('tenant_id', $this->child)->first();
+        $this->assertSame('parent', $row->payer);
+        $this->assertNull($row->last_notice_stage, 'a new payee means the warnings start again');
+    }
+
     public function test_a_child_under_a_suspended_parent_reports_who_locked_it(): void
     {
         BillingStandingService::suspend($this->top, $this->actor, 'manual');

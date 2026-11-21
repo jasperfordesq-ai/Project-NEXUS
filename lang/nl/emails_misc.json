@@ -1012,6 +1012,7 @@
     "final_warning_subject": "Laatste herinnering: {{community}} wordt op {{pause_date}} gepauzeerd",
     "final_warning_title": "Laatste herinnering voor een pauze",
     "final_warning_body": "De betaling voor <strong>{{community}}</strong> is <strong>{{days}}</strong> dagen te laat. Als die niet vóór <strong>{{pause_date}}</strong> is geregistreerd, wordt de gemeenschap op die dag automatisch gepauzeerd en kunnen de leden haar pas weer gebruiken als de betaling is geregistreerd.",
+    "pay_by_card": "De betaling wordt afgeschreven van de geregistreerde kaart. Open ‘Facturering’ in het beheerpaneel en gebruik ‘Beheer de betaling’ om de kaart te controleren of te wijzigen.",
     "pay_to_parent": "De betaling gaat naar <strong>{{payee}}</strong>, die haar op het platform registreert.",
     "pay_to_platform": "De betaling gaat naar het platformteam, dat haar op het platform registreert.",
     "payee_note_parent": "Je ontvangt dit bericht omdat <strong>{{community}}</strong> aan jouw gemeenschap betaalt. De eigen beheerders zijn ook op de hoogte gebracht.",

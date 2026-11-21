@@ -1012,6 +1012,7 @@
     "final_warning_subject": "最終のお知らせ：{{community}}は{{pause_date}}に一時停止されます",
     "final_warning_title": "一時停止前の最終のお知らせ",
     "final_warning_body": "<strong>{{community}}</strong>のお支払いが<strong>{{days}}</strong>日遅れています。<strong>{{pause_date}}</strong>より前にお支払いが記録されない場合、その日にコミュニティは自動的に一時停止され、お支払いが記録されるまでメンバーは利用できなくなります。",
+    "pay_by_card": "お支払いは登録済みのカードに請求されます。管理パネルの「請求」を開き、「支払いの管理」からカードを確認または変更してください。",
     "pay_to_parent": "お支払い先は<strong>{{payee}}</strong>で、プラットフォーム上で記録されます。",
     "pay_to_platform": "お支払い先はプラットフォームチームで、プラットフォーム上で記録されます。",
     "payee_note_parent": "<strong>{{community}}</strong>があなたのコミュニティに支払いを行っているため、このメールをお送りしています。このコミュニティの管理者にもお知らせしています。",

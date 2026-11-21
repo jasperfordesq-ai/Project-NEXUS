@@ -1012,6 +1012,7 @@
     "final_warning_subject": "Ultimo promemoria: {{community}} sarà messa in pausa il {{pause_date}}",
     "final_warning_title": "Ultimo promemoria prima di una pausa",
     "final_warning_body": "Il pagamento di <strong>{{community}}</strong> è in ritardo di <strong>{{days}}</strong> giorni. Se non viene registrato prima del <strong>{{pause_date}}</strong>, la comunità sarà messa in pausa automaticamente quel giorno e i suoi membri non potranno usarla finché il pagamento non sarà registrato.",
+    "pay_by_card": "Il pagamento viene addebitato sulla carta registrata. Apri «Fatturazione» nel pannello di amministrazione e usa «Gestisci il pagamento» per controllare o cambiare la carta.",
     "pay_to_parent": "Il pagamento va a <strong>{{payee}}</strong>, che lo registra sulla piattaforma.",
     "pay_to_platform": "Il pagamento va al team della piattaforma, che lo registra sulla piattaforma.",
     "payee_note_parent": "Ricevi questo messaggio perché <strong>{{community}}</strong> paga la tua comunità. Anche i suoi amministratori sono stati avvisati.",

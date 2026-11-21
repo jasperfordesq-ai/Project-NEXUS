@@ -1012,6 +1012,7 @@
     "final_warning_subject": "Final reminder: {{community}} will be paused on {{pause_date}}",
     "final_warning_title": "Final reminder before a pause",
     "final_warning_body": "Payment for <strong>{{community}}</strong> is <strong>{{days}}</strong> days late. If it is not recorded before <strong>{{pause_date}}</strong>, the community will be paused automatically on that day, and its members will not be able to use it until the payment is recorded.",
+    "pay_by_card": "Payment is taken from the card on file. Open Billing in the admin panel and use Manage Payment to check or change the card.",
     "pay_to_parent": "Payment is made to <strong>{{payee}}</strong>, who records it on the platform.",
     "pay_to_platform": "Payment is made to the platform team, who record it on the platform.",
     "payee_note_parent": "You are receiving this because <strong>{{community}}</strong> pays your community. Its own admins have been told as well.",

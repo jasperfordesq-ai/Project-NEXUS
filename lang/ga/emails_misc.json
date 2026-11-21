@@ -1012,6 +1012,7 @@
     "final_warning_subject": "Meabhrúchán deiridh: cuirfear {{community}} ar sos ar {{pause_date}}",
     "final_warning_title": "Meabhrúchán deiridh roimh shos",
     "final_warning_body": "Tá íocaíocht <strong>{{community}}</strong> <strong>{{days}}</strong> lá déanach. Mura dtaifeadtar í roimh <strong>{{pause_date}}</strong>, cuirfear an pobal ar sos go huathoibríoch an lá sin, agus ní bheidh a baill in ann é a úsáid go dtí go dtaifeadtar an íocaíocht.",
+    "pay_by_card": "Tógtar an íocaíocht ón gcárta atá ar comhad. Oscail «Billeáil» sa phainéal riaracháin agus úsáid «Bainistigh Íocaíocht» chun an cárta a sheiceáil nó a athrú.",
     "pay_to_parent": "Déantar an íocaíocht le <strong>{{payee}}</strong>, a thaifeadann ar an ardán í.",
     "pay_to_platform": "Déantar an íocaíocht le foireann an ardáin, a thaifeadann ar an ardán í.",
     "payee_note_parent": "Tá an teachtaireacht seo agat toisc go n-íocann <strong>{{community}}</strong> do phobal. Cuireadh a riarthóirí féin ar an eolas freisin.",

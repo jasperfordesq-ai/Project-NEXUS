@@ -1012,6 +1012,7 @@
     "final_warning_subject": "Letzte Erinnerung: {{community}} wird am {{pause_date}} pausiert",
     "final_warning_title": "Letzte Erinnerung vor einer Pause",
     "final_warning_body": "Die Zahlung für <strong>{{community}}</strong> ist <strong>{{days}}</strong> Tage überfällig. Wird sie nicht vor dem <strong>{{pause_date}}</strong> erfasst, wird die Community an diesem Tag automatisch pausiert, und ihre Mitglieder können sie erst wieder nutzen, wenn die Zahlung erfasst ist.",
+    "pay_by_card": "Die Zahlung wird von der hinterlegten Karte abgebucht. Öffnen Sie im Admin-Bereich „Abrechnung“ und prüfen oder ändern Sie die Karte über „Zahlung verwalten“.",
     "pay_to_parent": "Die Zahlung geht an <strong>{{payee}}</strong>, wo sie auf der Plattform erfasst wird.",
     "pay_to_platform": "Die Zahlung geht an das Plattform-Team, das sie auf der Plattform erfasst.",
     "payee_note_parent": "Sie erhalten diese Nachricht, weil <strong>{{community}}</strong> an Ihre Community zahlt. Die eigenen Admins wurden ebenfalls informiert.",

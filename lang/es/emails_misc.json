@@ -1012,6 +1012,7 @@
     "final_warning_subject": "Último aviso: {{community}} se pondrá en pausa el {{pause_date}}",
     "final_warning_title": "Último aviso antes de una pausa",
     "final_warning_body": "El pago de <strong>{{community}}</strong> lleva <strong>{{days}}</strong> días de retraso. Si no se registra antes del <strong>{{pause_date}}</strong>, la comunidad se pondrá en pausa automáticamente ese día y sus miembros no podrán usarla hasta que se registre el pago.",
+    "pay_by_card": "El pago se cobra de la tarjeta registrada. Abra «Facturación» en el panel de administración y use «Administrar pago» para comprobar o cambiar la tarjeta.",
     "pay_to_parent": "El pago se hace a <strong>{{payee}}</strong>, que lo registra en la plataforma.",
     "pay_to_platform": "El pago se hace al equipo de la plataforma, que lo registra en la plataforma.",
     "payee_note_parent": "Recibes este mensaje porque <strong>{{community}}</strong> paga a tu comunidad. Sus propios administradores también han sido avisados.",
