@@ -1220,6 +1220,8 @@ return [
     'billing_checkout_pays_parent' => 'Cette communauté paie sa communauté parente : il n’y a donc rien à payer à la plateforme par carte.',
     'billing_checkout_already_subscribed' => 'Cette communauté paie déjà une formule par carte : un second paiement par carte ne peut donc pas être lancé, car les deux seraient prélevés. Pour changer de formule, adressez-vous à l’équipe de la plateforme.',
     'billing_checkout_plan_too_small' => 'Cette formule permet jusqu’à :max membres actifs et cette communauté en compte :members. Choisissez une formule adaptée.',
+    'billing_checkout_special_price' => 'Cette communauté bénéficie d’un prix convenu spécialement : elle paie donc sur facture, et non par carte. Adressez-vous à l’équipe de la plateforme.',
+    'billing_setup_fee_line' => 'Frais de mise en place uniques (:plan)',
     'billing_plan_not_sold_monthly' => 'Ce forfait n’est pas vendu au mois. Choisissez plutôt la facturation annuelle.',
     'billing_plan_not_sold_yearly' => 'Ce forfait n’est pas vendu à l’année. Choisissez plutôt la facturation mensuelle.',
     'billing_standing_paid_until_invalid' => 'Saisissez la date sous la forme année-mois-jour, par exemple 2027-01-31.',

@@ -1222,6 +1222,8 @@ return [
     'billing_checkout_pays_parent' => 'Íocann an pobal seo a phobal tuismitheora, mar sin níl aon rud le híoc leis an ardán le cárta.',
     'billing_checkout_already_subscribed' => 'Tá an pobal seo ag íoc as plean le cárta cheana féin, mar sin ní féidir an dara híocaíocht chárta a thosú: ghearrfaí an dá cheann. Chun an plean a athrú, iarr ar fhoireann an ardáin.',
     'billing_checkout_plan_too_small' => 'Ceadaíonn an plean seo suas le :max ball gníomhach agus tá :members ag an bpobal seo. Roghnaigh plean a oireann.',
+    'billing_checkout_special_price' => 'Tá praghas comhaontaithe ar leith ag an bpobal seo, mar sin íocann sé le sonrasc, ní le cárta. Iarr ar fhoireann an ardáin.',
+    'billing_setup_fee_line' => 'Táille bunaithe aonuaire (:plan)',
     'billing_plan_not_sold_monthly' => 'Ní dhíoltar an plean seo go míosúil. Roghnaigh billeáil bhliantúil ina ionad.',
     'billing_plan_not_sold_yearly' => 'Ní dhíoltar an plean seo go bliantúil. Roghnaigh billeáil mhíosúil ina ionad.',
     'billing_standing_payment_paid_until_required' => 'Cuir isteach an dáta a n-íocann an íocaíocht seo suas go dtí é.',

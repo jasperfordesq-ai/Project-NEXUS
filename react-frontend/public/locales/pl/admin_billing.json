@@ -409,7 +409,7 @@
     "setup_fee": "plus jednorazowa opłata za uruchomienie: {{amount}}",
     "no_setup_fee": "Bez opłaty za uruchomienie",
     "year_one": "Pierwszy rok {{first}}, potem {{renewal}} rocznie",
-    "setup_fee_separate": "Jednorazowa opłata za uruchomienie jest fakturowana osobno. Nie jest pobierana razem z płatnością kartą."
+    "setup_fee_first_payment": "Jednorazowa opłata za uruchomienie jest doliczana do pierwszej płatności kartą."
   },
   "own_billing": {
     "card_failed": "Ostatnia płatność kartą nie powiodła się. Użyj opcji „Zarządzaj płatnościami”, aby sprawdzić lub zmienić kartę.",

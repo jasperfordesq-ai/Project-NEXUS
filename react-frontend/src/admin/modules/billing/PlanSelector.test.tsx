@@ -363,7 +363,7 @@ describe('PlanSelector', () => {
     expect(screen.getByText('No member limit')).toBeInTheDocument();
   });
 
-  it('shows the one-off setup fee, and that it is not taken by card', async () => {
+  it('shows the one-off setup fee, and that it is added to the first card payment', async () => {
     mockBillingApi.getPlans.mockResolvedValue({ success: true, data: [local('eur')] });
     mockBillingApi.getSubscription.mockRejectedValue(new Error('No subscription'));
 
@@ -373,7 +373,7 @@ describe('PlanSelector', () => {
 
     expect(screen.getByText('€229')).toBeInTheDocument();
     expect(screen.getByText('plus €750 one-off setup fee')).toBeInTheDocument();
-    expect(screen.getByText(/setup fee is billed separately/i)).toBeInTheDocument();
+    expect(screen.getByText(/setup fee is added to the first card payment/i)).toBeInTheDocument();
   });
 
   it('says "No setup fee" for a paid plan without one, and nothing about fees for a free plan', async () => {
@@ -386,7 +386,7 @@ describe('PlanSelector', () => {
 
     // Pro only: the Free card has no fee line at all.
     expect(screen.getAllByText('No setup fee')).toHaveLength(1);
-    expect(screen.queryByText(/billed separately/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/added to the first card payment/i)).not.toBeInTheDocument();
   });
 
   it('quotes a pound community in pounds, as the server says it will be charged', async () => {

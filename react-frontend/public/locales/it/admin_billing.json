@@ -405,7 +405,7 @@
     "setup_fee": "più {{amount}} di costo di attivazione una tantum",
     "no_setup_fee": "Nessun costo di attivazione",
     "year_one": "Primo anno {{first}}, poi {{renewal}} all'anno",
-    "setup_fee_separate": "Il costo di attivazione una tantum viene fatturato separatamente. Non viene addebitato con il pagamento con carta."
+    "setup_fee_first_payment": "Il costo di attivazione una tantum viene aggiunto al primo pagamento con carta."
   },
   "own_billing": {
     "card_failed": "L’ultimo pagamento con carta non è andato a buon fine. Usa «Gestisci il pagamento» per controllare o cambiare la carta.",

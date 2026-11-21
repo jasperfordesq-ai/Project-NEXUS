@@ -401,7 +401,7 @@
     "setup_fee": "plus {{amount}} eenmalige opstartkosten",
     "no_setup_fee": "Geen opstartkosten",
     "year_one": "Eerste jaar {{first}}, daarna {{renewal}} per jaar",
-    "setup_fee_separate": "De eenmalige opstartkosten worden apart gefactureerd. Ze worden niet met de kaartbetaling afgeschreven."
+    "setup_fee_first_payment": "De eenmalige opstartkosten worden bij de eerste kaartbetaling opgeteld."
   },
   "own_billing": {
     "card_failed": "De laatste kaartbetaling is niet gelukt. Gebruik ‘Beheer de betaling’ om de kaart te controleren of te wijzigen.",

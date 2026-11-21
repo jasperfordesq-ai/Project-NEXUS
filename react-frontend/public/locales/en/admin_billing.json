@@ -401,7 +401,7 @@
     "setup_fee": "plus {{amount}} one-off setup fee",
     "no_setup_fee": "No setup fee",
     "year_one": "Year one {{first}}, then {{renewal}} a year",
-    "setup_fee_separate": "The one-off setup fee is billed separately. It is not taken with the card payment."
+    "setup_fee_first_payment": "The one-off setup fee is added to the first card payment."
   },
   "own_billing": {
     "card_failed": "The last card payment did not go through. Use Manage Payment to check or change the card.",

@@ -413,7 +413,7 @@
     "setup_fee": "móide táille bunaithe aonuaire {{amount}}",
     "no_setup_fee": "Gan táille bunaithe",
     "year_one": "An chéad bhliain {{first}}, ansin {{renewal}} in aghaidh na bliana",
-    "setup_fee_separate": "Gearrtar an táille bunaithe aonuaire ar leithligh. Ní thógtar í leis an íocaíocht chárta."
+    "setup_fee_first_payment": "Cuirtear an táille bunaithe aonuaire leis an gcéad íocaíocht chárta."
   },
   "own_billing": {
     "card_failed": "Níor éirigh leis an íocaíocht chárta dheireanach. Úsáid «Bainistigh Íocaíocht» chun an cárta a sheiceáil nó a athrú.",

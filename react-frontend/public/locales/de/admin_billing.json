@@ -401,7 +401,7 @@
     "setup_fee": "zuzüglich {{amount}} einmalige Einrichtungsgebühr",
     "no_setup_fee": "Keine Einrichtungsgebühr",
     "year_one": "Erstes Jahr {{first}}, danach {{renewal}} pro Jahr",
-    "setup_fee_separate": "Die einmalige Einrichtungsgebühr wird gesondert in Rechnung gestellt. Sie wird nicht mit der Kartenzahlung eingezogen."
+    "setup_fee_first_payment": "Die einmalige Einrichtungsgebühr wird mit der ersten Kartenzahlung berechnet."
   },
   "own_billing": {
     "card_failed": "Die letzte Kartenzahlung ist fehlgeschlagen. Prüfen oder ändern Sie die Karte über „Zahlung verwalten“.",

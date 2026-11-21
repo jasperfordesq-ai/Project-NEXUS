@@ -405,7 +405,7 @@
     "setup_fee": "plus {{amount}} de frais de mise en place uniques",
     "no_setup_fee": "Pas de frais de mise en place",
     "year_one": "Première année {{first}}, puis {{renewal}} par an",
-    "setup_fee_separate": "Les frais de mise en place uniques sont facturés séparément. Ils ne sont pas prélevés avec le paiement par carte."
+    "setup_fee_first_payment": "Les frais de mise en place uniques sont ajoutés au premier paiement par carte."
   },
   "own_billing": {
     "card_failed": "Le dernier paiement par carte n’a pas abouti. Utilisez « Gérer le paiement » pour vérifier ou changer la carte.",

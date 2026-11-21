@@ -1222,6 +1222,8 @@ return [
     'billing_checkout_pays_parent' => 'Esta comunidade paga à sua comunidade superior, por isso não há nada a pagar à plataforma com cartão.',
     'billing_checkout_already_subscribed' => 'Esta comunidade já paga um plano por cartão, por isso não é possível iniciar um segundo pagamento por cartão: ambos seriam cobrados. Para mudar de plano, peça à equipa da plataforma.',
     'billing_checkout_plan_too_small' => 'Este plano permite até :max membros ativos e esta comunidade tem :members. Escolha um plano adequado.',
+    'billing_checkout_special_price' => 'Esta comunidade tem um preço acordado especialmente, por isso paga por fatura e não por cartão. Contacte a equipa da plataforma.',
+    'billing_setup_fee_line' => 'Taxa de adesão única (:plan)',
     'billing_plan_not_sold_monthly' => 'Este plano não é vendido com pagamento mensal. Escolha a cobrança anual.',
     'billing_plan_not_sold_yearly' => 'Este plano não é vendido com pagamento anual. Escolha a cobrança mensal.',
     'billing_standing_payment_paid_until_required' => 'Informe a data até a qual este pagamento cobre a comunidade.',

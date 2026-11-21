@@ -236,6 +236,13 @@ class AdminBillingController extends BaseApiController
             );
         }
 
+        // A community with a specially agreed price, a discount or the
+        // non-profit reduction pays by invoice: card checkout charges the
+        // plan's list price in Stripe, which is not what it agreed.
+        if ($this->hasSpecialPrice((int) $tenantId)) {
+            return $this->respondWithError('SPECIAL_PRICE', __('api.billing_checkout_special_price'), null, 422);
+        }
+
         if ($isFreeTarget) {
             $currentSub = DB::selectOne(
                 "SELECT tpa.id, pp.tier_level
@@ -278,6 +285,30 @@ class AdminBillingController extends BaseApiController
                 500
             );
         }
+    }
+
+    /**
+     * Whether the community's plan record in force carries a price the
+     * platform team agreed for it: a custom price, a discount, or the
+     * non-profit reduction. None of these reaches Stripe.
+     */
+    private function hasSpecialPrice(int $tenantId): bool
+    {
+        $record = DB::selectOne(
+            "SELECT tpa.custom_price_monthly, tpa.custom_price_yearly, tpa.discount_percentage, tpa.nonprofit_verified
+             FROM tenant_plan_assignments tpa
+             WHERE tpa.tenant_id = ? AND " . TenantBillingService::PLAN_IN_FORCE_SQL . "
+             ORDER BY (tpa.status = 'active') DESC, (tpa.status = 'trial') DESC, tpa.id DESC
+             LIMIT 1",
+            [$tenantId]
+        );
+
+        return $record !== null && (
+            $record->custom_price_monthly !== null
+            || $record->custom_price_yearly !== null
+            || (int) $record->discount_percentage > 0
+            || (int) $record->nonprofit_verified === 1
+        );
     }
 
     /**
@@ -370,6 +401,9 @@ class AdminBillingController extends BaseApiController
      * fee): `max_users`, the three allowances, both currencies' prices and
      * setup fees, and `charge`.
      *
+     * `charge.setup_fee` is what checkout would add for this community: the
+     * plan's fee on its first payment, 0 once it has paid before.
+     *
      * `charge.monthly` / `charge.yearly` are `{currency, amount, setup_fee}`:
      * what card checkout would charge the community this request is for, in
      * the currency it is billed in (StripeSubscriptionService::quoteFor(),
@@ -392,6 +426,10 @@ class AdminBillingController extends BaseApiController
 
         $tenantId = (int) (TenantContext::currentId() ?? 0);
         $communityCurrency = $tenantId > 0 ? StripeSubscriptionService::billingCurrencyFor($tenantId) : 'eur';
+
+        // The setup fee is taken on a community's first payment only: one that
+        // has paid before is quoted none, as checkout will add none.
+        $setupFeeApplies = $tenantId > 0 ? StripeSubscriptionService::setupFeeApplies($tenantId) : true;
 
         $nullableInt = static fn (mixed $value): ?int => $value !== null ? (int) $value : null;
         $nullableMoney = static fn (mixed $value): ?float => $value !== null ? (float) $value : null;
@@ -423,10 +461,13 @@ class AdminBillingController extends BaseApiController
                 'storage_gb' => $nullableInt($row->storage_gb),
                 'emails_per_month' => $nullableInt($row->emails_per_month),
                 'is_active' => (int) $row->is_active,
-                'charge' => [
-                    'monthly' => StripeSubscriptionService::quoteFor($row, 'monthly', $communityCurrency),
-                    'yearly' => StripeSubscriptionService::quoteFor($row, 'yearly', $communityCurrency),
-                ],
+                'charge' => array_map(
+                    static fn (array $quote): array => $setupFeeApplies ? $quote : ['setup_fee' => 0.0] + $quote,
+                    [
+                        'monthly' => StripeSubscriptionService::quoteFor($row, 'monthly', $communityCurrency),
+                        'yearly' => StripeSubscriptionService::quoteFor($row, 'yearly', $communityCurrency),
+                    ]
+                ),
             ];
         }
 

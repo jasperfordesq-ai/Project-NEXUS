@@ -405,7 +405,7 @@
     "setup_fee": "mais {{amount}} de taxa de adesão única",
     "no_setup_fee": "Sem taxa de adesão",
     "year_one": "Primeiro ano {{first}}, depois {{renewal}} por ano",
-    "setup_fee_separate": "A taxa de adesão única é faturada em separado. Não é cobrada com o pagamento por cartão."
+    "setup_fee_first_payment": "A taxa de adesão única é adicionada ao primeiro pagamento por cartão."
   },
   "own_billing": {
     "card_failed": "O último pagamento por cartão não foi concluído. Use «Gerenciar pagamento» para verificar ou alterar o cartão.",

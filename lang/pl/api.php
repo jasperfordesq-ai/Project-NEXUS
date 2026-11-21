@@ -1153,6 +1153,8 @@ return [
     'billing_checkout_pays_parent' => 'Ta społeczność płaci swojej społeczności nadrzędnej, więc nie ma nic do zapłacenia platformie kartą.',
     'billing_checkout_already_subscribed' => 'Ta społeczność płaci już kartą za plan, więc nie można rozpocząć drugiej płatności kartą: pobierane byłyby obie. Aby zmienić plan, zwróć się do zespołu platformy.',
     'billing_checkout_plan_too_small' => 'Ten plan pozwala na maksymalnie :max aktywnych członków, a ta społeczność ma ich :members. Wybierz plan, który pasuje.',
+    'billing_checkout_special_price' => 'Ta społeczność ma specjalnie uzgodnioną cenę, dlatego płaci na podstawie faktury, a nie kartą. Zwróć się do zespołu platformy.',
+    'billing_setup_fee_line' => 'Jednorazowa opłata za uruchomienie (:plan)',
     'billing_plan_not_sold_monthly' => 'Ten plan nie jest sprzedawany w rozliczeniu miesięcznym. Wybierz rozliczenie roczne.',
     'billing_plan_not_sold_yearly' => 'Ten plan nie jest sprzedawany w rozliczeniu rocznym. Wybierz rozliczenie miesięczne.',
     'billing_standing_payment_paid_until_required' => 'Wpisz datę, do której ta płatność opłaca społeczność.',

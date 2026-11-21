@@ -1222,6 +1222,8 @@ return [
     'billing_checkout_pays_parent' => 'Questa comunità paga la sua comunità superiore, quindi non c’è nulla da pagare alla piattaforma con carta.',
     'billing_checkout_already_subscribed' => 'Questa comunità paga già un piano con carta, quindi non è possibile avviare un secondo pagamento con carta: verrebbero addebitati entrambi. Per cambiare piano, rivolgiti al team della piattaforma.',
     'billing_checkout_plan_too_small' => 'Questo piano consente fino a :max membri attivi e questa comunità ne ha :members. Scegli un piano adatto.',
+    'billing_checkout_special_price' => 'Questa comunità ha un prezzo concordato appositamente, quindi paga con fattura e non con carta. Rivolgiti al team della piattaforma.',
+    'billing_setup_fee_line' => 'Costo di attivazione una tantum (:plan)',
     'billing_plan_not_sold_monthly' => 'Questo piano non è venduto con pagamento mensile. Scegli invece la fatturazione annuale.',
     'billing_plan_not_sold_yearly' => 'Questo piano non è venduto con pagamento annuale. Scegli invece la fatturazione mensile.',
     'billing_standing_payment_paid_until_required' => 'Inserisci la data fino alla quale questo pagamento copre la comunità.',

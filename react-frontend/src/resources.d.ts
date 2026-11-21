@@ -4778,7 +4778,7 @@ export default interface Resources {
       "no_member_limit": "No member limit",
       "no_setup_fee": "No setup fee",
       "setup_fee": "plus {{amount}} one-off setup fee",
-      "setup_fee_separate": "The one-off setup fee is billed separately. It is not taken with the card payment.",
+      "setup_fee_first_payment": "The one-off setup fee is added to the first card payment.",
       "year_one": "Year one {{first}}, then {{renewal}} a year"
     },
     "shared": {

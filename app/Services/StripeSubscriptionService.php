@@ -164,8 +164,8 @@ class StripeSubscriptionService
      * the checkout itself and for every screen that quotes a price before it,
      * so the plan picker can never show euro to a community charged in pounds.
      *
-     * The setup fee is quoted, never charged here: checkout takes the
-     * recurring price only.
+     * The setup fee here is the plan's own. Whether it is still due for a
+     * particular community is setupFeeDue().
      *
      * @return array{currency: 'eur'|'gbp', amount: float, setup_fee: float}
      */
@@ -633,16 +633,33 @@ class StripeSubscriptionService
         $successUrl   = $frontendBase . $slugPrefix . '/admin/billing/checkout-return?session_id={CHECKOUT_SESSION_ID}';
         $cancelUrl    = $frontendBase . $slugPrefix . '/admin/billing?cancelled=1';
 
+        // The plan's one-off setup fee, on a community's first payment only
+        // (setupFeeApplies()). A one-off line in a subscription checkout is
+        // charged on the first invoice and never again.
+        $lineItems = [['price' => $priceId, 'quantity' => 1]];
+        $setupFee = self::setupFeeDue($tenantId, $plan, $currency);
+        if ($setupFee > 0) {
+            $lineItems[] = [
+                'price_data' => [
+                    'currency' => $currency,
+                    'unit_amount' => (int) round($setupFee * 100),
+                    'product_data' => ['name' => __('api.billing_setup_fee_line', ['plan' => (string) $plan->name])],
+                ],
+                'quantity' => 1,
+            ];
+        }
+
         try {
             $session = $client->checkout->sessions->create([
                 'mode' => 'subscription',
                 'customer' => $customerId,
-                'line_items' => [
-                    ['price' => $priceId, 'quantity' => 1],
-                ],
+                'line_items' => $lineItems,
                 'metadata' => [
                     'nexus_tenant_id' => (string) $tenantId,
                     'nexus_plan_id' => (string) $planId,
+                    // What this checkout adds as the one-off setup fee (0 when
+                    // none is due), so its completion can record it as taken.
+                    'nexus_setup_fee' => (string) $setupFee,
                     // Kept on the plan record when the checkout completes, so
                     // the community's billing page can say monthly or yearly.
                     'nexus_billing_interval' => $interval,
@@ -669,6 +686,42 @@ class StripeSubscriptionService
             ]);
             throw $e;
         }
+    }
+
+    /**
+     * Whether a setup fee is still to be taken from this community: only when
+     * it has never paid before, in any way. That is no setup fee recorded as
+     * taken by card, no payment recorded by hand (a community already paying
+     * by invoice was set up long ago), and no plan record that ever carried a
+     * card subscription (one that subscribed before the fee was charged here).
+     */
+    public static function setupFeeApplies(int $tenantId): bool
+    {
+        if (DB::table('tenant_billing_standing')->where('tenant_id', $tenantId)->whereNotNull('setup_fee_paid_at')->exists()) {
+            return false;
+        }
+        if (DB::table('billing_payments')->where('tenant_id', $tenantId)->exists()) {
+            return false;
+        }
+
+        return !DB::table('tenant_plan_assignments')
+            ->where('tenant_id', $tenantId)
+            ->whereNotNull('stripe_subscription_id')
+            ->where('stripe_subscription_id', '<>', '')
+            ->exists();
+    }
+
+    /**
+     * The setup fee card checkout adds for this community and plan, in the
+     * currency the checkout charges in: the plan's fee when one is still due
+     * (setupFeeApplies()), otherwise 0.
+     */
+    public static function setupFeeDue(int $tenantId, object $plan, string $currency): float
+    {
+        $column = $currency === 'gbp' ? 'setup_fee_gbp' : 'setup_fee';
+        $fee = (float) ($plan->{$column} ?? 0);
+
+        return $fee > 0 && self::setupFeeApplies($tenantId) ? $fee : 0.0;
     }
 
     /**
@@ -872,6 +925,12 @@ class StripeSubscriptionService
                 'plan_id' => $planId,
                 'subscription_id' => $subscriptionId,
             ]);
+
+            // The setup fee this checkout carried has been taken: it is never
+            // added again, whatever becomes of this subscription.
+            if ((float) ($session->metadata->nexus_setup_fee ?? 0) > 0) {
+                BillingStandingService::recordSetupFeePaid($tenantId);
+            }
 
             if ($replacedSubscriptionId !== null) {
                 // createCheckoutSession() refuses a checkout while a card

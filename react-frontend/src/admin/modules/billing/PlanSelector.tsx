@@ -163,8 +163,8 @@ export function PlanSelector() {
     !isCurrentPlan(plan) && (paysByCard || (isActivePaidSubscription && isFreePlan(plan)));
 
   const savingPercent = yearlySavingPercent(plans);
-  // Checkout takes the recurring price only, so say plainly that the setup
-  // fee shown on a card is not part of the card payment.
+  // Checkout adds the setup fee to the first payment, once. The server sends
+  // 0 for a community that has paid before, so nothing is shown for it.
   const anySetupFee = plans.some((plan) => chargeFor(plan, billingInterval).setup_fee > 0);
 
   return (
@@ -314,7 +314,7 @@ export function PlanSelector() {
           </div>
 
           {anySetupFee ? (
-            <p className="mt-6 text-center text-sm text-muted">{t('plan_facts.setup_fee_separate')}</p>
+            <p className="mt-6 text-center text-sm text-muted">{t('plan_facts.setup_fee_first_payment')}</p>
           ) : null}
 
           {plans.length === 0 && (

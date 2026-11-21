@@ -1153,6 +1153,8 @@ return [
     'billing_checkout_pays_parent' => 'Deze gemeenschap betaalt haar bovenliggende gemeenschap, dus er hoeft niets per kaart aan het platform te worden betaald.',
     'billing_checkout_already_subscribed' => 'Deze community betaalt al met een kaart voor een plan, dus een tweede kaartbetaling kan niet worden gestart: beide zouden worden afgeschreven. Vraag het platformteam om van plan te veranderen.',
     'billing_checkout_plan_too_small' => 'Dit plan staat maximaal :max actieve leden toe en deze community heeft er :members. Kies een plan dat past.',
+    'billing_checkout_special_price' => 'Voor deze community geldt een speciaal afgesproken prijs. Ze betaalt daarom per factuur, niet met een kaart. Neem contact op met het platformteam.',
+    'billing_setup_fee_line' => 'Eenmalige opstartkosten (:plan)',
     'billing_plan_not_sold_monthly' => 'Dit pakket wordt niet per maand verkocht. Kies in plaats daarvan jaarlijkse facturering.',
     'billing_plan_not_sold_yearly' => 'Dit pakket wordt niet per jaar verkocht. Kies in plaats daarvan maandelijkse facturering.',
     'billing_standing_payment_paid_until_required' => 'Voer de datum in tot wanneer deze betaling de gemeenschap dekt.',

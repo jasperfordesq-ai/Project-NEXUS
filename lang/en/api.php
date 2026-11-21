@@ -2184,6 +2184,8 @@ return [
     'billing_checkout_pays_parent' => 'This community pays its parent community, so there is nothing to pay the platform by card.',
     'billing_checkout_already_subscribed' => 'This community already pays for a plan by card, so a second card payment cannot be started: both would be charged. To change plan, ask the platform team.',
     'billing_checkout_plan_too_small' => 'This plan allows up to :max active members and this community has :members. Choose a plan that fits.',
+    'billing_checkout_special_price' => 'This community has a specially agreed price, so it pays by invoice, not by card. Ask the platform team.',
+    'billing_setup_fee_line' => 'One-off setup fee (:plan)',
     'billing_plan_not_sold_monthly' => 'This plan is not sold monthly. Choose yearly billing instead.',
     'billing_plan_not_sold_yearly' => 'This plan is not sold yearly. Choose monthly billing instead.',
     'billing_standing_payment_paid_until_required' => 'Enter the date this payment pays up to.',

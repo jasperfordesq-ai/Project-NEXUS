@@ -405,7 +405,7 @@
     "setup_fee": "más {{amount}} de cuota de alta única",
     "no_setup_fee": "Sin cuota de alta",
     "year_one": "Primer año {{first}}, después {{renewal}} al año",
-    "setup_fee_separate": "La cuota de alta única se factura por separado. No se cobra con el pago con tarjeta."
+    "setup_fee_first_payment": "La cuota de alta única se añade al primer pago con tarjeta."
   },
   "own_billing": {
     "card_failed": "El último pago con tarjeta no se completó. Use «Administrar pago» para comprobar o cambiar la tarjeta.",

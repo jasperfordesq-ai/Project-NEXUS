@@ -1222,6 +1222,8 @@ return [
     'billing_checkout_pays_parent' => 'Diese Community zahlt an ihre übergeordnete Community. Es gibt daher nichts per Karte an die Plattform zu zahlen.',
     'billing_checkout_already_subscribed' => 'Diese Community zahlt bereits per Karte für einen Plan. Eine zweite Kartenzahlung kann daher nicht gestartet werden: Beide würden abgebucht. Um den Plan zu ändern, wenden Sie sich an das Plattform-Team.',
     'billing_checkout_plan_too_small' => 'Dieser Plan erlaubt bis zu :max aktive Mitglieder, und diese Community hat :members. Wählen Sie einen passenden Plan.',
+    'billing_checkout_special_price' => 'Für diese Community gilt ein gesondert vereinbarter Preis. Sie zahlt daher per Rechnung, nicht per Karte. Wenden Sie sich an das Plattform-Team.',
+    'billing_setup_fee_line' => 'Einmalige Einrichtungsgebühr (:plan)',
     'billing_plan_not_sold_monthly' => 'Dieser Tarif wird nicht monatlich angeboten. Wählen Sie stattdessen die jährliche Abrechnung.',
     'billing_plan_not_sold_yearly' => 'Dieser Tarif wird nicht jährlich angeboten. Wählen Sie stattdessen die monatliche Abrechnung.',
     'billing_standing_payment_paid_until_required' => 'Geben Sie das Datum ein, bis zu dem diese Zahlung reicht.',

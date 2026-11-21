@@ -618,6 +618,20 @@ final class BillingStandingService
     }
 
     /**
+     * Record that the community's one-off setup fee was taken by card, once:
+     * a later call leaves the first date alone.
+     */
+    public static function recordSetupFeePaid(int $tenantId): void
+    {
+        $row = self::row($tenantId);
+        if ($row !== null && ($row->setup_fee_paid_at ?? null) !== null) {
+            return;
+        }
+
+        self::write($tenantId, ['setup_fee_paid_at' => now()]);
+    }
+
+    /**
      * A community has been moved under another parent.
      *
      * The move had no billing code at all. Two things follow from it:

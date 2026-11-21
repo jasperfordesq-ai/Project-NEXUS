@@ -401,7 +401,7 @@
     "setup_fee": "別途、初期費用 {{amount}}（初回のみ）",
     "no_setup_fee": "初期費用なし",
     "year_one": "初年度 {{first}}、以降は年額 {{renewal}}",
-    "setup_fee_separate": "初期費用（初回のみ）は別途請求されます。カード決済には含まれません。"
+    "setup_fee_first_payment": "初期費用（初回のみ）は、最初のカード決済に加算されます。"
   },
   "own_billing": {
     "card_failed": "前回のカード決済が完了しませんでした。「支払いの管理」からカードを確認または変更してください。",
