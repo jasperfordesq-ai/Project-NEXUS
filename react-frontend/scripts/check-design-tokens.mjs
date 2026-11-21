@@ -21,7 +21,6 @@ const inlineStyleExceptionGroups = [
       'src/admin/modules/advertising/PushCampaignAdminPage.tsx': 2,
       'src/admin/modules/analytics/CommunityAnalytics.tsx': 1,
       'src/admin/modules/analytics/RegionalAnalyticsPage.tsx': 3,
-      'src/admin/modules/billing/RevenueDashboard.tsx': 1,
       'src/admin/modules/gamification/GamificationAnalytics.tsx': 1,
       'src/admin/modules/gamification/GamificationHub.tsx': 1,
       'src/admin/modules/jobs/JobBiasAudit.tsx': 1,
