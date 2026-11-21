@@ -910,6 +910,29 @@ The super admin panel stays open for a community that is itself paused, so a
 paused parent's manager can still manage the communities below it; the broker
 panel does not.
 
+**Putting a child on a plan (21 November 2026).** On the same page, and under
+exactly the same rule (`BranchPayments::refusalFor()`: below the caller, pays
+its parent, not exempt), a hub's manager can put a community on a plan:
+`GET /v2/admin/super/branch-payments/{id}/plans` lists the plans its parent
+offers, on the parent's terms (`PlanTerms::availableTo()`), and
+`POST /v2/admin/super/branch-payments/{id}/plan` `{plan_id}` puts it on one.
+Any other plan, including one the parent has stopped offering and any
+non-standard plan, is refused (422 `PLAN_NOT_OFFERED`). A community that still
+holds a live card subscription with the platform is refused too (422
+`HAS_CARD_SUBSCRIPTION`, `BranchPayments::planChangeRefusalFor()`): the change
+would not reach Stripe, so only the platform team changes that plan. The write changes the
+plan and nothing else (`TenantBillingService::changePlanOnly()`): the
+assignment's custom price, discount, non-profit flag, notes and expiry are the
+platform team's and are left as they were. It is audited as `plan_changed`
+with source `hub`, and every admin of the community is mailed
+(`BillingStandingNotifier::planChanged()`). The list carries each community's
+plan and active members against its member number. Both ends are pinned in
+`tests/Laravel/Feature/Billing/BranchPaymentsPlanEndpointsTest.php`. The
+platform team keeps its own power to assign any community any plan. A
+community that pays its parent can no longer check out by card
+(`POST /v2/admin/billing/checkout` answers 422 `PAYS_PARENT`): it pays its
+hub, and could otherwise put itself on a plan its hub has hidden.
+
 **A hub's own version of the plans (21 November 2026).** The super admin
 panel's Branch plans page (`/super-admin/branch-plans`) lets a hub change, for
 the communities that pay it, the name, description, member number and prices

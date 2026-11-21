@@ -1021,6 +1021,15 @@
     "limit_usage": "<strong>{{community}}</strong> compte <strong>{{count}}</strong> membres actifs. Son forfait, {{plan}}, en permet jusqu’à <strong>{{max}}</strong>.",
     "active_member_note": "Un membre actif est une personne qui s’est connectée au cours des {{days}} derniers jours.",
     "limit_over_warn_only": "Rien n’a changé pour ses membres. Merci de passer à un forfait adapté.",
-    "limit_over_will_pause": "Si elle dépasse encore la limite le <strong>{{date}}</strong>, elle sera mise en pause automatiquement jusqu’à ce qu’elle repasse sous la limite ou change pour un forfait plus grand."
+    "limit_over_will_pause": "Si elle dépasse encore la limite le <strong>{{date}}</strong>, elle sera mise en pause automatiquement jusqu’à ce qu’elle repasse sous la limite ou change pour un forfait plus grand.",
+    "plan_changed_subject": "{{community}} a désormais le forfait {{plan}}",
+    "plan_changed_title": "Le forfait de votre communauté a changé",
+    "plan_changed_body": "<strong>{{community}}</strong> a désormais le forfait <strong>{{plan}}</strong>, pour <strong>{{max}}</strong> membres actifs au maximum.",
+    "plan_changed_body_no_limit": "<strong>{{community}}</strong> a désormais le forfait <strong>{{plan}}</strong>, sans limite de membres.",
+    "plan_changed_was": "Elle avait auparavant le forfait {{plan}}.",
+    "plan_changed_price": "Son prix est de <strong>{{monthly}}</strong> par mois ou <strong>{{yearly}}</strong> par an.",
+    "plan_changed_price_monthly": "Son prix est de <strong>{{monthly}}</strong> par mois.",
+    "plan_changed_price_yearly": "Son prix est de <strong>{{yearly}}</strong> par an.",
+    "plan_changed_no_charge": "Aucun montant n’est enregistré pour ce forfait."
   }
 }

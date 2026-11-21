@@ -1021,6 +1021,15 @@
     "limit_usage": "<strong>{{community}}</strong> has <strong>{{count}}</strong> active members. Its package, {{plan}}, allows up to <strong>{{max}}</strong>.",
     "active_member_note": "An active member is someone who signed in within the last {{days}} days.",
     "limit_over_warn_only": "Nothing has changed for its members. Please move it to a package that fits.",
-    "limit_over_will_pause": "If it is still over the limit on <strong>{{date}}</strong>, it will be paused automatically until it is back under the limit or moves to a bigger package."
+    "limit_over_will_pause": "If it is still over the limit on <strong>{{date}}</strong>, it will be paused automatically until it is back under the limit or moves to a bigger package.",
+    "plan_changed_subject": "{{community}} is now on the {{plan}} plan",
+    "plan_changed_title": "Your community's plan has changed",
+    "plan_changed_body": "<strong>{{community}}</strong> is now on the <strong>{{plan}}</strong> plan, for up to <strong>{{max}}</strong> active members.",
+    "plan_changed_body_no_limit": "<strong>{{community}}</strong> is now on the <strong>{{plan}}</strong> plan, which has no member limit.",
+    "plan_changed_was": "It was on the {{plan}} plan before.",
+    "plan_changed_price": "Its price is <strong>{{monthly}}</strong> a month or <strong>{{yearly}}</strong> a year.",
+    "plan_changed_price_monthly": "Its price is <strong>{{monthly}}</strong> a month.",
+    "plan_changed_price_yearly": "Its price is <strong>{{yearly}}</strong> a year.",
+    "plan_changed_no_charge": "No charge is recorded for this plan."
   }
 }

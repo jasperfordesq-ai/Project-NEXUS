@@ -236,6 +236,36 @@ final class PlanTermsResolverTest extends TestCase
         $this->assertSame($this->hub, TenantContext::currentId(), 'The caller\'s community is left as it was.');
     }
 
+    /**
+     * Card checkout charges a plan with no pound price in euro, at its euro
+     * amount (StripeSubscriptionService::chargeCurrency()). The terms say the
+     * same, not "no charge" in pounds.
+     */
+    public function test_a_pound_community_on_a_plan_with_no_pound_price_is_quoted_in_euro(): void
+    {
+        $poundDirect = $this->makeCommunity('Terms pound direct', 1, '/1/', false, 'gbp');
+        $plan = (int) DB::table('pay_plans')->insertGetId([
+            'name' => 'Euro-only plan',
+            'slug' => 'euro-only-' . bin2hex(random_bytes(4)),
+            'price_monthly' => 40,
+            'price_yearly' => 400,
+            'setup_fee' => 25,
+            'price_monthly_gbp' => null,
+            'price_yearly_gbp' => 0,
+            'is_active' => 1,
+            'is_standard' => 0,
+            'created_at' => now(),
+        ]);
+        $this->assign($poundDirect, $plan);
+
+        $terms = PlanTerms::forCommunity($poundDirect);
+
+        $this->assertSame('eur', $terms['currency']);
+        $this->assertSame(40.0, $terms['price_monthly']);
+        $this->assertSame(400.0, $terms['price_yearly']);
+        $this->assertSame(25.0, $terms['setup_fee']);
+    }
+
     public function test_no_active_assignment_is_null(): void
     {
         $this->assertNull(PlanTerms::forCommunity($this->child));

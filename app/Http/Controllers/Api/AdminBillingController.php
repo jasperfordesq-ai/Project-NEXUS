@@ -12,6 +12,7 @@ use App\Services\BillingAutomationService;
 use App\Services\BillingStandingService;
 use App\Services\StripeSubscriptionService;
 use App\Support\Billing\BillingLock;
+use App\Support\Billing\PlanTerms;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -55,6 +56,9 @@ class AdminBillingController extends BaseApiController
      * `member_limit` (`{used, max, percent, stage}`, null without a standard
      * package with a limit), so an open community is warned before anything
      * happens to it.
+     *
+     * And `plan` (`{name, max_users, price_monthly, price_yearly, currency,
+     * terms}`, null with no plan): the plan as it applies to this community.
      */
     public function getStanding(): JsonResponse
     {
@@ -73,6 +77,19 @@ class AdminBillingController extends BaseApiController
             'member_limit' => BillingAutomationService::memberLimitState($tenantId),
         ];
 
+        // The plan as it applies to this community (its hub's version when it
+        // pays its hub), in the currency it is billed in. Never the platform
+        // team's custom price, discount or notes.
+        $terms = PlanTerms::forCommunity($tenantId);
+        $plan = $terms === null ? null : [
+            'name' => $terms['name'],
+            'max_users' => $terms['max_users'],
+            'price_monthly' => $terms['price_monthly'],
+            'price_yearly' => $terms['price_yearly'],
+            'currency' => $terms['currency'],
+            'terms' => $terms['terms'],
+        ];
+
         $reason = BillingLock::reasonFor($tenantId);
         if ($reason === null) {
             return $this->respondWithData([
@@ -82,7 +99,7 @@ class AdminBillingController extends BaseApiController
                 'payee' => null,
                 'payee_name' => null,
                 'payer' => $payer,
-            ] + $warnings);
+            ] + $warnings + ['plan' => $plan]);
         }
 
         $payee = null;
@@ -106,7 +123,7 @@ class AdminBillingController extends BaseApiController
             'payee' => $payee,
             'payee_name' => $payeeName,
             'payer' => $payer,
-        ] + $warnings);
+        ] + $warnings + ['plan' => $plan]);
     }
 
     /**
@@ -119,6 +136,13 @@ class AdminBillingController extends BaseApiController
     {
         $this->requireAdmin();
         $tenantId = TenantContext::getId();
+
+        // A community that pays its parent pays its hub, not the platform by
+        // card. Refused before anything else: otherwise its admin could put it
+        // on any default plan, including one its hub has hidden.
+        if (BillingStandingService::get((int) $tenantId)['payer'] === 'parent') {
+            return $this->respondWithError('PAYS_PARENT', __('api.billing_checkout_pays_parent'), null, 422);
+        }
 
         $planId = (int) $this->requireInput('plan_id');
         $billingInterval = $this->requireInput('billing_interval');
@@ -140,13 +164,29 @@ class AdminBillingController extends BaseApiController
         }
 
         // Block downgrade to free plan or lower tier while on an active paid subscription
-        $targetPlan = DB::selectOne("SELECT id, price_monthly, price_yearly, tier_level, is_active FROM pay_plans WHERE id = ?", [$planId]);
+        $targetPlan = DB::selectOne("SELECT id, price_monthly, price_yearly, price_monthly_gbp, price_yearly_gbp, tier_level, is_active FROM pay_plans WHERE id = ?", [$planId]);
         // F-178: a withdrawn plan is not purchasable — a zero-price one would
         // otherwise activate directly, without Stripe.
         if (!$targetPlan || !(int) ($targetPlan->is_active ?? 0)) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_plan_id'), 'plan_id', 422);
         }
         $isFreeTarget = ((float) $targetPlan->price_monthly === 0.0 && (float) $targetPlan->price_yearly === 0.0);
+
+        // A plan priced for one period only is not sold for the other. Said
+        // plainly here, instead of the generic "checkout failed" that the
+        // price sync's exception used to end in. The amount checked is the
+        // one Stripe would be asked to charge: the pound price for a pound
+        // community when it has one for this period, else the euro price
+        // (StripeSubscriptionService::chargeCurrency()).
+        if (!$isFreeTarget && $this->chargedAmountFor($targetPlan, (int) $tenantId, $billingInterval) <= 0.0) {
+            return $this->respondWithError(
+                'VALIDATION_ERROR',
+                __($billingInterval === 'monthly' ? 'api.billing_plan_not_sold_monthly' : 'api.billing_plan_not_sold_yearly'),
+                'billing_interval',
+                422
+            );
+        }
+
         if ($isFreeTarget) {
             $currentSub = DB::selectOne(
                 "SELECT tpa.id, pp.tier_level
@@ -182,6 +222,27 @@ class AdminBillingController extends BaseApiController
                 500
             );
         }
+    }
+
+    /**
+     * What card checkout would charge for this plan and period: the pound
+     * amount for a community billed in pounds when the plan has one for the
+     * period, otherwise the euro amount. The same choice as
+     * StripeSubscriptionService::chargeCurrency().
+     */
+    private function chargedAmountFor(object $plan, int $tenantId, string $interval): float
+    {
+        $columns = StripeSubscriptionService::PRICE_COLUMNS;
+        $period = $interval === 'yearly' ? 'yearly' : 'monthly';
+
+        if (StripeSubscriptionService::billingCurrencyFor($tenantId) === 'gbp') {
+            $pounds = (float) ($plan->{$columns['gbp'][$period]['amount']} ?? 0);
+            if ($pounds > 0) {
+                return $pounds;
+            }
+        }
+
+        return (float) ($plan->{$columns['eur'][$period]['amount']} ?? 0);
     }
 
     /**

@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React from 'react';
+import React, { createContext, useContext } from 'react';
 import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 import userEvent from '@testing-library/user-event';
@@ -17,8 +17,28 @@ import userEvent from '@testing-library/user-event';
 // everything else (including useDisclosure, useConfirm, hooks) to the original.
 vi.mock('@/components/ui', async () => {
   const base = (await import('@/test/uiMock')).uiMock as Record<string, unknown>;
+  // Wires a Radio to its group, as in PayerDialog.test.tsx.
+  const RadioContext = createContext<{ value: string; onValueChange: (v: string) => void }>({ value: '', onValueChange: () => {} });
 
   const tableOverrides: Record<string, unknown> = {
+    RadioGroup: ({ value, onValueChange, children, label }: { value: string; onValueChange: (v: string) => void; children?: React.ReactNode; label?: React.ReactNode }) => (
+      <fieldset>
+        {label ? <legend>{label}</legend> : null}
+        <RadioContext.Provider value={{ value, onValueChange }}>{children}</RadioContext.Provider>
+      </fieldset>
+    ),
+    Radio: ({ value, children, description }: { value: string; children?: React.ReactNode; description?: React.ReactNode }) => {
+      const group = useContext(RadioContext);
+      return (
+        <div>
+          <label>
+            <input type="radio" checked={group.value === value} onChange={() => group.onValueChange(value)} />
+            {children}
+          </label>
+          {description ? <div>{description}</div> : null}
+        </div>
+      );
+    },
     TableBody: ({ items, children, emptyContent }: {
       items?: unknown[];
       children?: ((item: unknown) => React.ReactNode) | React.ReactNode;
@@ -134,6 +154,26 @@ const makeRow = (overrides: Record<string, unknown> = {}) => ({
   can_act: true,
   cannot_act_reason: null,
   paused_from_above: false,
+  plan: null,
+  members: { active: 61, max: null, percent: null },
+  plan_change_refusal: null,
+  ...overrides,
+});
+
+// The Terms shape PlanTerms::forCommunity() / availableTo() send.
+const makePlan = (overrides: Record<string, unknown> = {}) => ({
+  plan_id: 3,
+  slug: 'local',
+  name: 'Local',
+  description: null,
+  max_users: 250,
+  currency: 'gbp',
+  price_monthly: 120,
+  price_yearly: 1200,
+  setup_fee: 0,
+  terms: 'default',
+  hub_tenant_id: null,
+  is_standard: true,
   ...overrides,
 });
 
@@ -286,5 +326,170 @@ describe('BranchPayments', () => {
 
     await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('This community is paused because a community above it is paused. It can only be restored there.'));
     expect(mockToast.success).not.toHaveBeenCalled();
+  });
+  // ── Plans and member numbers (Stage 3) ─────────────────────────────────────
+
+  const renderWithPlans = async (rows: unknown[], plans: unknown) => {
+    mockApi.get.mockImplementation((url: string) => Promise.resolve(
+      url === '/v2/admin/super/branch-payments'
+        ? { success: true, data: rows }
+        : plans,
+    ));
+    const { BranchPayments } = await import('./BranchPayments');
+    render(<BranchPayments />);
+    await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
+  };
+
+  it('shows each community\'s plan, or that it has none, and marks a plan on its hub\'s terms', async () => {
+    await renderWith([
+      makeRow({ plan: makePlan({ terms: 'hub', hub_tenant_id: 5 }), members: { active: 212, max: 250, percent: 84 } }),
+      makeRow({ id: 8, name: 'Kinsale Timebank', plan: null }),
+    ]);
+
+    expect(screen.getByText('Plan')).toBeInTheDocument();
+    expect(screen.getByText('Local')).toBeInTheDocument();
+    expect(screen.getByText('On its hub\'s terms')).toBeInTheDocument();
+    expect(screen.getByText('No plan')).toBeInTheDocument();
+  });
+
+  it('does not mark a plan on the default terms', async () => {
+    await renderWith([makeRow({ plan: makePlan() })]);
+
+    expect(screen.getByText('Local')).toBeInTheDocument();
+    expect(screen.queryByText('On its hub\'s terms')).not.toBeInTheDocument();
+  });
+
+  it('shows the member number against the plan\'s limit, coloured as it fills', async () => {
+    await renderWith([
+      makeRow({ id: 7, members: { active: 120, max: 250, percent: 48 } }),
+      makeRow({ id: 8, name: 'Kinsale Timebank', members: { active: 212, max: 250, percent: 84 } }),
+      makeRow({ id: 9, name: 'Clonakilty Timebank', members: { active: 104, max: 100, percent: 104 } }),
+      makeRow({ id: 10, name: 'Skibbereen Timebank', members: { active: 61, max: null, percent: null } }),
+    ]);
+
+    expect(screen.getByText('Members')).toBeInTheDocument();
+    const calm = screen.getByText('120 / 250');
+    expect(calm.className).not.toMatch(/text-(warning|danger)/);
+    const near = screen.getByText('212 / 250');
+    expect(near.className).toMatch(/text-warning/);
+    expect(near.className).not.toMatch(/font-semibold/);
+    const over = screen.getByText('104 / 100');
+    expect(over.className).toMatch(/text-danger/);
+    expect(over.className).toMatch(/font-semibold/);
+    expect(screen.getByText('61')).toBeInTheDocument();
+  });
+
+  it('offers to change the plan only where the manager may act', async () => {
+    await renderWith([
+      makeRow(),
+      makeRow({ id: 8, name: 'Kinsale Timebank', can_act: false, cannot_act_reason: 'pays_platform' }),
+    ]);
+
+    expect(screen.getAllByRole('button').filter((b) => b.textContent?.trim() === 'Change plan')).toHaveLength(1);
+  });
+
+  it('lists the plans the community can be put on, marks and preselects its current one, and saves the choice', async () => {
+    const user = userEvent.setup();
+    await renderWithPlans(
+      [makeRow({ plan: makePlan(), members: { active: 212, max: 250, percent: 84 } })],
+      { success: true, data: [
+        makePlan({ plan_id: 2, slug: 'spark', name: 'Spark', max_users: 100, price_monthly: 150 }),
+        makePlan(),
+        makePlan({ plan_id: 4, slug: 'community', name: 'Community', max_users: 1000, price_monthly: 0 }),
+      ] },
+    );
+
+    await user.click(button('Change plan')!);
+
+    await waitFor(() => expect(mockApi.get).toHaveBeenCalledWith('/v2/admin/super/branch-payments/7/plans'));
+    const spark = await screen.findByRole('radio', { name: /Spark/ });
+    const local = screen.getByRole('radio', { name: /Local/ });
+    expect(local).toBeChecked();
+    expect(spark).not.toBeChecked();
+    expect(screen.getByText('Current plan')).toBeInTheDocument();
+    expect(screen.getByText('Up to 100 members')).toBeInTheDocument();
+    expect(screen.getByText((text) => text.includes('£150'))).toBeInTheDocument();
+    expect(screen.getByText('No price set')).toBeInTheDocument();
+    // 212 active members do not fit Spark's 100.
+    expect(screen.getByText('This community has 212 active members, more than this plan allows.')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('radio', { name: /Community/ }));
+    await user.click(screen.getByRole('button', { name: 'Save plan' }));
+
+    await waitFor(() => {
+      expect(mockApi.post).toHaveBeenCalledWith('/v2/admin/super/branch-payments/7/plan', { plan_id: 4 });
+    });
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('Plan changed'));
+    // Reloaded the list after the change.
+    await waitFor(() => {
+      expect(mockApi.get.mock.calls.filter(([url]) => url === '/v2/admin/super/branch-payments')).toHaveLength(2);
+    });
+  });
+
+  it('says so when the hub offers no plans', async () => {
+    const user = userEvent.setup();
+    await renderWithPlans([makeRow()], { success: true, data: [] });
+
+    await user.click(button('Change plan')!);
+
+    expect(await screen.findByText('There are no plans this community can be put on.')).toBeInTheDocument();
+  });
+
+  it('says so when the plans cannot be loaded', async () => {
+    const user = userEvent.setup();
+    await renderWithPlans([makeRow()], { success: false, error: 'nope' });
+
+    await user.click(button('Change plan')!);
+
+    expect(await screen.findByText('The plans could not be loaded.')).toBeInTheDocument();
+    expect(mockApi.post).not.toHaveBeenCalled();
+  });
+
+  it('shows the server\'s own words when it refuses the plan', async () => {
+    const user = userEvent.setup();
+    mockApi.post.mockResolvedValue({ success: false, error: 'That plan is not offered to this community.', code: 'PLAN_NOT_OFFERED' });
+    await renderWithPlans([makeRow()], { success: true, data: [makePlan()] });
+
+    await user.click(button('Change plan')!);
+    await user.click(await screen.findByRole('radio', { name: /Local/ }));
+    await user.click(screen.getByRole('button', { name: 'Save plan' }));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('That plan is not offered to this community.'));
+    expect(mockToast.success).not.toHaveBeenCalled();
+  });
+  it('does not offer to change the plan of a community that pays the platform by card, and says why', async () => {
+    await renderWith([makeRow({ plan_change_refusal: 'card_subscription' })]);
+
+    expect(button('Change plan')).toBeUndefined();
+    expect(screen.getByText('Pays by card: the platform team changes its plan.')).toBeInTheDocument();
+    // The other actions stay.
+    expect(button('Set paid-until date')).toBeDefined();
+    expect(button('Pause community')).toBeDefined();
+  });
+
+  it('ignores a late list of plans meant for a community whose dialog was closed', async () => {
+    const user = userEvent.setup();
+    let answerFirst: (value: unknown) => void = () => {};
+    const rows = [makeRow(), makeRow({ id: 8, name: 'Kinsale Timebank' })];
+    mockApi.get.mockImplementation((url: string) => {
+      if (url === '/v2/admin/super/branch-payments') return Promise.resolve({ success: true, data: rows });
+      if (url === '/v2/admin/super/branch-payments/7/plans') return new Promise((resolve) => { answerFirst = resolve; });
+      return Promise.resolve({ success: true, data: [makePlan({ plan_id: 4, slug: 'community', name: 'Community' })] });
+    });
+    const { BranchPayments } = await import('./BranchPayments');
+    render(<BranchPayments />);
+    await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
+
+    const changeButtons = () => screen.getAllByRole('button').filter((b) => b.textContent?.trim() === 'Change plan');
+    await user.click(changeButtons()[0]!);
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    await user.click(changeButtons()[1]!);
+    expect(await screen.findByRole('radio', { name: /Community/ })).toBeInTheDocument();
+
+    answerFirst({ success: true, data: [makePlan({ plan_id: 2, slug: 'spark', name: 'Spark' })] });
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    expect(screen.queryByRole('radio', { name: /Spark/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: /Community/ })).toBeInTheDocument();
   });
 });

@@ -257,7 +257,8 @@
     "overdue": "O pagamento desta comunidade está {{days}} dias em atraso. Regularize-o para que a comunidade não seja pausada.",
     "own_parent": "Esta comunidade está em pausa. Os membros não poderão usá-la até que o pagamento a {{payee}} esteja em dia. Em pausa desde {{date}}.",
     "own_platform": "Esta comunidade está em pausa. Os membros não poderão usá-la até que o pagamento à equipe da plataforma esteja em dia. Em pausa desde {{date}}.",
-    "unknown": "Esta comunidade está em pausa. Os membros não podem usá-la. Não foi possível carregar o motivo; recarregue a página."
+    "unknown": "Esta comunidade está em pausa. Os membros não podem usá-la. Não foi possível carregar o motivo; recarregue a página.",
+    "limit_plan": "O plano desta comunidade é {{plan}}."
   },
   "automation": {
     "action_member_limit_approaching": "Aviso: {{used}} de {{max}} membros ativos ({{percent}}%)",

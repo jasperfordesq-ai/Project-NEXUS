@@ -1021,6 +1021,15 @@
     "limit_usage": "<strong>{{community}}</strong> tem <strong>{{count}}</strong> membros ativos. O seu pacote, {{plan}}, permite até <strong>{{max}}</strong>.",
     "active_member_note": "Um membro ativo é alguém que entrou na plataforma nos últimos {{days}} dias.",
     "limit_over_warn_only": "Nada mudou para os seus membros. Mude-a para um pacote adequado.",
-    "limit_over_will_pause": "Se em <strong>{{date}}</strong> ainda estiver acima do limite, ela será pausada automaticamente até voltar a ficar abaixo do limite ou mudar para um pacote maior."
+    "limit_over_will_pause": "Se em <strong>{{date}}</strong> ainda estiver acima do limite, ela será pausada automaticamente até voltar a ficar abaixo do limite ou mudar para um pacote maior.",
+    "plan_changed_subject": "{{community}} tem agora o plano {{plan}}",
+    "plan_changed_title": "O plano da sua comunidade mudou",
+    "plan_changed_body": "<strong>{{community}}</strong> tem agora o plano <strong>{{plan}}</strong>, para até <strong>{{max}}</strong> membros ativos.",
+    "plan_changed_body_no_limit": "<strong>{{community}}</strong> tem agora o plano <strong>{{plan}}</strong>, sem limite de membros.",
+    "plan_changed_was": "Antes tinha o plano {{plan}}.",
+    "plan_changed_price": "O preço é de <strong>{{monthly}}</strong> por mês ou <strong>{{yearly}}</strong> por ano.",
+    "plan_changed_price_monthly": "O preço é de <strong>{{monthly}}</strong> por mês.",
+    "plan_changed_price_yearly": "O preço é de <strong>{{yearly}}</strong> por ano.",
+    "plan_changed_no_charge": "Não há nenhuma cobrança registrada para este plano."
   }
 }

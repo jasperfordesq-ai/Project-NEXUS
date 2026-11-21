@@ -441,6 +441,16 @@ final class PlanTerms
      */
     private static function inCurrency(int $planId, string $slug, bool $isStandard, array $values, ?int $hubTenantId, string $currency): array
     {
+        // A plan with no pound price at all is charged in euro, at its euro
+        // amount, even to a pound community
+        // (StripeSubscriptionService::chargeCurrency()): quote it that way,
+        // not as "no charge" in pounds.
+        if ($currency === 'gbp'
+            && (float) ($values['price_monthly_gbp'] ?? 0) <= 0
+            && (float) ($values['price_yearly_gbp'] ?? 0) <= 0) {
+            $currency = 'eur';
+        }
+
         $terms = [
             'plan_id'     => $planId,
             'slug'        => $slug,

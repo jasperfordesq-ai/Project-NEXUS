@@ -146,6 +146,51 @@ describe('BillingPausedBanner', () => {
     expect(line).not.toHaveTextContent('limit_over');
   });
 
+  const localPlan = { name: 'Local', max_users: 250, price_monthly: 120, price_yearly: 1200, currency: 'gbp', terms: 'hub' };
+
+  it('names the plan beside a member-limit warning', async () => {
+    notPaused();
+    apiGet.mockResolvedValue(open({ plan: localPlan, member_limit: { used: 212, max: 250, percent: 85, stage: 'approaching' } }));
+    render(<BillingPausedBanner />);
+
+    const line = await screen.findByRole('status');
+    expect(line).toHaveTextContent('paused_banner.limit_approaching');
+    // Its own element: sentences are never joined with a space (wrong in Japanese).
+    const plan = screen.getByText((text) => text.startsWith('paused_banner.limit_plan'));
+    expect(plan).toHaveTextContent('"plan":"Local"');
+    expect(plan.textContent?.startsWith('paused_banner.limit_plan')).toBe(true);
+    expect(screen.getByText((text) => text.startsWith('paused_banner.limit_approaching'))).not.toBe(plan);
+  });
+
+  it('adds no banner of its own for a plan when there is nothing to warn about', async () => {
+    notPaused();
+    apiGet.mockResolvedValue(open({ plan: localPlan, member_limit: { used: 10, max: 250, percent: 4, stage: null } }));
+    const { container } = render(<BillingPausedBanner />);
+
+    await waitFor(() => expect(apiGet).toHaveBeenCalled());
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('does not name the plan beside an overdue payment', async () => {
+    notPaused();
+    apiGet.mockResolvedValue(open({ plan: localPlan, overdue_days: 4 }));
+    render(<BillingPausedBanner />);
+
+    const line = await screen.findByRole('status');
+    expect(line).toHaveTextContent('paused_banner.overdue');
+    expect(line).not.toHaveTextContent('limit_plan');
+  });
+
+  it('keeps the member-limit warning as it was when there is no plan', async () => {
+    notPaused();
+    apiGet.mockResolvedValue(open({ plan: null, member_limit: { used: 120, max: 100, percent: 120, stage: 'over' } }));
+    render(<BillingPausedBanner />);
+
+    const line = await screen.findByRole('status');
+    expect(line).toHaveTextContent('paused_banner.limit_over');
+    expect(line).not.toHaveTextContent('limit_plan');
+  });
+
   it('is silent when the request fails for an open community', async () => {
     notPaused();
     apiGet.mockResolvedValue({ success: false, error: 'nope', code: 'HTTP_500' });

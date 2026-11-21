@@ -10,6 +10,7 @@ namespace App\Services;
 
 use App\Core\EmailTemplateBuilder;
 use App\Core\TenantContext;
+use App\I18n\FormattingLocale;
 use App\I18n\LocaleContext;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -191,6 +192,118 @@ final class BillingStandingNotifier
     }
 
     /**
+     * The community's plan has changed. Every admin of the community, not
+     * whoever it pays: the person who changed it already knows.
+     *
+     * Money is written in the currency the community is billed in, in each
+     * reader's own number format. A price that is missing or 0 is "no charge
+     * recorded", never "€0.00".
+     *
+     * @param array<string, mixed> $facts plan_name, max_users, price_monthly, price_yearly, currency; old_plan_name?, payee_name?
+     * @return int how many admins were mailed
+     */
+    public static function planChanged(int $tenantId, array $facts): int
+    {
+        $about = self::community($tenantId);
+        if ($about === null) {
+            return 0;
+        }
+
+        $plan = (string) ($facts['plan_name'] ?? '');
+        $maxUsers = isset($facts['max_users']) ? (int) $facts['max_users'] : null;
+        $currency = strtoupper((string) ($facts['currency'] ?? 'eur')) === 'GBP' ? 'GBP' : 'EUR';
+        $monthly = self::chargedAmount($facts['price_monthly'] ?? null);
+        $yearly = self::chargedAmount($facts['price_yearly'] ?? null);
+        $oldPlan = isset($facts['old_plan_name']) && $facts['old_plan_name'] !== '' ? (string) $facts['old_plan_name'] : null;
+        $payee = isset($facts['payee_name']) && $facts['payee_name'] !== ''
+            ? (string) $facts['payee_name']
+            : $about['payee_name'];
+
+        $paragraphs = [
+            $maxUsers !== null
+                ? [self::KEY . 'plan_changed_body', ['community' => $about['name'], 'plan' => $plan, 'max' => self::number($maxUsers)]]
+                : [self::KEY . 'plan_changed_body_no_limit', ['community' => $about['name'], 'plan' => $plan]],
+        ];
+        if ($oldPlan !== null) {
+            $paragraphs[] = [self::KEY . 'plan_changed_was', ['plan' => $oldPlan]];
+        }
+
+        $monthlyText = static fn (): string => self::money((float) $monthly, $currency);
+        $yearlyText = static fn (): string => self::money((float) $yearly, $currency);
+        $paragraphs[] = match (true) {
+            $monthly !== null && $yearly !== null => [self::KEY . 'plan_changed_price', ['monthly' => $monthlyText, 'yearly' => $yearlyText]],
+            $monthly !== null => [self::KEY . 'plan_changed_price_monthly', ['monthly' => $monthlyText]],
+            $yearly !== null => [self::KEY . 'plan_changed_price_yearly', ['yearly' => $yearlyText]],
+            default => [self::KEY . 'plan_changed_no_charge', []],
+        };
+
+        if ($payee !== null) {
+            $paragraphs[] = [self::KEY . 'pay_to_parent', ['payee' => $payee]];
+        }
+
+        return self::deliver(
+            self::admins($tenantId),
+            $about['name'],
+            self::KEY . 'plan_changed_subject',
+            self::KEY . 'plan_changed_title',
+            $paragraphs,
+            'default',
+            '/admin',
+            ['plan' => $plan]
+        );
+    }
+
+    /** An amount worth stating, or null for one that is missing or 0. */
+    private static function chargedAmount(mixed $value): ?float
+    {
+        if ($value === null || $value === '' || !is_numeric($value)) {
+            return null;
+        }
+
+        return (float) $value > 0 ? (float) $value : null;
+    }
+
+    /**
+     * An amount in the reader's language and region (called inside the
+     * per-recipient locale wrap), with the currency's own symbol.
+     */
+    private static function money(float $amount, string $currency): string
+    {
+        if (class_exists(\NumberFormatter::class)) {
+            try {
+                $formatter = new \NumberFormatter(str_replace('-', '_', FormattingLocale::resolve()), \NumberFormatter::CURRENCY);
+                $formatted = $formatter->formatCurrency($amount, $currency);
+                if (is_string($formatted) && $formatted !== '') {
+                    return $formatted;
+                }
+            } catch (\Throwable) {
+                // Fall through to the plain form below.
+            }
+        }
+
+        return ($currency === 'GBP' ? '£' : '€') . number_format($amount, 2);
+    }
+
+    /** A whole number in the reader's format; resolved inside the locale wrap. */
+    private static function number(int $value): \Closure
+    {
+        return static function () use ($value): string {
+            if (class_exists(\NumberFormatter::class)) {
+                try {
+                    $formatted = (new \NumberFormatter(str_replace('-', '_', FormattingLocale::resolve()), \NumberFormatter::DECIMAL))->format($value);
+                    if (is_string($formatted) && $formatted !== '') {
+                        return $formatted;
+                    }
+                } catch (\Throwable) {
+                    // Fall through to the plain form below.
+                }
+            }
+
+            return (string) $value;
+        };
+    }
+
+    /**
      * @param array<string, int|string|null> $facts
      */
     private static function paymentNotice(int $tenantId, array $facts, string $stage, bool $tellPayee, string $theme): int
@@ -333,7 +446,7 @@ final class BillingStandingNotifier
      * of its admins.
      *
      * @param array{id:int, name:string, parent_id:?int, pays_parent:bool, payee_name:?string} $about
-     * @param list<array{0:string, 1:array<string, string>}> $paragraphs
+     * @param list<array{0:string, 1:array<string, string|\Closure>}> $paragraphs
      * @param array<string, string> $subjectParams
      */
     private static function toPayees(
@@ -365,7 +478,7 @@ final class BillingStandingNotifier
     }
 
     /**
-     * @param list<array{0:string, 1:array<string, string>}> $paragraphs
+     * @param list<array{0:string, 1:array<string, string|\Closure>}> $paragraphs
      * @param array<string, string> $subjectParams
      */
     private static function deliver(
@@ -383,15 +496,22 @@ final class BillingStandingNotifier
         }
 
         // Bodies are HTML: every value put into one is escaped. The subject is
-        // plain text: the community's name as it is.
-        $safeParagraphs = [];
-        foreach ($paragraphs as [$key, $params]) {
-            $safe = [];
-            foreach ($params as $name => $value) {
-                $safe[$name] = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+        // plain text: the community's name as it is. A value given as a
+        // closure (a sum of money, a number) is worked out inside each
+        // reader's locale, so it is written the way that reader writes it.
+        $safeParagraphs = static function () use ($paragraphs): array {
+            $out = [];
+            foreach ($paragraphs as [$key, $params]) {
+                $safe = [];
+                foreach ($params as $name => $value) {
+                    $text = $value instanceof \Closure ? (string) $value() : (string) $value;
+                    $safe[$name] = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+                }
+                $out[] = [$key, $safe];
             }
-            $safeParagraphs[] = [$key, $safe];
-        }
+
+            return $out;
+        };
         $subjectParams = ['community' => $communityName] + $subjectParams;
 
         $sent = 0;
@@ -410,7 +530,7 @@ final class BillingStandingNotifier
                         $builder
                             ->title(__($titleKey))
                             ->greeting($person->first_name ?? $person->name ?? __('emails.common.fallback_name'));
-                        foreach ($safeParagraphs as [$key, $params]) {
+                        foreach ($safeParagraphs() as [$key, $params]) {
                             $builder->paragraph(__($key, $params));
                         }
 

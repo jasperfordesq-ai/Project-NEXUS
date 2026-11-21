@@ -3324,6 +3324,8 @@ Route::get('/v2/admin/super/branch-payments', [\App\Http\Controllers\Api\AdminSu
 Route::post('/v2/admin/super/branch-payments/{id}/paid-until', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsSetPaidUntil'])->whereNumber('id');
 Route::post('/v2/admin/super/branch-payments/{id}/suspend', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsSuspend'])->whereNumber('id');
 Route::post('/v2/admin/super/branch-payments/{id}/restore', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsRestore'])->whereNumber('id');
+Route::get('/v2/admin/super/branch-payments/{id}/plans', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsPlans'])->whereNumber('id');
+Route::post('/v2/admin/super/branch-payments/{id}/plan', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsSetPlan'])->whereNumber('id');
 // Branch plans: a hub's own version of the default plans. Safe in this tier:
 // every one confines itself through BranchPlans::refusalForHub (the caller's
 // own community or one below it; never tenant 1). Pinned by

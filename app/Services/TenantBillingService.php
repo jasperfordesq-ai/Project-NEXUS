@@ -9,10 +9,7 @@ namespace App\Services;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
-use App\Core\EmailTemplateBuilder;
 use App\Core\Mailer;
-use App\Core\TenantContext;
-use App\I18n\LocaleContext;
 use App\Support\Billing\PlanTerms;
 use App\Support\Billing\StandardPlans;
 
@@ -603,7 +600,8 @@ class TenantBillingService
 
     /**
      * Upsert a plan assignment for a tenant, including pricing overrides and
-     * discounts. Writes an audit log entry and sends an email to the tenant admin.
+     * discounts. Writes an audit log entry and tells every admin of the community
+     * (BillingStandingNotifier::planChanged).
      */
     public static function assignPlan(
         int $tenantId,
@@ -688,45 +686,177 @@ class TenantBillingService
             ]);
         }
 
-        // Send notification email to tenant admin.
+        // Every admin of the community, in their own language, in the currency
+        // it is billed in (BillingStandingNotifier::planChanged). The old email
+        // went to one admin with a hard-coded euro price and a link most
+        // communities are never shown. The notes are the platform team's own
+        // words and are not sent.
         try {
-            $plan = DB::selectOne("SELECT name, price_yearly FROM pay_plans WHERE id = ?", [$planId]);
+            $oldPlanName = null;
+            if ($existing !== null && (int) $existing->pay_plan_id !== $planId) {
+                $oldPlanName = DB::table('pay_plans')->where('id', (int) $existing->pay_plan_id)->value('name');
+            }
 
-            $assignmentArr = [
-                'custom_price_monthly' => $customPriceMonthly,
-                'custom_price_yearly'  => $customPriceYearly,
-                'discount_percentage'  => $discountPct,
-                'nonprofit_verified'   => $nonprofitVerified,
-                'price_monthly'        => 0,
-                'price_yearly'         => $plan ? (float) $plan->price_yearly : 0.0,
-            ];
-            $effective = self::getEffectivePrice($assignmentArr);
-
-            $planName       = htmlspecialchars($plan->name ?? '', ENT_QUOTES, 'UTF-8');
-            $effectivePrice = '€' . number_format($effective['yearly'], 2) . ' / yr';
-            $expiryDate     = $expiresAt ? date('d M Y', strtotime($expiresAt)) : null;
-
-            self::sendTenantAdminEmail(
+            BillingStandingNotifier::planChanged(
                 $tenantId,
-                ['key' => 'emails_misc.billing.plan_assigned_subject'],
-                ['key' => 'emails_misc.billing.plan_assigned_title'],
-                [
-                    'key' => 'emails_misc.billing.plan_assigned_body',
-                    'params_builder' => fn() => [
-                        'plan'   => $planName,
-                        'price'  => $effectivePrice,
-                        'expiry' => $expiryDate ?? __('emails_misc.billing.plan_assigned_no_expiry'),
-                        'notes'  => $notes ?? '',
-                    ],
-                ],
-                '/admin/billing',
-                ['key' => 'emails_misc.billing.plan_assigned_cta']
+                self::planChangedFacts($tenantId, $oldPlanName !== null ? (string) $oldPlanName : null)
             );
         } catch (\Throwable $e) {
-            Log::warning('[TenantBillingService] assignPlan email failed: ' . $e->getMessage(), [
+            Log::error('[TenantBillingService] assignPlan email failed: ' . $e->getMessage(), [
                 'tenant_id' => $tenantId,
             ]);
         }
+    }
+
+    /**
+     * Change the plan a community is on, and nothing else.
+     *
+     * The assignment's custom price, discount, non-profit flag, notes and
+     * expiry belong to the platform team and are left exactly as they are;
+     * assignPlan() overwrites them with whatever it is passed, so a hub's
+     * manager (and the automatic move up) comes through here instead. With no
+     * current assignment, an active one is created with everything else at
+     * its defaults.
+     *
+     * Audited as `plan_changed` with who asked (`$source`). Sends nothing:
+     * the caller sends BillingStandingNotifier::planChanged().
+     *
+     * A community with a live card subscription is the platform team's: a
+     * change here would not reach Stripe, which would keep charging the old
+     * plan and put it back on its next update. So a hub (`hub`) or the daily
+     * check (`auto`) is refused with \DomainException('billing_card_subscription');
+     * only `platform` may change it.
+     *
+     * @param 'hub'|'platform'|'auto' $source
+     */
+    public static function changePlanOnly(int $tenantId, int $planId, ?int $actedBy, string $source): void
+    {
+        if (!in_array($source, ['hub', 'platform', 'auto'], true)) {
+            throw new \InvalidArgumentException("Unknown plan change source: {$source}");
+        }
+        if (!DB::table('pay_plans')->where('id', $planId)->exists()) {
+            throw new \InvalidArgumentException("Plan {$planId} does not exist");
+        }
+
+        DB::transaction(static function () use ($tenantId, $planId, $actedBy, $source): void {
+            // The newest active record (highest id) is the plan in force:
+            // the same row PlanTerms::forCommunity() and planChangedFacts() read.
+            $existing = DB::table('tenant_plan_assignments')
+                ->where('tenant_id', $tenantId)
+                ->where('status', 'active')
+                ->orderByDesc('id')
+                ->lockForUpdate()
+                ->first(['id', 'pay_plan_id']);
+
+            if ($source !== 'platform' && self::hasLiveCardSubscription($tenantId)) {
+                throw new \DomainException('billing_card_subscription');
+            }
+
+            $now = now();
+            if ($existing !== null) {
+                if ((int) $existing->pay_plan_id === $planId) {
+                    return;
+                }
+                DB::table('tenant_plan_assignments')
+                    ->where('id', $existing->id)
+                    ->where('tenant_id', $tenantId)
+                    ->update(['pay_plan_id' => $planId, 'updated_at' => $now]);
+            } else {
+                DB::table('tenant_plan_assignments')->insert([
+                    'tenant_id'   => $tenantId,
+                    'pay_plan_id' => $planId,
+                    'status'      => 'active',
+                    'starts_at'   => $now,
+                    'created_at'  => $now,
+                    'updated_at'  => $now,
+                ]);
+            }
+
+            self::logAudit(
+                $tenantId,
+                $actedBy,
+                'plan_changed',
+                $existing !== null ? ['pay_plan_id' => (int) $existing->pay_plan_id] : null,
+                ['pay_plan_id' => $planId, 'source' => $source],
+                $source
+            );
+        });
+    }
+
+    /**
+     * Whether the community holds a card subscription with the platform that
+     * is still running: a current assignment record carrying a Stripe
+     * subscription id. An expired or cancelled record that still has its old
+     * id does not count.
+     */
+    public static function hasLiveCardSubscription(int $tenantId): bool
+    {
+        return DB::table('tenant_plan_assignments')
+            ->where('tenant_id', $tenantId)
+            ->whereIn('status', ['active', 'trial', 'trialing'])
+            ->whereNotNull('stripe_subscription_id')
+            ->where('stripe_subscription_id', '<>', '')
+            ->exists();
+    }
+
+    /**
+     * What BillingStandingNotifier::planChanged() needs to tell a community's
+     * admins about the plan it is on now.
+     *
+     * The plan as it applies to the community (PlanTerms::forCommunity), in
+     * the currency it is billed in. For a community that pays its parent that
+     * is its hub's price: the platform team's custom price and discounts are
+     * about what is owed to the platform and are not applied to it. For a
+     * community that pays the platform, they are, and are taken to be in the
+     * community's own billing currency.
+     *
+     * @return array{old_plan_name: ?string, plan_name: string, max_users: ?int, price_monthly: ?float, price_yearly: ?float, currency: string, payee_name: ?string}
+     */
+    public static function planChangedFacts(int $tenantId, ?string $oldPlanName): array
+    {
+        $terms = PlanTerms::forCommunity($tenantId);
+        if ($terms === null) {
+            throw new \RuntimeException("Community {$tenantId} has no current plan");
+        }
+
+        $monthly = $terms['price_monthly'];
+        $yearly = $terms['price_yearly'];
+        $payeeName = null;
+
+        $hubId = PlanTerms::hubFor($tenantId);
+        if ($hubId !== null) {
+            $payeeName = DB::table('tenants')->where('id', $hubId)->value('name');
+        } else {
+            // The newest active record, as PlanTerms::forCommunity() reads it.
+            $assignment = DB::table('tenant_plan_assignments')
+                ->where('tenant_id', $tenantId)
+                ->where('status', 'active')
+                ->orderByDesc('id')
+                ->first(['custom_price_monthly', 'custom_price_yearly', 'discount_percentage', 'nonprofit_verified']);
+
+            if ($assignment !== null) {
+                $effective = self::getEffectivePrice([
+                    'custom_price_monthly' => $assignment->custom_price_monthly,
+                    'custom_price_yearly'  => $assignment->custom_price_yearly,
+                    'discount_percentage'  => $assignment->discount_percentage,
+                    'nonprofit_verified'   => $assignment->nonprofit_verified,
+                    'price_monthly'        => $monthly ?? 0.0,
+                    'price_yearly'         => $yearly ?? 0.0,
+                ]);
+                $monthly = $effective['monthly'];
+                $yearly = $effective['yearly'];
+            }
+        }
+
+        return [
+            'old_plan_name' => $oldPlanName,
+            'plan_name'     => $terms['name'],
+            'max_users'     => $terms['max_users'],
+            'price_monthly' => $monthly,
+            'price_yearly'  => $yearly,
+            'currency'      => $terms['currency'],
+            'payee_name'    => $payeeName !== null ? (string) $payeeName : null,
+        ];
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -1033,71 +1163,6 @@ class TenantBillingService
                 'tenant_id' => $tenantId,
                 'action'    => $action,
             ]);
-        }
-    }
-
-    /**
-     * Send a notification email to the primary admin of a tenant, rendering
-     * subject/title/body/CTA in the admin's preferred_language.
-     *
-     * Each $subject/$title/$body/$ctaText is an array: ['key' => 'lang.key',
-     * 'params' => [...]] or with 'params_builder' => fn() => [...] for cases
-     * where params themselves depend on locale-aware translations.
-     *
-     * @param array{key:string,params?:array,params_builder?:callable} $subject
-     * @param array{key:string,params?:array,params_builder?:callable} $title
-     * @param array{key:string,params?:array,params_builder?:callable} $body
-     * @param array{key:string,params?:array,params_builder?:callable} $ctaText
-     */
-    private static function sendTenantAdminEmail(
-        int $tenantId,
-        array $subject,
-        array $title,
-        array $body,
-        string $link,
-        array $ctaText
-    ): void {
-        $previousTenantId = TenantContext::currentId();
-        TenantContext::setById($tenantId);
-
-        try {
-            $admin = DB::table('users')
-                ->where('tenant_id', $tenantId)
-                ->where('role', 'admin')
-                ->whereNotNull('email')
-                ->select(['email', 'first_name', 'name', 'preferred_language'])
-                ->first();
-
-            if (!$admin || empty($admin->email)) {
-                return;
-            }
-
-            LocaleContext::withLocale($admin, function () use ($admin, $subject, $title, $body, $link, $ctaText, $tenantId) {
-                $firstName = $admin->first_name ?? $admin->name ?? __('emails.common.fallback_name');
-                $fullUrl   = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . $link;
-
-                $resolveParams = fn(array $spec): array =>
-                    isset($spec['params_builder']) && is_callable($spec['params_builder'])
-                        ? ($spec['params_builder'])()
-                        : ($spec['params'] ?? []);
-
-                $html = EmailTemplateBuilder::make()
-                    ->title(__($title['key'], $resolveParams($title)))
-                    ->greeting($firstName)
-                    ->paragraph(__($body['key'], $resolveParams($body)))
-                    ->button(__($ctaText['key'], $resolveParams($ctaText)), $fullUrl)
-                    ->render();
-
-                if (!\App\Services\EmailDispatchService::sendRaw($admin->email, __($subject['key'], $resolveParams($subject)), $html, null, null, null, 'billing', ['tenant_id' => $tenantId])) {
-                    Log::warning('[TenantBillingService] tenant admin email failed', ['tenant_id' => $tenantId]);
-                }
-            });
-        } finally {
-            if ($previousTenantId !== null) {
-                TenantContext::setById($previousTenantId);
-            } else {
-                TenantContext::reset();
-            }
         }
     }
 }

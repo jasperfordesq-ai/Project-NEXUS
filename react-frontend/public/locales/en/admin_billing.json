@@ -256,7 +256,8 @@
     "overdue": "Payment for this community is {{days}} days overdue. Please bring it up to date so that the community is not paused.",
     "own_parent": "This community is paused. Members cannot use it until payment is brought up to date with {{payee}}. Paused since {{date}}.",
     "own_platform": "This community is paused. Members cannot use it until payment is brought up to date with the platform team. Paused since {{date}}.",
-    "unknown": "This community is paused. Members cannot use it. The reason could not be loaded; please reload the page."
+    "unknown": "This community is paused. Members cannot use it. The reason could not be loaded; please reload the page.",
+    "limit_plan": "This community's plan is {{plan}}."
   },
   "automation": {
     "action_member_limit_approaching": "Warning: {{used}} of {{max}} active members ({{percent}}%)",

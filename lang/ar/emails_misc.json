@@ -1021,6 +1021,15 @@
     "limit_usage": "لدى <strong>{{community}}</strong> <strong>{{count}}</strong> عضوًا نشطًا. تسمح باقته، {{plan}}، بما يصل إلى <strong>{{max}}</strong>.",
     "active_member_note": "العضو النشط هو من سجّل الدخول خلال آخر {{days}} يومًا.",
     "limit_over_warn_only": "لم يتغير شيء لأعضائه. يُرجى نقله إلى باقة مناسبة.",
-    "limit_over_will_pause": "إذا ظل فوق الحد في <strong>{{date}}</strong>، فسيُوقَف مؤقتًا تلقائيًا حتى يعود إلى ما دون الحد أو ينتقل إلى باقة أكبر."
+    "limit_over_will_pause": "إذا ظل فوق الحد في <strong>{{date}}</strong>، فسيُوقَف مؤقتًا تلقائيًا حتى يعود إلى ما دون الحد أو ينتقل إلى باقة أكبر.",
+    "plan_changed_subject": "أصبح {{community}} على خطة {{plan}}",
+    "plan_changed_title": "تغيّرت خطة مجتمعك",
+    "plan_changed_body": "أصبح <strong>{{community}}</strong> الآن على خطة <strong>{{plan}}</strong>، لعدد يصل إلى <strong>{{max}}</strong> من الأعضاء النشطين.",
+    "plan_changed_body_no_limit": "أصبح <strong>{{community}}</strong> الآن على خطة <strong>{{plan}}</strong>، وليس لها حد لعدد الأعضاء.",
+    "plan_changed_was": "كان من قبل على خطة {{plan}}.",
+    "plan_changed_price": "سعرها <strong>{{monthly}}</strong> شهريًا أو <strong>{{yearly}}</strong> سنويًا.",
+    "plan_changed_price_monthly": "سعرها <strong>{{monthly}}</strong> شهريًا.",
+    "plan_changed_price_yearly": "سعرها <strong>{{yearly}}</strong> سنويًا.",
+    "plan_changed_no_charge": "لا توجد رسوم مسجّلة لهذه الخطة."
   }
 }

@@ -1021,6 +1021,15 @@
     "limit_usage": "Tá <strong>{{count}}</strong> ball gníomhach ag <strong>{{community}}</strong>. Ceadaíonn a phacáiste, {{plan}}, suas le <strong>{{max}}</strong>.",
     "active_member_note": "Is éard is ball gníomhach ann ná duine a shínigh isteach le {{days}} lá anuas.",
     "limit_over_warn_only": "Níor athraigh aon rud dá bhaill. Aistrigh é go pacáiste a oireann dó, le do thoil.",
-    "limit_over_will_pause": "Má bhíonn sé fós os cionn na teorann ar <strong>{{date}}</strong>, cuirfear ar sos go huathoibríoch é go dtí go mbeidh sé faoin teorainn arís nó go n-aistreoidh sé go pacáiste níos mó."
+    "limit_over_will_pause": "Má bhíonn sé fós os cionn na teorann ar <strong>{{date}}</strong>, cuirfear ar sos go huathoibríoch é go dtí go mbeidh sé faoin teorainn arís nó go n-aistreoidh sé go pacáiste níos mó.",
+    "plan_changed_subject": "Tá {{community}} ar an bplean {{plan}} anois",
+    "plan_changed_title": "Tá plean do phobail athraithe",
+    "plan_changed_body": "Tá <strong>{{community}}</strong> ar an bplean <strong>{{plan}}</strong> anois, do suas le <strong>{{max}}</strong> ball gníomhach.",
+    "plan_changed_body_no_limit": "Tá <strong>{{community}}</strong> ar an bplean <strong>{{plan}}</strong> anois, nach bhfuil teorainn ball air.",
+    "plan_changed_was": "Bhí sé ar an bplean {{plan}} roimhe seo.",
+    "plan_changed_price": "Is é an praghas <strong>{{monthly}}</strong> sa mhí nó <strong>{{yearly}}</strong> sa bhliain.",
+    "plan_changed_price_monthly": "Is é an praghas <strong>{{monthly}}</strong> sa mhí.",
+    "plan_changed_price_yearly": "Is é an praghas <strong>{{yearly}}</strong> sa bhliain.",
+    "plan_changed_no_charge": "Níl aon táille taifeadta don phlean seo."
   }
 }

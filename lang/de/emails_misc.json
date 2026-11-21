@@ -1021,6 +1021,15 @@
     "limit_usage": "<strong>{{community}}</strong> hat <strong>{{count}}</strong> aktive Mitglieder. Ihr Paket, {{plan}}, erlaubt bis zu <strong>{{max}}</strong>.",
     "active_member_note": "Ein aktives Mitglied ist eine Person, die sich in den letzten {{days}} Tagen angemeldet hat.",
     "limit_over_warn_only": "Für die Mitglieder hat sich nichts geändert. Bitte wechseln Sie zu einem passenden Paket.",
-    "limit_over_will_pause": "Liegt sie am <strong>{{date}}</strong> noch über dem Limit, wird sie automatisch pausiert, bis sie wieder unter dem Limit liegt oder zu einem größeren Paket wechselt."
+    "limit_over_will_pause": "Liegt sie am <strong>{{date}}</strong> noch über dem Limit, wird sie automatisch pausiert, bis sie wieder unter dem Limit liegt oder zu einem größeren Paket wechselt.",
+    "plan_changed_subject": "{{community}} hat jetzt den Tarif {{plan}}",
+    "plan_changed_title": "Der Tarif Ihrer Community wurde geändert",
+    "plan_changed_body": "<strong>{{community}}</strong> hat jetzt den Tarif <strong>{{plan}}</strong> für bis zu <strong>{{max}}</strong> aktive Mitglieder.",
+    "plan_changed_body_no_limit": "<strong>{{community}}</strong> hat jetzt den Tarif <strong>{{plan}}</strong>, der keine Mitgliedergrenze hat.",
+    "plan_changed_was": "Vorher hatte sie den Tarif {{plan}}.",
+    "plan_changed_price": "Der Preis beträgt <strong>{{monthly}}</strong> im Monat oder <strong>{{yearly}}</strong> im Jahr.",
+    "plan_changed_price_monthly": "Der Preis beträgt <strong>{{monthly}}</strong> im Monat.",
+    "plan_changed_price_yearly": "Der Preis beträgt <strong>{{yearly}}</strong> im Jahr.",
+    "plan_changed_no_charge": "Für diesen Tarif ist kein Preis erfasst."
   }
 }

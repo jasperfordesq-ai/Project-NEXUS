@@ -3343,6 +3343,92 @@ class AdminSuperController extends BaseApiController
         return $this->respondWithData(['standing' => BillingStandingService::get($id)]);
     }
 
+    /**
+     * GET /api/v2/admin/super/branch-payments/{id}/plans
+     *
+     * The plans this community can be put on: its parent's offered plans, on
+     * the parent's terms, in the community's own billing currency.
+     */
+    public function branchPaymentsPlans(int $id): JsonResponse
+    {
+        $this->requireSuperAdmin();
+        if ($refused = $this->branchPaymentsRefusal($id)) {
+            return $refused;
+        }
+
+        return $this->respondWithData(PlanTerms::availableTo($id));
+    }
+
+    /**
+     * POST /api/v2/admin/super/branch-payments/{id}/plan  {plan_id}
+     *
+     * A hub's manager puts a community that pays it on one of the plans its
+     * parent offers. Changes the plan and nothing else
+     * (TenantBillingService::changePlanOnly): the custom price, discount,
+     * non-profit flag, notes and expiry are the platform team's. The
+     * community's admins are told.
+     */
+    public function branchPaymentsSetPlan(int $id): JsonResponse
+    {
+        $userId = $this->requireSuperAdmin();
+        if ($refused = $this->branchPaymentsRefusal($id)) {
+            return $refused;
+        }
+        // A live card subscription: Stripe would keep charging the old plan.
+        if (BranchPayments::planChangeRefusalFor($id) === BranchPayments::CARD_SUBSCRIPTION) {
+            return $this->cardSubscriptionRefusal();
+        }
+
+        $planId = filter_var($this->getAllInput()['plan_id'] ?? null, FILTER_VALIDATE_INT);
+        if ($planId === false || $planId < 1) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_plan_id'), 'plan_id', 422);
+        }
+
+        // Only a plan the parent offers: a hidden one, a retired one and a
+        // custom one are all absent from this list.
+        $offered = in_array($planId, array_column(PlanTerms::availableTo($id), 'plan_id'), true);
+        if (!$offered) {
+            return $this->respondWithError('PLAN_NOT_OFFERED', __('api.branch_payments_plan_not_offered'), 'plan_id', 422);
+        }
+
+        $before = PlanTerms::forCommunity($id);
+        if ($before === null || $before['plan_id'] !== $planId) {
+            try {
+                TenantBillingService::changePlanOnly($id, $planId, $userId, 'hub');
+            } catch (\DomainException $e) {
+                // A card subscription started since the check above.
+                if ($e->getMessage() === 'billing_card_subscription') {
+                    return $this->cardSubscriptionRefusal();
+                }
+                throw $e;
+            }
+
+            try {
+                BillingStandingNotifier::planChanged($id, TenantBillingService::planChangedFacts($id, $before['name'] ?? null));
+            } catch (\Throwable $e) {
+                // The plan has changed; a failure to mail must not undo it or
+                // answer as if it had not happened. Logged as an error: the
+                // likeliest cause is a contract fault in the facts, not mail.
+                \Illuminate\Support\Facades\Log::error('[billing] could not tell a community' . chr(39) . 's admins about its new plan', [
+                    'tenant_id' => $id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        $plan = PlanTerms::forCommunity($id);
+
+        return $this->respondWithData([
+            'plan' => $plan,
+            'members' => BranchPayments::members($id, $plan['max_users'] ?? null),
+        ]);
+    }
+
+    private function cardSubscriptionRefusal(): JsonResponse
+    {
+        return $this->respondWithError('HAS_CARD_SUBSCRIPTION', __('api.branch_payments_card_subscription'), null, 422);
+    }
+
     /** The refusal for this caller and community as a response, or null. */
     private function branchPaymentsRefusal(int $id): ?JsonResponse
     {

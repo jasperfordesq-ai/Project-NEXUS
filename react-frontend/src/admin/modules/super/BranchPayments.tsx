@@ -8,8 +8,9 @@
  *
  * A parent community's manager and the payment standing of the communities
  * below it: who each pays, the date it is paid up to, how late it is, and
- * whether it is paused. The manager records a paid-until date, pauses a
- * community and restores it.
+ * whether it is paused, the plan it is on and how many active members it has
+ * against that plan's limit. The manager records a paid-until date, pauses a
+ * community, restores it and changes its plan.
  *
  * 🔴 The screen decides nothing about who may act. Every row arrives with
  * `can_act` and, when false, `cannot_act_reason`, worked out by the same rule
@@ -22,14 +23,14 @@
  * layer: the Billing control screen once read a shape the server never sent.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Banknote from 'lucide-react/icons/banknote';
-import { Button, Card, CardBody, CardHeader, Chip, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@/components/ui';
+import { Button, Card, CardBody, CardHeader, Chip, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Radio, RadioGroup, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@/components/ui';
 import { usePageTitle } from '@/hooks';
 import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
-import { formatDate } from '@/lib/helpers';
+import { formatCurrency, formatDate, formatNumber } from '@/lib/helpers';
 import { PageHeader } from '../../components/PageHeader';
 
 /**
@@ -48,6 +49,32 @@ interface Standing {
   locked_by_tenant_id: number | null;
 }
 
+/**
+ * A plan as it applies to one community (PlanTerms::forCommunity() and
+ * PlanTerms::availableTo()): on its hub's terms when it pays its hub.
+ */
+interface Terms {
+  plan_id: number;
+  slug: string;
+  name: string;
+  description: string | null;
+  max_users: number | null;
+  currency: 'eur' | 'gbp';
+  price_monthly: number | null;
+  price_yearly: number | null;
+  setup_fee: number | null;
+  terms: 'default' | 'hub';
+  hub_tenant_id: number | null;
+  is_standard: boolean;
+}
+
+/** Active members (TenantBillingService::getSubtreeActiveMemberCount()) against the plan's limit. */
+interface Members {
+  active: number;
+  max: number | null;
+  percent: number | null;
+}
+
 interface BranchRow {
   id: number;
   name: string;
@@ -59,7 +86,13 @@ interface BranchRow {
   can_act: boolean;
   cannot_act_reason: 'not_in_reach' | 'pays_platform' | 'exempt' | null;
   paused_from_above: boolean;
+  plan: Terms | null;
+  members: Members;
+  /** Set when the plan is the platform team's to change (it pays the platform by card). */
+  plan_change_refusal: 'card_subscription' | null;
 }
+
+type PlanList = Terms[] | 'loading' | 'failed';
 
 type StandingState = 'open' | 'paused' | 'paused_from_above' | 'exempt';
 type Dialog = { row: BranchRow; kind: 'date' | 'pause' } | null;
@@ -78,6 +111,34 @@ const INDENT = ['pl-0', 'pl-4', 'pl-8', 'pl-12', 'pl-16', 'pl-20'] as const;
 
 function indentFor(depth: number): string {
   return INDENT[Math.min(INDENT.length - 1, Math.max(0, depth - 1))] ?? INDENT[0];
+}
+
+/** Warning colour from 80% of the plan's limit, danger and bold from 100%. */
+function membersClass(members: Members): string {
+  if (members.percent !== null && members.percent >= 100) return 'text-sm font-semibold text-danger';
+  if (members.percent !== null && members.percent >= 80) return 'text-sm text-warning';
+  return 'text-sm';
+}
+
+function membersText(members: Members): string {
+  return members.max === null
+    ? formatNumber(members.active)
+    : `${formatNumber(members.active)} / ${formatNumber(members.max)}`;
+}
+
+/** Money may arrive as a numeric string from a decimal column. */
+function amount(value: number | string | null): number | null {
+  if (value === null) return null;
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+/** Whole amounts without ".00", as on Branch plans; anything else to the penny. */
+function money(value: number, currency: 'eur' | 'gbp'): string {
+  const code = currency === 'gbp' ? 'GBP' : 'EUR';
+  return Number.isInteger(value)
+    ? formatCurrency(value, code, { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+    : formatCurrency(value, code);
 }
 
 const STANDING_COLOR: Record<StandingState, ChipColor> = {
@@ -100,6 +161,12 @@ export function BranchPayments() {
   const [dialog, setDialog] = useState<Dialog>(null);
   const [text, setText] = useState('');
   const [busyId, setBusyId] = useState<number | null>(null);
+  const [planRow, setPlanRow] = useState<BranchRow | null>(null);
+  const [plans, setPlans] = useState<PlanList>('loading');
+  const [planChoice, setPlanChoice] = useState('');
+  const [savingPlan, setSavingPlan] = useState(false);
+  // The community the plan dialog is open on now: a late reply for another is dropped.
+  const planFor = useRef<number | null>(null);
 
   const load = useCallback(async () => {
     const response = await api.get<BranchRow[]>('/v2/admin/super/branch-payments');
@@ -154,6 +221,41 @@ export function BranchPayments() {
     if (done) closeDialog();
   };
 
+  const openPlanDialog = async (row: BranchRow) => {
+    planFor.current = row.id;
+    setPlanRow(row);
+    setPlans('loading');
+    setPlanChoice(row.plan ? String(row.plan.plan_id) : '');
+
+    const response = await api.get<Terms[]>(`/v2/admin/super/branch-payments/${row.id}/plans`);
+    if (planFor.current !== row.id) return;
+    setPlans(response.success && Array.isArray(response.data) ? response.data : 'failed');
+  };
+
+  const closePlanDialog = () => {
+    planFor.current = null;
+    setPlanRow(null);
+    setPlans('loading');
+    setPlanChoice('');
+  };
+
+  const savePlan = async () => {
+    if (!planRow || planChoice === '') return;
+    setSavingPlan(true);
+    const response = await api.post(`/v2/admin/super/branch-payments/${planRow.id}/plan`, { plan_id: Number(planChoice) });
+    setSavingPlan(false);
+
+    if (response.success) {
+      toast.success(t('branch_payments.done_plan'));
+      closePlanDialog();
+      void load();
+      return;
+    }
+
+    // admin-i18n-ignore: localized server message — AdminSuperController Branch payments plan refusals (lang/*/api.php)
+    toast.error(response.error || t('admin_billing:billing.standing_failed'));
+  };
+
   const header = (
     <PageHeader title={t('branch_payments.title')} description={t('branch_payments.description')} />
   );
@@ -192,6 +294,8 @@ export function BranchPayments() {
             <TableHeader>
               <TableColumn>{t('branch_payments.col_community')}</TableColumn>
               <TableColumn>{t('admin_billing:billing.col_pays')}</TableColumn>
+              <TableColumn>{t('branch_payments.col_plan')}</TableColumn>
+              <TableColumn>{t('branch_payments.col_members')}</TableColumn>
               <TableColumn>{t('branch_payments.col_paid_until')}</TableColumn>
               <TableColumn>{t('branch_payments.col_days_late')}</TableColumn>
               <TableColumn>{t('admin_billing:billing.col_standing')}</TableColumn>
@@ -215,6 +319,23 @@ export function BranchPayments() {
                       <span className="text-sm text-muted">
                         {paysParent && row.parent_name ? row.parent_name : t('branch_payments.pays_platform')}
                       </span>
+                    </TableCell>
+
+                    <TableCell>
+                      {row.plan ? (
+                        <div className="flex flex-col">
+                          <span className="text-sm">{row.plan.name}</span>
+                          {row.plan.terms === 'hub' ? (
+                            <span className="text-xs text-muted">{t('branch_payments.plan_hub_terms')}</span>
+                          ) : null}
+                        </div>
+                      ) : (
+                        <span className="text-sm text-muted">{t('branch_payments.no_plan')}</span>
+                      )}
+                    </TableCell>
+
+                    <TableCell>
+                      <span className={membersClass(row.members)}>{membersText(row.members)}</span>
                     </TableCell>
 
                     <TableCell>
@@ -246,6 +367,14 @@ export function BranchPayments() {
                           <Button size="sm" variant="secondary" isDisabled={busy} onPress={() => openDialog(row, 'date')}>
                             {t('branch_payments.set_date')}
                           </Button>
+
+                          {row.plan_change_refusal === 'card_subscription' ? (
+                            <span className="text-xs text-muted">{t('branch_payments.plan_card_subscription')}</span>
+                          ) : (
+                            <Button size="sm" variant="secondary" isDisabled={busy} onPress={() => void openPlanDialog(row)}>
+                              {t('branch_payments.change_plan')}
+                            </Button>
+                          )}
 
                           {state === 'open' ? (
                             <Button size="sm" color="warning" variant="tertiary" isDisabled={busy} onPress={() => openDialog(row, 'pause')}>
@@ -324,6 +453,85 @@ export function BranchPayments() {
               isLoading={busyId !== null}
             >
               {dialog?.kind === 'pause' ? t('admin_billing:billing.pause_modal_title') : t('branch_payments.save')}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <Modal isOpen={planRow !== null} onClose={closePlanDialog} size="lg" scrollBehavior="inside">
+        <ModalContent>
+          <ModalHeader>
+            {t('branch_payments.change_plan')}
+            {planRow && (
+              <span className="text-muted text-sm font-normal ml-2">— {planRow.name}</span>
+            )}
+          </ModalHeader>
+          <ModalBody>
+            {plans === 'loading' ? (
+              <div role="status" aria-busy="true" aria-label={t('admin_billing:common.loading')} className="flex justify-center py-6">
+                <Spinner size="md" />
+              </div>
+            ) : plans === 'failed' ? (
+              <p role="alert" className="text-sm text-danger">{t('branch_payments.plans_load_failed')}</p>
+            ) : plans.length === 0 ? (
+              <p className="text-sm text-muted">{t('branch_payments.plans_empty')}</p>
+            ) : (
+              <div className="flex flex-col gap-3">
+                <p className="text-sm text-muted">{t('branch_payments.plan_help')}</p>
+                <RadioGroup label={t('branch_payments.plan_choice_label')} value={planChoice} onValueChange={setPlanChoice}>
+                  {plans.map((plan) => {
+                    const price = amount(plan.price_monthly);
+                    const isCurrent = planRow?.plan?.plan_id === plan.plan_id;
+                    const tooSmall = planRow !== null && plan.max_users !== null && plan.max_users < planRow.members.active;
+
+                    return (
+                      <Radio
+                        key={plan.plan_id}
+                        value={String(plan.plan_id)}
+                        description={(
+                          <span className="flex flex-col gap-0.5">
+                            <span>
+                              {plan.max_users === null
+                                ? t('branch_payments.plan_no_limit')
+                                : t('branch_payments.plan_up_to', { max: formatNumber(plan.max_users) })}
+                            </span>
+                            <span>
+                              {price === null || price === 0
+                                ? t('branch_payments.plan_no_price')
+                                : t('branch_payments.plan_price_monthly', { price: money(price, plan.currency) })}
+                            </span>
+                            {tooSmall && planRow ? (
+                              <span className="text-warning">
+                                {t('branch_payments.plan_too_small', { active: formatNumber(planRow.members.active) })}
+                              </span>
+                            ) : null}
+                          </span>
+                        )}
+                      >
+                        <span className="flex items-center gap-2">
+                          {plan.name}
+                          {isCurrent ? (
+                            <Chip size="sm" variant="soft" color="primary">{t('branch_payments.plan_current')}</Chip>
+                          ) : null}
+                        </span>
+                      </Radio>
+                    );
+                  })}
+                </RadioGroup>
+              </div>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="tertiary" onPress={closePlanDialog} isDisabled={savingPlan}>
+              {t('admin_billing:billing.cancel')}
+            </Button>
+            <Button
+              color="primary"
+              onPress={() => void savePlan()}
+              isLoading={savingPlan}
+              isDisabled={!Array.isArray(plans) || planChoice === '' || planChoice === String(planRow?.plan?.plan_id ?? '')}
+            >
+              {t('branch_payments.save_plan')}
             </Button>
           </ModalFooter>
         </ModalContent>

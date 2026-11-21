@@ -128,9 +128,12 @@ final class BranchPaymentsEndpointsTest extends TestCase
         $this->assertSame($expected, $ids, 'Not its own community, not the other hub, not the other hub\'s child, not tenant 1.');
 
         $row = collect($response->json('data'))->firstWhere('id', $this->grandchild);
-        foreach (['id', 'name', 'depth', 'parent_id', 'parent_name', 'standing', 'days_late', 'can_act', 'cannot_act_reason', 'paused_from_above'] as $key) {
-            $this->assertArrayHasKey($key, $row, $key);
-        }
+        // Stage 3 added `plan`, `members` and `plan_change_refusal`; the exact shape is pinned key
+        // for key in BranchPaymentsPlanEndpointsTest.
+        $this->assertSame(
+            ['id', 'name', 'depth', 'parent_id', 'parent_name', 'standing', 'days_late', 'can_act', 'cannot_act_reason', 'paused_from_above', 'plan', 'members', 'plan_change_refusal'],
+            array_keys($row)
+        );
         $this->assertTrue($row['can_act']);
         $this->assertSame('Branch child', $row['parent_name']);
         $this->assertSame('parent', $row['standing']['payer']);

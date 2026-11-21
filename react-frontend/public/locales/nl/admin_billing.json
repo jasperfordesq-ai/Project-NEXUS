@@ -256,7 +256,8 @@
     "overdue": "De betaling voor deze community is {{days}} dagen te laat. Breng haar bij, zodat de community niet wordt gepauzeerd.",
     "own_parent": "Deze gemeenschap is gepauzeerd. Leden kunnen haar pas weer gebruiken als de betaling aan {{payee}} is bijgewerkt. Gepauzeerd sinds {{date}}.",
     "own_platform": "Deze gemeenschap is gepauzeerd. Leden kunnen haar pas weer gebruiken als de betaling aan het platformteam is bijgewerkt. Gepauzeerd sinds {{date}}.",
-    "unknown": "Deze gemeenschap is gepauzeerd. Leden kunnen haar niet gebruiken. De reden kon niet worden geladen; laad de pagina opnieuw."
+    "unknown": "Deze gemeenschap is gepauzeerd. Leden kunnen haar niet gebruiken. De reden kon niet worden geladen; laad de pagina opnieuw.",
+    "limit_plan": "Het abonnement van deze community is {{plan}}."
   },
   "automation": {
     "action_member_limit_approaching": "Waarschuwing: {{used}} van {{max}} actieve leden ({{percent}}%)",

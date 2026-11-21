@@ -1021,6 +1021,15 @@
     "limit_usage": "<strong>{{community}}</strong>のアクティブメンバーは<strong>{{count}}</strong>人です。パッケージ「{{plan}}」の上限は<strong>{{max}}</strong>人です。",
     "active_member_note": "アクティブメンバーとは、過去{{days}}日以内にサインインした人のことです。",
     "limit_over_warn_only": "メンバーへの影響はまだありません。合ったパッケージへの変更をお願いします。",
-    "limit_over_will_pause": "<strong>{{date}}</strong>の時点でまだ上限を超えている場合は、上限を下回るか、より大きなパッケージに変更するまで自動的に一時停止されます。"
+    "limit_over_will_pause": "<strong>{{date}}</strong>の時点でまだ上限を超えている場合は、上限を下回るか、より大きなパッケージに変更するまで自動的に一時停止されます。",
+    "plan_changed_subject": "{{community}}は{{plan}}プランになりました",
+    "plan_changed_title": "コミュニティのプランが変更されました",
+    "plan_changed_body": "<strong>{{community}}</strong>は<strong>{{plan}}</strong>プランになりました。アクティブメンバーは最大<strong>{{max}}</strong>人です。",
+    "plan_changed_body_no_limit": "<strong>{{community}}</strong>は<strong>{{plan}}</strong>プランになりました。このプランにはメンバー数の上限がありません。",
+    "plan_changed_was": "以前は{{plan}}プランでした。",
+    "plan_changed_price": "料金は月額<strong>{{monthly}}</strong>、または年額<strong>{{yearly}}</strong>です。",
+    "plan_changed_price_monthly": "料金は月額<strong>{{monthly}}</strong>です。",
+    "plan_changed_price_yearly": "料金は年額<strong>{{yearly}}</strong>です。",
+    "plan_changed_no_charge": "このプランには料金が記録されていません。"
   }
 }

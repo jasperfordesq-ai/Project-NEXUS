@@ -258,7 +258,8 @@
     "overdue": "Płatność za tę społeczność jest opóźniona o {{days}} dni. Ureguluj ją, aby społeczność nie została wstrzymana.",
     "own_parent": "Ta społeczność jest wstrzymana. Członkowie nie mogą z niej korzystać, dopóki płatność na rzecz {{payee}} nie zostanie uregulowana. Wstrzymana od {{date}}.",
     "own_platform": "Ta społeczność jest wstrzymana. Członkowie nie mogą z niej korzystać, dopóki płatność na rzecz zespołu platformy nie zostanie uregulowana. Wstrzymana od {{date}}.",
-    "unknown": "Ta społeczność jest wstrzymana. Członkowie nie mogą z niej korzystać. Nie udało się wczytać powodu; odśwież stronę."
+    "unknown": "Ta społeczność jest wstrzymana. Członkowie nie mogą z niej korzystać. Nie udało się wczytać powodu; odśwież stronę.",
+    "limit_plan": "Plan tej społeczności to {{plan}}."
   },
   "automation": {
     "action_member_limit_approaching": "Ostrzeżenie: {{used}} z {{max}} aktywnych członków ({{percent}}%)",

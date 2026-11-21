@@ -1021,6 +1021,15 @@
     "limit_usage": "<strong>{{community}}</strong> heeft <strong>{{count}}</strong> actieve leden. Haar pakket, {{plan}}, staat er maximaal <strong>{{max}}</strong> toe.",
     "active_member_note": "Een actief lid is iemand die in de afgelopen {{days}} dagen heeft ingelogd.",
     "limit_over_warn_only": "Voor de leden is er niets veranderd. Zet haar over naar een pakket dat past.",
-    "limit_over_will_pause": "Als zij op <strong>{{date}}</strong> nog boven de limiet zit, wordt zij automatisch gepauzeerd tot zij weer onder de limiet zit of naar een groter pakket overstapt."
+    "limit_over_will_pause": "Als zij op <strong>{{date}}</strong> nog boven de limiet zit, wordt zij automatisch gepauzeerd tot zij weer onder de limiet zit of naar een groter pakket overstapt.",
+    "plan_changed_subject": "{{community}} heeft nu het pakket {{plan}}",
+    "plan_changed_title": "Het pakket van je gemeenschap is gewijzigd",
+    "plan_changed_body": "<strong>{{community}}</strong> heeft nu het pakket <strong>{{plan}}</strong>, voor maximaal <strong>{{max}}</strong> actieve leden.",
+    "plan_changed_body_no_limit": "<strong>{{community}}</strong> heeft nu het pakket <strong>{{plan}}</strong>, zonder ledenlimiet.",
+    "plan_changed_was": "Eerder had ze het pakket {{plan}}.",
+    "plan_changed_price": "De prijs is <strong>{{monthly}}</strong> per maand of <strong>{{yearly}}</strong> per jaar.",
+    "plan_changed_price_monthly": "De prijs is <strong>{{monthly}}</strong> per maand.",
+    "plan_changed_price_yearly": "De prijs is <strong>{{yearly}}</strong> per jaar.",
+    "plan_changed_no_charge": "Voor dit pakket is geen bedrag vastgelegd."
   }
 }

@@ -9,7 +9,7 @@
  *
  * And, for a community that is NOT paused, one warning line before anything
  * happens to it (Stage 3c): its payment is overdue, or it is approaching, at
- * or over its package's member limit. The server measures both the way the
+ * or over its package's member limit; that warning also names the plan. The server measures both the way the
  * daily check does, so the banner and the check's emails agree.
  *
  * That means one request whenever the admin panel is open, paused or not.
@@ -39,6 +39,16 @@ interface MemberLimit {
   stage: 'approaching' | 'reached' | 'over' | null;
 }
 
+/** The plan as it applies to this community (PlanTerms::forCommunity()), in its own currency. */
+interface StandingPlan {
+  name: string;
+  max_users: number | null;
+  price_monthly: number | null;
+  price_yearly: number | null;
+  currency: 'eur' | 'gbp';
+  terms: 'default' | 'hub';
+}
+
 /** GET /v2/admin/billing/standing — pinned by BillingPausedFlagTest and BillingAutomationEndpointsTest. */
 interface BillingStanding {
   paused: boolean;
@@ -52,6 +62,8 @@ interface BillingStanding {
   overdue_days?: number | null;
   /** Null without a standard package with a limit. */
   member_limit?: MemberLimit | null;
+  /** Null with no plan assigned. Named only beside a member-limit warning. */
+  plan?: StandingPlan | null;
 }
 
 type Loaded = BillingStanding | 'unknown' | null;
@@ -119,7 +131,10 @@ export function BillingPausedBanner() {
       className="mb-3 flex items-start gap-3 rounded-xl bg-warning-soft px-4 py-3 text-sm text-warning-soft-foreground"
     >
       <TriangleAlert size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
-      <p className="min-w-0 flex-1 break-words font-medium">{warning}</p>
+      <p className="min-w-0 flex-1 break-words font-medium">
+        <span className="block">{warning.line}</span>
+        {warning.plan ? <span className="block">{warning.plan}</span> : null}
+      </p>
     </div>
   );
 }
@@ -142,23 +157,33 @@ function pausedWording(standing: BillingStanding | 'unknown', t: Translate): str
   return t('paused_banner.own_platform', { date });
 }
 
-/** One line: an overdue payment first, because that is what leads to a pause. */
-function warningWording(standing: BillingStanding, t: Translate): string | null {
+interface Warning {
+  line: string;
+  /** Its own element, never joined to the line with a space: sentence spacing differs by language. */
+  plan: string | null;
+}
+
+/** One warning: an overdue payment first, because that is what leads to a pause. */
+function warningWording(standing: BillingStanding, t: Translate): Warning | null {
   const number = (value: number) => value.toLocaleString(getFormattingLocale());
 
   if (typeof standing.overdue_days === 'number' && standing.overdue_days > 0) {
-    return t('paused_banner.overdue', { days: number(standing.overdue_days) });
+    return { line: t('paused_banner.overdue', { days: number(standing.overdue_days) }), plan: null };
   }
 
   const limit = standing.member_limit;
   if (!limit || limit.stage === null) return null;
 
   const values = { used: number(limit.used), max: number(limit.max), percent: number(limit.percent) };
-  if (limit.stage === 'approaching') return t('paused_banner.limit_approaching', values);
-  if (limit.stage === 'reached') return t('paused_banner.limit_reached', values);
-  if (limit.stage === 'over') return t('paused_banner.limit_over', values);
+  let line: string | null = null;
+  if (limit.stage === 'approaching') line = t('paused_banner.limit_approaching', values);
+  if (limit.stage === 'reached') line = t('paused_banner.limit_reached', values);
+  if (limit.stage === 'over') line = t('paused_banner.limit_over', values);
+  if (line === null) return null;
 
-  return null;
+  // A second sentence rather than a plan name worked into each limit
+  // sentence, so every locale keeps a grammatical line.
+  return { line, plan: standing.plan ? t('paused_banner.limit_plan', { plan: standing.plan.name }) : null };
 }
 
 export default BillingPausedBanner;

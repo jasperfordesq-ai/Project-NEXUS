@@ -12,6 +12,7 @@ use App\Core\TenantContext;
 use App\Models\User;
 use App\Services\BillingStandingService;
 use App\Support\Billing\BillingLock;
+use App\Support\Billing\PlanTerms;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -46,6 +47,7 @@ final class BillingPausedFlagTest extends TestCase
         // parent::tearDown() rolls the transaction back; it must always run.
         try {
             BillingLock::flush();
+            PlanTerms::flush();
         } finally {
             parent::tearDown();
         }
@@ -176,6 +178,8 @@ final class BillingPausedFlagTest extends TestCase
                 // Stage 3c: the warnings an open community's admins see before
                 // anything is paused. Nothing to say here: no date, no package.
                 'overdue_days' => null, 'member_limit' => null,
+                // Stage 3: the plan the community is on, as it applies to it.
+                'plan' => null,
             ],
             $response->json('data')
         );
@@ -263,8 +267,40 @@ final class BillingPausedFlagTest extends TestCase
 
         $response = $this->apiGet('/v2/admin/billing/standing');
 
-        $this->assertSame(['paused', 'own', 'since', 'payee', 'payee_name', 'payer', 'overdue_days', 'member_limit'], array_keys($response->json('data')));
+        $this->assertSame(['paused', 'own', 'since', 'payee', 'payee_name', 'payer', 'overdue_days', 'member_limit', 'plan'], array_keys($response->json('data')));
         $this->assertStringNotContainsString('private note', $response->getContent());
+    }
+
+    /**
+     * Stage 3: the admin banner names the plan and its member number, on the
+     * terms that apply to this community (its hub's, for a child that pays
+     * its hub), in the currency it is billed in. Same keys paused or not.
+     */
+    public function test_admin_standing_names_the_plan_on_the_terms_that_apply(): void
+    {
+        $local = (int) DB::table('pay_plans')->where('slug', 'local')->value('id');
+        DB::table('tenant_plan_assignments')->insert([
+            'tenant_id' => $this->child, 'pay_plan_id' => $local, 'status' => 'active',
+        ]);
+        DB::table('hub_plan_terms')->insert([
+            'hub_tenant_id' => $this->parent, 'pay_plan_id' => $local,
+            'price_monthly' => 150.00, 'max_users' => 250, 'is_offered' => 1,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+        PlanTerms::flush();
+        $this->signInTo($this->child, ['role' => 'admin']);
+
+        $open = $this->apiGet('/v2/admin/billing/standing')->json('data.plan');
+        $this->assertSame(['name', 'max_users', 'price_monthly', 'price_yearly', 'currency', 'terms'], array_keys($open));
+        $this->assertSame(250, $open['max_users']);
+        $this->assertEquals(150.0, $open['price_monthly']);
+        $this->assertSame('eur', $open['currency']);
+        $this->assertSame('hub', $open['terms']);
+
+        BillingStandingService::suspend($this->child, null, 'manual');
+        $paused = $this->apiGet('/v2/admin/billing/standing')->json('data');
+        $this->assertTrue($paused['paused']);
+        $this->assertSame($open, $paused['plan']);
     }
 
     public function test_admin_standing_refuses_a_member(): void

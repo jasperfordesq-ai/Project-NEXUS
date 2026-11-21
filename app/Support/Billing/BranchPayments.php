@@ -10,6 +10,7 @@ namespace App\Support\Billing;
 
 use App\Core\SuperPanelAccess;
 use App\Services\BillingStandingService;
+use App\Services\TenantBillingService;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -35,6 +36,7 @@ final class BranchPayments
     public const NOT_IN_REACH = 'not_in_reach';
     public const PAYS_PLATFORM = 'pays_platform';
     public const EXEMPT = 'exempt';
+    public const CARD_SUBSCRIPTION = 'card_subscription';
 
     /**
      * Null when the caller may act on this community, else why not.
@@ -70,6 +72,24 @@ final class BranchPayments
         }
 
         return null;
+    }
+
+    /**
+     * Null when the caller may change this community's plan, else why not.
+     *
+     * Everything refusalFor() refuses, plus a community with a live card
+     * subscription with the platform: a plan change made here would not reach
+     * Stripe, which would keep charging the old plan and put it back on its
+     * next update. Only the platform team changes that one.
+     */
+    public static function planChangeRefusalFor(int $tenantId): ?string
+    {
+        $refusal = self::refusalFor($tenantId);
+        if ($refusal !== null) {
+            return $refusal;
+        }
+
+        return TenantBillingService::hasLiveCardSubscription($tenantId) ? self::CARD_SUBSCRIPTION : null;
     }
 
     /**
@@ -119,6 +139,11 @@ final class BranchPayments
             $pausedFromAbove = $standing['locked'] && $standing['locked_by_tenant_id'] !== $id;
             unset($standing['suspension_note'], $standing['exempt_reason']);
 
+            // The plan as it applies to this community: its parent's version
+            // when it pays its parent. Never the assignment's custom price or
+            // discount, which are the platform team's.
+            $plan = PlanTerms::forCommunity($id);
+
             $rows[] = [
                 'id' => $id,
                 'name' => $tenant->name,
@@ -130,9 +155,34 @@ final class BranchPayments
                 'can_act' => $refusal === null,
                 'cannot_act_reason' => $refusal,
                 'paused_from_above' => $pausedFromAbove,
+                'plan' => $plan,
+                'members' => self::members($id, $plan['max_users'] ?? null),
+                // Only the plan-specific reason: a row the caller cannot act
+                // on at all already says why in `cannot_act_reason`.
+                'plan_change_refusal' => $refusal === null ? self::planChangeRefusalFor($id) : null,
             ];
         }
 
         return $rows;
+    }
+
+    /**
+     * A community's active members (whole branch, signed in within the
+     * window: the number a plan is sized by everywhere) against its plan's
+     * member number. `max` and `percent` are null without a plan or with a
+     * plan that has no member number.
+     *
+     * @return array{active: int, max: ?int, percent: ?int}
+     */
+    public static function members(int $tenantId, ?int $maxUsers): array
+    {
+        $active = TenantBillingService::getSubtreeActiveMemberCount($tenantId);
+        $max = $maxUsers !== null && $maxUsers > 0 ? $maxUsers : null;
+
+        return [
+            'active' => $active,
+            'max' => $max,
+            'percent' => $max !== null ? intdiv($active * 100, $max) : null,
+        ];
     }
 }

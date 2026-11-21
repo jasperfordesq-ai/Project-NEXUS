@@ -257,7 +257,8 @@
     "overdue": "Le paiement de cette communauté est en retard de {{days}} jours. Veuillez le régulariser pour que la communauté ne soit pas mise en pause.",
     "own_parent": "Cette communauté est en pause. Les membres ne pourront pas l’utiliser tant que le paiement dû à {{payee}} n’est pas à jour. En pause depuis le {{date}}.",
     "own_platform": "Cette communauté est en pause. Les membres ne pourront pas l’utiliser tant que le paiement dû à l’équipe de la plateforme n’est pas à jour. En pause depuis le {{date}}.",
-    "unknown": "Cette communauté est en pause. Les membres ne peuvent pas l’utiliser. Le motif n’a pas pu être chargé ; veuillez recharger la page."
+    "unknown": "Cette communauté est en pause. Les membres ne peuvent pas l’utiliser. Le motif n’a pas pu être chargé ; veuillez recharger la page.",
+    "limit_plan": "Le forfait de cette communauté est {{plan}}."
   },
   "automation": {
     "action_member_limit_approaching": "Avertissement : {{used}} membres actifs sur {{max}} ({{percent}} %)",

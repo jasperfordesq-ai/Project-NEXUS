@@ -259,7 +259,8 @@
     "overdue": "Tá an íocaíocht don phobal seo {{days}} lá thar téarma. Tabhair cothrom le dáta í le nach gcuirfear an pobal ar sos.",
     "own_parent": "Tá an pobal seo curtha ar sos. Ní féidir le baill é a úsáid go dtí go mbeidh an íocaíocht le {{payee}} cothrom le dáta. Ar sos ó {{date}}.",
     "own_platform": "Tá an pobal seo curtha ar sos. Ní féidir le baill é a úsáid go dtí go mbeidh an íocaíocht le foireann an ardáin cothrom le dáta. Ar sos ó {{date}}.",
-    "unknown": "Tá an pobal seo curtha ar sos. Ní féidir le baill é a úsáid. Níorbh fhéidir an chúis a lódáil; athlódáil an leathanach."
+    "unknown": "Tá an pobal seo curtha ar sos. Ní féidir le baill é a úsáid. Níorbh fhéidir an chúis a lódáil; athlódáil an leathanach.",
+    "limit_plan": "Is é {{plan}} plean an phobail seo."
   },
   "automation": {
     "action_member_limit_approaching": "Rabhadh: {{used}} as {{max}} ball gníomhach ({{percent}}%)",

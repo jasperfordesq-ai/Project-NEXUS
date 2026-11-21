@@ -256,7 +256,8 @@
     "overdue": "Die Zahlung für diese Community ist seit {{days}} Tagen überfällig. Bitte bringen Sie sie auf den neuesten Stand, damit die Community nicht pausiert wird.",
     "own_parent": "Diese Community ist pausiert. Mitglieder können sie erst wieder nutzen, wenn die Zahlung an {{payee}} auf dem aktuellen Stand ist. Pausiert seit {{date}}.",
     "own_platform": "Diese Community ist pausiert. Mitglieder können sie erst wieder nutzen, wenn die Zahlung an das Plattform-Team auf dem aktuellen Stand ist. Pausiert seit {{date}}.",
-    "unknown": "Diese Community ist pausiert. Mitglieder können sie nicht nutzen. Der Grund konnte nicht geladen werden. Bitte laden Sie die Seite neu."
+    "unknown": "Diese Community ist pausiert. Mitglieder können sie nicht nutzen. Der Grund konnte nicht geladen werden. Bitte laden Sie die Seite neu.",
+    "limit_plan": "Der Plan dieser Community ist {{plan}}."
   },
   "automation": {
     "action_member_limit_approaching": "Warnung: {{used}} von {{max}} aktiven Mitgliedern ({{percent}} %)",
