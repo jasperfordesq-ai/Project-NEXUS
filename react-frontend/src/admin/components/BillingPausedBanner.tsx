@@ -27,6 +27,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import TriangleAlert from 'lucide-react/icons/triangle-alert';
 import { useTenant } from '@/contexts';
 import { api } from '@/lib/api';
@@ -76,7 +77,7 @@ type Translate = (key: string, options?: Record<string, unknown>) => string;
 
 export function BillingPausedBanner() {
   const { t } = useTranslation('admin_billing');
-  const { tenant } = useTenant();
+  const { tenant, tenantPath } = useTenant();
   const paused = tenant?.billing_paused === true;
   const [standing, setStanding] = useState<Loaded>(null);
 
@@ -119,7 +120,23 @@ export function BillingPausedBanner() {
         className="mb-3 flex items-start gap-3 rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger-soft-foreground"
       >
         <TriangleAlert size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
-        <p className="min-w-0 flex-1 break-words font-medium">{pausedWording(standing, t)}</p>
+        <div className="min-w-0 flex-1">
+          <p className="break-words font-medium">{pausedWording(standing, t)}</p>
+          {/* Where to see what is owed and write to the people who can lift
+              the pause. Only for a community that pays the platform and is
+              paused itself: one paused from above, or one that pays its
+              parent, settles it with the community above, which the line
+              above names. The banner used to lead nowhere. */}
+          {standing !== 'unknown' && standing.own !== false && standing.payee === 'platform' ? (
+            <Link
+              to={tenantPath('/admin/billing')}
+              data-testid="billing-paused-link"
+              className="mt-1 inline-block font-semibold underline underline-offset-2"
+            >
+              {t('paused_banner.open_billing')}
+            </Link>
+          ) : null}
+        </div>
       </div>
     );
   }

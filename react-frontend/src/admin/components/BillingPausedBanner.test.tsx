@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 
 const { apiGet, logError, tenant } = vi.hoisted(() => ({
@@ -14,7 +15,13 @@ const { apiGet, logError, tenant } = vi.hoisted(() => ({
 
 vi.mock('@/lib/api', () => ({ api: { get: apiGet } }));
 vi.mock('@/lib/logger', () => ({ logError }));
-vi.mock('@/contexts', () => ({ useTenant: () => ({ tenant: tenant.current }) }));
+vi.mock('@/contexts', () => ({
+  useTenant: () => ({ tenant: tenant.current, tenantPath: (path: string) => `/riverside${path}` }),
+}));
+// A plain anchor: the banner is rendered here without a router.
+vi.mock('react-router-dom', () => ({
+  Link: ({ to, children, ...rest }: { to: string; children?: React.ReactNode }) => <a href={to} {...rest}>{children}</a>,
+}));
 vi.mock('@/lib/helpers', () => ({
   formatDate: (value: string) => `DATE(${value.slice(0, 10)})`,
   getFormattingLocale: () => 'en-GB',
@@ -59,6 +66,30 @@ describe('BillingPausedBanner', () => {
     const banner = await screen.findByRole('alert');
     expect(banner).toHaveTextContent('paused_banner.own_platform');
     expect(banner).not.toHaveTextContent('paused_banner.own_parent');
+  });
+
+  it('links a community that pays the platform to its Billing page, where it can see its plan and write to the platform team', async () => {
+    apiGet.mockResolvedValue(standing({ payee: 'platform', payee_name: null }));
+    render(<BillingPausedBanner />);
+
+    const link = await screen.findByTestId('billing-paused-link');
+    expect(link).toHaveAttribute('href', '/riverside/admin/billing');
+    expect(link).toHaveTextContent('paused_banner.open_billing');
+  });
+
+  it('offers no Billing link when the pause is settled with the community above', async () => {
+    // Pays its parent: nothing on its own Billing page would lift the pause.
+    apiGet.mockResolvedValue(standing());
+    const first = render(<BillingPausedBanner />);
+    await screen.findByRole('alert');
+    expect(screen.queryByTestId('billing-paused-link')).not.toBeInTheDocument();
+    first.unmount();
+
+    // Paused from above: the community above is the one that is paused.
+    apiGet.mockResolvedValue(standing({ own: false, payee: null, payee_name: null }));
+    render(<BillingPausedBanner />);
+    await screen.findByRole('alert');
+    expect(screen.queryByTestId('billing-paused-link')).not.toBeInTheDocument();
   });
 
   it('uses the inherited wording when the lock comes from above', async () => {
