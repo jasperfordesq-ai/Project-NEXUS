@@ -264,7 +264,7 @@
     "rule_pause_maybe": "If it stays over its limit, the community may be paused.",
     "rule_pause_on": "If it is still over its limit on {{date}}, the community will be paused.",
     "rule_upgrade": "If it stays over its limit, it may be moved up to a larger plan.",
-    "open_billing": "See your plan and message the platform team"
+    "open_billing": "Open Billing to check your card and message the platform team"
   },
   "automation": {
     "action_member_limit_approaching": "Warning: {{used}} of {{max}} active members ({{percent}}%)",

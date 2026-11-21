@@ -264,7 +264,7 @@
     "rule_pause_maybe": "Als ze boven haar limiet blijft, kan de community worden gepauzeerd.",
     "rule_pause_on": "Als ze op {{date}} nog boven haar limiet zit, wordt de community gepauzeerd.",
     "rule_upgrade": "Als ze boven haar limiet blijft, kan ze overgaan naar een groter plan.",
-    "open_billing": "Uw plan bekijken en het platformteam een bericht sturen"
+    "open_billing": "Facturering openen om uw kaart te controleren en het platformteam een bericht te sturen"
   },
   "automation": {
     "action_member_limit_approaching": "Waarschuwing: {{used}} van {{max}} actieve leden ({{percent}}%)",

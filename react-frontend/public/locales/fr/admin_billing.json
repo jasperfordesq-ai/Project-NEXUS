@@ -265,7 +265,7 @@
     "rule_pause_maybe": "Si elle reste au-dessus de sa limite, la communauté pourra être mise en pause.",
     "rule_pause_on": "Si elle est encore au-dessus de sa limite le {{date}}, la communauté sera mise en pause.",
     "rule_upgrade": "Si elle reste au-dessus de sa limite, elle pourra passer à une formule plus grande.",
-    "open_billing": "Voir votre formule et écrire à l’équipe de la plateforme"
+    "open_billing": "Ouvrir Facturation pour vérifier votre carte et écrire à l’équipe de la plateforme"
   },
   "automation": {
     "action_member_limit_approaching": "Avertissement : {{used}} membres actifs sur {{max}} ({{percent}} %)",

@@ -265,7 +265,7 @@
     "rule_pause_maybe": "Si sigue por encima de su límite, la comunidad podría pausarse.",
     "rule_pause_on": "Si el {{date}} sigue por encima de su límite, la comunidad se pausará.",
     "rule_upgrade": "Si sigue por encima de su límite, podría pasar a un plan mayor.",
-    "open_billing": "Ver su plan y escribir al equipo de la plataforma"
+    "open_billing": "Abrir Facturación para revisar su tarjeta y escribir al equipo de la plataforma"
   },
   "automation": {
     "action_member_limit_approaching": "Aviso: {{used}} de {{max}} miembros activos ({{percent}} %)",

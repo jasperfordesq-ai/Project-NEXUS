@@ -267,7 +267,7 @@
     "rule_pause_maybe": "Má fhanann sé thar a theorainn, d’fhéadfaí an pobal a chur ar sos.",
     "rule_pause_on": "Má bhíonn sé fós thar a theorainn ar {{date}}, cuirfear an pobal ar sos.",
     "rule_upgrade": "Má fhanann sé thar a theorainn, d’fhéadfaí é a aistriú suas go plean níos mó.",
-    "open_billing": "Féach ar do phlean agus seol teachtaireacht chuig foireann an ardáin"
+    "open_billing": "Oscail Billeáil chun do chárta a sheiceáil agus teachtaireacht a sheoladh chuig foireann an ardáin"
   },
   "automation": {
     "action_member_limit_approaching": "Rabhadh: {{used}} as {{max}} ball gníomhach ({{percent}}%)",

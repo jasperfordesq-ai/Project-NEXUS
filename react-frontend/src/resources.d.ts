@@ -4786,7 +4786,7 @@ export default interface Resources {
       "limit_over": "This community has {{used}} active members, more than its plan's limit of {{max}}. A bigger plan may be needed.",
       "limit_plan": "This community's plan is {{plan}}.",
       "limit_reached": "This community has reached its plan's limit of {{max}} active members.",
-      "open_billing": "See your plan and message the platform team",
+      "open_billing": "Open Billing to check your card and message the platform team",
       "overdue": "Payment for this community is {{days}} days overdue. Please bring it up to date so that the community is not paused.",
       "own_parent": "This community is paused. Members cannot use it until payment is brought up to date with {{payee}}. Paused since {{date}}.",
       "own_platform": "This community is paused. Members cannot use it until payment is brought up to date with the platform team. Paused since {{date}}.",

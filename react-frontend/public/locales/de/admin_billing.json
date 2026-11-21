@@ -264,7 +264,7 @@
     "rule_pause_maybe": "Bleibt sie über ihrem Limit, kann die Community pausiert werden.",
     "rule_pause_on": "Ist sie am {{date}} noch über ihrem Limit, wird die Community pausiert.",
     "rule_upgrade": "Bleibt sie über ihrem Limit, kann sie auf einen größeren Plan hochgestuft werden.",
-    "open_billing": "Ihren Plan ansehen und dem Plattform-Team schreiben"
+    "open_billing": "Abrechnung öffnen, um Ihre Karte zu prüfen und dem Plattform-Team zu schreiben"
   },
   "automation": {
     "action_member_limit_approaching": "Warnung: {{used}} von {{max}} aktiven Mitgliedern ({{percent}} %)",

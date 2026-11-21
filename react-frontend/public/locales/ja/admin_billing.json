@@ -264,7 +264,7 @@
     "rule_pause_maybe": "上限を超えたままの場合、コミュニティは一時停止されることがあります。",
     "rule_pause_on": "{{date}} の時点でまだ上限を超えている場合、コミュニティは一時停止されます。",
     "rule_upgrade": "上限を超えたままの場合、より大きなプランに移行されることがあります。",
-    "open_billing": "プランを確認し、プラットフォームチームに連絡する"
+    "open_billing": "請求ページを開いてカードを確認し、プラットフォームチームに連絡する"
   },
   "automation": {
     "action_member_limit_approaching": "警告：アクティブメンバー {{used}} / {{max}}（{{percent}}%）",

@@ -122,12 +122,14 @@ export function BillingPausedBanner() {
         <TriangleAlert size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
         <div className="min-w-0 flex-1">
           <p className="break-words font-medium">{pausedWording(standing, t)}</p>
-          {/* Where to see what is owed and write to the people who can lift
-              the pause. Only for a community that pays the platform and is
-              paused itself: one paused from above, or one that pays its
-              parent, settles it with the community above, which the line
-              above names. The banner used to lead nowhere. */}
-          {standing !== 'unknown' && standing.own !== false && standing.payee === 'platform' ? (
+          {/* Where to put the card right and write to the people who can
+              lift the pause. Only for a community that pays the platform BY
+              CARD and is paused itself: that is the one community admin the
+              Billing page is shown to (owner, 15 Nov 2026; the sidebar's
+              canSeeOwnBilling). One that pays by invoice was told by email;
+              one paused from above, or that pays its parent, settles it with
+              the community above, which the line above names. */}
+          {standing !== 'unknown' && standing.own !== false && standing.payer === 'platform_card' ? (
             <Link
               to={tenantPath('/admin/billing')}
               data-testid="billing-paused-link"

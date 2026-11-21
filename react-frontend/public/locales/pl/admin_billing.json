@@ -266,7 +266,7 @@
     "rule_pause_maybe": "Jeśli pozostanie powyżej limitu, społeczność może zostać wstrzymana.",
     "rule_pause_on": "Jeśli {{date}} nadal będzie powyżej limitu, społeczność zostanie wstrzymana.",
     "rule_upgrade": "Jeśli pozostanie powyżej limitu, może zostać przeniesiona na większy plan.",
-    "open_billing": "Zobacz swój plan i napisz do zespołu platformy"
+    "open_billing": "Otwórz Rozliczenia, aby sprawdzić kartę i napisać do zespołu platformy"
   },
   "automation": {
     "action_member_limit_approaching": "Ostrzeżenie: {{used}} z {{max}} aktywnych członków ({{percent}}%)",

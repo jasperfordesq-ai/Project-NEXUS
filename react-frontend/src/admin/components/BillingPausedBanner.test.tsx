@@ -68,13 +68,23 @@ describe('BillingPausedBanner', () => {
     expect(banner).not.toHaveTextContent('paused_banner.own_parent');
   });
 
-  it('links a community that pays the platform to its Billing page, where it can see its plan and write to the platform team', async () => {
-    apiGet.mockResolvedValue(standing({ payee: 'platform', payee_name: null }));
+  it('links a community that pays the platform by card to its Billing page, where it can check the card and write to the platform team', async () => {
+    apiGet.mockResolvedValue(standing({ payee: 'platform', payee_name: null, payer: 'platform_card' }));
     render(<BillingPausedBanner />);
 
     const link = await screen.findByTestId('billing-paused-link');
     expect(link).toHaveAttribute('href', '/riverside/admin/billing');
     expect(link).toHaveTextContent('paused_banner.open_billing');
+  });
+
+  it('offers no Billing link to a community that pays by invoice: that page is not shown to its admins', async () => {
+    // Owner, 15 Nov 2026: the community's own Billing page is for the
+    // platform team and for a community that pays by card.
+    apiGet.mockResolvedValue(standing({ payee: 'platform', payee_name: null, payer: 'platform_invoice' }));
+    render(<BillingPausedBanner />);
+
+    await screen.findByRole('alert');
+    expect(screen.queryByTestId('billing-paused-link')).not.toBeInTheDocument();
   });
 
   it('offers no Billing link when the pause is settled with the community above', async () => {
