@@ -938,7 +938,7 @@
     "create_tenant": "Create Tenant",
     "default_language_description": "Default Language.",
     "default_language_label": "Default Language",
-    "desc_create": "Create.",
+    "desc_create": "Add a community: its name, address and where it sits among the others.",
     "desc_edit": "Edit.",
     "description_label": "Description",
     "description_placeholder": "Enter description...",
@@ -1058,7 +1058,9 @@
     "domain_desc": "Used for the React web frontend (e.g. community.example.org).",
     "accessible_domain_label": "Accessible frontend domain",
     "accessible_domain_placeholder": "e.g. accessible.example.org",
-    "accessible_domain_desc": "Optional. Custom domain for the accessible (GOV.UK) frontend."
+    "accessible_domain_desc": "Optional. Custom domain for the accessible (GOV.UK) frontend.",
+    "billing_note": "A new community starts with no plan and no paid-until date. Once it is created, set both on Branch payments. For a community that pays the platform, the platform team sets them on Billing control.",
+    "billing_note_link": "Open Branch payments"
   },
   "federation_whitelist": {
     "add_tenant_to_whitelist": "Add Tenant to Whitelist",

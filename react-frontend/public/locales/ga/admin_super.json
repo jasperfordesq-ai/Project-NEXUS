@@ -965,7 +965,7 @@
     "create_tenant": "Cruthaigh Tionónta",
     "default_language_description": "Teanga Réamhshocraithe.",
     "default_language_label": "Teanga Réamhshocraithe",
-    "desc_create": "Cruthaigh.",
+    "desc_create": "Cuir pobal leis: a ainm, a sheoladh agus a áit i measc na bpobal eile.",
     "desc_edit": "Cuir in eagar.",
     "description_label": "Cur síos",
     "description_placeholder": "Iontráil cur síos...",
@@ -1085,7 +1085,9 @@
     "domain_desc": "Úsáidtear é le haghaidh tosaigh gréasáin React (m.sh. community.example.org).",
     "accessible_domain_label": "Fearann ​​​​aghaidh inrochtana",
     "accessible_domain_placeholder": "m.shampla.inrochtana.org",
-    "accessible_domain_desc": "Roghnach. Fearann ​​saincheaptha don aghaidh inrochtana (GOV.UK)."
+    "accessible_domain_desc": "Roghnach. Fearann ​​saincheaptha don aghaidh inrochtana (GOV.UK).",
+    "billing_note": "Tosaíonn pobal nua gan phlean agus gan dáta ‘íoctha go dtí’. Nuair a bheidh sé cruthaithe, socraigh an dá rud in Íocaíochtaí an bhrainse. I gcás pobail a íocann an t-ardán, socraíonn foireann an ardáin iad i Rialú billeála.",
+    "billing_note_link": "Oscail Íocaíochtaí an bhrainse"
   },
   "federation_whitelist": {
     "add_tenant_to_whitelist": "Cuir Tionónta leis an Liosta Bán",

@@ -159,6 +159,19 @@ describe('TenantForm — create mode', () => {
     expect(screen.getByText('Allows Subtenants')).toBeInTheDocument();
   });
 
+  it('says a new community has no plan or paid-until date yet, and where to set them', async () => {
+    const { TenantForm } = await import('./TenantForm');
+    render(<TenantForm />);
+    await waitFor(() => screen.getByTestId('page-header'));
+
+    const note = screen.getByTestId('tenant-form-billing-note');
+    expect(note).toHaveTextContent('A new community starts with no plan and no paid-until date.');
+    expect(screen.getByRole('link', { name: 'Open Branch payments' })).toHaveAttribute(
+      'href',
+      expect.stringContaining('/super-admin/branch-payments'),
+    );
+  });
+
   it('shows error toast when name is empty and Save is clicked', async () => {
     const { TenantForm } = await import('./TenantForm');
     render(<TenantForm />);

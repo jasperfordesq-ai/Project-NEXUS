@@ -974,7 +974,7 @@
     "create_tenant": "إنشاء المستأجر",
     "default_language_description": "اللغة الافتراضية.",
     "default_language_label": "اللغة الافتراضية",
-    "desc_create": "يخلق.",
+    "desc_create": "أضف مجتمعًا: اسمه وعنوانه وموقعه بين المجتمعات الأخرى.",
     "desc_edit": "يحرر.",
     "description_label": "وصف",
     "description_placeholder": "أدخل الوصف...",
@@ -1094,7 +1094,9 @@
     "domain_desc": "يُستخدم لواجهة ويب React الأمامية (على سبيل المثال، Community.example.org).",
     "accessible_domain_label": "مجال الواجهة الأمامية الذي يمكن الوصول إليه",
     "accessible_domain_placeholder": "على سبيل المثال accessible.example.org",
-    "accessible_domain_desc": "خياري. النطاق المخصص للواجهة الأمامية (GOV.UK) التي يمكن الوصول إليها."
+    "accessible_domain_desc": "خياري. النطاق المخصص للواجهة الأمامية (GOV.UK) التي يمكن الوصول إليها.",
+    "billing_note": "يبدأ المجتمع الجديد بلا خطة وبلا تاريخ «مدفوع حتى». بعد إنشائه، حدِّد الاثنين في مدفوعات الفرع. أما المجتمع الذي يدفع للمنصة فيحددهما فريق المنصة في التحكم في الفوترة.",
+    "billing_note_link": "فتح مدفوعات الفرع"
   },
   "federation_whitelist": {
     "add_tenant_to_whitelist": "أضف المستأجر إلى القائمة البيضاء",

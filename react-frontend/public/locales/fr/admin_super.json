@@ -947,7 +947,7 @@
     "create_tenant": "Créer un locataire",
     "default_language_description": "Langue par défaut.",
     "default_language_label": "Langue par défaut",
-    "desc_create": "Créer.",
+    "desc_create": "Ajouter une communauté : son nom, son adresse et sa place parmi les autres.",
     "desc_edit": "Modifier.",
     "description_label": "Descriptif",
     "description_placeholder": "Entrez la description...",
@@ -1067,7 +1067,9 @@
     "domain_desc": "Utilisé pour l'interface Web React (par exemple community.example.org).",
     "accessible_domain_label": "Domaine frontal accessible",
     "accessible_domain_placeholder": "par ex. accessible.example.org",
-    "accessible_domain_desc": "Facultatif. Domaine personnalisé pour l'interface accessible (GOV.UK)."
+    "accessible_domain_desc": "Facultatif. Domaine personnalisé pour l'interface accessible (GOV.UK).",
+    "billing_note": "Une nouvelle communauté commence sans formule et sans date « payé jusqu’au ». Une fois créée, définissez les deux dans Paiements de la branche. Pour une communauté qui paie la plateforme, l’équipe de la plateforme les définit dans Contrôle de la facturation.",
+    "billing_note_link": "Ouvrir Paiements de la branche"
   },
   "federation_whitelist": {
     "add_tenant_to_whitelist": "Ajouter un locataire à la liste blanche",

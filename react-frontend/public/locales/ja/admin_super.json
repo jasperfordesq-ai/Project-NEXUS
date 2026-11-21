@@ -938,7 +938,7 @@
     "create_tenant": "テナントの作成",
     "default_language_description": "デフォルトの言語。",
     "default_language_label": "デフォルトの言語",
-    "desc_create": "作成します。",
+    "desc_create": "コミュニティを追加します。名前、アドレス、ほかのコミュニティの中での位置を設定します。",
     "desc_edit": "編集します。",
     "description_label": "説明",
     "description_placeholder": "説明を入力してください...",
@@ -1058,7 +1058,9 @@
     "domain_desc": "React Web フロントエンドに使用されます (community.example.org など)。",
     "accessible_domain_label": "アクセス可能なフロントエンド ドメイン",
     "accessible_domain_placeholder": "例: accessible.example.org",
-    "accessible_domain_desc": "オプション。アクセス可能な (GOV.UK) フロントエンドのカスタム ドメイン。"
+    "accessible_domain_desc": "オプション。アクセス可能な (GOV.UK) フロントエンドのカスタム ドメイン。",
+    "billing_note": "新しいコミュニティには、最初はプランも「支払い済み期限」もありません。作成後に「ブランチの支払い」で両方を設定してください。プラットフォームに支払うコミュニティについては、プラットフォームチームが「請求管理」で設定します。",
+    "billing_note_link": "「ブランチの支払い」を開く"
   },
   "federation_whitelist": {
     "add_tenant_to_whitelist": "テナントをホワイトリストに追加",

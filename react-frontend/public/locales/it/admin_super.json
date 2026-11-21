@@ -947,7 +947,7 @@
     "create_tenant": "Crea inquilino",
     "default_language_description": "Lingua predefinita.",
     "default_language_label": "Lingua predefinita",
-    "desc_create": "Crea.",
+    "desc_create": "Aggiungi una comunità: il nome, l’indirizzo e il suo posto tra le altre.",
     "desc_edit": "Modifica.",
     "description_label": "Descrizione",
     "description_placeholder": "Inserisci la descrizione...",
@@ -1067,7 +1067,9 @@
     "domain_desc": "Utilizzato per il frontend web React (ad esempio community.example.org).",
     "accessible_domain_label": "Dominio frontend accessibile",
     "accessible_domain_placeholder": "ad esempio accessible.example.org",
-    "accessible_domain_desc": "Opzionale. Dominio personalizzato per il frontend accessibile (GOV.UK)."
+    "accessible_domain_desc": "Opzionale. Dominio personalizzato per il frontend accessibile (GOV.UK).",
+    "billing_note": "Una nuova comunità parte senza piano e senza data «pagato fino al». Dopo averla creata, imposta entrambi in Pagamenti del ramo. Per una comunità che paga la piattaforma, li imposta il team della piattaforma in Controllo della fatturazione.",
+    "billing_note_link": "Apri Pagamenti del ramo"
   },
   "federation_whitelist": {
     "add_tenant_to_whitelist": "Aggiungi tenant alla lista bianca",

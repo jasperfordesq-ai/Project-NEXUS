@@ -428,6 +428,18 @@ export function TenantForm() {
         }
       />
 
+      {/* A new community has no plan and no paid-until date, and nothing on
+          this form sets them: say so, and where it is done. Until this note,
+          a sign-up could sit unbilled with nobody told it needed setting up. */}
+      {!isEdit ? (
+        <p data-testid="tenant-form-billing-note" className="mb-4 rounded-xl bg-surface-secondary px-4 py-3 text-sm text-muted">
+          {t('tenant_form.billing_note')}{' '}
+          <Link to={tenantPath('/super-admin/branch-payments')} className="font-medium text-accent underline underline-offset-2">
+            {t('tenant_form.billing_note_link')}
+          </Link>
+        </p>
+      ) : null}
+
       <Tabs aria-label={t('tenant_form.tabs_aria')} variant="underlined" className="mb-4">
         <Tab key="details" title={t('tenant_form.tab_details')}>
           <Card>

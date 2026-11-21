@@ -956,7 +956,7 @@
     "create_tenant": "Utwórz najemcę",
     "default_language_description": "Domyślny język.",
     "default_language_label": "Domyślny język",
-    "desc_create": "Utwórz.",
+    "desc_create": "Dodaj społeczność: jej nazwę, adres i miejsce wśród pozostałych.",
     "desc_edit": "Edytuj.",
     "description_label": "Opis",
     "description_placeholder": "Wprowadź opis...",
@@ -1076,7 +1076,9 @@
     "domain_desc": "Używany w interfejsie internetowym React (np. Community.example.org).",
     "accessible_domain_label": "Dostępna domena frontendowa",
     "accessible_domain_placeholder": "n.p. accessible.example.org",
-    "accessible_domain_desc": "Fakultatywny. Niestandardowa domena dla dostępnego frontendu (GOV.UK)."
+    "accessible_domain_desc": "Fakultatywny. Niestandardowa domena dla dostępnego frontendu (GOV.UK).",
+    "billing_note": "Nowa społeczność zaczyna bez planu i bez daty „opłacone do”. Po jej utworzeniu ustaw oba na stronie Płatności gałęzi. Dla społeczności, która płaci platformie, ustawia je zespół platformy na stronie Kontrola rozliczeń.",
+    "billing_note_link": "Otwórz Płatności gałęzi"
   },
   "federation_whitelist": {
     "add_tenant_to_whitelist": "Dodaj najemcę do białej listy",

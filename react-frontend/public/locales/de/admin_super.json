@@ -938,7 +938,7 @@
     "create_tenant": "Mieter erstellen",
     "default_language_description": "Standardsprache.",
     "default_language_label": "Standardsprache",
-    "desc_create": "Erstellen.",
+    "desc_create": "Eine Community hinzufügen: ihr Name, ihre Adresse und ihr Platz unter den anderen.",
     "desc_edit": "Bearbeiten.",
     "description_label": "Beschreibung",
     "description_placeholder": "Beschreibung eingeben...",
@@ -1058,7 +1058,9 @@
     "domain_desc": "Wird für das React-Web-Frontend verwendet (z. B. community.example.org).",
     "accessible_domain_label": "Zugängliche Frontend-Domain",
     "accessible_domain_placeholder": "z.B. accessible.example.org",
-    "accessible_domain_desc": "Optional. Benutzerdefinierte Domain für das barrierefreie Frontend (GOV.UK)."
+    "accessible_domain_desc": "Optional. Benutzerdefinierte Domain für das barrierefreie Frontend (GOV.UK).",
+    "billing_note": "Eine neue Community beginnt ohne Plan und ohne „Bezahlt bis“-Datum. Legen Sie beides nach dem Erstellen unter „Zahlungen im Zweig“ fest. Für eine Community, die die Plattform bezahlt, legt das Plattform-Team beides in der Abrechnungssteuerung fest.",
+    "billing_note_link": "„Zahlungen im Zweig“ öffnen"
   },
   "federation_whitelist": {
     "add_tenant_to_whitelist": "Mieter zur Whitelist hinzufügen",

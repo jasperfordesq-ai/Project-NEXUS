@@ -938,7 +938,7 @@
     "create_tenant": "Huurder maken",
     "default_language_description": "Standaardtaal.",
     "default_language_label": "Standaardtaal",
-    "desc_create": "Creëer.",
+    "desc_create": "Een gemeenschap toevoegen: haar naam, haar adres en haar plaats tussen de andere.",
     "desc_edit": "Bewerken.",
     "description_label": "Beschrijving",
     "description_placeholder": "Beschrijving invoeren...",
@@ -1058,7 +1058,9 @@
     "domain_desc": "Gebruikt voor de React-webfrontend (bijvoorbeeld community.example.org).",
     "accessible_domain_label": "Toegankelijk frontenddomein",
     "accessible_domain_placeholder": "b.v. toegankelijk.example.org",
-    "accessible_domain_desc": "Optioneel. Aangepast domein voor de toegankelijke frontend (GOV.UK)."
+    "accessible_domain_desc": "Optioneel. Aangepast domein voor de toegankelijke frontend (GOV.UK).",
+    "billing_note": "Een nieuwe gemeenschap begint zonder plan en zonder datum ‘betaald tot’. Stel beide na het aanmaken in bij Betalingen in de tak. Voor een gemeenschap die het platform betaalt, stelt het platformteam ze in bij Factuurbeheer.",
+    "billing_note_link": "Betalingen in de tak openen"
   },
   "federation_whitelist": {
     "add_tenant_to_whitelist": "Huurder toevoegen aan witte lijst",

@@ -947,7 +947,7 @@
     "create_tenant": "Criar inquilino",
     "default_language_description": "Idioma padrão.",
     "default_language_label": "Idioma padrão",
-    "desc_create": "Crie.",
+    "desc_create": "Adicionar uma comunidade: o nome, o endereço e o seu lugar entre as outras.",
     "desc_edit": "Editar.",
     "description_label": "Descrição",
     "description_placeholder": "Insira a descrição...",
@@ -1067,7 +1067,9 @@
     "domain_desc": "Usado para o front-end da web React (por exemplo, community.example.org).",
     "accessible_domain_label": "Domínio front-end acessível",
     "accessible_domain_placeholder": "ex. accessible.example.org",
-    "accessible_domain_desc": "Opcional. Domínio personalizado para o frontend acessível (GOV.UK)."
+    "accessible_domain_desc": "Opcional. Domínio personalizado para o frontend acessível (GOV.UK).",
+    "billing_note": "Uma comunidade nova começa sem plano e sem data «pago até». Depois de criada, defina ambos em Pagamentos do ramo. Para uma comunidade que paga à plataforma, a equipa da plataforma define-os no Controlo da faturação.",
+    "billing_note_link": "Abrir Pagamentos do ramo"
   },
   "federation_whitelist": {
     "add_tenant_to_whitelist": "Adicionar locatário à lista de permissões",
