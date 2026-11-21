@@ -177,7 +177,7 @@ final class BillingPausedFlagTest extends TestCase
                 'paused' => false, 'own' => null, 'since' => null, 'payee' => null, 'payee_name' => null, 'payer' => 'parent',
                 // Stage 3c: the warnings an open community's admins see before
                 // anything is paused. Nothing to say here: no date, no package.
-                'overdue_days' => null, 'member_limit' => null,
+                'paid_until' => null, 'overdue_days' => null, 'member_limit' => null,
                 // Stage 3: the plan the community is on, as it applies to it.
                 'plan' => null,
             ],
@@ -267,7 +267,7 @@ final class BillingPausedFlagTest extends TestCase
 
         $response = $this->apiGet('/v2/admin/billing/standing');
 
-        $this->assertSame(['paused', 'own', 'since', 'payee', 'payee_name', 'payer', 'overdue_days', 'member_limit', 'plan'], array_keys($response->json('data')));
+        $this->assertSame(['paused', 'own', 'since', 'payee', 'payee_name', 'payer', 'paid_until', 'overdue_days', 'member_limit', 'plan'], array_keys($response->json('data')));
         $this->assertStringNotContainsString('private note', $response->getContent());
     }
 
@@ -291,7 +291,7 @@ final class BillingPausedFlagTest extends TestCase
         $this->signInTo($this->child, ['role' => 'admin']);
 
         $open = $this->apiGet('/v2/admin/billing/standing')->json('data.plan');
-        $this->assertSame(['name', 'max_users', 'price_monthly', 'price_yearly', 'currency', 'terms'], array_keys($open));
+        $this->assertSame(['name', 'description', 'max_users', 'price_monthly', 'price_yearly', 'setup_fee', 'currency', 'terms'], array_keys($open));
         $this->assertSame(250, $open['max_users']);
         $this->assertEquals(150.0, $open['price_monthly']);
         $this->assertSame('eur', $open['currency']);

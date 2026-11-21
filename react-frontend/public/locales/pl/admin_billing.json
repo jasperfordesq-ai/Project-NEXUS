@@ -410,5 +410,16 @@
     "no_setup_fee": "Bez opłaty za uruchomienie",
     "year_one": "Pierwszy rok {{first}}, potem {{renewal}} rocznie",
     "setup_fee_separate": "Jednorazowa opłata za uruchomienie jest fakturowana osobno. Nie jest pobierana razem z płatnością kartą."
+  },
+  "own_billing": {
+    "card_failed": "Ostatnia płatność kartą nie powiodła się. Użyj opcji „Zarządzaj płatnościami”, aby sprawdzić lub zmienić kartę.",
+    "load_failed": "Nie udało się wczytać danych rozliczeniowych.",
+    "members_help": "Aktywni członkowie to osoby, które zalogowały się w ciągu ostatnich 90 dni, tutaj i w społecznościach podległych tej społeczności.",
+    "members_title": "Aktywni członkowie",
+    "members_used": "Aktywni członkowie: {{used}} z {{max}}",
+    "no_plan": "Ta społeczność nie ma jeszcze planu.",
+    "pays_parent_note": "Ta społeczność płaci społeczności nadrzędnej. Plan i płatności ustala się z nią, a nie tutaj.",
+    "price_label": "Cena",
+    "request_failed": "Nie udało się wysłać prośby. Spróbuj ponownie."
   }
 }

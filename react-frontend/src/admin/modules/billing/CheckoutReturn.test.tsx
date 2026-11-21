@@ -104,15 +104,13 @@ describe('CheckoutReturn — with session_id, polling resolves active', () => {
       data: {
         status: 'active',
         plan_name: 'Pro',
-        id: 1,
-        plan_id: 2,
+        id: 1,
         plan_tier_level: 1,
-        billing_interval: 'monthly',
-        current_period_start: '2026-01-01',
+        billing_interval: 'monthly',
         current_period_end: '2026-02-01',
-        trial_ends_at: null,
-        cancel_at_period_end: false,
+        trial_ends_at: null,
         stripe_subscription_id: 'sub_123',
+        has_card_subscription: true,
       },
     });
 
@@ -137,15 +135,13 @@ describe('CheckoutReturn — with session_id, polling resolves active', () => {
       data: {
         status: 'active',
         plan_name: 'Enterprise',
-        id: 1,
-        plan_id: 3,
+        id: 1,
         plan_tier_level: 2,
-        billing_interval: 'yearly',
-        current_period_start: '2026-01-01',
+        billing_interval: 'yearly',
         current_period_end: '2027-01-01',
-        trial_ends_at: null,
-        cancel_at_period_end: false,
+        trial_ends_at: null,
         stripe_subscription_id: 'sub_456',
+        has_card_subscription: true,
       },
     });
 
@@ -160,17 +156,15 @@ describe('CheckoutReturn — with session_id, polling resolves active', () => {
     mockGetSubscription.mockResolvedValue({
       success: true,
       data: {
-        status: 'trialing',
+        status: 'trial',
         plan_name: 'Starter',
-        id: 2,
-        plan_id: 1,
+        id: 2,
         plan_tier_level: 0,
-        billing_interval: 'monthly',
-        current_period_start: '2026-01-01',
+        billing_interval: 'monthly',
         current_period_end: '2026-01-15',
-        trial_ends_at: '2026-01-15',
-        cancel_at_period_end: false,
-        stripe_subscription_id: null,
+        trial_ends_at: '2026-01-15',
+        stripe_subscription_id: 'sub_trial',
+        has_card_subscription: true,
       },
     });
 

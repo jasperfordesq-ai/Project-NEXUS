@@ -445,10 +445,15 @@ export function BranchPlans() {
       {header}
 
       {reloadFailed ? (
-        <Alert color="danger" title={t('branch_plans.reload_failed')}>
-          <Button size="sm" variant="secondary" onPress={() => void load(lastAsked.current ?? hubId)}>
-            {t('branch_plans.try_again')}
-          </Button>
+        // The words go inside: the shared Alert drops its `title` when it is
+        // given children, so this showed a "Try again" button with no words.
+        <Alert color="danger">
+          <div className="flex flex-1 flex-wrap items-center justify-between gap-3">
+            <span className="text-sm font-medium">{t('branch_plans.reload_failed')}</span>
+            <Button size="sm" variant="secondary" onPress={() => void load(lastAsked.current ?? hubId)}>
+              {t('branch_plans.try_again')}
+            </Button>
+          </div>
         </Alert>
       ) : null}
 

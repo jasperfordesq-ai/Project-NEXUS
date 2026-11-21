@@ -406,5 +406,16 @@
     "no_setup_fee": "Sem taxa de adesão",
     "year_one": "Primeiro ano {{first}}, depois {{renewal}} por ano",
     "setup_fee_separate": "A taxa de adesão única é faturada em separado. Não é cobrada com o pagamento por cartão."
+  },
+  "own_billing": {
+    "card_failed": "O último pagamento por cartão não foi concluído. Use «Gerenciar pagamento» para verificar ou alterar o cartão.",
+    "load_failed": "Não foi possível carregar os dados de faturação.",
+    "members_help": "Membros ativos são os que iniciaram sessão nos últimos 90 dias, aqui e nas comunidades que dependem desta.",
+    "members_title": "Membros ativos",
+    "members_used": "{{used}} de {{max}} membros ativos",
+    "no_plan": "Esta comunidade ainda não tem um plano.",
+    "pays_parent_note": "Esta comunidade paga à comunidade de que depende. O plano e os pagamentos são combinados com ela, não aqui.",
+    "price_label": "Preço",
+    "request_failed": "Não foi possível enviar o pedido. Tente novamente."
   }
 }

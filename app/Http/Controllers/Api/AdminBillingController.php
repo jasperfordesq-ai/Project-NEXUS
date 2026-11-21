@@ -65,8 +65,12 @@ class AdminBillingController extends BaseApiController
      * package with a limit), so an open community is warned before anything
      * happens to it.
      *
-     * And `plan` (`{name, max_users, price_monthly, price_yearly, currency,
-     * terms}`, null with no plan): the plan as it applies to this community.
+     * And `plan` (`{name, description, max_users, price_monthly,
+     * price_yearly, setup_fee, currency, terms}`, null with no plan): the plan
+     * as it applies to this community, in the currency it is billed in.
+     *
+     * And `paid_until` (`YYYY-MM-DD` or null): the date the community is paid
+     * up to, its own date, so its billing page can show it.
      */
     public function getStanding(): JsonResponse
     {
@@ -76,11 +80,13 @@ class AdminBillingController extends BaseApiController
         // Who this community itself pays. The admin panel offers the
         // community's own billing page only to a card payer: nobody else has
         // anything to do there (DESIGN §6.6).
-        $payer = BillingStandingService::get($tenantId)['payer'];
+        $standing = BillingStandingService::get($tenantId);
+        $payer = $standing['payer'];
 
         // The warnings before any pause (Stage 3c), measured the way the daily
         // check measures them, so the banner and the check's emails agree.
         $warnings = [
+            'paid_until' => $standing['paid_until'],
             'overdue_days' => BillingAutomationService::overdueDays($tenantId),
             'member_limit' => BillingAutomationService::memberLimitState($tenantId),
         ];
@@ -91,9 +97,11 @@ class AdminBillingController extends BaseApiController
         $terms = PlanTerms::forCommunity($tenantId);
         $plan = $terms === null ? null : [
             'name' => $terms['name'],
+            'description' => $terms['description'],
             'max_users' => $terms['max_users'],
             'price_monthly' => $terms['price_monthly'],
             'price_yearly' => $terms['price_yearly'],
+            'setup_fee' => $terms['setup_fee'],
             'currency' => $terms['currency'],
             'terms' => $terms['terms'],
         ];
@@ -179,10 +187,19 @@ class AdminBillingController extends BaseApiController
         }
 
         // Block downgrade to free plan or lower tier while on an active paid subscription
-        $targetPlan = DB::selectOne("SELECT id, price_monthly, price_yearly, price_monthly_gbp, price_yearly_gbp, tier_level, is_active FROM pay_plans WHERE id = ?", [$planId]);
+        $targetPlan = DB::selectOne("SELECT id, price_monthly, price_yearly, price_monthly_gbp, price_yearly_gbp, tier_level, is_active, is_standard FROM pay_plans WHERE id = ?", [$planId]);
         // F-178: a withdrawn plan is not purchasable — a zero-price one would
         // otherwise activate directly, without Stripe.
         if (!$targetPlan || !(int) ($targetPlan->is_active ?? 0)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_plan_id'), 'plan_id', 422);
+        }
+        // Card checkout sells the standard plans only, the ones GET
+        // /v2/billing/plans lists. Any other active plan is one the platform
+        // team made for a particular community (a bespoke or no-charge plan):
+        // until 21 November 2026 any community's admin could put their own
+        // community on it by posting its id. Such a plan is given by the
+        // platform team and paid by invoice.
+        if (!(int) ($targetPlan->is_standard ?? 0)) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_plan_id'), 'plan_id', 422);
         }
         $isFreeTarget = StripeSubscriptionService::isFreePlan($targetPlan);
@@ -323,7 +340,14 @@ class AdminBillingController extends BaseApiController
     /**
      * GET /v2/billing/plans (public, no auth)
      *
-     * Every active plan as the plan picker shows it. Besides the name and the
+     * Every active STANDARD plan, smallest member number first, as the plan
+     * picker shows it: the plans card checkout sells (createCheckoutSession()
+     * refuses any other). A plan the platform team made for one community is
+     * not public and is never listed here. It used to list every active plan,
+     * one per `tier_level`, so a bespoke plan's name and price were public and
+     * could take a standard plan's place in the picker.
+     *
+     * Besides the name and the
      * euro prices this carries what a plan allows and costs to start (owner,
      * 21 Nov 2026: the picker showed neither the member number nor the setup
      * fee): `max_users`, the three allowances, both currencies' prices and
@@ -345,20 +369,9 @@ class AdminBillingController extends BaseApiController
                     price_monthly_gbp, price_yearly_gbp, setup_fee_gbp,
                     max_communities, storage_gb, emails_per_month, is_active
              FROM pay_plans
-             WHERE is_active = 1
-             ORDER BY tier_level ASC, name ASC"
+             WHERE is_active = 1 AND is_standard = 1
+             ORDER BY (max_users IS NULL) ASC, max_users ASC, tier_level ASC, id ASC"
         );
-
-        // Deduplicate by tier_level — keep lowest id per tier to avoid showing multiple free/same-tier plans
-        $seenTiers = [];
-        $rows = array_values(array_filter($rows, function (object $row) use (&$seenTiers): bool {
-            $tier = $row->tier_level;
-            if (in_array($tier, $seenTiers, true)) {
-                return false;
-            }
-            $seenTiers[] = $tier;
-            return true;
-        }));
 
         $tenantId = (int) (TenantContext::currentId() ?? 0);
         $communityCurrency = $tenantId > 0 ? StripeSubscriptionService::billingCurrencyFor($tenantId) : 'eur';

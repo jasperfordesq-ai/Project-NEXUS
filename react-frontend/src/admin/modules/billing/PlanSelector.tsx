@@ -136,7 +136,7 @@ export function PlanSelector() {
 
   // The server names it `pay_plan_id`. Reading `plan_id` meant no plan was ever
   // marked current, so a card payer could subscribe to its own plan again.
-  const currentPlanId = subscription?.pay_plan_id ?? subscription?.plan_id ?? null;
+  const currentPlanId = subscription?.pay_plan_id ?? null;
 
   // Stripe still has a card subscription open for this community. A checkout
   // always starts a NEW subscription, so a second one would be charged beside

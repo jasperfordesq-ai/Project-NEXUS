@@ -406,5 +406,16 @@
     "no_setup_fee": "Sin cuota de alta",
     "year_one": "Primer año {{first}}, después {{renewal}} al año",
     "setup_fee_separate": "La cuota de alta única se factura por separado. No se cobra con el pago con tarjeta."
+  },
+  "own_billing": {
+    "card_failed": "El último pago con tarjeta no se completó. Use «Administrar pago» para comprobar o cambiar la tarjeta.",
+    "load_failed": "No se pudieron cargar los datos de facturación.",
+    "members_help": "Los miembros activos son quienes iniciaron sesión en los últimos 90 días, aquí y en las comunidades que dependen de esta.",
+    "members_title": "Miembros activos",
+    "members_used": "{{used}} de {{max}} miembros activos",
+    "no_plan": "Esta comunidad aún no tiene un plan.",
+    "pays_parent_note": "Esta comunidad paga a la comunidad de la que depende. Su plan y sus pagos se acuerdan con ella, no aquí.",
+    "price_label": "Precio",
+    "request_failed": "No se pudo enviar la solicitud. Inténtelo de nuevo."
   }
 }

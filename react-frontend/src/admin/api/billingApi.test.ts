@@ -46,22 +46,25 @@ const mockSubscription: SubscriptionDetails = {
   id: 42,
   pay_plan_id: 2,
   plan_name: 'Pro',
+  plan_slug: 'pro',
   plan_tier_level: 2,
+  plan_description: null,
   status: 'active',
+  stripe_status: 'active',
   billing_interval: 'monthly',
-  current_period_start: '2026-06-01T00:00:00Z',
-  current_period_end: '2026-07-01T00:00:00Z',
+  starts_at: '2026-06-01T00:00:00+00:00',
+  current_period_end: '2026-07-01T00:00:00+00:00',
   trial_ends_at: null,
-  cancel_at_period_end: false,
   stripe_subscription_id: 'sub_abc123',
+  has_card_subscription: true,
 };
 
 const mockInvoice: Invoice = {
   id: 'in_001',
   number: 'INV-001',
-  date: '2026-06-01',
-  amount: 2900,
-  currency: 'usd',
+  date: '2026-06-01T00:00:00+00:00',
+  amount: 29,
+  currency: 'EUR',
   status: 'paid',
   hosted_invoice_url: 'https://invoice.stripe.com/i/acct_abc/test_001',
   invoice_pdf: 'https://invoice.stripe.com/i/acct_abc/test_001/pdf',
@@ -124,17 +127,19 @@ describe('billingApi', () => {
       expect(result).toEqual(mockSubscription);
     });
 
-    it('returns a subscription with trialing status', async () => {
+    it('returns a subscription on trial', async () => {
+      // The plan record says `trial`; `trialing` is Stripe's word, in `stripe_status`.
       const trialing: SubscriptionDetails = {
         ...mockSubscription,
-        status: 'trialing',
+        status: 'trial',
+        stripe_status: 'trialing',
         trial_ends_at: '2026-07-14T00:00:00Z',
       };
       vi.mocked(api.get).mockResolvedValueOnce(trialing);
 
       const result = await billingApi.getSubscription();
 
-      expect(result.status).toBe('trialing');
+      expect(result.status).toBe('trial');
       expect(result.trial_ends_at).toBe('2026-07-14T00:00:00Z');
     });
 
@@ -143,7 +148,7 @@ describe('billingApi', () => {
         ...mockSubscription,
         status: 'cancelled',
         stripe_subscription_id: null,
-        cancel_at_period_end: true,
+        has_card_subscription: false,
       };
       vi.mocked(api.get).mockResolvedValueOnce(cancelled);
 
@@ -151,7 +156,7 @@ describe('billingApi', () => {
 
       expect(result.status).toBe('cancelled');
       expect(result.stripe_subscription_id).toBeNull();
-      expect(result.cancel_at_period_end).toBe(true);
+      expect(result.has_card_subscription).toBe(false);
     });
 
     it('propagates errors', async () => {

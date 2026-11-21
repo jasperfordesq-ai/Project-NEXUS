@@ -148,7 +148,8 @@ class StripeSubscriptionServiceTest extends TestCase
             ->once()
             ->with(
                 Mockery::on(static fn ($sql): bool => str_contains((string) $sql, 'WHERE id = ? AND tenant_id = ?')),
-                [3, 'sub_test_789', 10, 2]
+                // [same subscription?, plan, subscription, billing period, record, community]
+                ['sub_test_789', 3, 'sub_test_789', null, 10, 2]
             )
             ->andReturn(1);
 
@@ -247,7 +248,7 @@ class StripeSubscriptionServiceTest extends TestCase
      * Mock the admin-email DB + mailer path shared by every Stripe webhook
      * handler that sends a required confirmation email (no pay_plans lookup):
      *   - DB::table('tenants')…->first()  → tenant 2 (for TenantContext::setById)
-     *   - DB::table('users')…->first()    → an admin recipient
+     *   - DB::table('users')…->get()      → the admin recipients
      *   - EmailDispatchService::sendRaw() → true (success, no throw)
      */
     private function mockAdminEmailDbPath(): void
@@ -267,11 +268,12 @@ class StripeSubscriptionServiceTest extends TestCase
             'is_active' => 1,
         ];
 
+        // Every active admin is told (it was the first `role = 'admin'` row).
         $usersBuilder = Mockery::mock();
         $usersBuilder->shouldReceive('where')->andReturnSelf();
         $usersBuilder->shouldReceive('whereNotNull')->andReturnSelf();
-        $usersBuilder->shouldReceive('select')->andReturnSelf();
-        $usersBuilder->shouldReceive('first')->andReturn($admin);
+        $usersBuilder->shouldReceive('orderBy')->andReturnSelf();
+        $usersBuilder->shouldReceive('get')->andReturn(collect([$admin]));
 
         $tenantsBuilder = Mockery::mock();
         $tenantsBuilder->shouldReceive('where')->andReturnSelf();
@@ -304,7 +306,7 @@ class StripeSubscriptionServiceTest extends TestCase
         DB::shouldReceive('selectOne')
             ->once()
             ->with(
-                "SELECT id, tenant_id, pay_plan_id, status FROM tenant_plan_assignments WHERE stripe_subscription_id = ?",
+                Mockery::on(static fn ($sql): bool => str_contains((string) $sql, 'FROM tenant_plan_assignments WHERE stripe_subscription_id = ?')),
                 ['sub_unknown']
             )
             ->andReturnNull();
@@ -322,12 +324,12 @@ class StripeSubscriptionServiceTest extends TestCase
 
     public function test_handleSubscriptionUpdated_mapsStripeCancelledToNexusCancelled(): void
     {
-        $assignment = (object) ['id' => 7, 'tenant_id' => 2, 'pay_plan_id' => 3, 'status' => 'active'];
+        $assignment = (object) ['id' => 7, 'tenant_id' => 2, 'pay_plan_id' => 3, 'status' => 'active', 'stripe_event_at' => null];
 
         DB::shouldReceive('selectOne')
             ->once()
             ->with(
-                "SELECT id, tenant_id, pay_plan_id, status FROM tenant_plan_assignments WHERE stripe_subscription_id = ?",
+                Mockery::on(static fn ($sql): bool => str_contains((string) $sql, 'FROM tenant_plan_assignments WHERE stripe_subscription_id = ?')),
                 ['sub_cancelled']
             )
             ->andReturn($assignment);
@@ -420,19 +422,16 @@ class StripeSubscriptionServiceTest extends TestCase
             'tenant_id' => 2,
             'pay_plan_id' => 3,
             'status' => 'active',
+            'stripe_status' => 'active',
+            'billing_interval' => 'monthly',
             'starts_at' => '2026-01-01',
-            'expires_at' => null,
             'trial_ends_at' => null,
             'stripe_subscription_id' => 'sub_123',
             'stripe_current_period_end' => '2026-02-01',
-            'created_at' => '2026-01-01',
-            'updated_at' => '2026-01-01',
             'plan_name' => 'Pro',
             'plan_slug' => 'pro',
             'plan_tier_level' => 2,
             'plan_description' => 'Pro plan',
-            'price_monthly' => 29.99,
-            'price_yearly' => 299.99,
         ];
 
         DB::shouldReceive('selectOne')->once()->andReturn($row);
@@ -443,6 +442,11 @@ class StripeSubscriptionServiceTest extends TestCase
         $this->assertEquals('active', $result['status']);
         $this->assertEquals('Pro', $result['plan_name']);
         $this->assertEquals('sub_123', $result['stripe_subscription_id']);
+        // The names the billing page reads, with dates it can show.
+        $this->assertSame(3, $result['pay_plan_id']);
+        $this->assertSame('monthly', $result['billing_interval']);
+        $this->assertSame('2026-02-01', substr((string) $result['current_period_end'], 0, 10));
+        $this->assertArrayNotHasKey('stripe_current_period_end', $result);
     }
 
     // =========================================================================

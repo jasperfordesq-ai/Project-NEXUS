@@ -402,5 +402,16 @@
     "no_setup_fee": "Keine Einrichtungsgebühr",
     "year_one": "Erstes Jahr {{first}}, danach {{renewal}} pro Jahr",
     "setup_fee_separate": "Die einmalige Einrichtungsgebühr wird gesondert in Rechnung gestellt. Sie wird nicht mit der Kartenzahlung eingezogen."
+  },
+  "own_billing": {
+    "card_failed": "Die letzte Kartenzahlung ist fehlgeschlagen. Prüfen oder ändern Sie die Karte über „Zahlung verwalten“.",
+    "load_failed": "Die Abrechnungsdaten konnten nicht geladen werden.",
+    "members_help": "Aktive Mitglieder sind alle, die sich in den letzten 90 Tagen angemeldet haben, hier und in allen Communities unterhalb dieser.",
+    "members_title": "Aktive Mitglieder",
+    "members_used": "{{used}} von {{max}} aktiven Mitgliedern",
+    "no_plan": "Diese Community hat noch keinen Plan.",
+    "pays_parent_note": "Diese Community zahlt an die Community über ihr. Plan und Zahlungen werden mit ihr vereinbart, nicht hier.",
+    "price_label": "Preis",
+    "request_failed": "Die Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut."
   }
 }

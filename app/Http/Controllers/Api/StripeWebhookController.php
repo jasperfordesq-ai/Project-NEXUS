@@ -160,7 +160,10 @@ class StripeWebhookController extends BaseApiController
                     'checkout.session.completed' => $this->handleCheckoutCompleted($event->data->object),
                     'checkout.session.async_payment_succeeded' => $this->handleCheckoutAsyncPaymentSucceeded($event->data->object),
                     'checkout.session.expired' => $this->handleCheckoutExpired($event->data->object),
-                    'customer.subscription.updated' => $this->handleSubscriptionUpdated($event->data->object),
+                    'customer.subscription.updated' => $this->handleSubscriptionUpdated(
+                        $event->data->object,
+                        is_numeric($event->created ?? null) ? (int) $event->created : null
+                    ),
                     'customer.subscription.deleted' => $this->handleSubscriptionDeleted($event->data->object),
                     'invoice.paid' => $this->handleInvoicePaid($event->data->object),
                     'invoice.payment_failed' => $this->handleInvoicePaymentFailed($event->data->object),
@@ -303,9 +306,11 @@ class StripeWebhookController extends BaseApiController
         StripeSubscriptionService::handleCheckoutCompleted($session);
     }
 
-    private function handleSubscriptionUpdated(object $subscription): void
+    private function handleSubscriptionUpdated(object $subscription, ?int $eventCreatedAt = null): void
     {
-        StripeSubscriptionService::handleSubscriptionUpdated($subscription);
+        // The event's own time lets the handler ignore a late redelivery of
+        // an older update.
+        StripeSubscriptionService::handleSubscriptionUpdated($subscription, $eventCreatedAt);
     }
 
     private function handleSubscriptionDeleted(object $subscription): void

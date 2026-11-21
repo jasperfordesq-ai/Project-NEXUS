@@ -41,8 +41,13 @@ export function CheckoutReturn() {
     try {
       const res = await billingApi.getSubscription();
       if (res.success && res.data) {
-        const sub = res.data as unknown as SubscriptionDetails;
-        if (sub.status === 'active' || sub.status === 'trialing') {
+        const sub = res.data;
+        // Paid means the card subscription this checkout created is on the
+        // record (`has_card_subscription`), not merely "the community has an
+        // active plan": a community given a plan by hand already had one, so
+        // this page used to say "success" at once, for a payment that had
+        // been abandoned, and could name the old plan.
+        if (sub.has_card_subscription === true && (sub.status === 'active' || sub.status === 'trial')) {
           setSubscription(sub);
           setStatus('success');
           return;

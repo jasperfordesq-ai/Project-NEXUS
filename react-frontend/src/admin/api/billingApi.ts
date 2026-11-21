@@ -53,40 +53,95 @@ export interface Plan {
 }
 
 /**
- * GET /v2/admin/billing/subscription: the community's latest assignment
- * (StripeSubscriptionService::getSubscriptionDetails). The server names the
- * plan `pay_plan_id`; `plan_id` was this screen's own invention and never
- * arrived, which is why no plan was ever marked as the current one.
+ * GET /v2/admin/billing/subscription: the community's plan record in force
+ * and its card subscription, key for key
+ * (StripeSubscriptionService::getSubscriptionDetails() plus
+ * `has_card_subscription`; pinned by
+ * tests/Laravel/Feature/Billing/CommunityBillingPageContractTest.php).
+ * Null when the community has no plan record at all.
  */
 export interface SubscriptionDetails {
   id: number;
   pay_plan_id: number;
-  /** @deprecated never sent by the server; kept so old fixtures still type-check. */
-  plan_id?: number;
   plan_name: string;
+  plan_slug: string;
   plan_tier_level: number;
-  status: 'active' | 'trial' | 'trialing' | 'past_due' | 'cancelled' | 'expired' | 'incomplete';
-  billing_interval: 'monthly' | 'yearly';
-  current_period_start: string;
-  current_period_end: string;
+  plan_description: string | null;
+  /** The record's own status. A failed card is recorded as `expired`. */
+  status: 'active' | 'trial' | 'expired' | 'cancelled';
+  /** Stripe's own word for the card subscription; null with no card, or nothing heard yet. */
+  stripe_status: string | null;
+  /** Null = not known (a plan given by hand, or an older subscription). */
+  billing_interval: 'monthly' | 'yearly' | null;
+  /** ISO 8601. */
+  starts_at: string | null;
+  /** ISO 8601: the end of the period the card subscription has paid for. */
+  current_period_end: string | null;
   trial_ends_at: string | null;
-  cancel_at_period_end: boolean;
   stripe_subscription_id: string | null;
   /**
    * Whether Stripe still has a card subscription open for the community
    * (paying, on trial, or with a failed card). While it does, the server
    * refuses a checkout: it would start a second subscription beside the first.
    */
-  has_card_subscription?: boolean;
+  has_card_subscription: boolean;
 }
 
+/**
+ * GET /v2/admin/billing/standing, key for key
+ * (AdminBillingController::getStanding(), pinned by BillingPausedFlagTest and
+ * CommunityBillingPageContractTest).
+ */
+export interface OwnStanding {
+  paused: boolean;
+  own: boolean | null;
+  since: string | null;
+  payee: 'platform' | 'parent' | null;
+  payee_name: string | null;
+  payer: 'platform_card' | 'platform_invoice' | 'parent' | 'not_billed';
+  /** YYYY-MM-DD: the date the community is paid up to. */
+  paid_until: string | null;
+  overdue_days: number | null;
+  /** Active members against the plan's number; null with no plan or no limit. */
+  member_limit: {
+    used: number;
+    max: number;
+    percent: number;
+    stage: 'approaching' | 'reached' | 'over' | null;
+    /** The over-limit rule in force (`none` while the automatic checks are off). */
+    rule: string;
+    /** YYYY-MM-DD the rule would act, or null. */
+    acts_on: string | null;
+  } | null;
+  /** The plan as it applies to this community, in the currency it is billed in. */
+  plan: {
+    name: string;
+    description: string | null;
+    max_users: number | null;
+    price_monthly: number | null;
+    price_yearly: number | null;
+    setup_fee: number | null;
+    currency: 'eur' | 'gbp';
+    terms: 'default' | 'hub';
+  } | null;
+}
+
+/**
+ * A row of GET /v2/admin/billing/invoices, key for key
+ * (StripeSubscriptionService::getInvoiceHistory(), pinned by
+ * CommunityBillingPageContractTest).
+ */
 export interface Invoice {
   id: string;
-  number: string;
-  date: string;
+  /** Stripe's invoice number; null on a draft that has none yet. */
+  number: string | null;
+  /** ISO 8601. */
+  date: string | null;
+  /** In the currency's main unit (euro, pounds), never cents. */
   amount: number;
+  /** Upper-case ISO code. */
   currency: string;
-  status: 'paid' | 'open' | 'draft' | 'void' | 'uncollectible';
+  status: 'paid' | 'open' | 'draft' | 'void' | 'uncollectible' | string;
   hosted_invoice_url: string | null;
   invoice_pdf: string | null;
 }
@@ -100,9 +155,13 @@ export const billingApi = {
   getPlans: () =>
     api.get<Plan[]>('/v2/billing/plans'),
 
-  /** Get current tenant subscription details */
+  /** The community's plan record and card subscription; `data` is null with no plan record. */
   getSubscription: () =>
-    api.get<SubscriptionDetails>('/v2/admin/billing/subscription'),
+    api.get<SubscriptionDetails | null>('/v2/admin/billing/subscription'),
+
+  /** The plan as it applies, active members, who the community pays and its dates. */
+  getStanding: () =>
+    api.get<OwnStanding>('/v2/admin/billing/standing'),
 
   /** Create a Stripe Checkout session, returns a redirect URL (or activated:true for free plans) */
   createCheckout: (data: { plan_id: number; billing_interval: 'monthly' | 'yearly' }) =>

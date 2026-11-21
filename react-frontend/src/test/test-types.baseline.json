@@ -195,9 +195,6 @@
     "src/admin/modules/billing/BillingControl.test.tsx": {
       "TS2538": 1
     },
-    "src/admin/modules/billing/BillingPage.test.tsx": {
-      "TS2345": 1
-    },
     "src/admin/modules/billing/InvoiceHistory.test.tsx": {
       "TS2322": 2
     },
@@ -1844,7 +1841,7 @@
     }
   },
   "totals": {
-    "fileCount": 544,
-    "errorCount": 1646
+    "fileCount": 543,
+    "errorCount": 1645
   }
 }

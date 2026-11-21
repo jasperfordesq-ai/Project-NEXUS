@@ -402,5 +402,16 @@
     "no_setup_fee": "Geen opstartkosten",
     "year_one": "Eerste jaar {{first}}, daarna {{renewal}} per jaar",
     "setup_fee_separate": "De eenmalige opstartkosten worden apart gefactureerd. Ze worden niet met de kaartbetaling afgeschreven."
+  },
+  "own_billing": {
+    "card_failed": "De laatste kaartbetaling is niet gelukt. Gebruik ‘Beheer de betaling’ om de kaart te controleren of te wijzigen.",
+    "load_failed": "De factuurgegevens konden niet worden geladen.",
+    "members_help": "Actieve leden zijn leden die in de afgelopen 90 dagen hebben ingelogd, hier en in de community’s onder deze community.",
+    "members_title": "Actieve leden",
+    "members_used": "{{used}} van {{max}} actieve leden",
+    "no_plan": "Deze community heeft nog geen plan.",
+    "pays_parent_note": "Deze community betaalt aan de community erboven. Het plan en de betalingen worden met die community geregeld, niet hier.",
+    "price_label": "Prijs",
+    "request_failed": "Het verzoek kon niet worden verzonden. Probeer het opnieuw."
   }
 }

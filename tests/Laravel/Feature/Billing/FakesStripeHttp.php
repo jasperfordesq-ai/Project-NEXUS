@@ -40,6 +40,8 @@ trait FakesStripeHttp
             public array $priceAmounts = [];
             /** When a subscription asked for by id is paid up to (a timestamp), or null for "Stripe cannot say". */
             public ?int $subscriptionPeriodEnd = null;
+            /** @var list<array<string, mixed>> The invoices Stripe holds for whichever customer is asked about. */
+            public array $invoices = [];
             private int $n = 0;
 
             public function request($method, $absUrl, $headers, $params, $hasFile, $apiMode = 'v1')
@@ -69,6 +71,12 @@ trait FakesStripeHttp
 
                 if ($method === 'POST' && $path === '/v1/prices') {
                     $this->priceAmounts["price_fake_{$n}"] = (int) ($params['unit_amount'] ?? 0);
+                }
+
+                if ($method === 'GET' && $path === '/v1/invoices') {
+                    $list = ['object' => 'list', 'data' => $this->invoices, 'has_more' => false, 'url' => '/v1/invoices'];
+
+                    return [json_encode($list), 200, new CaseInsensitiveArray([])];
                 }
 
                 if ($method === 'GET' && str_starts_with($path, '/v1/subscriptions/')) {

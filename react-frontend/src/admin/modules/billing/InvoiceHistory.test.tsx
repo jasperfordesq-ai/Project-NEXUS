@@ -20,7 +20,7 @@ const mockInvoice = vi.hoisted(() => ({
   id: 'in_123',
   number: 'INV-001',
   date: '2026-05-01T00:00:00Z',
-  amount: 9900,    // €99.00
+  amount: 99,      // €99.00: the server sends the main unit, never cents
   currency: 'EUR',
   status: 'paid' as const,
   hosted_invoice_url: 'https://stripe.com/invoice/in_123',
@@ -124,13 +124,34 @@ describe('InvoiceHistory', () => {
       expect(screen.getByText('INV-001')).toBeInTheDocument();
     });
 
-    // amount=9900 → formatAmount(9900, 'EUR') → new Intl.NumberFormat(undefined, { style:'currency', currency:'EUR' }).format(9900)
-    // JSDOM locale formats this differently but always contains '9,900' or '9.900' or '€9,900'.
-    // Use a function matcher to be locale-agnostic.
-    const amountCell = screen.getByText((content) =>
-      content.replace(/\s/g, '').includes('9,900') || content.replace(/\s/g, '').includes('9.900') || content.includes('9900')
-    );
-    expect(amountCell).toBeInTheDocument();
+    // A €99 invoice reads €99.00. This fixture used to send 9900 and the
+    // test accepted "€9,900.00": the page had no idea the server counted in
+    // cents, and with the real answer it showed "NaN".
+    expect(screen.getAllByText('€99.00').length).toBeGreaterThan(0);
+    expect(screen.queryByText(/NaN/)).not.toBeInTheDocument();
+    expect(screen.queryByText('--')).not.toBeInTheDocument();
+  });
+
+  it('falls back to the invoice id when Stripe has not numbered it yet', async () => {
+    vi.mocked(billingApi.getInvoices).mockResolvedValue({
+      success: true,
+      data: [{ ...mockInvoice, id: 'in_draft_1', number: null, status: 'draft' }],
+    });
+    render(<InvoiceHistory />);
+
+    await waitFor(() => {
+      expect(screen.getByText('in_draft_1')).toBeInTheDocument();
+    });
+  });
+
+  it('says so when the server refuses, instead of showing "No invoices"', async () => {
+    // The API client answers "not successful" instead of throwing.
+    vi.mocked(billingApi.getInvoices).mockResolvedValue({ success: false, error: 'Invoices are not available right now.' });
+    render(<InvoiceHistory />);
+
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalledWith('Invoices are not available right now.');
+    });
   });
 
   // The status chip is TRANSLATED — t(`billing.invoice_status_${status}`) — so the

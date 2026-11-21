@@ -406,5 +406,16 @@
     "no_setup_fee": "Pas de frais de mise en place",
     "year_one": "Première année {{first}}, puis {{renewal}} par an",
     "setup_fee_separate": "Les frais de mise en place uniques sont facturés séparément. Ils ne sont pas prélevés avec le paiement par carte."
+  },
+  "own_billing": {
+    "card_failed": "Le dernier paiement par carte n’a pas abouti. Utilisez « Gérer le paiement » pour vérifier ou changer la carte.",
+    "load_failed": "Les informations de facturation n’ont pas pu être chargées.",
+    "members_help": "Les membres actifs sont ceux qui se sont connectés au cours des 90 derniers jours, ici et dans les communautés rattachées à celle-ci.",
+    "members_title": "Membres actifs",
+    "members_used": "{{used}} membres actifs sur {{max}}",
+    "no_plan": "Cette communauté n’a pas encore de formule.",
+    "pays_parent_note": "Cette communauté paie la communauté dont elle dépend. Sa formule et ses paiements sont convenus avec elle, pas ici.",
+    "price_label": "Prix",
+    "request_failed": "La demande n’a pas pu être envoyée. Veuillez réessayer."
   }
 }

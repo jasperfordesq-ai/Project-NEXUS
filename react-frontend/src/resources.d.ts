@@ -4746,6 +4746,17 @@ export default interface Resources {
       "upgrade_by_hand": "Move up (platform team does this one by hand)",
       "what_happens": "What happens"
     },
+    "own_billing": {
+      "card_failed": "The last card payment did not go through. Use Manage Payment to check or change the card.",
+      "load_failed": "The billing details could not be loaded.",
+      "members_help": "Active members are those who signed in within the last 90 days, here and in any communities below this one.",
+      "members_title": "Active members",
+      "members_used": "{{used}} of {{max}} active members",
+      "no_plan": "This community has no plan yet.",
+      "pays_parent_note": "This community pays the community above it. Its plan and payments are arranged with them, not here.",
+      "price_label": "Price",
+      "request_failed": "The request could not be sent. Please try again."
+    },
     "paused_banner": {
       "inherited": "This community is paused because the community above it is paused. Paused since {{date}}.",
       "limit_approaching": "This community has {{used}} active members, {{percent}}% of its plan's limit of {{max}}.",

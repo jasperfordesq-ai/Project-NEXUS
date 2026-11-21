@@ -255,7 +255,7 @@ final class CardPaymentStandingTest extends TestCase
     public function test_a_refused_payment_record_is_logged_and_does_not_fail_the_webhook(): void
     {
         $subscriptionId = $this->assignCardPlan(1);
-        $this->makeAdmin(1);
+        $admin = $this->makeAdmin(1);
         $periodEnd = now()->addDays(30)->getTimestamp();
         $this->fakeStripeSubscription($subscriptionId, $periodEnd);
 
@@ -270,7 +270,9 @@ final class CardPaymentStandingTest extends TestCase
 
         $assignment = DB::table('tenant_plan_assignments')->where('stripe_subscription_id', $subscriptionId)->first();
         $this->assertSame(date('Y-m-d H:i:s', $periodEnd), (string) $assignment->stripe_current_period_end);
-        $this->assertCount(1, $this->mailer->calls, 'the renewal email still went');
+        // Every active admin of the community is told (it was one account),
+        // and the platform's own community has several in the test data.
+        $this->assertContains($admin->email, array_column($this->mailer->calls, 'to'), 'the renewal email still went');
     }
 
     // ── a date from Stripe only ever moves forward ───────────────────────────

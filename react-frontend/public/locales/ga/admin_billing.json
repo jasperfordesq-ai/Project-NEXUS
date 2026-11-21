@@ -414,5 +414,16 @@
     "no_setup_fee": "Gan táille bunaithe",
     "year_one": "An chéad bhliain {{first}}, ansin {{renewal}} in aghaidh na bliana",
     "setup_fee_separate": "Gearrtar an táille bunaithe aonuaire ar leithligh. Ní thógtar í leis an íocaíocht chárta."
+  },
+  "own_billing": {
+    "card_failed": "Níor éirigh leis an íocaíocht chárta dheireanach. Úsáid «Bainistigh Íocaíocht» chun an cárta a sheiceáil nó a athrú.",
+    "load_failed": "Níorbh fhéidir na sonraí billeála a lódáil.",
+    "members_help": "Is iad na baill ghníomhacha iad siúd a shínigh isteach le 90 lá anuas, anseo agus in aon phobal faoin bpobal seo.",
+    "members_title": "Baill ghníomhacha",
+    "members_used": "{{used}} as {{max}} ball gníomhach",
+    "no_plan": "Níl plean ag an bpobal seo fós.",
+    "pays_parent_note": "Íocann an pobal seo leis an bpobal os a chionn. Socraítear a phlean agus a íocaíochtaí leis siúd, ní anseo.",
+    "price_label": "Praghas",
+    "request_failed": "Níorbh fhéidir an t-iarratas a sheoladh. Bain triail eile as."
   }
 }

@@ -35,12 +35,17 @@ function invoiceStatusColor(status: string): 'success' | 'warning' | 'danger' | 
   }
 }
 
+// The server sends the amount in the currency's main unit and an upper-case
+// code (StripeSubscriptionService::getInvoiceHistory()). A value that is not
+// a number is shown as a dash, never as "NaN".
 const formatAmount = (amount: number, currency: string) => {
+  const value = Number(amount);
+  if (!Number.isFinite(value)) return '--';
   return new Intl.NumberFormat(getFormattingLocale(), {
     style: 'currency',
-    currency: currency || 'EUR',
+    currency: (currency || 'EUR').toUpperCase(),
     minimumFractionDigits: 2,
-  }).format(amount);
+  }).format(value);
 };
 
 export function InvoiceHistory() {
@@ -63,6 +68,11 @@ export function InvoiceHistory() {
           const pd = data as { data?: Invoice[] };
           setInvoices(pd.data || []);
         }
+      } else if (!res.success) {
+        // A refused or failed request is not "no invoices": say so. The API
+        // client answers "not successful" instead of throwing.
+        // admin-i18n-ignore: localized server message — AdminBillingController invoices (lang/*/api.php)
+        toast.error(res.error || t('billing.invoices_error'));
       }
     } catch {
       toast.error(t('billing.invoices_error'));

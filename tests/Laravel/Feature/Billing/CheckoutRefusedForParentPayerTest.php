@@ -128,6 +128,8 @@ final class CheckoutRefusedForParentPayerTest extends TestCase
             'name' => 'One period plan',
             'slug' => 'one-period-' . bin2hex(random_bytes(4)),
             'is_active' => 1,
+            // Card checkout sells the standard plans only.
+            'is_standard' => 1,
             'tier_level' => 3,
             'created_at' => now(),
         ], $prices));
@@ -153,6 +155,8 @@ final class CheckoutRefusedForParentPayerTest extends TestCase
             'name' => 'Pound monthly plan',
             'slug' => 'pound-monthly-' . bin2hex(random_bytes(4)),
             'is_active' => 1,
+            // Card checkout sells the standard plans only.
+            'is_standard' => 1,
             'tier_level' => 3,
             'price_monthly' => 100,
             'price_yearly' => 0,
@@ -182,6 +186,8 @@ final class CheckoutRefusedForParentPayerTest extends TestCase
             'name' => 'Pound only plan',
             'slug' => 'pound-only-' . bin2hex(random_bytes(4)),
             'is_active' => 1,
+            // Card checkout sells the standard plans only.
+            'is_standard' => 1,
             'tier_level' => 3,
             'price_monthly' => 0,
             'price_yearly' => 0,
@@ -206,6 +212,8 @@ final class CheckoutRefusedForParentPayerTest extends TestCase
             'name' => 'Free plan',
             'slug' => 'free-both-' . bin2hex(random_bytes(4)),
             'is_active' => 1,
+            // Card checkout sells the standard plans only.
+            'is_standard' => 1,
             'tier_level' => 0,
             'price_monthly' => 0,
             'price_yearly' => 0,

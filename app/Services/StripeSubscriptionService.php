@@ -643,6 +643,9 @@ class StripeSubscriptionService
                 'metadata' => [
                     'nexus_tenant_id' => (string) $tenantId,
                     'nexus_plan_id' => (string) $planId,
+                    // Kept on the plan record when the checkout completes, so
+                    // the community's billing page can say monthly or yearly.
+                    'nexus_billing_interval' => $interval,
                 ],
                 'success_url' => $successUrl,
                 'cancel_url' => $cancelUrl,
@@ -733,6 +736,9 @@ class StripeSubscriptionService
         $tenantId = (int) ($session->metadata->nexus_tenant_id ?? 0);
         $planId = (int) ($session->metadata->nexus_plan_id ?? 0);
         $subscriptionId = $session->subscription ?? null;
+        // Monthly or yearly, as the checkout was created. Absent on a session
+        // made before this was recorded: then it is left unknown.
+        $billingInterval = self::knownInterval($session->metadata->nexus_billing_interval ?? null);
 
         if (!$tenantId || !$planId) {
             Log::warning('Stripe checkout.session.completed missing nexus metadata', [
@@ -790,7 +796,7 @@ class StripeSubscriptionService
         $replacedSubscriptionId = null;
 
         try {
-            $activated = DB::transaction(function () use ($tenantId, $planId, $subscriptionId, &$replacedSubscriptionId): bool {
+            $activated = DB::transaction(function () use ($tenantId, $planId, $subscriptionId, $billingInterval, &$replacedSubscriptionId): bool {
                 // 🔴 ONE record is written, never `WHERE tenant_id = ?`. A
                 // community keeps more than one plan record by design (a new
                 // one is added whenever none is active), and
@@ -828,20 +834,25 @@ class StripeSubscriptionService
                         $replacedSubscriptionId = $previous;
                     }
 
+                    // A different subscription is a new lifecycle: what Stripe
+                    // said about the old one no longer dates this record. Set
+                    // BEFORE the id changes (MySQL assigns left to right), and
+                    // left alone on a redelivery of the same checkout.
                     DB::update(
                         "UPDATE tenant_plan_assignments
-                         SET pay_plan_id = ?, status = 'active', stripe_subscription_id = ?,
-                             stripe_status = 'active',
+                         SET stripe_event_at = IF(stripe_subscription_id <=> ?, stripe_event_at, NULL),
+                             pay_plan_id = ?, status = 'active', stripe_subscription_id = ?,
+                             stripe_status = 'active', billing_interval = ?,
                              starts_at = NOW(), expires_at = NULL, updated_at = NOW()
                          WHERE id = ? AND tenant_id = ?",
-                        [$planId, $subscriptionId, $existing->id, $tenantId]
+                        [$subscriptionId, $planId, $subscriptionId, $billingInterval, $existing->id, $tenantId]
                     );
                 } else {
                     DB::insert(
                         "INSERT INTO tenant_plan_assignments
-                         (tenant_id, pay_plan_id, status, stripe_subscription_id, stripe_status, starts_at, created_at, updated_at)
-                         VALUES (?, ?, 'active', ?, 'active', NOW(), NOW(), NOW())",
-                        [$tenantId, $planId, $subscriptionId]
+                         (tenant_id, pay_plan_id, status, stripe_subscription_id, stripe_status, billing_interval, starts_at, created_at, updated_at)
+                         VALUES (?, ?, 'active', ?, 'active', ?, NOW(), NOW(), NOW())",
+                        [$tenantId, $planId, $subscriptionId, $billingInterval]
                     );
                 }
 
@@ -916,8 +927,15 @@ class StripeSubscriptionService
 
     /**
      * Handle customer.subscription.updated — sync status and period end.
+     *
+     * `$eventCreatedAt` is when Stripe created the event (its `created`
+     * timestamp). Stripe redelivers an event whose handler failed, sometimes
+     * hours later, and promises no order. An event older than the newest one
+     * already applied to the record is ignored: a redelivered "payment
+     * failed" used to be written over the "paid" that arrived in between.
+     * Null (a caller that does not know) applies the event as before.
      */
-    public static function handleSubscriptionUpdated(object $subscription): void
+    public static function handleSubscriptionUpdated(object $subscription, ?int $eventCreatedAt = null): void
     {
         $stripeSubId = $subscription->id ?? null;
         if (!$stripeSubId) {
@@ -925,12 +943,22 @@ class StripeSubscriptionService
         }
 
         $assignment = DB::selectOne(
-            "SELECT id, tenant_id, pay_plan_id, status FROM tenant_plan_assignments WHERE stripe_subscription_id = ?",
+            "SELECT id, tenant_id, pay_plan_id, status, stripe_event_at FROM tenant_plan_assignments WHERE stripe_subscription_id = ?",
             [$stripeSubId]
         );
 
         if (!$assignment) {
             Log::info('Stripe subscription.updated — no matching assignment', ['subscription_id' => $stripeSubId]);
+            return;
+        }
+
+        $appliedAt = isset($assignment->stripe_event_at) ? strtotime((string) $assignment->stripe_event_at) : false;
+        if ($eventCreatedAt !== null && $appliedAt !== false && $eventCreatedAt < $appliedAt) {
+            Log::info('Stripe subscription.updated older than the one already applied — ignored', [
+                'subscription_id' => $stripeSubId,
+                'event_created_at' => date('Y-m-d H:i:s', $eventCreatedAt),
+                'applied_event_at' => (string) $assignment->stripe_event_at,
+            ]);
             return;
         }
 
@@ -959,16 +987,27 @@ class StripeSubscriptionService
         ];
         $nexusStatus = $statusMap[$stripeStatus] ?? 'expired';
 
-        $periodEnd = isset($subscription->current_period_end)
-            ? date('Y-m-d H:i:s', $subscription->current_period_end)
-            : null;
+        // Stripe API versions from 2025-03-31 moved the period end from the
+        // subscription onto each of its items. Both are read. When neither is
+        // there the stored date is KEPT (it used to be overwritten with NULL,
+        // which switched the renewal reminders off).
+        $stripeItems = $subscription->items->data ?? [];
+        $firstItem = is_array($stripeItems) ? ($stripeItems[0] ?? null) : null;
+        $periodEndTs = $subscription->current_period_end ?? ($firstItem->current_period_end ?? null);
+        $periodEnd = is_numeric($periodEndTs) ? date('Y-m-d H:i:s', (int) $periodEndTs) : null;
+
+        // Monthly or yearly, from the price Stripe says the subscription is on.
+        $billingInterval = match ($firstItem->price->recurring->interval ?? null) {
+            'month' => 'monthly',
+            'year' => 'yearly',
+            default => null,
+        };
 
         // F-178: derive the plan from the subscription's price. A plan change
         // made in the Stripe billing portal arrives only as a new price id; it
         // never reached pay_plan_id, so the platform kept the old plan.
         $oldPlanId = (int) ($assignment->pay_plan_id ?? 0);
         $newPlanId = $oldPlanId;
-        $stripeItems = $subscription->items->data ?? [];
         $newPriceId = !empty($stripeItems) ? ($stripeItems[0]->price->id ?? null) : null;
         if ($newPriceId) {
             $pricedPlanId = self::planIdForStripePrice((string) $newPriceId);
@@ -985,12 +1024,24 @@ class StripeSubscriptionService
         try {
             DB::update(
                 "UPDATE tenant_plan_assignments
-                 SET status = ?, stripe_status = ?, stripe_current_period_end = ?, pay_plan_id = ?, updated_at = NOW()
+                 SET status = ?, stripe_status = ?,
+                     stripe_current_period_end = COALESCE(?, stripe_current_period_end),
+                     billing_interval = COALESCE(?, billing_interval),
+                     stripe_event_at = COALESCE(?, stripe_event_at),
+                     pay_plan_id = ?, updated_at = NOW()
                  WHERE id = ?",
                 // stripe_status is Stripe's own word: the daily billing check
                 // reads it to tell "still retrying the card" (past_due) from
                 // "given up" (unpaid), which `status` folds into one value.
-                [$nexusStatus, substr((string) $stripeStatus, 0, 30), $periodEnd, $newPlanId, $assignment->id]
+                [
+                    $nexusStatus,
+                    substr((string) $stripeStatus, 0, 30),
+                    $periodEnd,
+                    $billingInterval,
+                    $eventCreatedAt !== null ? date('Y-m-d H:i:s', $eventCreatedAt) : null,
+                    $newPlanId,
+                    $assignment->id,
+                ]
             );
 
             Log::info('Stripe subscription updated', [
@@ -1126,11 +1177,45 @@ class StripeSubscriptionService
     }
 
     /**
+     * The subscription an invoice belongs to, or null for a one-off invoice.
+     *
+     * Stripe API versions before 2025-03-31 put it at `invoice.subscription`;
+     * from that version it is at
+     * `invoice.parent.subscription_details.subscription`. Both are read: with
+     * only the old position, a webhook endpoint on a newer version would have
+     * every renewal and every failed payment ignored, so paid-until dates would
+     * stop moving after the first checkout. Either may be the id or the
+     * expanded subscription object.
+     */
+    private static function subscriptionIdOfInvoice(object $invoice): ?string
+    {
+        foreach ([
+            $invoice->subscription ?? null,
+            $invoice->parent->subscription_details->subscription ?? null,
+        ] as $candidate) {
+            if (is_string($candidate) && $candidate !== '') {
+                return $candidate;
+            }
+            if (is_object($candidate) && is_string($candidate->id ?? null) && $candidate->id !== '') {
+                return $candidate->id;
+            }
+        }
+
+        return null;
+    }
+
+    /** `monthly` or `yearly`, or null for anything else. */
+    private static function knownInterval(mixed $value): ?string
+    {
+        return in_array($value, ['monthly', 'yearly'], true) ? $value : null;
+    }
+
+    /**
      * Handle invoice.paid — update current_period_end.
      */
     public static function handleInvoicePaid(object $invoice): void
     {
-        $stripeSubId = $invoice->subscription ?? null;
+        $stripeSubId = self::subscriptionIdOfInvoice($invoice);
         if (!$stripeSubId) {
             return;
         }
@@ -1316,7 +1401,7 @@ class StripeSubscriptionService
      */
     public static function handleInvoicePaymentFailed(object $invoice): void
     {
-        $stripeSubId = $invoice->subscription ?? null;
+        $stripeSubId = self::subscriptionIdOfInvoice($invoice);
 
         $assignment = null;
         if ($stripeSubId) {
@@ -1519,40 +1604,66 @@ class StripeSubscriptionService
         TenantContext::setById($tenantId);
 
         try {
-            $admin = DB::table('users')
+            // Every active admin of the community, the same people the pause
+            // and plan notices go to (BillingStandingNotifier::admins()). It
+            // used to be the first `role = 'admin'` row of ANY status, so a
+            // community run by admins who hold the flag and not the role had
+            // nobody, every billing webhook for it failed, and Stripe kept
+            // redelivering.
+            $admins = DB::table('users')
                 ->where('tenant_id', $tenantId)
-                ->where('role', 'admin')
+                ->where('status', 'active')
                 ->whereNotNull('email')
-                ->select(['email', 'first_name', 'name', 'preferred_language'])
-                ->first();
+                ->where('email', '<>', '')
+                ->where(static function ($query): void {
+                    $query->whereIn('role', ['admin', 'tenant_admin'])
+                        ->orWhere('is_admin', 1)
+                        ->orWhere('is_tenant_super_admin', 1)
+                        ->orWhere('is_super_admin', 1);
+                })
+                ->orderBy('id')
+                ->get(['email', 'first_name', 'name', 'preferred_language']);
 
-            if (!$admin || empty($admin->email)) {
-                return false;
-            }
-
-            return (bool) LocaleContext::withLocale($admin, function () use ($admin, $subject, $title, $body, $link, $ctaText, $theme, $tenantId): bool {
-                $firstName = $admin->first_name ?? $admin->name ?? __('emails.common.fallback_name');
-                $fullUrl   = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . $link;
-
-                $builder = EmailTemplateBuilder::make();
-                if ($theme !== 'default') {
-                    $builder->theme($theme);
-                }
-
-                $html = $builder
-                    ->title(__($title['key'], $title['params'] ?? []))
-                    ->greeting($firstName)
-                    ->paragraph(__($body['key'], $body['params'] ?? []))
-                    ->button(__($ctaText['key'], $ctaText['params'] ?? []), $fullUrl)
-                    ->render();
-
-                if (!\App\Services\EmailDispatchService::sendRaw($admin->email, __($subject['key'], $subject['params'] ?? []), $html, null, null, null, 'billing', ['tenant_id' => $tenantId])) {
-                    Log::warning('[StripeSubscriptionService] tenant admin email failed', ['tenant_id' => $tenantId]);
-                    return false;
-                }
+            if ($admins->isEmpty()) {
+                // Nobody to tell is not a failed send: there is nothing a
+                // redelivery could do differently. Said loudly, once per event.
+                Log::warning('[StripeSubscriptionService] community has no active admin to email about billing', ['tenant_id' => $tenantId]);
 
                 return true;
-            });
+            }
+
+            $accepted = 0;
+            foreach ($admins as $admin) {
+                // Inside the loop: each admin reads it in their own language.
+                $sent = (bool) LocaleContext::withLocale($admin, function () use ($admin, $subject, $title, $body, $link, $ctaText, $theme, $tenantId): bool {
+                    $firstName = $admin->first_name ?? $admin->name ?? __('emails.common.fallback_name');
+                    $fullUrl   = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . $link;
+
+                    $builder = EmailTemplateBuilder::make();
+                    if ($theme !== 'default') {
+                        $builder->theme($theme);
+                    }
+
+                    $html = $builder
+                        ->title(__($title['key'], $title['params'] ?? []))
+                        ->greeting($firstName)
+                        ->paragraph(__($body['key'], $body['params'] ?? []))
+                        ->button(__($ctaText['key'], $ctaText['params'] ?? []), $fullUrl)
+                        ->render();
+
+                    return (bool) \App\Services\EmailDispatchService::sendRaw($admin->email, __($subject['key'], $subject['params'] ?? []), $html, null, null, null, 'billing', ['tenant_id' => $tenantId]);
+                });
+
+                if ($sent) {
+                    $accepted++;
+                } else {
+                    Log::warning('[StripeSubscriptionService] tenant admin email failed', ['tenant_id' => $tenantId]);
+                }
+            }
+
+            // Reaching one admin is enough: failing the whole event because a
+            // second address bounced would redeliver it to the first as well.
+            return $accepted > 0;
         } finally {
             if ($previousTenantId !== null) {
                 TenantContext::setById($previousTenantId);
@@ -1578,54 +1689,62 @@ class StripeSubscriptionService
     }
 
     /**
-     * Get subscription details for a tenant.
+     * The community's plan record in force, as its own billing page reads it
+     * (GET /v2/admin/billing/subscription; pinned key for key by
+     * tests/Laravel/Feature/Billing/CommunityBillingPageContractTest.php).
      *
-     * @return array|null Subscription info or null if no assignment exists
+     * The record in force is the newest active one, else the newest on trial,
+     * else the newest of any status: the same choice recordInForce() and
+     * PlanTerms::forCommunity() make. It used to be "the most recently
+     * created", which is a cancelled record whenever one is newer.
+     *
+     * Dates are ISO 8601 or null. `billing_interval` is `monthly`, `yearly`
+     * or null (not known). `stripe_status` is Stripe's own word for the card
+     * subscription, or null when there is none or Stripe has said nothing.
+     *
+     * @return array<string, mixed>|null null when the community has no plan record
      */
     public static function getSubscriptionDetails(int $tenantId): ?array
     {
-        try {
-            $result = DB::selectOne(
-                "SELECT tpa.id, tpa.tenant_id, tpa.pay_plan_id, tpa.status,
-                        tpa.starts_at, tpa.expires_at, tpa.trial_ends_at,
-                        tpa.stripe_subscription_id, tpa.stripe_current_period_end,
-                        tpa.created_at, tpa.updated_at,
-                        pp.name AS plan_name, pp.slug AS plan_slug,
-                        pp.tier_level AS plan_tier_level, pp.description AS plan_description,
-                        pp.price_monthly, pp.price_yearly
-                 FROM tenant_plan_assignments tpa
-                 JOIN pay_plans pp ON pp.id = tpa.pay_plan_id
-                 WHERE tpa.tenant_id = ?
-                 ORDER BY tpa.created_at DESC
-                 LIMIT 1",
-                [$tenantId]
-            );
-        } catch (\Exception $e) {
-            // Fallback if Stripe columns don't exist yet (migration not run)
-            Log::warning('getSubscriptionDetails: Stripe columns may not exist, falling back', [
-                'error' => $e->getMessage(),
-            ]);
-            $result = DB::selectOne(
-                "SELECT tpa.id, tpa.tenant_id, tpa.pay_plan_id, tpa.status,
-                        tpa.starts_at, tpa.expires_at, tpa.trial_ends_at,
-                        tpa.created_at, tpa.updated_at,
-                        pp.name AS plan_name, pp.slug AS plan_slug,
-                        pp.tier_level AS plan_tier_level, pp.description AS plan_description,
-                        pp.price_monthly, pp.price_yearly
-                 FROM tenant_plan_assignments tpa
-                 JOIN pay_plans pp ON pp.id = tpa.pay_plan_id
-                 WHERE tpa.tenant_id = ?
-                 ORDER BY tpa.created_at DESC
-                 LIMIT 1",
-                [$tenantId]
-            );
-        }
+        $row = DB::selectOne(
+            "SELECT tpa.id, tpa.pay_plan_id, tpa.status, tpa.stripe_status, tpa.billing_interval,
+                    tpa.starts_at, tpa.trial_ends_at,
+                    tpa.stripe_subscription_id, tpa.stripe_current_period_end,
+                    pp.name AS plan_name, pp.slug AS plan_slug,
+                    pp.tier_level AS plan_tier_level, pp.description AS plan_description
+             FROM tenant_plan_assignments tpa
+             JOIN pay_plans pp ON pp.id = tpa.pay_plan_id
+             WHERE tpa.tenant_id = ?
+             ORDER BY (tpa.status = 'active') DESC, (tpa.status = 'trial') DESC, tpa.id DESC
+             LIMIT 1",
+            [$tenantId]
+        );
 
-        if (!$result) {
+        if (!$row) {
             return null;
         }
 
-        return (array) $result;
+        $iso = static fn (mixed $value): ?string => $value !== null && $value !== ''
+            ? date('c', (int) strtotime((string) $value))
+            : null;
+
+        return [
+            'id' => (int) $row->id,
+            'pay_plan_id' => (int) $row->pay_plan_id,
+            'plan_name' => (string) $row->plan_name,
+            'plan_slug' => (string) $row->plan_slug,
+            'plan_tier_level' => (int) $row->plan_tier_level,
+            'plan_description' => $row->plan_description !== null ? (string) $row->plan_description : null,
+            'status' => (string) $row->status,
+            'stripe_status' => $row->stripe_status !== null ? (string) $row->stripe_status : null,
+            'billing_interval' => self::knownInterval($row->billing_interval),
+            'starts_at' => $iso($row->starts_at),
+            'current_period_end' => $iso($row->stripe_current_period_end),
+            'trial_ends_at' => $iso($row->trial_ends_at),
+            'stripe_subscription_id' => $row->stripe_subscription_id !== null && $row->stripe_subscription_id !== ''
+                ? (string) $row->stripe_subscription_id
+                : null,
+        ];
     }
 
     /**
@@ -1647,16 +1766,28 @@ class StripeSubscriptionService
                 'limit' => 50,
             ]);
 
+            // The shape the Invoices page reads (type `Invoice` in
+            // react-frontend/src/admin/api/billingApi.ts), pinned by
+            // CommunityBillingPageContractTest. It used to send `amount_paid`
+            // in cents and `created`, while the page read `amount`, `date`
+            // and `number`: every row showed no date and "NaN".
             $result = [];
             foreach ($invoices->data as $invoice) {
+                $currency = strtoupper((string) ($invoice->currency ?? 'EUR'));
+                // What the invoice is for in all: `total`, and what was paid
+                // when Stripe sends no total. Stripe counts in the smallest
+                // unit; euro and pounds both have two decimals.
+                $minor = $invoice->total ?? $invoice->amount_paid ?? 0;
+
                 $result[] = [
-                    'id' => $invoice->id,
-                    'amount_paid' => $invoice->amount_paid,
-                    'currency' => $invoice->currency,
-                    'status' => $invoice->status,
-                    'created' => date('Y-m-d H:i:s', $invoice->created),
-                    'hosted_invoice_url' => $invoice->hosted_invoice_url,
-                    'invoice_pdf' => $invoice->invoice_pdf,
+                    'id' => (string) $invoice->id,
+                    'number' => isset($invoice->number) && $invoice->number !== '' ? (string) $invoice->number : null,
+                    'date' => isset($invoice->created) ? date('c', (int) $invoice->created) : null,
+                    'amount' => round(((int) $minor) / 100, 2),
+                    'currency' => $currency !== '' ? $currency : 'EUR',
+                    'status' => (string) ($invoice->status ?? ''),
+                    'hosted_invoice_url' => $invoice->hosted_invoice_url ?? null,
+                    'invoice_pdf' => $invoice->invoice_pdf ?? null,
                 ];
             }
 
