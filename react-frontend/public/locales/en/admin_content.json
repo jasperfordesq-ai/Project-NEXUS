@@ -1451,7 +1451,8 @@
     "plan_stripe_warning_gbp_monthly": "The new pound monthly price did not reach Stripe.",
     "plan_stripe_warning_gbp_yearly": "The new pound yearly price did not reach Stripe.",
     "plan_stripe_warning_action": "New card sign-ups are still charged the old price. Press \"{{button}}\" to try again.",
-    "plan_whole_number_min": "{{field}} must be a whole number of {{min}} or more"
+    "plan_whole_number_min": "{{field}} must be a whole number of {{min}} or more",
+    "plan_setup_fee": "Setup fee"
   },
   "data_table": {
     "admin_data_table": "Data",

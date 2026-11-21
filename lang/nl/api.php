@@ -1151,6 +1151,7 @@ return [
     'branch_payments_card_subscription' => 'Deze gemeenschap betaalt het platform per kaart, dus alleen het platformteam kan haar pakket wijzigen.',
     'branch_payments_plan_not_offered' => 'De bovenliggende gemeenschap biedt dit pakket niet aan, dus deze gemeenschap kan er niet op worden gezet.',
     'billing_checkout_pays_parent' => 'Deze gemeenschap betaalt haar bovenliggende gemeenschap, dus er hoeft niets per kaart aan het platform te worden betaald.',
+    'billing_checkout_already_subscribed' => 'Deze community betaalt al met een kaart voor een plan, dus een tweede kaartbetaling kan niet worden gestart: beide zouden worden afgeschreven. Vraag het platformteam om van plan te veranderen.',
     'billing_plan_not_sold_monthly' => 'Dit pakket wordt niet per maand verkocht. Kies in plaats daarvan jaarlijkse facturering.',
     'billing_plan_not_sold_yearly' => 'Dit pakket wordt niet per jaar verkocht. Kies in plaats daarvan maandelijkse facturering.',
     'billing_standing_payment_paid_until_required' => 'Voer de datum in tot wanneer deze betaling de gemeenschap dekt.',

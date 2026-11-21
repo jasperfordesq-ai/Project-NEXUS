@@ -1453,7 +1453,8 @@
     "plan_stripe_warning_gbp_monthly": "Il nuovo prezzo mensile in sterline non è arrivato a Stripe.",
     "plan_stripe_warning_gbp_yearly": "Il nuovo prezzo annuale in sterline non è arrivato a Stripe.",
     "plan_stripe_warning_action": "Alle nuove iscrizioni con carta viene ancora addebitato il vecchio prezzo. Premi \"{{button}}\" per riprovare.",
-    "plan_whole_number_min": "{{field}} deve essere un numero intero pari o superiore a {{min}}"
+    "plan_whole_number_min": "{{field}} deve essere un numero intero pari o superiore a {{min}}",
+    "plan_setup_fee": "Costo di attivazione"
   },
   "data_table": {
     "admin_data_table": "Dati",

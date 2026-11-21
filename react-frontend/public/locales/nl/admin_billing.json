@@ -393,5 +393,14 @@
     "what_happens": "Wat er gebeurt",
     "move_on": "Overstap naar een groter plan op {{date}}",
     "follow_default_card": "De standaard volgen (nu: Alleen waarschuwen — een overstap doet het platformteam)"
+  },
+  "plan_facts": {
+    "already_by_card": "Deze community betaalt al met een kaart voor een plan. Een tweede kaartbetaling kan hier niet worden gestart, omdat beide zouden worden afgeschreven. Vraag het platformteam om van plan te veranderen.",
+    "members_up_to": "Tot {{max}} actieve leden",
+    "no_member_limit": "Geen ledenlimiet",
+    "setup_fee": "plus {{amount}} eenmalige opstartkosten",
+    "no_setup_fee": "Geen opstartkosten",
+    "year_one": "Eerste jaar {{first}}, daarna {{renewal}} per jaar",
+    "setup_fee_separate": "De eenmalige opstartkosten worden apart gefactureerd. Ze worden niet met de kaartbetaling afgeschreven."
   }
 }

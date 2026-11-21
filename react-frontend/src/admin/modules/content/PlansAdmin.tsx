@@ -124,7 +124,9 @@ export function PlansAdmin() {
       label: t('content.label_name'),
       sortable: true,
       render: (item) => (
-        <div className="flex flex-col gap-0.5">
+        // Bounded, so a long description wraps to two lines instead of
+        // pushing the member number, setup fee and status off the screen.
+        <div className="flex flex-col gap-0.5 min-w-48 max-w-sm whitespace-normal break-normal">
           {isSuperAdmin ? (
             <Button
               type="button"
@@ -138,7 +140,7 @@ export function PlansAdmin() {
             <span className="font-semibold">{item.name}</span>
           )}
           {item.description && (
-            <span className="text-xs text-muted line-clamp-1">{item.description}</span>
+            <span className="text-xs text-muted line-clamp-2">{item.description}</span>
           )}
         </div>
       ),
@@ -170,6 +172,24 @@ export function PlansAdmin() {
             <span className="text-xs text-muted">{t('content.plan_no_gbp_price')}</span>
           )}
           <span className="text-xs text-muted">{t('content.yearly_price_suffix', { price: formatPrice(item.price_yearly) })}</span>
+          {item.price_yearly_gbp != null ? (
+            <span className="text-xs text-muted">{t('content.yearly_price_suffix', { price: formatPrice(item.price_yearly_gbp, 'GBP') })}</span>
+          ) : null}
+        </div>
+      ),
+    },
+    {
+      // The one-off setup fee was stored but shown nowhere except the edit
+      // form (owner, 21 Nov 2026). Zero is a real answer ("no setup fee"), so
+      // it is shown as an amount, never as "Free".
+      key: 'setup_fee',
+      label: t('content.plan_setup_fee'),
+      render: (item) => (
+        <div className="flex flex-col gap-0.5 whitespace-nowrap">
+          <span className="text-sm">{formatCurrency(Number(item.setup_fee ?? 0), 'EUR')}</span>
+          {item.setup_fee_gbp != null ? (
+            <span className="text-sm">{formatCurrency(Number(item.setup_fee_gbp), 'GBP')}</span>
+          ) : null}
         </div>
       ),
     },

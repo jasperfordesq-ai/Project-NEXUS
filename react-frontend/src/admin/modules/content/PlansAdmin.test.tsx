@@ -258,6 +258,32 @@ describe('PlansAdmin', () => {
     expect(screen.getByText(/no pound price/i)).toBeInTheDocument();
   });
 
+  it('shows the one-off setup fee in both currencies, and the yearly pound price', async () => {
+    // Stored since 20 Nov 2026 and shown nowhere but the edit form until now.
+    resolveList([
+      {
+        ...PRO_PLAN,
+        price_yearly: '490.00', price_yearly_gbp: '420.00',
+        setup_fee: '750.00', setup_fee_gbp: '645.00',
+      },
+    ]);
+    render(<PlansAdmin />);
+    await waitFor(() => screen.getByText('Pro Plan'));
+
+    expect(screen.getAllByText('Setup fee').length).toBeGreaterThan(0);
+    expect(screen.getByText(/^€\s?750\.00$/)).toBeInTheDocument();
+    expect(screen.getByText(/^£\s?645\.00$/)).toBeInTheDocument();
+    expect(screen.getByText(/^£\s?420\.00\/yr$/)).toBeInTheDocument();
+  });
+
+  it('shows a zero setup fee as an amount, not as "Free"', async () => {
+    resolveList([{ ...PRO_PLAN, setup_fee: '0.00', setup_fee_gbp: null }]);
+    render(<PlansAdmin />);
+    await waitFor(() => screen.getByText('Pro Plan'));
+
+    expect(screen.getByText(/^€\s?0\.00$/)).toBeInTheDocument();
+  });
+
   it('shows error toast when initial load fails', async () => {
     mockPlansList.mockRejectedValue(new Error('Network error'));
     render(<PlansAdmin />);

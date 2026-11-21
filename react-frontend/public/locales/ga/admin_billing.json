@@ -405,5 +405,14 @@
     "what_happens": "Cad a tharlaíonn",
     "move_on": "Aistriú suas ar {{date}}",
     "follow_default_card": "Lean an réamhshocrú (faoi láthair: Rabhadh amháin — is í foireann an ardáin a dhéanann an t-aistriú)"
+  },
+  "plan_facts": {
+    "already_by_card": "Tá an pobal seo ag íoc as plean le cárta cheana féin. Ní féidir an dara híocaíocht chárta a thosú anseo, mar ghearrfaí an dá cheann. Chun an plean a athrú, iarr ar fhoireann an ardáin.",
+    "members_up_to": "Suas le {{max}} ball gníomhach",
+    "no_member_limit": "Gan teorainn ball",
+    "setup_fee": "móide táille bunaithe aonuaire {{amount}}",
+    "no_setup_fee": "Gan táille bunaithe",
+    "year_one": "An chéad bhliain {{first}}, ansin {{renewal}} in aghaidh na bliana",
+    "setup_fee_separate": "Gearrtar an táille bunaithe aonuaire ar leithligh. Ní thógtar í leis an íocaíocht chárta."
   }
 }

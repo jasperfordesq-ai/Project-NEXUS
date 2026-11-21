@@ -1457,7 +1457,8 @@
     "plan_stripe_warning_gbp_monthly": "Níor shroich an praghas míosúil nua i bpunt Stripe.",
     "plan_stripe_warning_gbp_yearly": "Níor shroich an praghas bliantúil nua i bpunt Stripe.",
     "plan_stripe_warning_action": "Gearrtar an seanphraghas fós ar chlárúcháin nua le cárta. Brúigh \"{{button}}\" chun triail eile a bhaint as.",
-    "plan_whole_number_min": "Caithfidh {{field}} a bheith ina shlánuimhir {{min}} nó níos mó"
+    "plan_whole_number_min": "Caithfidh {{field}} a bheith ina shlánuimhir {{min}} nó níos mó",
+    "plan_setup_fee": "Táille bunaithe"
   },
   "data_table": {
     "admin_data_table": "Sonraí",

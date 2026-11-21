@@ -401,5 +401,14 @@
     "what_happens": "Co się dzieje",
     "move_on": "Przejście na większy plan {{date}}",
     "follow_default_card": "Stosuj wartość domyślną (obecnie: Tylko ostrzegaj — zmianę planu wykonuje zespół platformy)"
+  },
+  "plan_facts": {
+    "already_by_card": "Ta społeczność płaci już kartą za plan. Nie można tu rozpocząć drugiej płatności kartą, ponieważ pobierane byłyby obie. Aby zmienić plan, zwróć się do zespołu platformy.",
+    "members_up_to": "Do {{max}} aktywnych członków",
+    "no_member_limit": "Bez limitu członków",
+    "setup_fee": "plus jednorazowa opłata za uruchomienie: {{amount}}",
+    "no_setup_fee": "Bez opłaty za uruchomienie",
+    "year_one": "Pierwszy rok {{first}}, potem {{renewal}} rocznie",
+    "setup_fee_separate": "Jednorazowa opłata za uruchomienie jest fakturowana osobno. Nie jest pobierana razem z płatnością kartą."
   }
 }

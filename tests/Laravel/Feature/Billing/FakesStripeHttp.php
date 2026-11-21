@@ -24,7 +24,7 @@ use Stripe\Util\CaseInsensitiveArray;
  */
 trait FakesStripeHttp
 {
-    /** @var ClientInterface&object{requests: array<int, array{method: string, path: string, params: array<string, mixed>}>, failPrices: bool} */
+    /** @var ClientInterface&object{requests: array<int, array{method: string, path: string, params: array<string, mixed>}>, failPrices: bool, subscriptionPeriodEnd: ?int} */
     private ClientInterface $stripe;
 
     private function installFakeStripe(): void
@@ -38,6 +38,8 @@ trait FakesStripeHttp
             public bool $failRetrieve = false;
             /** @var array<string, int> What each known Stripe price charges, in cents. */
             public array $priceAmounts = [];
+            /** When a subscription asked for by id is paid up to (a timestamp), or null for "Stripe cannot say". */
+            public ?int $subscriptionPeriodEnd = null;
             private int $n = 0;
 
             public function request($method, $absUrl, $headers, $params, $hasFile, $apiMode = 'v1')
@@ -69,6 +71,17 @@ trait FakesStripeHttp
                     $this->priceAmounts["price_fake_{$n}"] = (int) ($params['unit_amount'] ?? 0);
                 }
 
+                if ($method === 'GET' && str_starts_with($path, '/v1/subscriptions/')) {
+                    $id = substr($path, strlen('/v1/subscriptions/'));
+                    if ($this->subscriptionPeriodEnd === null) {
+                        $error = ['error' => ['type' => 'invalid_request_error', 'message' => "No such subscription in this test: {$id}"]];
+
+                        return [json_encode($error), 404, new CaseInsensitiveArray([])];
+                    }
+
+                    return [json_encode(['id' => $id, 'object' => 'subscription', 'current_period_end' => $this->subscriptionPeriodEnd]), 200, new CaseInsensitiveArray([])];
+                }
+
                 $body = match (true) {
                     $method === 'POST' && $path === '/v1/products' => ['id' => "prod_fake_{$n}", 'object' => 'product'],
                     $method === 'POST' && str_starts_with($path, '/v1/products/') => ['id' => substr($path, strlen('/v1/products/')), 'object' => 'product'],
@@ -77,6 +90,12 @@ trait FakesStripeHttp
                         'object' => 'price',
                         'currency' => $params['currency'] ?? null,
                         'unit_amount' => $params['unit_amount'] ?? null,
+                    ],
+                    $method === 'POST' && $path === '/v1/customers' => ['id' => "cus_fake_{$n}", 'object' => 'customer'],
+                    $method === 'POST' && $path === '/v1/checkout/sessions' => [
+                        'id' => "cs_fake_{$n}",
+                        'object' => 'checkout.session',
+                        'url' => "https://checkout.stripe.test/cs_fake_{$n}",
                     ],
                     default => throw new \RuntimeException("Unexpected Stripe request in this test: {$method} {$path}"),
                 };
@@ -91,6 +110,19 @@ trait FakesStripeHttp
     private function uninstallFakeStripe(): void
     {
         ApiRequestor::setHttpClient(null);
+    }
+
+    /**
+     * Every checkout session asked for, in order.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function checkoutSessionsCreated(): array
+    {
+        return array_values(array_map(
+            static fn (array $r): array => $r['params'],
+            array_filter($this->stripe->requests, static fn (array $r): bool => $r['method'] === 'POST' && $r['path'] === '/v1/checkout/sessions')
+        ));
     }
 
     /**

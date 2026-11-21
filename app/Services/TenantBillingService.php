@@ -822,18 +822,53 @@ class TenantBillingService
     }
 
     /**
+     * Stripe's words for a subscription that is over: nothing more will be
+     * charged or retried on it, and a new one may be started.
+     */
+    public const STRIPE_SUBSCRIPTION_ENDED = ['canceled', 'incomplete_expired'];
+
+    /**
      * Whether the community holds a card subscription with the platform that
-     * is still running: a current assignment record carrying a Stripe
-     * subscription id. An expired or cancelled record that still has its old
-     * id does not count.
+     * Stripe has not ended. The ONE definition of "a card payer": who a
+     * community pays by default (BillingStandingService::defaultPayer()), the
+     * refusal of a second checkout, the hub's "the platform team changes this
+     * plan" refusal and "move up" all ask here.
+     *
+     * What Stripe last said decides (`stripe_status`, kept word for word by
+     * the webhook handlers): every status except the two in
+     * STRIPE_SUBSCRIPTION_ENDED is a subscription that still exists. That
+     * includes `past_due`, `unpaid` and `paused`, which the record's own
+     * `status` folds into `expired`.
+     *
+     * 🔴 Until 21 November 2026 this asked `status IN (active, trial)`. A
+     * failed renewal is stored as `expired`, so the moment a card failed the
+     * community stopped being a card payer: the daily check no longer waited
+     * for Stripe (the owner's ruling of 20 November), its admins lost the
+     * Billing link they needed to fix the card, and a second subscription
+     * could be started beside the first.
+     *
+     * A record Stripe has said nothing about yet (`stripe_status` NULL, from
+     * before that column was kept) is judged by its own status, as before. A
+     * record cancelled here never counts.
      */
     public static function hasLiveCardSubscription(int $tenantId): bool
     {
         return DB::table('tenant_plan_assignments')
             ->where('tenant_id', $tenantId)
-            ->whereIn('status', ['active', 'trial', 'trialing'])
             ->whereNotNull('stripe_subscription_id')
             ->where('stripe_subscription_id', '<>', '')
+            ->where('status', '<>', 'cancelled')
+            ->where(static function ($query): void {
+                $query
+                    ->where(static function ($said): void {
+                        $said->whereNotNull('stripe_status')
+                            ->whereNotIn('stripe_status', self::STRIPE_SUBSCRIPTION_ENDED);
+                    })
+                    ->orWhere(static function ($silent): void {
+                        $silent->whereNull('stripe_status')
+                            ->whereIn('status', ['active', 'trial', 'trialing']);
+                    });
+            })
             ->exists();
     }
 

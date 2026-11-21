@@ -393,5 +393,14 @@
     "what_happens": "What happens",
     "move_on": "Move up on {{date}}",
     "follow_default_card": "Follow the default (currently: Warn only — a move is done by the platform team)"
+  },
+  "plan_facts": {
+    "already_by_card": "This community already pays for a plan by card. A second card payment cannot be started here, because both would be charged. To change plan, ask the platform team.",
+    "members_up_to": "Up to {{max}} active members",
+    "no_member_limit": "No member limit",
+    "setup_fee": "plus {{amount}} one-off setup fee",
+    "no_setup_fee": "No setup fee",
+    "year_one": "Year one {{first}}, then {{renewal}} a year",
+    "setup_fee_separate": "The one-off setup fee is billed separately. It is not taken with the card payment."
   }
 }

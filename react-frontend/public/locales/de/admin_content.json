@@ -1451,7 +1451,8 @@
     "plan_stripe_warning_gbp_monthly": "Der neue monatliche Pfund-Preis ist nicht bei Stripe angekommen.",
     "plan_stripe_warning_gbp_yearly": "Der neue jährliche Pfund-Preis ist nicht bei Stripe angekommen.",
     "plan_stripe_warning_action": "Neue Kartenanmeldungen zahlen weiterhin den alten Preis. Klicken Sie auf „{{button}}“, um es erneut zu versuchen.",
-    "plan_whole_number_min": "{{field}} muss eine ganze Zahl von mindestens {{min}} sein"
+    "plan_whole_number_min": "{{field}} muss eine ganze Zahl von mindestens {{min}} sein",
+    "plan_setup_fee": "Einrichtungsgebühr"
   },
   "data_table": {
     "admin_data_table": "Daten",

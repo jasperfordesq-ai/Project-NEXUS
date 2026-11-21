@@ -11,6 +11,7 @@ use App\I18n\LocaleContext;
 use App\Services\BillingAutomationService;
 use App\Services\BillingStandingService;
 use App\Services\StripeSubscriptionService;
+use App\Services\TenantBillingService;
 use App\Support\Billing\BillingLock;
 use App\Support\Billing\PlanTerms;
 use Illuminate\Http\JsonResponse;
@@ -36,6 +37,13 @@ class AdminBillingController extends BaseApiController
         $tenantId = TenantContext::getId();
 
         $subscription = StripeSubscriptionService::getSubscriptionDetails($tenantId);
+
+        if (is_array($subscription)) {
+            // Whether Stripe still has a card subscription open for this
+            // community. The plan picker stops offering "Subscribe" on it:
+            // a second checkout is refused (createCheckoutSession()).
+            $subscription['has_card_subscription'] = TenantBillingService::hasLiveCardSubscription((int) $tenantId);
+        }
 
         return $this->respondWithData($subscription);
     }
@@ -144,6 +152,13 @@ class AdminBillingController extends BaseApiController
             return $this->respondWithError('PAYS_PARENT', __('api.billing_checkout_pays_parent'), null, 422);
         }
 
+        // A community that already has a card subscription open in Stripe
+        // does not get a second one beside it: both would be charged. "Change
+        // plan" used to do exactly that (found 21 November 2026).
+        if (TenantBillingService::hasLiveCardSubscription((int) $tenantId)) {
+            return $this->respondWithError('ALREADY_SUBSCRIBED', __('api.billing_checkout_already_subscribed'), null, 422);
+        }
+
         $planId = (int) $this->requireInput('plan_id');
         $billingInterval = $this->requireInput('billing_interval');
 
@@ -209,6 +224,13 @@ class AdminBillingController extends BaseApiController
         try {
             $result = StripeSubscriptionService::createCheckoutSession($tenantId, $planId, $billingInterval);
             return $this->respondWithData($result);
+        } catch (\DomainException $e) {
+            // The service's own refusal: a subscription was opened between
+            // the check above and this call.
+            if ($e->getMessage() === 'billing_already_subscribed') {
+                return $this->respondWithError('ALREADY_SUBSCRIBED', __('api.billing_checkout_already_subscribed'), null, 422);
+            }
+            throw $e;
         } catch (\Exception $e) {
             Log::error('AdminBillingController::createCheckoutSession failed', [
                 'tenant_id' => $tenantId,
@@ -301,22 +323,36 @@ class AdminBillingController extends BaseApiController
     /**
      * GET /v2/billing/plans (public, no auth)
      *
-     * Returns all active plans with prices for the pricing page.
+     * Every active plan as the plan picker shows it. Besides the name and the
+     * euro prices this carries what a plan allows and costs to start (owner,
+     * 21 Nov 2026: the picker showed neither the member number nor the setup
+     * fee): `max_users`, the three allowances, both currencies' prices and
+     * setup fees, and `charge`.
+     *
+     * `charge.monthly` / `charge.yearly` are `{currency, amount, setup_fee}`:
+     * what card checkout would charge the community this request is for, in
+     * the currency it is billed in (StripeSubscriptionService::quoteFor(),
+     * the checkout's own rule). The picker shows these, so a community billed
+     * in pounds is quoted pounds. With no community in context it is euro.
+     *
+     * All of it is the published price list; nothing here is private.
      */
     public function getPlansPublic(): JsonResponse
     {
-        $plans = array_map(fn($r) => (array) $r, DB::select(
-            "SELECT id, name, slug, description, tier_level, features,
-                    price_monthly, price_yearly, is_active
+        $rows = DB::select(
+            "SELECT id, name, slug, description, tier_level, features, max_users,
+                    price_monthly, price_yearly, setup_fee,
+                    price_monthly_gbp, price_yearly_gbp, setup_fee_gbp,
+                    max_communities, storage_gb, emails_per_month, is_active
              FROM pay_plans
              WHERE is_active = 1
              ORDER BY tier_level ASC, name ASC"
-        ));
+        );
 
         // Deduplicate by tier_level — keep lowest id per tier to avoid showing multiple free/same-tier plans
         $seenTiers = [];
-        $plans = array_values(array_filter($plans, function (array $plan) use (&$seenTiers): bool {
-            $tier = $plan['tier_level'];
+        $rows = array_values(array_filter($rows, function (object $row) use (&$seenTiers): bool {
+            $tier = $row->tier_level;
             if (in_array($tier, $seenTiers, true)) {
                 return false;
             }
@@ -324,20 +360,45 @@ class AdminBillingController extends BaseApiController
             return true;
         }));
 
-        foreach ($plans as &$plan) {
-            if (isset($plan['features'])) {
-                $decoded = json_decode($plan['features'], true) ?: [];
-                // Features may be stored as {"listings": true, "groups": true} (object)
-                // or as ["listings", "groups"] (array). Normalize to string[] for frontend.
-                if (is_array($decoded) && !array_is_list($decoded)) {
-                    // Object format — extract keys where value is truthy
-                    $plan['features'] = array_keys(array_filter($decoded));
-                } else {
-                    $plan['features'] = array_values($decoded);
-                }
-            }
+        $tenantId = (int) (TenantContext::currentId() ?? 0);
+        $communityCurrency = $tenantId > 0 ? StripeSubscriptionService::billingCurrencyFor($tenantId) : 'eur';
+
+        $nullableInt = static fn (mixed $value): ?int => $value !== null ? (int) $value : null;
+        $nullableMoney = static fn (mixed $value): ?float => $value !== null ? (float) $value : null;
+
+        $plans = [];
+        foreach ($rows as $row) {
+            $decoded = json_decode((string) ($row->features ?? ''), true) ?: [];
+            // Features may be stored as {"listings": true, "groups": true} (object)
+            // or as ["listings", "groups"] (array). Normalize to string[] for frontend.
+            $features = is_array($decoded) && !array_is_list($decoded)
+                ? array_keys(array_filter($decoded))
+                : array_values((array) $decoded);
+
+            $plans[] = [
+                'id' => (int) $row->id,
+                'name' => (string) $row->name,
+                'slug' => (string) $row->slug,
+                'description' => $row->description,
+                'tier_level' => (int) $row->tier_level,
+                'features' => $features,
+                'max_users' => $nullableInt($row->max_users),
+                'price_monthly' => (float) $row->price_monthly,
+                'price_yearly' => (float) $row->price_yearly,
+                'setup_fee' => (float) $row->setup_fee,
+                'price_monthly_gbp' => $nullableMoney($row->price_monthly_gbp),
+                'price_yearly_gbp' => $nullableMoney($row->price_yearly_gbp),
+                'setup_fee_gbp' => $nullableMoney($row->setup_fee_gbp),
+                'max_communities' => $nullableInt($row->max_communities),
+                'storage_gb' => $nullableInt($row->storage_gb),
+                'emails_per_month' => $nullableInt($row->emails_per_month),
+                'is_active' => (int) $row->is_active,
+                'charge' => [
+                    'monthly' => StripeSubscriptionService::quoteFor($row, 'monthly', $communityCurrency),
+                    'yearly' => StripeSubscriptionService::quoteFor($row, 'yearly', $communityCurrency),
+                ],
+            ];
         }
-        unset($plan);
 
         return $this->respondWithData($plans);
     }

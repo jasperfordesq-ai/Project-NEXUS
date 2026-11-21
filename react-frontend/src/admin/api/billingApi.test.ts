@@ -26,13 +26,25 @@ const mockPlan: Plan = {
   tier_level: 1,
   price_monthly: 0,
   price_yearly: 0,
+  setup_fee: 0,
+  price_monthly_gbp: null,
+  price_yearly_gbp: null,
+  setup_fee_gbp: null,
+  max_users: 1000,
+  max_communities: 3,
+  storage_gb: 25,
+  emails_per_month: 50000,
   features: ['basic_listings', 'wallet'],
-  is_active: true,
+  is_active: 1,
+  charge: {
+    monthly: { currency: 'eur', amount: 0, setup_fee: 0 },
+    yearly: { currency: 'eur', amount: 0, setup_fee: 0 },
+  },
 };
 
 const mockSubscription: SubscriptionDetails = {
   id: 42,
-  plan_id: 2,
+  pay_plan_id: 2,
   plan_name: 'Pro',
   plan_tier_level: 2,
   status: 'active',

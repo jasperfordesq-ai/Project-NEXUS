@@ -96,13 +96,9 @@ class StripeSubscriptionServiceTest extends TestCase
             return $callback();
         });
 
-        DB::shouldReceive('selectOne')
-            ->once()
-            ->with(
-                "SELECT id, status, stripe_subscription_id FROM tenant_plan_assignments WHERE tenant_id = ?",
-                [2]
-            )
-            ->andReturnNull();
+        // No record carries this subscription yet, and the community has no
+        // plan record at all.
+        $this->mockAssignmentLookups('sub_test_456', 2, null);
 
         DB::shouldReceive('insert')->once()->andReturn(true);
 
@@ -141,15 +137,20 @@ class StripeSubscriptionServiceTest extends TestCase
             return $callback();
         });
 
-        DB::shouldReceive('selectOne')
+        // The record in force carries an older subscription that Stripe has
+        // ended. It is the one record written, by its id.
+        $this->mockAssignmentLookups('sub_test_789', 2, (object) [
+            'id' => 10, 'tenant_id' => 2, 'status' => 'cancelled',
+            'stripe_subscription_id' => 'sub_old', 'stripe_status' => 'canceled',
+        ]);
+
+        DB::shouldReceive('update')
             ->once()
             ->with(
-                "SELECT id, status, stripe_subscription_id FROM tenant_plan_assignments WHERE tenant_id = ?",
-                [2]
+                Mockery::on(static fn ($sql): bool => str_contains((string) $sql, 'WHERE id = ? AND tenant_id = ?')),
+                [3, 'sub_test_789', 10, 2]
             )
-            ->andReturn((object) ['id' => 10, 'status' => 'active', 'stripe_subscription_id' => 'sub_old']);
-
-        DB::shouldReceive('update')->once()->andReturn(1);
+            ->andReturn(1);
 
         $this->mockActivationEmailPath(3, 'Team');
         $this->expectUnreadablePeriodEnd();
@@ -158,6 +159,32 @@ class StripeSubscriptionServiceTest extends TestCase
         Log::shouldReceive('info')->once();
 
         StripeSubscriptionService::handleCheckoutCompleted($session);
+    }
+
+    /**
+     * The two lookups a completed checkout makes before it writes: is this
+     * subscription already on a record, and which record is in force. One
+     * record is written (never `WHERE tenant_id = ?`, which failed on the
+     * unique subscription id as soon as a community had two records).
+     */
+    private function mockAssignmentLookups(string $subscriptionId, int $tenantId, ?object $recordInForce): void
+    {
+        DB::shouldReceive('selectOne')
+            ->once()
+            ->with(
+                Mockery::on(static fn ($sql): bool => str_contains((string) $sql, 'WHERE stripe_subscription_id = ? FOR UPDATE')),
+                [$subscriptionId]
+            )
+            ->andReturnNull();
+
+        DB::shouldReceive('selectOne')
+            ->once()
+            ->with(
+                Mockery::on(static fn ($sql): bool => str_contains((string) $sql, 'WHERE tenant_id = ?')
+                    && str_contains((string) $sql, "ORDER BY (status = 'active') DESC")),
+                [$tenantId]
+            )
+            ->andReturn($recordInForce);
     }
 
     /**

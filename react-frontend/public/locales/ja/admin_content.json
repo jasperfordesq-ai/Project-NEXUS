@@ -1451,7 +1451,8 @@
     "plan_stripe_warning_gbp_monthly": "新しいポンドの月額料金が Stripe に反映されていません。",
     "plan_stripe_warning_gbp_yearly": "新しいポンドの年額料金が Stripe に反映されていません。",
     "plan_stripe_warning_action": "新しいカードでの申し込みには、引き続き旧価格が請求されます。「{{button}}」を押して再試行してください。",
-    "plan_whole_number_min": "{{field}}は{{min}}以上の整数で入力してください"
+    "plan_whole_number_min": "{{field}}は{{min}}以上の整数で入力してください",
+    "plan_setup_fee": "初期費用"
   },
   "data_table": {
     "admin_data_table": "データ",

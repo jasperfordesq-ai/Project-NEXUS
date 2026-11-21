@@ -46,30 +46,81 @@ vi.mock('react-router-dom', async (importOriginal) => {
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
 // ─── Sample data ─────────────────────────────────────────────────────────────
+// The server's shape, key for key: GET /v2/billing/plans
+// (AdminBillingController::getPlansPublic), pinned from the other end by
+// tests/Laravel/Feature/Billing/PublicPlansContractTest.php. Until 21 Nov 2026
+// this fixture was invented (`plan_id` on the subscription, no member number,
+// no setup fee, no `charge`), and the screen was wrong in every place the
+// invention differed from the server.
+const plan = (over: Record<string, unknown>) => ({
+  description: null,
+  features: [],
+  max_users: null,
+  price_monthly: 0,
+  price_yearly: 0,
+  setup_fee: 0,
+  price_monthly_gbp: null,
+  price_yearly_gbp: null,
+  setup_fee_gbp: null,
+  max_communities: null,
+  storage_gb: null,
+  emails_per_month: null,
+  is_active: 1,
+  charge: {
+    monthly: { currency: 'eur', amount: 0, setup_fee: 0 },
+    yearly: { currency: 'eur', amount: 0, setup_fee: 0 },
+  },
+  ...over,
+});
+
 const PLANS = [
-  {
+  plan({
     id: 1,
     name: 'Free',
     slug: 'free',
     description: 'Free tier',
     tier_level: 0,
-    price_monthly: 0,
-    price_yearly: 0,
     features: ['Unlimited members'],
-    is_active: true,
-  },
-  {
+  }),
+  plan({
     id: 2,
     name: 'Pro',
     slug: 'pro',
     description: 'Pro tier',
     tier_level: 1,
+    max_users: 500,
     price_monthly: 29,
     price_yearly: 290,
     features: ['Everything in Free', 'Analytics'],
-    is_active: true,
-  },
+    charge: {
+      monthly: { currency: 'eur', amount: 29, setup_fee: 0 },
+      yearly: { currency: 'eur', amount: 290, setup_fee: 0 },
+    },
+  }),
 ];
+
+/** The standard "Local" package as a euro and as a pound community is quoted it. */
+const local = (currency: 'eur' | 'gbp') => plan({
+  id: 16,
+  name: 'Local',
+  slug: 'local',
+  description: '101 to 300 active members. Best for established local timebanks that have outgrown a pilot.',
+  tier_level: 2,
+  max_users: 300,
+  price_monthly: 229,
+  price_yearly: 2290,
+  setup_fee: 750,
+  price_monthly_gbp: 199,
+  price_yearly_gbp: 1990,
+  setup_fee_gbp: 645,
+  max_communities: 1,
+  storage_gb: 10,
+  emails_per_month: 20000,
+  features: ['1 community', '10 GB storage'],
+  charge: currency === 'gbp'
+    ? { monthly: { currency: 'gbp', amount: 199, setup_fee: 645 }, yearly: { currency: 'gbp', amount: 1990, setup_fee: 645 } }
+    : { monthly: { currency: 'eur', amount: 229, setup_fee: 750 }, yearly: { currency: 'eur', amount: 2290, setup_fee: 750 } },
+});
 
 import { PlanSelector } from './PlanSelector';
 
@@ -195,9 +246,12 @@ describe('PlanSelector', () => {
   });
 
   it('marks current plan and disables its subscribe button', async () => {
+    // `pay_plan_id` is the server's name (getSubscriptionDetails). The screen
+    // read `plan_id`, which never arrives, so no plan was ever "Current" and a
+    // card payer could subscribe to its own plan a second time.
     const subscription = {
       id: 10,
-      plan_id: 2,
+      pay_plan_id: 2,
       plan_name: 'Pro',
       plan_tier_level: 1,
       status: 'active',
@@ -223,5 +277,179 @@ describe('PlanSelector', () => {
     // (HeroUI disabled buttons won't fire onPress — just confirm aria-disabled)
     const currentBtns = screen.getAllByRole('button', { name: /current/i });
     expect(currentBtns.length).toBeGreaterThan(0);
+
+    // No live "Subscribe" is left: Pro is the current plan, and Free is a
+    // downgrade from a paid plan ("Contact Support").
+    expect(screen.queryByRole('button', { name: /subscribe/i })).not.toBeInTheDocument();
+  });
+
+  it('offers no second card payment to a community that already pays by card', async () => {
+    // A checkout always starts a NEW Stripe subscription. "Change plan" sent
+    // a card payer through one, and both subscriptions were then charged.
+    // The server now refuses it; the screen stops offering it and says who
+    // can change the plan.
+    const subscription = {
+      id: 10,
+      pay_plan_id: 16,
+      plan_name: 'Local',
+      plan_tier_level: 2,
+      status: 'active',
+      stripe_subscription_id: 'sub_123',
+      has_card_subscription: true,
+    };
+    mockBillingApi.getPlans.mockResolvedValue({ success: true, data: [PLANS[1], local('eur')] });
+    mockBillingApi.getSubscription.mockResolvedValue({ success: true, data: subscription });
+
+    render(<PlanSelector />);
+
+    await waitFor(() => expect(screen.getByText('Local')).toBeInTheDocument());
+
+    expect(screen.getByText(/already pays for a plan by card/i)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /subscribe/i })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /^current$/i })).toHaveLength(1);
+    expect(screen.getAllByRole('button', { name: /contact support/i })).toHaveLength(1);
+  });
+
+  it('still marks the plan of a card payer whose card has failed, and offers no new payment', async () => {
+    // A failed renewal is recorded as `expired`. The community is still on
+    // that plan and Stripe is still collecting for it.
+    const subscription = {
+      id: 10,
+      pay_plan_id: 16,
+      plan_name: 'Local',
+      plan_tier_level: 2,
+      status: 'expired',
+      stripe_subscription_id: 'sub_123',
+      has_card_subscription: true,
+    };
+    mockBillingApi.getPlans.mockResolvedValue({ success: true, data: [PLANS[1], local('eur')] });
+    mockBillingApi.getSubscription.mockResolvedValue({ success: true, data: subscription });
+
+    render(<PlanSelector />);
+
+    await waitFor(() => expect(screen.getByText('Local')).toBeInTheDocument());
+
+    expect(screen.getAllByRole('button', { name: /^current$/i })).toHaveLength(1);
+    expect(screen.queryByRole('button', { name: /subscribe/i })).not.toBeInTheDocument();
+  });
+
+  it('says nothing about card payments to a community with no card subscription', async () => {
+    const subscription = {
+      id: 10, pay_plan_id: 16, plan_name: 'Local', plan_tier_level: 2, status: 'active',
+      stripe_subscription_id: null, has_card_subscription: false,
+    };
+    mockBillingApi.getPlans.mockResolvedValue({ success: true, data: [PLANS[1], local('eur')] });
+    mockBillingApi.getSubscription.mockResolvedValue({ success: true, data: subscription });
+
+    render(<PlanSelector />);
+
+    await waitFor(() => expect(screen.getByText('Local')).toBeInTheDocument());
+
+    expect(screen.queryByText(/already pays for a plan by card/i)).not.toBeInTheDocument();
+    // A plan given by hand: paying for another one by card is a first checkout.
+    expect(screen.getAllByRole('button', { name: /subscribe/i })).toHaveLength(1);
+  });
+
+  it('says how many members a plan allows, from its own number', async () => {
+    mockBillingApi.getPlans.mockResolvedValue({ success: true, data: [PLANS[0], local('eur')] });
+    mockBillingApi.getSubscription.mockRejectedValue(new Error('No subscription'));
+
+    render(<PlanSelector />);
+
+    await waitFor(() => expect(screen.getByText('Local')).toBeInTheDocument());
+
+    expect(screen.getByText('Up to 300 active members')).toBeInTheDocument();
+    // A plan with no number says so, instead of saying nothing.
+    expect(screen.getByText('No member limit')).toBeInTheDocument();
+  });
+
+  it('shows the one-off setup fee, and that it is not taken by card', async () => {
+    mockBillingApi.getPlans.mockResolvedValue({ success: true, data: [local('eur')] });
+    mockBillingApi.getSubscription.mockRejectedValue(new Error('No subscription'));
+
+    render(<PlanSelector />);
+
+    await waitFor(() => expect(screen.getByText('Local')).toBeInTheDocument());
+
+    expect(screen.getByText('€229')).toBeInTheDocument();
+    expect(screen.getByText('plus €750 one-off setup fee')).toBeInTheDocument();
+    expect(screen.getByText(/setup fee is billed separately/i)).toBeInTheDocument();
+  });
+
+  it('says "No setup fee" for a paid plan without one, and nothing about fees for a free plan', async () => {
+    mockBillingApi.getPlans.mockResolvedValue({ success: true, data: PLANS });
+    mockBillingApi.getSubscription.mockRejectedValue(new Error('No subscription'));
+
+    render(<PlanSelector />);
+
+    await waitFor(() => expect(screen.getByText('Pro')).toBeInTheDocument());
+
+    // Pro only: the Free card has no fee line at all.
+    expect(screen.getAllByText('No setup fee')).toHaveLength(1);
+    expect(screen.queryByText(/billed separately/i)).not.toBeInTheDocument();
+  });
+
+  it('quotes a pound community in pounds, as the server says it will be charged', async () => {
+    // The fault: every price was formatted as euro. A pound community read
+    // "€229.00" and Stripe charged £199.
+    mockBillingApi.getPlans.mockResolvedValue({ success: true, data: [local('gbp')] });
+    mockBillingApi.getSubscription.mockRejectedValue(new Error('No subscription'));
+
+    render(<PlanSelector />);
+
+    await waitFor(() => expect(screen.getByText('Local')).toBeInTheDocument());
+
+    expect(screen.getByText('£199')).toBeInTheDocument();
+    expect(screen.getByText('plus £645 one-off setup fee')).toBeInTheDocument();
+    expect(screen.queryByText(/€/)).not.toBeInTheDocument();
+  });
+
+  it('on yearly, shows the first year with the setup fee and the renewal after it', async () => {
+    const user = userEvent.setup();
+    mockBillingApi.getPlans.mockResolvedValue({ success: true, data: [local('gbp')] });
+    mockBillingApi.getSubscription.mockRejectedValue(new Error('No subscription'));
+
+    render(<PlanSelector />);
+
+    await waitFor(() => expect(screen.getByText('Local')).toBeInTheDocument());
+    await user.click(screen.getByRole('button', { name: /^Yearly/i }));
+
+    // The pricing page's own sum: £645 setup + £1,990 = £2,635.
+    await waitFor(() => {
+      expect(screen.getByText('Year one £2,635, then £1,990 a year')).toBeInTheDocument();
+    });
+    expect(screen.getByText('£1,990')).toBeInTheDocument();
+  });
+
+  it('puts a real number in the yearly saving, never a raw placeholder', async () => {
+    mockBillingApi.getPlans.mockResolvedValue({ success: true, data: [local('eur')] });
+    mockBillingApi.getSubscription.mockRejectedValue(new Error('No subscription'));
+
+    render(<PlanSelector />);
+
+    await waitFor(() => expect(screen.getByText('Local')).toBeInTheDocument());
+
+    // Ten months' price for twelve: 17%.
+    expect(screen.getByText('Save 17%')).toBeInTheDocument();
+    expect(screen.queryByText(/\{\{/)).not.toBeInTheDocument();
+  });
+
+  it('shows the server\'s own reason when checkout is refused', async () => {
+    mockBillingApi.getPlans.mockResolvedValue({ success: true, data: [local('eur')] });
+    mockBillingApi.getSubscription.mockRejectedValue(new Error('No subscription'));
+    mockBillingApi.createCheckout.mockResolvedValue({
+      success: false,
+      error: 'This community pays its parent community, not the platform.',
+    });
+
+    const user = userEvent.setup();
+    render(<PlanSelector />);
+
+    await waitFor(() => expect(screen.getByText('Local')).toBeInTheDocument());
+    await user.click(screen.getByRole('button', { name: /subscribe/i }));
+
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalledWith('This community pays its parent community, not the platform.');
+    });
   });
 });

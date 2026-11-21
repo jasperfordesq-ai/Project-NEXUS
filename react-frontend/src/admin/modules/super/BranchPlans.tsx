@@ -497,11 +497,29 @@ export function BranchPlans() {
                       <span className="text-sm whitespace-nowrap">{members === null ? t('branch_plans.no_limit') : formatNumber(members)}</span>
                     </TableCell>
 
-                    {monthlyOrder.map((field) => (
-                      <TableCell key={field}>
-                        <span className="text-sm whitespace-nowrap">{money(plan[field], currencyOf(field)) ?? '—'}</span>
-                      </TableCell>
-                    ))}
+                    {monthlyOrder.map((field) => {
+                      // The yearly price and the one-off setup fee sit under
+                      // the monthly price in the same currency: both were
+                      // only visible inside the Change dialog (owner, 21 Nov 2026).
+                      const pounds = field.endsWith('_gbp');
+                      const yearlyField: MoneyField = pounds ? 'price_yearly_gbp' : 'price_yearly';
+                      const setupField: MoneyField = pounds ? 'setup_fee_gbp' : 'setup_fee';
+                      const yearly = money(plan[yearlyField], currencyOf(yearlyField));
+                      const setup = money(plan[setupField], currencyOf(setupField));
+                      return (
+                        <TableCell key={field}>
+                          <div className="flex flex-col gap-0.5 whitespace-nowrap">
+                            <span className="text-sm">{money(plan[field], currencyOf(field)) ?? '—'}</span>
+                            {yearly !== null ? (
+                              <span className="text-xs text-muted">{t(FIELD_LABEL[yearlyField])}: {yearly}</span>
+                            ) : null}
+                            {setup !== null ? (
+                              <span className="text-xs text-muted">{t(FIELD_LABEL[setupField])}: {setup}</span>
+                            ) : null}
+                          </div>
+                        </TableCell>
+                      );
+                    })}
 
                     <TableCell>
                       <div className="flex min-w-32 flex-col items-start gap-1 break-normal">

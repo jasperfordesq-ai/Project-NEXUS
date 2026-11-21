@@ -4761,6 +4761,15 @@ export default interface Resources {
       "rule_upgrade": "If it stays over its limit, it may be moved up to a larger plan.",
       "unknown": "This community is paused. Members cannot use it. The reason could not be loaded; please reload the page."
     },
+    "plan_facts": {
+      "already_by_card": "This community already pays for a plan by card. A second card payment cannot be started here, because both would be charged. To change plan, ask the platform team.",
+      "members_up_to": "Up to {{max}} active members",
+      "no_member_limit": "No member limit",
+      "no_setup_fee": "No setup fee",
+      "setup_fee": "plus {{amount}} one-off setup fee",
+      "setup_fee_separate": "The one-off setup fee is billed separately. It is not taken with the card payment.",
+      "year_one": "Year one {{first}}, then {{renewal}} a year"
+    },
     "shared": {
       "broker_actions": "Broker Actions",
       "content": "Content",
@@ -11394,6 +11403,7 @@ export default interface Resources {
       "plan_price_monthly_gbp": "Monthly price (pounds)",
       "plan_price_yearly_eur": "Yearly price (euro)",
       "plan_price_yearly_gbp": "Yearly price (pounds)",
+      "plan_setup_fee": "Setup fee",
       "plan_setup_fee_eur": "Setup fee (euro)",
       "plan_setup_fee_gbp": "Setup fee (pounds)",
       "plan_storage_gb": "Storage (GB)",

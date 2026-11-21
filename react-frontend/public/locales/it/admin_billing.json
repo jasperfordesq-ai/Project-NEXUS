@@ -397,5 +397,14 @@
     "what_happens": "Cosa succede",
     "move_on": "Passaggio al piano superiore il {{date}}",
     "follow_default_card": "Segui il valore predefinito (attuale: Solo avvisare — il cambio di piano lo fa il team della piattaforma)"
+  },
+  "plan_facts": {
+    "already_by_card": "Questa comunità paga già un piano con carta. Non è possibile avviare qui un secondo pagamento con carta, perché verrebbero addebitati entrambi. Per cambiare piano, rivolgiti al team della piattaforma.",
+    "members_up_to": "Fino a {{max}} membri attivi",
+    "no_member_limit": "Nessun limite di membri",
+    "setup_fee": "più {{amount}} di costo di attivazione una tantum",
+    "no_setup_fee": "Nessun costo di attivazione",
+    "year_one": "Primo anno {{first}}, poi {{renewal}} all'anno",
+    "setup_fee_separate": "Il costo di attivazione una tantum viene fatturato separatamente. Non viene addebitato con il pagamento con carta."
   }
 }

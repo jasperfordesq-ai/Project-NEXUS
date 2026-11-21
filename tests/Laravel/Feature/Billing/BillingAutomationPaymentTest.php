@@ -310,6 +310,44 @@ final class BillingAutomationPaymentTest extends TestCase
         $this->assertSame('non_payment', $this->standingRow($this->direct)->suspension_reason);
     }
 
+    /**
+     * The owner's ruling of 20 November 2026 ("No, wait for Stripe") for the
+     * community it was made for: one that pays by card and whose payer nobody
+     * ever stored. Every test above stores `payer = platform_card` by hand,
+     * which is the one case that always worked. Left to the default, a failed
+     * card (recorded as `expired`) made the community "by invoice", and it was
+     * paused on day 14 while Stripe was still retrying.
+     *
+     * @dataProvider stripeStillRetrying
+     */
+    public function test_a_card_payer_nobody_stored_a_payer_for_is_waited_for_too(string $stripeStatus): void
+    {
+        $this->standing($this->direct, ['paid_until' => $this->today->toDateString()]);
+        $this->cardSubscription($this->direct, $stripeStatus);
+        $admin = $this->person($this->direct, ['role' => 'admin']);
+
+        $this->assertNull($this->standingRow($this->direct)->payer, 'no payer is stored');
+        $this->assertSame('platform_card', BillingStandingService::get($this->direct)['payer']);
+
+        $this->assertSame(['payment:due'], $this->previewThenRun($this->direct, $this->day(1)));
+        $this->assertSame(['payment:final_warning'], $this->previewThenRun($this->direct, $this->day(7)));
+        $mailAfterWarnings = count($this->mailTo($admin));
+
+        foreach ([14, 15, 25] as $offset) {
+            $this->assertSame(['payment:waiting_for_stripe'], $this->previewThenRun($this->direct, $this->day($offset)));
+            $this->assertFalse(BillingLock::isLocked($this->direct), "Paused on day {$offset} while Stripe was still retrying.");
+        }
+        $this->assertNull($this->standingRow($this->direct)->suspended_at);
+        $this->assertCount($mailAfterWarnings, $this->mailTo($admin), 'Waiting sends nothing.');
+
+        // Stripe gives up. It is still a card payer, and the normal rule applies.
+        $this->stripeNowSays($this->direct, 'unpaid');
+        $this->assertSame('platform_card', BillingStandingService::get($this->direct)['payer']);
+        $this->assertSame(['payment:suspend'], $this->previewThenRun($this->direct, $this->day(26)));
+        $this->assertTrue(BillingLock::isLocked($this->direct));
+        $this->assertSame('non_payment', $this->standingRow($this->direct)->suspension_reason);
+    }
+
     public function test_the_wait_for_stripe_ends_at_the_longest_wait_by_default_30_days_late(): void
     {
         $this->standing($this->direct, ['paid_until' => $this->today->toDateString(), 'payer' => 'platform_card']);

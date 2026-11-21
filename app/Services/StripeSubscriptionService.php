@@ -157,6 +157,31 @@ class StripeSubscriptionService
         return 'eur';
     }
 
+    /**
+     * What card checkout would ask Stripe to charge for $plan and $interval
+     * ('monthly' | 'yearly') in a community billed in $communityCurrency, and
+     * the plan's one-off setup fee in that same currency. One definition for
+     * the checkout itself and for every screen that quotes a price before it,
+     * so the plan picker can never show euro to a community charged in pounds.
+     *
+     * The setup fee is quoted, never charged here: checkout takes the
+     * recurring price only.
+     *
+     * @return array{currency: 'eur'|'gbp', amount: float, setup_fee: float}
+     */
+    public static function quoteFor(object $plan, string $interval, string $communityCurrency): array
+    {
+        $interval = $interval === 'yearly' ? 'yearly' : 'monthly';
+        $currency = self::chargeCurrency($plan, $interval, $communityCurrency);
+        $setupColumn = $currency === 'gbp' ? 'setup_fee_gbp' : 'setup_fee';
+
+        return [
+            'currency' => $currency === 'gbp' ? 'gbp' : 'eur',
+            'amount' => self::planAmount($plan, $currency, $interval),
+            'setup_fee' => (float) ($plan->{$setupColumn} ?? 0),
+        ];
+    }
+
     private static function planAmount(object $plan, string $currency, string $interval): float
     {
         $column = self::PRICE_COLUMNS[$currency][$interval]['amount'];
@@ -523,6 +548,17 @@ class StripeSubscriptionService
             throw new \RuntimeException("Plan {$planId} is not available");
         }
 
+        // 🔴 Never a second subscription. A checkout always creates a NEW
+        // Stripe subscription; nothing here changes or cancels an existing
+        // one. So while Stripe still has one open for this community
+        // (paying, on trial, or with a failed card), a checkout would leave
+        // two charging, with only the newer one on the record. Refused before
+        // Stripe is touched, for a no-charge plan as well (which would drop
+        // the stored subscription id and leave that subscription charging).
+        if (TenantBillingService::hasLiveCardSubscription($tenantId)) {
+            throw new \DomainException('billing_already_subscribed');
+        }
+
         $client = StripeService::client();
 
         // Get or create Stripe Customer
@@ -552,27 +588,28 @@ class StripeSubscriptionService
 
         // Free plan (nothing charged in either currency) — activate directly without Stripe
         if (self::isFreePlan($plan)) {
-            $existing = DB::selectOne(
-                "SELECT id FROM tenant_plan_assignments WHERE tenant_id = ?",
-                [$tenantId]
-            );
-            if ($existing) {
-                DB::update(
-                    "UPDATE tenant_plan_assignments
-                     SET pay_plan_id = ?, status = 'active', stripe_subscription_id = NULL,
-                         stripe_status = NULL,
-                         starts_at = NOW(), expires_at = NULL, updated_at = NOW()
-                     WHERE tenant_id = ?",
-                    [$planId, $tenantId]
-                );
-            } else {
-                DB::insert(
-                    "INSERT INTO tenant_plan_assignments
-                     (tenant_id, pay_plan_id, status, stripe_subscription_id, starts_at, created_at, updated_at)
-                     VALUES (?, ?, 'active', NULL, NOW(), NOW(), NOW())",
-                    [$tenantId, $planId]
-                );
-            }
+            DB::transaction(static function () use ($tenantId, $planId): void {
+                // The record in force only. `WHERE tenant_id = ?` used to
+                // rewrite every historic record to this plan and to `active`.
+                $existing = self::recordInForce($tenantId);
+                if ($existing) {
+                    DB::update(
+                        "UPDATE tenant_plan_assignments
+                         SET pay_plan_id = ?, status = 'active', stripe_subscription_id = NULL,
+                             stripe_status = NULL,
+                             starts_at = NOW(), expires_at = NULL, updated_at = NOW()
+                         WHERE id = ? AND tenant_id = ?",
+                        [$planId, $existing->id, $tenantId]
+                    );
+                } else {
+                    DB::insert(
+                        "INSERT INTO tenant_plan_assignments
+                         (tenant_id, pay_plan_id, status, stripe_subscription_id, starts_at, created_at, updated_at)
+                         VALUES (?, ?, 'active', NULL, NOW(), NOW(), NOW())",
+                        [$tenantId, $planId]
+                    );
+                }
+            });
             Log::info('Free plan activated for tenant', ['tenant_id' => $tenantId, 'plan_id' => $planId]);
             return ['activated' => true, 'checkout_url' => null];
         }
@@ -629,6 +666,28 @@ class StripeSubscriptionService
             ]);
             throw $e;
         }
+    }
+
+    /**
+     * The community's plan record in force, locked for the caller's
+     * transaction: the newest active one, else the newest on trial (the same
+     * record PlanTerms::forCommunity() reads), else the newest of any status,
+     * else null.
+     *
+     * Everything that writes "the community's plan" writes this one record.
+     * The older ones are history and are never touched.
+     */
+    private static function recordInForce(int $tenantId): ?object
+    {
+        return DB::selectOne(
+            "SELECT id, tenant_id, status, stripe_subscription_id, stripe_status
+             FROM tenant_plan_assignments
+             WHERE tenant_id = ?
+             ORDER BY (status = 'active') DESC, (status = 'trial') DESC, id DESC
+             LIMIT 1
+             FOR UPDATE",
+            [$tenantId]
+        );
     }
 
     /**
@@ -726,30 +785,56 @@ class StripeSubscriptionService
             return;
         }
 
+        // A subscription this checkout replaced while Stripe still had it open
+        // (set inside the transaction, reported after it).
+        $replacedSubscriptionId = null;
+
         try {
-            $activated = DB::transaction(function () use ($tenantId, $planId, $subscriptionId): bool {
-                // Upsert tenant_plan_assignments
-                $existing = DB::selectOne(
-                    "SELECT id, status, stripe_subscription_id FROM tenant_plan_assignments WHERE tenant_id = ?",
-                    [$tenantId]
-                );
+            $activated = DB::transaction(function () use ($tenantId, $planId, $subscriptionId, &$replacedSubscriptionId): bool {
+                // 🔴 ONE record is written, never `WHERE tenant_id = ?`. A
+                // community keeps more than one plan record by design (a new
+                // one is added whenever none is active), and
+                // `stripe_subscription_id` is unique: writing the new id to
+                // every record failed on the second one, rolled the whole
+                // handler back, and failed again on each of Stripe's retries.
+                // The money was taken and the plan was never switched on.
+                $holder = is_string($subscriptionId) && $subscriptionId !== ''
+                    ? DB::selectOne(
+                        "SELECT id, tenant_id, status, stripe_subscription_id, stripe_status
+                         FROM tenant_plan_assignments WHERE stripe_subscription_id = ? FOR UPDATE",
+                        [$subscriptionId]
+                    )
+                    : null;
 
                 // F-178: a late (redelivered or out-of-order) checkout event for a
-                // subscription that has since been cancelled must not revive it.
-                if ($existing && ($existing->status ?? null) === 'cancelled'
-                    && $subscriptionId !== null
-                    && ($existing->stripe_subscription_id ?? null) === $subscriptionId) {
+                // subscription that has since been cancelled must not revive it,
+                // whichever of the community's records holds it.
+                if ($holder && ($holder->status ?? null) === 'cancelled') {
                     return false;
                 }
 
+                // A redelivery goes to the record that already carries this
+                // subscription; anything else to the record in force.
+                $existing = $holder && (int) $holder->tenant_id === $tenantId
+                    ? $holder
+                    : self::recordInForce($tenantId);
+
                 if ($existing) {
+                    $previous = (string) ($existing->stripe_subscription_id ?? '');
+                    if ($previous !== '' && $previous !== $subscriptionId
+                        && ($existing->status ?? null) !== 'cancelled'
+                        && !in_array($existing->stripe_status ?? null, TenantBillingService::STRIPE_SUBSCRIPTION_ENDED, true)
+                        && (($existing->stripe_status ?? null) !== null || in_array($existing->status ?? null, ['active', 'trial'], true))) {
+                        $replacedSubscriptionId = $previous;
+                    }
+
                     DB::update(
                         "UPDATE tenant_plan_assignments
                          SET pay_plan_id = ?, status = 'active', stripe_subscription_id = ?,
                              stripe_status = 'active',
                              starts_at = NOW(), expires_at = NULL, updated_at = NOW()
-                         WHERE tenant_id = ?",
-                        [$planId, $subscriptionId, $tenantId]
+                         WHERE id = ? AND tenant_id = ?",
+                        [$planId, $subscriptionId, $existing->id, $tenantId]
                     );
                 } else {
                     DB::insert(
@@ -776,6 +861,19 @@ class StripeSubscriptionService
                 'plan_id' => $planId,
                 'subscription_id' => $subscriptionId,
             ]);
+
+            if ($replacedSubscriptionId !== null) {
+                // createCheckoutSession() refuses a checkout while a card
+                // subscription is open, so this is two checkouts started
+                // before either was paid. Both are now charging in Stripe and
+                // only the newer one is on the record: a person has to cancel
+                // the older one there. Logged at `error` so it is seen.
+                Log::error('A community now holds TWO card subscriptions in Stripe — cancel the older one by hand', [
+                    'tenant_id' => $tenantId,
+                    'older_subscription_id' => $replacedSubscriptionId,
+                    'newer_subscription_id' => $subscriptionId,
+                ]);
+            }
         } catch (\Exception $e) {
             Log::error('Failed to handle checkout.session.completed', [
                 'tenant_id' => $tenantId,

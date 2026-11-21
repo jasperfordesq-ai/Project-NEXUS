@@ -547,6 +547,9 @@ export function BranchPayments() {
                 <RadioGroup label={t('branch_payments.plan_choice_label')} value={planChoice} onValueChange={setPlanChoice}>
                   {plans.map((plan) => {
                     const price = amount(plan.price_monthly);
+                    // Sent by the server all along, shown nowhere until 21 Nov 2026.
+                    const yearly = amount(plan.price_yearly);
+                    const setup = amount(plan.setup_fee);
                     const isCurrent = planRow?.plan?.plan_id === plan.plan_id;
                     const tooSmall = planRow !== null && plan.max_users !== null && plan.max_users < planRow.members.active;
 
@@ -566,6 +569,16 @@ export function BranchPayments() {
                                 ? t('branch_payments.plan_no_price')
                                 : t('branch_payments.plan_price_monthly', { price: money(price, plan.currency) })}
                             </span>
+                            {yearly !== null && yearly > 0 ? (
+                              <span>{t('admin_billing:billing.amount_per_year', { amount: money(yearly, plan.currency) })}</span>
+                            ) : null}
+                            {price !== null && price > 0 ? (
+                              <span>
+                                {setup !== null && setup > 0
+                                  ? t('admin_billing:plan_facts.setup_fee', { amount: money(setup, plan.currency) })
+                                  : t('admin_billing:plan_facts.no_setup_fee')}
+                              </span>
+                            ) : null}
                             {tooSmall && planRow ? (
                               <span className="text-warning">
                                 {t('branch_payments.plan_too_small', { active: formatNumber(planRow.members.active) })}

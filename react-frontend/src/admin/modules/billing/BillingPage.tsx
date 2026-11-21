@@ -145,10 +145,15 @@ export function BillingPage() {
     setUpgradeSending(false);
   };
 
+  // A card payer whose card has failed is recorded as `expired`, but Stripe
+  // still has its subscription open and is still collecting for it
+  // (`has_card_subscription`). Treating that as "no subscription" hid the plan
+  // and the "Manage Payment" button at the one moment the admin needed it to
+  // put the card right.
   const hasActiveSubscription =
     subscription &&
-    subscription.status !== 'cancelled' &&
-    subscription.status !== 'expired';
+    (subscription.has_card_subscription === true ||
+      (subscription.status !== 'cancelled' && subscription.status !== 'expired'));
 
   // Usage bar values
   const userCount = subscription?.user_count ?? null;

@@ -347,8 +347,21 @@ describe('BranchPlans', () => {
     const headers = columnHeaders();
     expect(headers.indexOf('Monthly (€)')).toBeLessThan(headers.indexOf('Monthly (£)'));
     const cells = screen.getAllByRole('row')[1]!.querySelectorAll('td');
-    expect(cells[2]!.textContent).toBe('€149');
-    expect(cells[3]!.textContent).toBe('£129');
+    // The monthly price leads each cell; the yearly price and the one-off
+    // setup fee sit under it in the same currency (21 Nov 2026).
+    expect(cells[2]!.querySelector('span')!.textContent).toBe('€149');
+    expect(cells[3]!.querySelector('span')!.textContent).toBe('£129');
+  });
+
+  it('shows the yearly price and the setup fee in the table, not only in the Change dialog', async () => {
+    await renderWith(makeResponse({
+      hub_currency: 'gbp',
+      plans: [makePlan({ price_yearly: 1490, price_yearly_gbp: 1290, setup_fee: 750, setup_fee_gbp: 645 })],
+    }));
+
+    const cells = screen.getAllByRole('row')[1]!.querySelectorAll('td');
+    expect(cells[2]!.textContent).toBe('£129Yearly (£): £1,290Setup (£): £645');
+    expect(cells[3]!.textContent).toBe('€149Yearly (€): €1,490Setup (€): €750');
   });
 
   it('leads with the pound price for a hub that bills in pounds, and still shows both', async () => {
@@ -357,8 +370,8 @@ describe('BranchPlans', () => {
     const headers = columnHeaders();
     expect(headers.indexOf('Monthly (£)')).toBeLessThan(headers.indexOf('Monthly (€)'));
     const cells = screen.getAllByRole('row')[1]!.querySelectorAll('td');
-    expect(cells[2]!.textContent).toBe('£129');
-    expect(cells[3]!.textContent).toBe('€149');
+    expect(cells[2]!.querySelector('span')!.textContent).toBe('£129');
+    expect(cells[3]!.querySelector('span')!.textContent).toBe('€149');
   });
 
   it('keeps the picker and the last good table when a reload fails, and says so', async () => {

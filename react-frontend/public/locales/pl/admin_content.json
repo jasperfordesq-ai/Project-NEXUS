@@ -1455,7 +1455,8 @@
     "plan_stripe_warning_gbp_monthly": "Nowa miesięczna cena w funtach nie dotarła do Stripe.",
     "plan_stripe_warning_gbp_yearly": "Nowa roczna cena w funtach nie dotarła do Stripe.",
     "plan_stripe_warning_action": "Nowe zapisy z płatnością kartą są nadal obciążane starą ceną. Naciśnij „{{button}}”, aby spróbować ponownie.",
-    "plan_whole_number_min": "{{field}} musi być liczbą całkowitą równą {{min}} lub większą"
+    "plan_whole_number_min": "{{field}} musi być liczbą całkowitą równą {{min}} lub większą",
+    "plan_setup_fee": "Opłata za uruchomienie"
   },
   "data_table": {
     "admin_data_table": "Dane",

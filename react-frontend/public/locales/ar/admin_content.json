@@ -1459,7 +1459,8 @@
     "plan_stripe_warning_gbp_monthly": "لم يصل السعر الشهري الجديد بالجنيه الإسترليني إلى Stripe.",
     "plan_stripe_warning_gbp_yearly": "لم يصل السعر السنوي الجديد بالجنيه الإسترليني إلى Stripe.",
     "plan_stripe_warning_action": "لا تزال الاشتراكات الجديدة بالبطاقة تُحاسَب بالسعر القديم. اضغط على \"{{button}}\" للمحاولة مرة أخرى.",
-    "plan_whole_number_min": "يجب أن يكون {{field}} عددًا صحيحًا يساوي {{min}} أو أكثر"
+    "plan_whole_number_min": "يجب أن يكون {{field}} عددًا صحيحًا يساوي {{min}} أو أكثر",
+    "plan_setup_fee": "رسوم الإعداد"
   },
   "data_table": {
     "admin_data_table": "بيانات",

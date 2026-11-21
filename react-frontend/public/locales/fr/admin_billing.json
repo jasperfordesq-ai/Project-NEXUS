@@ -397,5 +397,14 @@
     "what_happens": "Ce qui se passe",
     "move_on": "Passage à la formule supérieure le {{date}}",
     "follow_default_card": "Suivre la valeur par défaut (actuellement : Avertir seulement — un changement de formule est fait par l’équipe de la plateforme)"
+  },
+  "plan_facts": {
+    "already_by_card": "Cette communauté paie déjà une formule par carte. Un second paiement par carte ne peut pas être lancé ici, car les deux seraient prélevés. Pour changer de formule, adressez-vous à l’équipe de la plateforme.",
+    "members_up_to": "Jusqu'à {{max}} membres actifs",
+    "no_member_limit": "Aucune limite de membres",
+    "setup_fee": "plus {{amount}} de frais de mise en place uniques",
+    "no_setup_fee": "Pas de frais de mise en place",
+    "year_one": "Première année {{first}}, puis {{renewal}} par an",
+    "setup_fee_separate": "Les frais de mise en place uniques sont facturés séparément. Ils ne sont pas prélevés avec le paiement par carte."
   }
 }

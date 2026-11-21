@@ -1451,7 +1451,8 @@
     "plan_stripe_warning_gbp_monthly": "De nieuwe maandprijs in pond is niet bij Stripe aangekomen.",
     "plan_stripe_warning_gbp_yearly": "De nieuwe jaarprijs in pond is niet bij Stripe aangekomen.",
     "plan_stripe_warning_action": "Nieuwe aanmeldingen per kaart betalen nog de oude prijs. Klik op \"{{button}}\" om het opnieuw te proberen.",
-    "plan_whole_number_min": "{{field}} moet een geheel getal van {{min}} of meer zijn"
+    "plan_whole_number_min": "{{field}} moet een geheel getal van {{min}} of meer zijn",
+    "plan_setup_fee": "Opstartkosten"
   },
   "data_table": {
     "admin_data_table": "Gegevens",

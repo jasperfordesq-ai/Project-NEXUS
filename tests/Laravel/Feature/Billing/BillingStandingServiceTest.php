@@ -383,6 +383,88 @@ final class BillingStandingServiceTest extends TestCase
         $this->assertSame('platform_card', BillingStandingService::defaultPayer($this->top));
     }
 
+    /**
+     * What the record says, what Stripe last said, and who the community
+     * then pays by default.
+     *
+     * @return array<string, array{string, ?string, string}>
+     */
+    public static function cardRecords(): array
+    {
+        return [
+            // The fault of 21 Nov 2026: a failed renewal is stored as
+            // `expired`, and the community stopped being a card payer at once.
+            'card failed, Stripe still retrying' => ['expired', 'past_due', 'platform_card'],
+            'first payment not through yet' => ['expired', 'incomplete', 'platform_card'],
+            'Stripe gave up, subscription still there' => ['expired', 'unpaid', 'platform_card'],
+            'Stripe paused the subscription' => ['expired', 'paused', 'platform_card'],
+            'paying normally' => ['active', 'active', 'platform_card'],
+            'on trial' => ['trial', 'trialing', 'platform_card'],
+            // Over: nothing more will be charged, a new one may be started.
+            'cancelled in Stripe' => ['cancelled', 'canceled', 'platform_invoice'],
+            'first payment never came' => ['expired', 'incomplete_expired', 'platform_invoice'],
+            // A record cancelled here never counts, whatever Stripe last said.
+            'cancelled here' => ['cancelled', 'active', 'platform_invoice'],
+            // Stripe has said nothing yet: judged by the record, as before.
+            'older record, active' => ['active', null, 'platform_card'],
+            'older record, expired' => ['expired', null, 'platform_invoice'],
+        ];
+    }
+
+    /** @dataProvider cardRecords */
+    public function test_a_community_stays_a_card_payer_until_stripe_ends_its_subscription(string $status, ?string $stripeStatus, string $expected): void
+    {
+        $planId = (int) DB::table('pay_plans')->insertGetId([
+            'name' => 'Standing test plan',
+            'slug' => 'standing-plan-' . bin2hex(random_bytes(4)),
+            'created_at' => now(),
+        ]);
+        DB::table('tenant_plan_assignments')->insert([
+            'tenant_id' => $this->top,
+            'pay_plan_id' => $planId,
+            'status' => $status,
+            'stripe_subscription_id' => 'sub_test_' . bin2hex(random_bytes(6)),
+            'stripe_status' => $stripeStatus,
+        ]);
+
+        $this->assertSame($expected, BillingStandingService::defaultPayer($this->top));
+        $this->assertSame($expected, BillingStandingService::get($this->top)['payer']);
+        $this->assertSame(
+            $expected === 'platform_card',
+            \App\Services\TenantBillingService::hasLiveCardSubscription($this->top)
+        );
+    }
+
+    public function test_a_record_with_no_stripe_subscription_is_never_a_card_payer(): void
+    {
+        $planId = (int) DB::table('pay_plans')->insertGetId([
+            'name' => 'Standing test plan',
+            'slug' => 'standing-plan-' . bin2hex(random_bytes(4)),
+            'created_at' => now(),
+        ]);
+        DB::table('tenant_plan_assignments')->insert([
+            'tenant_id' => $this->top, 'pay_plan_id' => $planId, 'status' => 'active',
+            'stripe_subscription_id' => null, 'stripe_status' => 'past_due',
+        ]);
+
+        $this->assertSame('platform_invoice', BillingStandingService::defaultPayer($this->top));
+    }
+
+    public function test_a_card_never_changes_who_a_hubs_community_pays(): void
+    {
+        $planId = (int) DB::table('pay_plans')->insertGetId([
+            'name' => 'Standing test plan',
+            'slug' => 'standing-plan-' . bin2hex(random_bytes(4)),
+            'created_at' => now(),
+        ]);
+        DB::table('tenant_plan_assignments')->insert([
+            'tenant_id' => $this->child, 'pay_plan_id' => $planId, 'status' => 'expired',
+            'stripe_subscription_id' => 'sub_test_' . bin2hex(random_bytes(6)), 'stripe_status' => 'past_due',
+        ]);
+
+        $this->assertSame('parent', BillingStandingService::defaultPayer($this->child));
+    }
+
     public function test_a_child_under_a_suspended_parent_reports_who_locked_it(): void
     {
         BillingStandingService::suspend($this->top, $this->actor, 'manual');

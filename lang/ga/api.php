@@ -1220,6 +1220,7 @@ return [
     'branch_payments_card_subscription' => 'Íocann an pobal seo an t-ardán le cárta, mar sin ní féidir ach le foireann an ardáin a phlean a athrú.',
     'branch_payments_plan_not_offered' => 'Ní thairgeann an pobal tuismitheora an plean seo, mar sin ní féidir an pobal seo a chur air.',
     'billing_checkout_pays_parent' => 'Íocann an pobal seo a phobal tuismitheora, mar sin níl aon rud le híoc leis an ardán le cárta.',
+    'billing_checkout_already_subscribed' => 'Tá an pobal seo ag íoc as plean le cárta cheana féin, mar sin ní féidir an dara híocaíocht chárta a thosú: ghearrfaí an dá cheann. Chun an plean a athrú, iarr ar fhoireann an ardáin.',
     'billing_plan_not_sold_monthly' => 'Ní dhíoltar an plean seo go míosúil. Roghnaigh billeáil bhliantúil ina ionad.',
     'billing_plan_not_sold_yearly' => 'Ní dhíoltar an plean seo go bliantúil. Roghnaigh billeáil mhíosúil ina ionad.',
     'billing_standing_payment_paid_until_required' => 'Cuir isteach an dáta a n-íocann an íocaíocht seo suas go dtí é.',

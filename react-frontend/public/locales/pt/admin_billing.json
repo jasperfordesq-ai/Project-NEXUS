@@ -397,5 +397,14 @@
     "what_happens": "O que acontece",
     "move_on": "Mudança para um plano maior a {{date}}",
     "follow_default_card": "Seguir o valor predefinido (atualmente: Apenas avisar — a mudança de plano é feita pela equipa da plataforma)"
+  },
+  "plan_facts": {
+    "already_by_card": "Esta comunidade já paga um plano por cartão. Não é possível iniciar aqui um segundo pagamento por cartão, porque ambos seriam cobrados. Para mudar de plano, peça à equipa da plataforma.",
+    "members_up_to": "Até {{max}} membros ativos",
+    "no_member_limit": "Sem limite de membros",
+    "setup_fee": "mais {{amount}} de taxa de adesão única",
+    "no_setup_fee": "Sem taxa de adesão",
+    "year_one": "Primeiro ano {{first}}, depois {{renewal}} por ano",
+    "setup_fee_separate": "A taxa de adesão única é faturada em separado. Não é cobrada com o pagamento por cartão."
   }
 }

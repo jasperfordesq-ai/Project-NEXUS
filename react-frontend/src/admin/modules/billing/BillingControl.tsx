@@ -9,11 +9,12 @@ import Download from 'lucide-react/icons/download';
 import { usePageTitle } from '@/hooks';
 import { useAuth, useToast } from '@/contexts';
 import { api } from '@/lib/api';
-import { formatDate, getFormattingLocale } from '@/lib/helpers';
+import { formatDate, formatNumber, getFormattingLocale } from '@/lib/helpers';
 import { PageHeader } from '../../components/PageHeader';
 import { BillingDevelopmentNotice } from './BillingDevelopmentNotice';
 import { BillingAutomationCard } from './BillingAutomationCard';
 import { assignablePlans } from './assignablePlans';
+import { planFactLines } from './planFactLines';
 import { RecordPaymentDialog, type PaymentMethod } from './RecordPaymentDialog';
 import { PayerDialog, type Payer } from './PayerDialog';
 import { OverLimitRuleDialog, OverLimitSummary, type OverLimitChoice, type OverLimitState } from './OverLimitRuleDialog';
@@ -147,6 +148,12 @@ interface PlanItem {
   max_users: number | null;
   price_monthly: number | string | null;
   price_yearly: number | string | null;
+  /** Pounds; null = not sold in pounds. */
+  price_monthly_gbp?: number | string | null;
+  price_yearly_gbp?: number | string | null;
+  /** The one-off setup fee: euro, then pounds. */
+  setup_fee?: number | string | null;
+  setup_fee_gbp?: number | string | null;
   /** 0/1 from the database; retired `legacy-…` plans are 0. */
   is_active: number | boolean;
 }
@@ -839,6 +846,27 @@ export function BillingControl() {
                     </SelectItem>
                   ))}
                 </Select>
+
+                {/* What the chosen plan allows and costs, in both currencies:
+                    the list above gives a name only (owner, 21 Nov 2026). */}
+                {selectedPlan ? (
+                  <div className="rounded-lg border border-divider px-3 py-2 text-sm">
+                    <p className="font-medium">
+                      {selectedPlan.max_users == null
+                        ? t('plan_facts.no_member_limit')
+                        : t('plan_facts.members_up_to', { max: formatNumber(Number(selectedPlan.max_users)) })}
+                    </p>
+                    {planFactLines(selectedPlan).map((line) => (
+                      <p key={line.currency} className="text-muted">
+                        {[
+                          line.monthly !== null ? t('billing.amount_per_month', { amount: line.monthly }) : null,
+                          line.yearly !== null ? t('billing.amount_per_year', { amount: line.yearly }) : null,
+                          line.setup !== null ? t('plan_facts.setup_fee', { amount: line.setup }) : t('plan_facts.no_setup_fee'),
+                        ].filter((part) => part !== null).join(' · ')}
+                      </p>
+                    ))}
+                  </div>
+                ) : null}
 
                 <Input
                   label={t('billing.expiry_date')}

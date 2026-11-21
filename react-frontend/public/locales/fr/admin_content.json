@@ -1453,7 +1453,8 @@
     "plan_stripe_warning_gbp_monthly": "Le nouveau prix mensuel en livres n’est pas parvenu à Stripe.",
     "plan_stripe_warning_gbp_yearly": "Le nouveau prix annuel en livres n’est pas parvenu à Stripe.",
     "plan_stripe_warning_action": "Les nouvelles inscriptions par carte paient toujours l’ancien prix. Appuyez sur « {{button}} » pour réessayer.",
-    "plan_whole_number_min": "{{field}} doit être un nombre entier égal ou supérieur à {{min}}"
+    "plan_whole_number_min": "{{field}} doit être un nombre entier égal ou supérieur à {{min}}",
+    "plan_setup_fee": "Frais de mise en place"
   },
   "data_table": {
     "admin_data_table": "Données",

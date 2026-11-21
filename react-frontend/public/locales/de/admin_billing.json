@@ -393,5 +393,14 @@
     "what_happens": "Was passiert",
     "move_on": "Hochstufung am {{date}}",
     "follow_default_card": "Dem Standard folgen (derzeit: Nur warnen – eine Hochstufung nimmt das Plattform-Team vor)"
+  },
+  "plan_facts": {
+    "already_by_card": "Diese Community zahlt bereits per Karte für einen Plan. Eine zweite Kartenzahlung kann hier nicht gestartet werden, weil beide abgebucht würden. Um den Plan zu ändern, wenden Sie sich an das Plattform-Team.",
+    "members_up_to": "Bis zu {{max}} aktive Mitglieder",
+    "no_member_limit": "Kein Mitgliederlimit",
+    "setup_fee": "zuzüglich {{amount}} einmalige Einrichtungsgebühr",
+    "no_setup_fee": "Keine Einrichtungsgebühr",
+    "year_one": "Erstes Jahr {{first}}, danach {{renewal}} pro Jahr",
+    "setup_fee_separate": "Die einmalige Einrichtungsgebühr wird gesondert in Rechnung gestellt. Sie wird nicht mit der Kartenzahlung eingezogen."
   }
 }

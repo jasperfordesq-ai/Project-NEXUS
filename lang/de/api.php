@@ -1220,6 +1220,7 @@ return [
     'branch_payments_card_subscription' => 'Diese Community zahlt per Karte an die Plattform. Daher kann nur das Plattform-Team ihren Tarif ändern.',
     'branch_payments_plan_not_offered' => 'Die übergeordnete Community bietet diesen Tarif nicht an, daher kann diese Community ihn nicht erhalten.',
     'billing_checkout_pays_parent' => 'Diese Community zahlt an ihre übergeordnete Community. Es gibt daher nichts per Karte an die Plattform zu zahlen.',
+    'billing_checkout_already_subscribed' => 'Diese Community zahlt bereits per Karte für einen Plan. Eine zweite Kartenzahlung kann daher nicht gestartet werden: Beide würden abgebucht. Um den Plan zu ändern, wenden Sie sich an das Plattform-Team.',
     'billing_plan_not_sold_monthly' => 'Dieser Tarif wird nicht monatlich angeboten. Wählen Sie stattdessen die jährliche Abrechnung.',
     'billing_plan_not_sold_yearly' => 'Dieser Tarif wird nicht jährlich angeboten. Wählen Sie stattdessen die monatliche Abrechnung.',
     'billing_standing_payment_paid_until_required' => 'Geben Sie das Datum ein, bis zu dem diese Zahlung reicht.',

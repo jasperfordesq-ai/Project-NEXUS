@@ -397,5 +397,14 @@
     "what_happens": "Qué ocurre",
     "move_on": "Subida de plan el {{date}}",
     "follow_default_card": "Seguir el valor predeterminado (ahora: Solo avisar; el cambio de plan lo hace el equipo de la plataforma)"
+  },
+  "plan_facts": {
+    "already_by_card": "Esta comunidad ya paga un plan con tarjeta. No se puede iniciar aquí un segundo pago con tarjeta, porque se cobrarían los dos. Para cambiar de plan, pídaselo al equipo de la plataforma.",
+    "members_up_to": "Hasta {{max}} miembros activos",
+    "no_member_limit": "Sin límite de miembros",
+    "setup_fee": "más {{amount}} de cuota de alta única",
+    "no_setup_fee": "Sin cuota de alta",
+    "year_one": "Primer año {{first}}, después {{renewal}} al año",
+    "setup_fee_separate": "La cuota de alta única se factura por separado. No se cobra con el pago con tarjeta."
   }
 }

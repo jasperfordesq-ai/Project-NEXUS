@@ -29,6 +29,7 @@ final class StandardPlansTest extends TestCase
     use DatabaseTransactions;
 
     private const MIGRATION = 'database/migrations/2026_11_20_200000_standard_billing_packages.php';
+    private const FILL_IN_MIGRATION = 'database/migrations/2026_11_21_150000_fill_in_standard_plan_descriptions_and_features.php';
 
     protected function setUp(): void
     {
@@ -49,6 +50,20 @@ final class StandardPlansTest extends TestCase
     private function migration(): object
     {
         return require base_path(self::MIGRATION);
+    }
+
+    private function fillInMigration(): object
+    {
+        return require base_path(self::FILL_IN_MIGRATION);
+    }
+
+    /** Put the seven rows back to how the 20 Nov migration first wrote them. */
+    private function resetToFirstWording(): void
+    {
+        foreach (StandardPlans::FIRST_DESCRIPTIONS as $slug => $description) {
+            DB::table('pay_plans')->where('slug', $slug)->where('is_standard', 1)
+                ->update(['description' => $description, 'features' => '[]']);
+        }
     }
 
     private function makeCommunity(string $name, ?int $parentId = 1, ?string $parentPath = '/1/'): int
@@ -101,7 +116,8 @@ final class StandardPlansTest extends TestCase
             $this->assertSame($tier['tier_level'], (int) $row->tier_level, "{$slug}.tier_level");
             $this->assertSame($tier['max_users'], (int) $row->max_users, "{$slug}.max_users");
             $this->assertSame($tier['description'], $row->description, "{$slug}.description");
-            $this->assertSame([], json_decode((string) $row->features, true), "{$slug}.features");
+            // Filled in by the 21 Nov migration: allowances, support, what every plan includes.
+            $this->assertSame(StandardPlans::features($slug), json_decode((string) $row->features, true), "{$slug}.features");
 
             foreach ([
                 'price_monthly', 'price_yearly', 'setup_fee',
@@ -153,6 +169,103 @@ final class StandardPlansTest extends TestCase
         $this->assertStandardRowsMatchTheTable();
     }
 
+    public function test_every_description_states_the_member_band_from_the_pricing_page(): void
+    {
+        // Owner, 21 Nov 2026: "the description doesn't say how many users the
+        // subscription allows". Each band starts one above the tier below.
+        $from = 1;
+        foreach (StandardPlans::TIERS as $slug => $tier) {
+            $to = number_format($tier['max_users']);
+            $band = $from === 1 ? "Up to {$to} active members." : number_format($from) . " to {$to} active members.";
+            $this->assertStringStartsWith($band . ' Best for ', $tier['description'], "{$slug} description");
+            $this->assertNotSame($tier['description'], StandardPlans::FIRST_DESCRIPTIONS[$slug]);
+            $from = $tier['max_users'] + 1;
+        }
+    }
+
+    public function test_the_feature_list_is_built_from_the_published_allowances(): void
+    {
+        $this->assertSame([
+            '1 community',
+            '5 GB storage',
+            '5,000 emails a month',
+            'Support: Best-effort first reply by next business day',
+            'Included in Timebanking UK membership',
+            'Full stable module set',
+            'Standard and accessible (WCAG 2.2 AA) front ends',
+            'Managed hosting, monitoring, daily backups and security patching',
+            'One standard NEXUS subdomain with HTTPS',
+            'No per-member or per-transaction commission',
+        ], StandardPlans::features('spark'));
+
+        $network = StandardPlans::features('network');
+        $this->assertSame('Up to 100 communities', $network[0]);
+        $this->assertSame('2 TB storage', $network[1]);
+        $this->assertSame('5,000,000 emails a month', $network[2]);
+        $this->assertSame('Support: Urgent incident response needs a support retainer', $network[3]);
+        $this->assertNotContains('Included in Timebanking UK membership', $network);
+
+        $this->assertSame('Up to 3 communities', StandardPlans::features('community')[0]);
+        $this->assertSame('500 GB storage', StandardPlans::features('scale')[1]);
+        $this->assertSame([], StandardPlans::features('no-such-plan'));
+    }
+
+    public function test_the_fill_in_migration_rewrites_rows_still_as_first_written(): void
+    {
+        $this->resetToFirstWording();
+
+        $this->fillInMigration()->up();
+
+        $this->assertStandardRowsMatchTheTable();
+    }
+
+    public function test_the_fill_in_migration_leaves_an_edited_plan_alone(): void
+    {
+        $this->resetToFirstWording();
+        DB::table('pay_plans')->where('slug', 'local')->update([
+            'description' => 'Our own words for Local.',
+            'features' => json_encode(['Hand-written line']),
+        ]);
+
+        $this->fillInMigration()->up();
+
+        $local = DB::table('pay_plans')->where('slug', 'local')->first();
+        $this->assertSame('Our own words for Local.', $local->description);
+        $this->assertSame(['Hand-written line'], json_decode((string) $local->features, true));
+
+        // The untouched rows beside it are still filled in.
+        $spark = DB::table('pay_plans')->where('slug', 'spark')->first();
+        $this->assertSame(StandardPlans::TIERS['spark']['description'], $spark->description);
+        $this->assertSame(StandardPlans::features('spark'), json_decode((string) $spark->features, true));
+    }
+
+    public function test_the_fill_in_migration_changes_no_price_limit_or_setup_fee(): void
+    {
+        $this->resetToFirstWording();
+        $columns = ['max_users', 'price_monthly', 'price_yearly', 'setup_fee', 'price_monthly_gbp', 'price_yearly_gbp', 'setup_fee_gbp', 'max_communities', 'storage_gb', 'emails_per_month', 'is_active'];
+        $before = DB::table('pay_plans')->where('is_standard', 1)->orderBy('id')->get($columns)->toArray();
+
+        $this->fillInMigration()->up();
+        $this->fillInMigration()->up();
+
+        $this->assertEquals($before, DB::table('pay_plans')->where('is_standard', 1)->orderBy('id')->get($columns)->toArray());
+        $this->assertStandardRowsMatchTheTable();
+    }
+
+    public function test_the_fill_in_migration_can_be_undone(): void
+    {
+        $this->resetToFirstWording();
+        $migration = $this->fillInMigration();
+        $migration->up();
+        $migration->down();
+
+        foreach (StandardPlans::FIRST_DESCRIPTIONS as $slug => $description) {
+            $row = DB::table('pay_plans')->where('slug', $slug)->first();
+            $this->assertSame($description, $row->description, "{$slug}.description");
+            $this->assertSame([], json_decode((string) $row->features, true), "{$slug}.features");
+        }
+    }
+
     public function test_running_the_migration_twice_inserts_nothing_twice(): void
     {
         $migration = $this->migration();
@@ -195,6 +308,9 @@ final class StandardPlansTest extends TestCase
         ]);
 
         $this->migration()->up();
+        // A fresh database runs both: the first writes the rows, the second
+        // fills in what each package includes.
+        $this->fillInMigration()->up();
 
         $community = DB::table('pay_plans')->where('id', $oldCommunity)->first();
         $this->assertSame("legacy-community-{$oldCommunity}", $community->slug);

@@ -132,6 +132,33 @@ describe('BillingPage', () => {
     });
   });
 
+  it('keeps the plan and "Manage Payment" on screen for a card payer whose card has failed', async () => {
+    // Stripe "past due" is recorded as `expired`. The page then said "No
+    // subscription" and hid the only way to update the card.
+    mockBillingApi.getSubscription.mockResolvedValue({
+      success: true,
+      data: { ...ACTIVE_SUB, status: 'expired', has_card_subscription: true },
+    });
+
+    render(<BillingPage />);
+
+    await waitFor(() => expect(screen.getByText('Community Pro')).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: /manage payment/i })).toBeInTheDocument();
+    expect(screen.queryByText(/^No subscription$/i)).not.toBeInTheDocument();
+  });
+
+  it('shows no "Manage Payment" once the subscription is over', async () => {
+    mockBillingApi.getSubscription.mockResolvedValue({
+      success: true,
+      data: { ...ACTIVE_SUB, status: 'cancelled', has_card_subscription: false },
+    });
+
+    render(<BillingPage />);
+
+    await waitFor(() => expect(screen.getByText(/No subscription/i)).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: /manage payment/i })).not.toBeInTheDocument();
+  });
+
   it('calls billingApi.createPortal and opens portal URL', async () => {
     mockBillingApi.getSubscription.mockResolvedValueOnce({ success: true, data: ACTIVE_SUB });
     mockBillingApi.createPortal.mockResolvedValueOnce({

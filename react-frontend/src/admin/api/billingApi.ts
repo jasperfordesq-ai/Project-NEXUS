@@ -14,30 +14,70 @@ import { api } from '@/lib/api';
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** What card checkout would charge this community for one billing period. */
+export interface PlanCharge {
+  /** The currency the community is billed in for this period. */
+  currency: 'eur' | 'gbp';
+  amount: number;
+  /** The plan's one-off setup fee in that currency. Quoted, not taken by card. */
+  setup_fee: number;
+}
+
+/**
+ * A row of GET /v2/billing/plans, key for key
+ * (AdminBillingController::getPlansPublic, pinned by
+ * tests/Laravel/Feature/Billing/PublicPlansContractTest.php).
+ */
 export interface Plan {
   id: number;
   name: string;
   slug: string;
-  description: string;
+  description: string | null;
   tier_level: number;
+  /** Euro. */
   price_monthly: number;
   price_yearly: number;
+  setup_fee: number;
+  /** Pounds; null = not sold in pounds. */
+  price_monthly_gbp: number | null;
+  price_yearly_gbp: number | null;
+  setup_fee_gbp: number | null;
+  /** Active members allowed; null = no limit. */
+  max_users: number | null;
+  max_communities: number | null;
+  storage_gb: number | null;
+  emails_per_month: number | null;
   features: string[];
-  is_active: boolean;
+  is_active: boolean | number;
+  charge: { monthly: PlanCharge; yearly: PlanCharge };
 }
 
+/**
+ * GET /v2/admin/billing/subscription: the community's latest assignment
+ * (StripeSubscriptionService::getSubscriptionDetails). The server names the
+ * plan `pay_plan_id`; `plan_id` was this screen's own invention and never
+ * arrived, which is why no plan was ever marked as the current one.
+ */
 export interface SubscriptionDetails {
   id: number;
-  plan_id: number;
+  pay_plan_id: number;
+  /** @deprecated never sent by the server; kept so old fixtures still type-check. */
+  plan_id?: number;
   plan_name: string;
   plan_tier_level: number;
-  status: 'active' | 'trialing' | 'past_due' | 'cancelled' | 'expired' | 'incomplete';
+  status: 'active' | 'trial' | 'trialing' | 'past_due' | 'cancelled' | 'expired' | 'incomplete';
   billing_interval: 'monthly' | 'yearly';
   current_period_start: string;
   current_period_end: string;
   trial_ends_at: string | null;
   cancel_at_period_end: boolean;
   stripe_subscription_id: string | null;
+  /**
+   * Whether Stripe still has a card subscription open for the community
+   * (paying, on trial, or with a failed card). While it does, the server
+   * refuses a checkout: it would start a second subscription beside the first.
+   */
+  has_card_subscription?: boolean;
 }
 
 export interface Invoice {

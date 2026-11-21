@@ -469,6 +469,28 @@ describe('BranchPayments', () => {
     });
   });
 
+  it('shows each plan\'s yearly price and one-off setup fee beside its monthly price', async () => {
+    // The server sent both all along; the dialog showed the monthly price only.
+    const user = userEvent.setup();
+    await renderWithPlans(
+      [makeRow({ plan: makePlan(), members: { active: 80, max: 250, percent: 32 } })],
+      { success: true, data: [
+        makePlan({ plan_id: 2, slug: 'spark', name: 'Spark', max_users: 100, price_monthly: 150, price_yearly: 1500, setup_fee: 0 }),
+        makePlan({ price_monthly: 199, price_yearly: 1990, setup_fee: 645 }),
+        makePlan({ plan_id: 4, slug: 'community', name: 'Community', max_users: 1000, price_monthly: 0, price_yearly: 0, setup_fee: 0 }),
+      ] },
+    );
+
+    await user.click(button('Change plan')!);
+    await screen.findByRole('radio', { name: /Spark/ });
+
+    expect(screen.getByText('£1,990 per year')).toBeInTheDocument();
+    expect(screen.getByText('plus £645 one-off setup fee')).toBeInTheDocument();
+    expect(screen.getByText('£1,500 per year')).toBeInTheDocument();
+    // Spark is priced and has no setup fee; the unpriced plan says nothing about one.
+    expect(screen.getAllByText('No setup fee')).toHaveLength(1);
+  });
+
   it('says so when the hub offers no plans', async () => {
     const user = userEvent.setup();
     await renderWithPlans([makeRow()], { success: true, data: [] });

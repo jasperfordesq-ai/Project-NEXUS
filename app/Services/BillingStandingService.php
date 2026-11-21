@@ -91,8 +91,14 @@ final class BillingStandingService
      * Who a community pays when nobody has said otherwise.
      *
      * The platform's own community is never billed. A community directly under
-     * it pays the platform — by card when it has a live Stripe subscription,
-     * by invoice otherwise. Anything deeper pays its direct parent.
+     * it pays the platform — by card when it holds a card subscription Stripe
+     * has not ended, by invoice otherwise. Anything deeper pays its direct
+     * parent.
+     *
+     * "A card subscription Stripe has not ended" is
+     * TenantBillingService::hasLiveCardSubscription(): a community whose card
+     * has just failed is still a card payer. It used to become "by invoice"
+     * at that moment, which switched off the wait for Stripe's retries.
      */
     public static function defaultPayer(int $tenantId): string
     {
@@ -107,13 +113,7 @@ final class BillingStandingService
             return 'parent';
         }
 
-        $hasCard = DB::table('tenant_plan_assignments')
-            ->where('tenant_id', $tenantId)
-            ->whereNotNull('stripe_subscription_id')
-            ->whereIn('status', ['active', 'trial'])
-            ->exists();
-
-        return $hasCard ? 'platform_card' : 'platform_invoice';
+        return TenantBillingService::hasLiveCardSubscription($tenantId) ? 'platform_card' : 'platform_invoice';
     }
 
     /**

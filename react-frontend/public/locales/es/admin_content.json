@@ -1453,7 +1453,8 @@
     "plan_stripe_warning_gbp_monthly": "El nuevo precio mensual en libras no ha llegado a Stripe.",
     "plan_stripe_warning_gbp_yearly": "El nuevo precio anual en libras no ha llegado a Stripe.",
     "plan_stripe_warning_action": "A las nuevas altas con tarjeta se les sigue cobrando el precio anterior. Pulsa «{{button}}» para volver a intentarlo.",
-    "plan_whole_number_min": "{{field}} debe ser un número entero igual o mayor que {{min}}"
+    "plan_whole_number_min": "{{field}} debe ser un número entero igual o mayor que {{min}}",
+    "plan_setup_fee": "Cuota de alta"
   },
   "data_table": {
     "admin_data_table": "Datos",

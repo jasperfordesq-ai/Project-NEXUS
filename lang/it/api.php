@@ -1220,6 +1220,7 @@ return [
     'branch_payments_card_subscription' => 'Questa comunità paga la piattaforma con carta, quindi solo il team della piattaforma può cambiarne il piano.',
     'branch_payments_plan_not_offered' => 'La comunità superiore non offre questo piano, quindi non può essere assegnato a questa comunità.',
     'billing_checkout_pays_parent' => 'Questa comunità paga la sua comunità superiore, quindi non c’è nulla da pagare alla piattaforma con carta.',
+    'billing_checkout_already_subscribed' => 'Questa comunità paga già un piano con carta, quindi non è possibile avviare un secondo pagamento con carta: verrebbero addebitati entrambi. Per cambiare piano, rivolgiti al team della piattaforma.',
     'billing_plan_not_sold_monthly' => 'Questo piano non è venduto con pagamento mensile. Scegli invece la fatturazione annuale.',
     'billing_plan_not_sold_yearly' => 'Questo piano non è venduto con pagamento annuale. Scegli invece la fatturazione mensile.',
     'billing_standing_payment_paid_until_required' => 'Inserisci la data fino alla quale questo pagamento copre la comunità.',
