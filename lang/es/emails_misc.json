@@ -1068,6 +1068,9 @@
     "card_dispute_body_won": "La disputa sobre el pago con tarjeta de <strong>{{amount}}</strong> de <strong>{{community}}</strong> (factura {{invoice}}) ha terminado y el pago se mantiene.",
     "card_dispute_body_lost": "Se ha perdido la disputa sobre el pago con tarjeta de <strong>{{amount}}</strong> de <strong>{{community}}</strong> (factura {{invoice}}). El dinero ha vuelto al titular de la tarjeta.",
     "card_dispute_where": "Una disputa se responde en el panel de Stripe, y Stripe fija un plazo para ello.",
-    "card_nothing_automatic": "No se ha cambiado nada automáticamente. La comunidad no está en pausa y su fecha de pago sigue como estaba."
+    "card_nothing_automatic": "No se ha cambiado nada automáticamente. La comunidad no está en pausa y su fecha de pago sigue como estaba.",
+    "check_failed_subject": "La comprobación diaria de facturación no ha terminado",
+    "check_failed_title": "La comprobación diaria de facturación ha fallado",
+    "check_failed_body": "La comprobación automática de facturación de esta mañana se detuvo por un error antes de terminar, así que puede que algunos recordatorios, avisos o pausas que tocaban no se hayan hecho. Control de facturación muestra cuándo se ejecutó por última vez. Se puede volver a ejecutar a mano; ejecutarla dos veces el mismo día no causa ningún problema."
   }
 }

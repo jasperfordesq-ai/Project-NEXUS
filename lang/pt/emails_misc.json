@@ -1068,6 +1068,9 @@
     "card_dispute_body_won": "A contestação do pagamento por cartão de <strong>{{amount}}</strong> de <strong>{{community}}</strong> (fatura {{invoice}}) terminou e o pagamento mantém-se.",
     "card_dispute_body_lost": "A contestação do pagamento por cartão de <strong>{{amount}}</strong> de <strong>{{community}}</strong> (fatura {{invoice}}) foi perdida. O dinheiro voltou para o titular do cartão.",
     "card_dispute_where": "Uma contestação é respondida no painel da Stripe, e a Stripe define um prazo para isso.",
-    "card_nothing_automatic": "Nada foi alterado automaticamente. A comunidade não está em pausa e a sua data de pagamento continua como estava."
+    "card_nothing_automatic": "Nada foi alterado automaticamente. A comunidade não está em pausa e a sua data de pagamento continua como estava.",
+    "check_failed_subject": "A verificação diária da faturação não terminou",
+    "check_failed_title": "A verificação diária da faturação falhou",
+    "check_failed_body": "A verificação automática da faturação desta manhã parou com um erro antes de terminar, por isso alguns lembretes, avisos ou pausas previstos podem não ter acontecido. Controlo da faturação mostra quando foi executada pela última vez. Pode ser executada de novo à mão; executá-la duas vezes no mesmo dia não causa problemas."
   }
 }

@@ -1068,6 +1068,9 @@
     "card_dispute_body_won": "Le litige sur le paiement par carte de <strong>{{amount}}</strong> de <strong>{{community}}</strong> (facture {{invoice}}) est terminé et le paiement est maintenu.",
     "card_dispute_body_lost": "Le litige sur le paiement par carte de <strong>{{amount}}</strong> de <strong>{{community}}</strong> (facture {{invoice}}) a été perdu. L’argent est retourné au titulaire de la carte.",
     "card_dispute_where": "On répond à un litige dans le tableau de bord Stripe, et Stripe fixe un délai pour le faire.",
-    "card_nothing_automatic": "Rien n’a été modifié automatiquement. La communauté n’est pas en pause et sa date de paiement est inchangée."
+    "card_nothing_automatic": "Rien n’a été modifié automatiquement. La communauté n’est pas en pause et sa date de paiement est inchangée.",
+    "check_failed_subject": "La vérification quotidienne de la facturation ne s’est pas terminée",
+    "check_failed_title": "La vérification quotidienne de la facturation a échoué",
+    "check_failed_body": "La vérification automatique de la facturation de ce matin s’est arrêtée sur une erreur avant la fin ; certains rappels, avertissements ou mises en pause prévus n’ont donc peut-être pas eu lieu. Contrôle de la facturation indique quand elle a été exécutée pour la dernière fois. Elle peut être relancée à la main ; l’exécuter deux fois le même jour est sans risque."
   }
 }

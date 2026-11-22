@@ -1068,6 +1068,9 @@
     "card_dispute_body_won": "Tá deireadh leis an díospóid faoin íocaíocht chárta <strong>{{amount}}</strong> ó <strong>{{community}}</strong> (sonrasc {{invoice}}) agus seasann an íocaíocht.",
     "card_dispute_body_lost": "Cailleadh an díospóid faoin íocaíocht chárta <strong>{{amount}}</strong> ó <strong>{{community}}</strong> (sonrasc {{invoice}}). Tá an t-airgead imithe ar ais chuig sealbhóir an chárta.",
     "card_dispute_where": "Freagraítear díospóid i ndeais Stripe, agus socraíonn Stripe spriocdháta dó sin.",
-    "card_nothing_automatic": "Níor athraíodh aon rud go huathoibríoch. Níl an pobal ar sos agus tá a dháta íoctha go dtí mar a bhí."
+    "card_nothing_automatic": "Níor athraíodh aon rud go huathoibríoch. Níl an pobal ar sos agus tá a dháta íoctha go dtí mar a bhí.",
+    "check_failed_subject": "Níor chríochnaigh an tseiceáil laethúil bhilleála",
+    "check_failed_title": "Theip ar an tseiceáil laethúil bhilleála",
+    "check_failed_body": "Stop seiceáil uathoibríoch bhilleála na maidine seo de bharr earráide sular chríochnaigh sí, agus mar sin b’fhéidir nár tharla roinnt meabhrúchán, rabhadh nó sosanna a bhí dlite. Taispeánann an Rialú billeála cathain a ritheadh go deireanach í. Is féidir í a rith arís de láimh; tá sé sábháilte í a rith faoi dhó in aon lá amháin."
   }
 }

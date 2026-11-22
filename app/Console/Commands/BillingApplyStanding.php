@@ -11,6 +11,7 @@ namespace App\Console\Commands;
 use App\Services\BillingAutomationService;
 use App\Support\Billing\BillingSettings;
 use Illuminate\Console\Command;
+use App\Services\BillingStandingNotifier;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -29,7 +30,8 @@ use Illuminate\Support\Facades\Log;
  *
  * Each real run leaves a "last ran" record (BillingAutomationService::lastRun())
  * that the Automatic checks card shows. A failure is logged as an error, is
- * recorded, and exits non-zero.
+ * recorded, is reported to error tracking, emails the platform team and
+ * exits non-zero.
  */
 class BillingApplyStanding extends Command
 {
@@ -63,6 +65,19 @@ class BillingApplyStanding extends Command
                 'exception' => $e::class,
             ]);
             $this->error('The daily billing check failed: ' . $e->getMessage());
+
+            // Reaches error tracking whatever the log is set to, and the
+            // platform team by email: a failed run does none of what was due
+            // after it stopped, and the "last ran" line on Billing control
+            // only says so to somebody who opens that page.
+            report($e);
+            try {
+                BillingStandingNotifier::dailyCheckFailed();
+            } catch (\Throwable $mailFailure) {
+                Log::warning('[billing:apply-standing] the platform team could not be told the check failed', [
+                    'error' => $mailFailure->getMessage(),
+                ]);
+            }
 
             return self::FAILURE;
         }

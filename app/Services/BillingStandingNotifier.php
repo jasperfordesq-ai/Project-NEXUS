@@ -372,6 +372,27 @@ final class BillingStandingNotifier
     }
 
     /**
+     * The daily check stopped with an error. The platform team only, and
+     * about no community in particular: a run that fails does none of what
+     * was due after the point where it stopped, and nothing else would say
+     * so until somebody happened to open Billing control.
+     *
+     * @return array{tried:int, accepted:int} see deliverCounted()
+     */
+    public static function dailyCheckFailed(): array
+    {
+        return self::deliverCounted(
+            self::platformTeam(),
+            '',
+            self::KEY . 'check_failed_subject',
+            self::KEY . 'check_failed_title',
+            [[self::KEY . 'check_failed_body', []]],
+            'danger',
+            '/platform-team/billing'
+        );
+    }
+
+    /**
      * Stripe reports a refund on a community's card payment. The platform
      * team only: the refund was made in the platform's own Stripe account, so
      * the community's admins have nothing to do. Nothing is paused and no

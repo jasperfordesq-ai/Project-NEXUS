@@ -1068,6 +1068,9 @@
     "card_dispute_body_won": "De betwisting van de kaartbetaling van <strong>{{amount}}</strong> van <strong>{{community}}</strong> (factuur {{invoice}}) is afgelopen en de betaling blijft staan.",
     "card_dispute_body_lost": "De betwisting van de kaartbetaling van <strong>{{amount}}</strong> van <strong>{{community}}</strong> (factuur {{invoice}}) is verloren. Het geld is teruggegaan naar de kaarthouder.",
     "card_dispute_where": "Een betwisting wordt beantwoord in het Stripe-dashboard, en Stripe stelt daarvoor een termijn.",
-    "card_nothing_automatic": "Er is niets automatisch gewijzigd. De gemeenschap is niet gepauzeerd en de betaald-tot-datum is zoals die was."
+    "card_nothing_automatic": "Er is niets automatisch gewijzigd. De gemeenschap is niet gepauzeerd en de betaald-tot-datum is zoals die was.",
+    "check_failed_subject": "De dagelijkse factuurcontrole is niet afgerond",
+    "check_failed_title": "De dagelijkse factuurcontrole is mislukt",
+    "check_failed_body": "De automatische factuurcontrole van vanochtend is met een fout gestopt voordat ze klaar was. Sommige herinneringen, waarschuwingen of pauzes die aan de beurt waren, zijn daardoor mogelijk niet uitgevoerd. Factuurbeheer toont wanneer ze voor het laatst is uitgevoerd. Ze kan met de hand opnieuw worden gestart; twee keer op dezelfde dag uitvoeren kan geen kwaad."
   }
 }

@@ -100,6 +100,75 @@ final class BillingApplyStandingCommandTest extends TestCase
         $this->assertSame(array_keys(BillingSettings::DEFAULTS), array_keys(BillingSettings::all()));
     }
 
+    /**
+     * A run that stops with an error does none of what was due after that
+     * point. It was logged and shown on the Automatic checks card, and no
+     * person was told.
+     */
+    public function test_a_run_that_fails_is_recorded_and_the_platform_team_is_emailed(): void
+    {
+        BillingSettings::set('automation_enabled', true, null);
+        $teamEmail = 'check.failed.' . bin2hex(random_bytes(5)) . '@example.com';
+        \App\Models\User::factory()->forTenant(1)->create([
+            'email' => $teamEmail, 'status' => 'active', 'is_approved' => true,
+            'is_god' => true, 'is_super_admin' => true, 'preferred_language' => 'en',
+        ]);
+        $mailer = new class extends \App\Services\EmailDispatchService {
+            /** @var array<int, array{to: string, subject: string, body: string}> */
+            public array $calls = [];
+
+            public function send(string $to, string $subject, string $body, array $options = []): bool
+            {
+                $this->calls[] = compact('to', 'subject', 'body');
+
+                return true;
+            }
+        };
+        app()->instance(\App\Services\EmailDispatchService::class, $mailer);
+
+        // The run's own first look at the communities fails, once.
+        $failing = true;
+        DB::connection()->beforeExecuting(static function (string $sql) use (&$failing): void {
+            if ($failing && stripos($sql, 'tenants') !== false && stripos(ltrim($sql), 'select') === 0) {
+                $failing = false;
+                throw new \RuntimeException('The database went away in this test');
+            }
+        });
+
+        try {
+            $this->artisan('billing:apply-standing')->assertExitCode(1);
+        } finally {
+            $failing = false;
+        }
+
+        $this->assertSame('failed', BillingAutomationService::lastRun()['result'] ?? null);
+        $mine = array_values(array_filter($mailer->calls, static fn (array $c): bool => $c['to'] === $teamEmail));
+        $this->assertCount(1, $mine, 'the platform team is told');
+        $this->assertSame('The daily billing check did not finish', $mine[0]['subject']);
+        $this->assertStringContainsString('stopped with an error', $mine[0]['body']);
+    }
+
+    public function test_a_run_that_succeeds_emails_nobody_about_a_failure(): void
+    {
+        BillingSettings::set('automation_enabled', true, null);
+        $mailer = new class extends \App\Services\EmailDispatchService {
+            /** @var list<string> */
+            public array $subjects = [];
+
+            public function send(string $to, string $subject, string $body, array $options = []): bool
+            {
+                $this->subjects[] = $subject;
+
+                return true;
+            }
+        };
+        app()->instance(\App\Services\EmailDispatchService::class, $mailer);
+
+        $this->artisan('billing:apply-standing')->assertExitCode(0);
+
+        $this->assertNotContains('The daily billing check did not finish', $mailer->subjects);
+    }
+
     public function test_the_scheduler_runs_the_command(): void
     {
         // The schedule is only built for a real console run, so the wiring is

@@ -1068,6 +1068,9 @@
     "card_dispute_body_won": "<strong>{{community}}</strong> からのカード払い <strong>{{amount}}</strong>（請求書 {{invoice}}）への異議申し立ては終了し、支払いは有効のままです。",
     "card_dispute_body_lost": "<strong>{{community}}</strong> からのカード払い <strong>{{amount}}</strong>（請求書 {{invoice}}）への異議申し立てが認められました。金額はカード名義人に戻されました。",
     "card_dispute_where": "異議申し立てへの回答は Stripe のダッシュボードで行います。Stripe が期限を定めます。",
-    "card_nothing_automatic": "自動で変更されたものはありません。コミュニティは一時停止されておらず、支払済み期限もそのままです。"
+    "card_nothing_automatic": "自動で変更されたものはありません。コミュニティは一時停止されておらず、支払済み期限もそのままです。",
+    "check_failed_subject": "毎日の請求チェックが完了しませんでした",
+    "check_failed_title": "毎日の請求チェックに失敗しました",
+    "check_failed_body": "今朝の自動請求チェックは、完了する前にエラーで停止しました。そのため、予定されていたリマインダー、警告、一時停止の一部が実行されていない可能性があります。最後に実行された日時は請求管理で確認できます。手動でもう一度実行できます。同じ日に2回実行しても問題ありません。"
   }
 }

@@ -1068,6 +1068,9 @@
     "card_dispute_body_won": "The dispute on the card payment of <strong>{{amount}}</strong> from <strong>{{community}}</strong> (invoice {{invoice}}) has ended and the payment stands.",
     "card_dispute_body_lost": "The dispute on the card payment of <strong>{{amount}}</strong> from <strong>{{community}}</strong> (invoice {{invoice}}) was lost. The money has gone back to the cardholder.",
     "card_dispute_where": "A dispute is answered in the Stripe dashboard, and Stripe sets a deadline for it.",
-    "card_nothing_automatic": "Nothing has been changed automatically. The community is not paused and its paid-until date is as it was."
+    "card_nothing_automatic": "Nothing has been changed automatically. The community is not paused and its paid-until date is as it was.",
+    "check_failed_subject": "The daily billing check did not finish",
+    "check_failed_title": "The daily billing check failed",
+    "check_failed_body": "This morning’s automatic billing check stopped with an error before it finished, so some reminders, warnings or pauses that were due may not have happened. Billing control shows when it last ran. It can be run again by hand; running it twice in a day is safe."
   }
 }

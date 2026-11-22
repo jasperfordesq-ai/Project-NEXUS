@@ -1068,6 +1068,9 @@
     "card_dispute_body_won": "Die Anfechtung der Kartenzahlung über <strong>{{amount}}</strong> von <strong>{{community}}</strong> (Rechnung {{invoice}}) ist beendet, und die Zahlung bleibt bestehen.",
     "card_dispute_body_lost": "Die Anfechtung der Kartenzahlung über <strong>{{amount}}</strong> von <strong>{{community}}</strong> (Rechnung {{invoice}}) wurde verloren. Das Geld ist an den Karteninhaber zurückgegangen.",
     "card_dispute_where": "Eine Anfechtung wird im Stripe-Dashboard beantwortet, und Stripe setzt dafür eine Frist.",
-    "card_nothing_automatic": "Es wurde nichts automatisch geändert. Die Community ist nicht pausiert, und ihr Bezahlt-bis-Datum ist unverändert."
+    "card_nothing_automatic": "Es wurde nichts automatisch geändert. Die Community ist nicht pausiert, und ihr Bezahlt-bis-Datum ist unverändert.",
+    "check_failed_subject": "Die tägliche Abrechnungsprüfung wurde nicht abgeschlossen",
+    "check_failed_title": "Die tägliche Abrechnungsprüfung ist fehlgeschlagen",
+    "check_failed_body": "Die automatische Abrechnungsprüfung von heute Morgen ist mit einem Fehler abgebrochen, bevor sie fertig war. Einige fällige Erinnerungen, Warnungen oder Pausierungen sind deshalb möglicherweise nicht erfolgt. Die Abrechnungssteuerung zeigt, wann sie zuletzt gelaufen ist. Sie kann von Hand erneut gestartet werden; zweimal am selben Tag zu laufen ist unbedenklich."
   }
 }
