@@ -1058,6 +1058,16 @@
     "plan_changed_price": "Son prix est de <strong>{{monthly}}</strong> par mois ou <strong>{{yearly}}</strong> par an.",
     "plan_changed_price_monthly": "Son prix est de <strong>{{monthly}}</strong> par mois.",
     "plan_changed_price_yearly": "Son prix est de <strong>{{yearly}}</strong> par an.",
-    "plan_changed_no_charge": "Aucun montant n’est enregistré pour ce forfait."
+    "plan_changed_no_charge": "Aucun montant n’est enregistré pour ce forfait.",
+    "card_refund_subject": "Un paiement par carte de {{community}} a été remboursé",
+    "card_refund_title": "Un paiement par carte a été remboursé",
+    "card_refund_body": "<strong>{{refunded}}</strong> d’un paiement par carte de <strong>{{amount}}</strong> de <strong>{{community}}</strong> ont été remboursés dans Stripe (facture {{invoice}}).",
+    "card_dispute_subject": "Litige sur un paiement par carte de {{community}}",
+    "card_dispute_title": "Litige sur un paiement par carte",
+    "card_dispute_body_open": "La banque du titulaire de la carte a ouvert un litige sur un paiement par carte de <strong>{{amount}}</strong> de <strong>{{community}}</strong> (facture {{invoice}}).",
+    "card_dispute_body_won": "Le litige sur le paiement par carte de <strong>{{amount}}</strong> de <strong>{{community}}</strong> (facture {{invoice}}) est terminé et le paiement est maintenu.",
+    "card_dispute_body_lost": "Le litige sur le paiement par carte de <strong>{{amount}}</strong> de <strong>{{community}}</strong> (facture {{invoice}}) a été perdu. L’argent est retourné au titulaire de la carte.",
+    "card_dispute_where": "On répond à un litige dans le tableau de bord Stripe, et Stripe fixe un délai pour le faire.",
+    "card_nothing_automatic": "Rien n’a été modifié automatiquement. La communauté n’est pas en pause et sa date de paiement est inchangée."
   }
 }

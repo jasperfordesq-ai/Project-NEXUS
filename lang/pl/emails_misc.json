@@ -1058,6 +1058,16 @@
     "plan_changed_price": "Cena wynosi <strong>{{monthly}}</strong> miesięcznie lub <strong>{{yearly}}</strong> rocznie.",
     "plan_changed_price_monthly": "Cena wynosi <strong>{{monthly}}</strong> miesięcznie.",
     "plan_changed_price_yearly": "Cena wynosi <strong>{{yearly}}</strong> rocznie.",
-    "plan_changed_no_charge": "Dla tego planu nie odnotowano żadnej opłaty."
+    "plan_changed_no_charge": "Dla tego planu nie odnotowano żadnej opłaty.",
+    "card_refund_subject": "Zwrócono płatność kartą od {{community}}",
+    "card_refund_title": "Zwrócono płatność kartą",
+    "card_refund_body": "W Stripe zwrócono <strong>{{refunded}}</strong> z płatności kartą na kwotę <strong>{{amount}}</strong> od <strong>{{community}}</strong> (faktura {{invoice}}).",
+    "card_dispute_subject": "Spór dotyczący płatności kartą od {{community}}",
+    "card_dispute_title": "Spór dotyczący płatności kartą",
+    "card_dispute_body_open": "Bank posiadacza karty otworzył spór dotyczący płatności kartą na kwotę <strong>{{amount}}</strong> od <strong>{{community}}</strong> (faktura {{invoice}}).",
+    "card_dispute_body_won": "Spór dotyczący płatności kartą na kwotę <strong>{{amount}}</strong> od <strong>{{community}}</strong> (faktura {{invoice}}) zakończył się i płatność pozostaje w mocy.",
+    "card_dispute_body_lost": "Spór dotyczący płatności kartą na kwotę <strong>{{amount}}</strong> od <strong>{{community}}</strong> (faktura {{invoice}}) został przegrany. Pieniądze wróciły do posiadacza karty.",
+    "card_dispute_where": "Na spór odpowiada się w panelu Stripe, a Stripe wyznacza na to termin.",
+    "card_nothing_automatic": "Nic nie zostało zmienione automatycznie. Społeczność nie jest wstrzymana, a jej data opłacenia pozostaje bez zmian."
   }
 }

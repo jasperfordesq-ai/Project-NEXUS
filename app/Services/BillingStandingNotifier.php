@@ -372,6 +372,87 @@ final class BillingStandingNotifier
     }
 
     /**
+     * Stripe reports a refund on a community's card payment. The platform
+     * team only: the refund was made in the platform's own Stripe account, so
+     * the community's admins have nothing to do. Nothing is paused and no
+     * date moves; the email says so.
+     *
+     * @param array<string, mixed> $facts amount, refunded, currency, invoice
+     * @return array{tried:int, accepted:int} see deliverCounted()
+     */
+    public static function cardPaymentRefunded(int $tenantId, array $facts): array
+    {
+        $about = self::community($tenantId);
+        if ($about === null) {
+            return ['tried' => 0, 'accepted' => 0];
+        }
+
+        $currency = strtoupper((string) ($facts['currency'] ?? '')) === 'GBP' ? 'GBP' : 'EUR';
+        $amount = (float) ($facts['amount'] ?? 0);
+        $refunded = (float) ($facts['refunded'] ?? 0);
+
+        return self::deliverCounted(
+            self::platformTeam(),
+            $about['name'],
+            self::KEY . 'card_refund_subject',
+            self::KEY . 'card_refund_title',
+            [
+                [self::KEY . 'card_refund_body', [
+                    'community' => $about['name'],
+                    'refunded' => static fn (): string => self::money($refunded, $currency),
+                    'amount' => static fn (): string => self::money($amount, $currency),
+                    'invoice' => (string) ($facts['invoice'] ?? ''),
+                ]],
+                [self::KEY . 'card_nothing_automatic', []],
+            ],
+            'warning',
+            '/platform-team/billing'
+        );
+    }
+
+    /**
+     * Stripe reports a dispute on a community's card payment, or that one has
+     * ended. The platform team only. `state` is `open`, `won` or `lost`
+     * (BillingStandingService::disputeState()).
+     *
+     * @param array<string, mixed> $facts amount, currency, invoice, state
+     * @return array{tried:int, accepted:int} see deliverCounted()
+     */
+    public static function cardPaymentDisputed(int $tenantId, array $facts): array
+    {
+        $about = self::community($tenantId);
+        if ($about === null) {
+            return ['tried' => 0, 'accepted' => 0];
+        }
+
+        $currency = strtoupper((string) ($facts['currency'] ?? '')) === 'GBP' ? 'GBP' : 'EUR';
+        $amount = (float) ($facts['amount'] ?? 0);
+        $state = in_array($facts['state'] ?? null, ['won', 'lost'], true) ? (string) $facts['state'] : 'open';
+
+        $paragraphs = [
+            [self::KEY . "card_dispute_body_{$state}", [
+                'community' => $about['name'],
+                'amount' => static fn (): string => self::money($amount, $currency),
+                'invoice' => (string) ($facts['invoice'] ?? ''),
+            ]],
+        ];
+        if ($state === 'open') {
+            $paragraphs[] = [self::KEY . 'card_dispute_where', []];
+        }
+        $paragraphs[] = [self::KEY . 'card_nothing_automatic', []];
+
+        return self::deliverCounted(
+            self::platformTeam(),
+            $about['name'],
+            self::KEY . 'card_dispute_subject',
+            self::KEY . 'card_dispute_title',
+            $paragraphs,
+            $state === 'won' ? 'default' : 'warning',
+            '/platform-team/billing'
+        );
+    }
+
+    /**
      * A community above this one (`above_name`) is at its member number under
      * "stop new members joining", so this community's door is shut too
      * (task 7A). Every admin of this community, nobody else: the community

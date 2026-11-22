@@ -1058,6 +1058,16 @@
     "plan_changed_price": "De prijs is <strong>{{monthly}}</strong> per maand of <strong>{{yearly}}</strong> per jaar.",
     "plan_changed_price_monthly": "De prijs is <strong>{{monthly}}</strong> per maand.",
     "plan_changed_price_yearly": "De prijs is <strong>{{yearly}}</strong> per jaar.",
-    "plan_changed_no_charge": "Voor dit pakket is geen bedrag vastgelegd."
+    "plan_changed_no_charge": "Voor dit pakket is geen bedrag vastgelegd.",
+    "card_refund_subject": "Een kaartbetaling van {{community}} is terugbetaald",
+    "card_refund_title": "Een kaartbetaling is terugbetaald",
+    "card_refund_body": "<strong>{{refunded}}</strong> van een kaartbetaling van <strong>{{amount}}</strong> van <strong>{{community}}</strong> is in Stripe terugbetaald (factuur {{invoice}}).",
+    "card_dispute_subject": "Betwisting van een kaartbetaling van {{community}}",
+    "card_dispute_title": "Betwisting van een kaartbetaling",
+    "card_dispute_body_open": "De bank van de kaarthouder heeft een kaartbetaling van <strong>{{amount}}</strong> van <strong>{{community}}</strong> betwist (factuur {{invoice}}).",
+    "card_dispute_body_won": "De betwisting van de kaartbetaling van <strong>{{amount}}</strong> van <strong>{{community}}</strong> (factuur {{invoice}}) is afgelopen en de betaling blijft staan.",
+    "card_dispute_body_lost": "De betwisting van de kaartbetaling van <strong>{{amount}}</strong> van <strong>{{community}}</strong> (factuur {{invoice}}) is verloren. Het geld is teruggegaan naar de kaarthouder.",
+    "card_dispute_where": "Een betwisting wordt beantwoord in het Stripe-dashboard, en Stripe stelt daarvoor een termijn.",
+    "card_nothing_automatic": "Er is niets automatisch gewijzigd. De gemeenschap is niet gepauzeerd en de betaald-tot-datum is zoals die was."
   }
 }

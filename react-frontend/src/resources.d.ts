@@ -4662,6 +4662,8 @@ export default interface Resources {
       "yes": "Yes"
     },
     "control": {
+      "alert_disputed": "Card payment disputed",
+      "alert_refunded": "Card payment refunded",
       "amount_invalid": "Enter the amount as a plain number with at most two decimal places.",
       "amount_label": "Amount (optional)",
       "card_payer_note": "This community pays by card. Its plan and price are changed from its own Billing page. Only the notes and the review date can be changed here.",
@@ -4692,9 +4694,13 @@ export default interface Resources {
       "history_col_received_on": "Received",
       "history_col_recorded_by": "Recorded by",
       "history_col_reference": "Reference",
+      "history_dispute_lost": "Disputed on {{date}}. Lost: the money went back to the cardholder.",
+      "history_dispute_open": "Disputed on {{date}}. Open: it is answered in Stripe.",
+      "history_dispute_won": "Disputed on {{date}}. Ended: the payment stands.",
       "history_empty": "No payments have been recorded yet.",
       "history_failed": "The payment history could not be loaded.",
       "history_paid_to": "Paid to {{name}}",
+      "history_refunded": "Refunded: {{amount}} on {{date}}",
       "history_title": "Payment history",
       "history_voided": "Voided {{date}} by {{name}}: {{reason}}",
       "history_voided_no_name": "Voided {{date}}: {{reason}}",

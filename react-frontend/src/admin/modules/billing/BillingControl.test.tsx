@@ -205,6 +205,7 @@ const makeSnapshot = (overrides: Record<string, unknown> = {}) => ({
   standing: makeStanding(),
   pause_on: null,
   last_payment: null,
+  payment_alerts: { refunded: false, disputed: false },
   ...overrides,
 });
 
@@ -789,6 +790,16 @@ describe('BillingControl', () => {
 
     expect(screen.getByText(`Last payment: ${formatDate('2026-11-02')}, Bank transfer`)).toBeInTheDocument();
     expect(screen.getAllByText(/^Last payment:/)).toHaveLength(1);
+  });
+
+  it('flags a community whose card payment was refunded or is disputed, and no other', async () => {
+    await renderWith([
+      makeSnapshot({ payment_alerts: { refunded: true, disputed: true } }),
+      makeSnapshot({ id: 6, name: 'Galway Timebank', standing: makeStanding({ tenant_id: 6 }) }),
+    ]);
+
+    expect(screen.getAllByText('Card payment refunded')).toHaveLength(1);
+    expect(screen.getAllByText('Card payment disputed')).toHaveLength(1);
   });
 
   it('records a payment with the contract body and reloads the list', async () => {

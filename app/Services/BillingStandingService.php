@@ -550,6 +550,207 @@ final class BillingStandingService
         return $id;
     }
 
+    /** How long a refund or a closed dispute stays flagged on Billing control. */
+    public const PAYMENT_ALERT_DAYS = 60;
+
+    /** Stripe's words for a dispute that has ended with the payment standing. */
+    private const DISPUTE_WON = ['won', 'warning_closed'];
+
+    /**
+     * The card payment a Stripe charge belongs to, or null.
+     *
+     * Matched on the charge, the payment intent or the invoice, whichever of
+     * them Stripe names: a refund and a dispute are reported against the
+     * charge, and the payment was recorded from the invoice. Only a payment
+     * Stripe itself reported is ever matched, never one recorded by hand.
+     *
+     * Null is the ordinary answer for a charge that is not a community's plan
+     * payment at all (a donation, a marketplace order).
+     *
+     * @param array<string, mixed> $ids charge?, payment_intent?, invoice?
+     */
+    public static function cardPaymentFor(array $ids): ?object
+    {
+        $charge = self::cleanStripeId($ids['charge'] ?? null);
+        $paymentIntent = self::cleanStripeId($ids['payment_intent'] ?? null);
+        $invoice = self::cleanStripeId($ids['invoice'] ?? null);
+        if ($charge === null && $paymentIntent === null && $invoice === null) {
+            return null;
+        }
+
+        return DB::table('billing_payments')
+            ->whereNotNull('stripe_invoice_id')
+            ->where(static function ($q) use ($charge, $paymentIntent, $invoice): void {
+                if ($charge !== null) {
+                    $q->orWhere('stripe_charge_id', $charge);
+                }
+                if ($paymentIntent !== null) {
+                    $q->orWhere('stripe_payment_intent_id', $paymentIntent);
+                }
+                if ($invoice !== null) {
+                    $q->orWhere('stripe_invoice_id', $invoice);
+                }
+            })
+            ->orderByDesc('id')
+            ->first();
+    }
+
+    /**
+     * Mark a card payment with what Stripe says has been refunded of it, in
+     * total. True when that changed the record (a first refund, or a further
+     * one); false when the row already says so.
+     *
+     * Nothing else changes: not the paid-until date, not the community's
+     * standing. A person decides what a refund means.
+     */
+    public static function recordCardRefund(int $paymentId, int $refundedCents, ?string $chargeId = null): bool
+    {
+        if ($refundedCents <= 0) {
+            return false;
+        }
+
+        $row = DB::table('billing_payments')->where('id', $paymentId)->whereNotNull('stripe_invoice_id')->first();
+        if ($row === null) {
+            return false;
+        }
+
+        $refunded = number_format($refundedCents / 100, 2, '.', '');
+        $before = $row->refunded_amount !== null ? number_format((float) $row->refunded_amount, 2, '.', '') : null;
+        if ($before === $refunded) {
+            return false;
+        }
+
+        $values = ['refunded_amount' => $refunded, 'refunded_at' => now()];
+        $chargeId = self::cleanStripeId($chargeId);
+        if ($row->stripe_charge_id === null && $chargeId !== null) {
+            $values['stripe_charge_id'] = $chargeId;
+        }
+        DB::table('billing_payments')->where('id', $paymentId)->update($values);
+
+        TenantBillingService::logAudit(
+            (int) $row->tenant_id,
+            null,
+            'payment_refunded',
+            ['payment_id' => $paymentId, 'refunded_amount' => $before],
+            ['payment_id' => $paymentId, 'refunded_amount' => $refunded, 'currency' => $row->currency],
+            "payment {$paymentId}: refunded in Stripe"
+        );
+
+        return true;
+    }
+
+    /**
+     * Mark a card payment with the state of a dispute on it, in Stripe's own
+     * word. True when that changed the record; false when the row already
+     * says so. `disputed_at` is when the dispute was opened and is set once.
+     *
+     * Nothing else changes: nothing is paused, and no date moves.
+     */
+    public static function recordCardDispute(int $paymentId, string $status, ?int $openedAt = null, ?string $chargeId = null): bool
+    {
+        $status = self::cleanDisputeStatus($status);
+
+        $row = DB::table('billing_payments')->where('id', $paymentId)->whereNotNull('stripe_invoice_id')->first();
+        if ($row === null || $row->dispute_status === $status) {
+            return false;
+        }
+
+        $values = ['dispute_status' => $status];
+        if ($row->disputed_at === null) {
+            $values['disputed_at'] = $openedAt !== null && $openedAt > 0 ? date('Y-m-d H:i:s', $openedAt) : now();
+        }
+        $chargeId = self::cleanStripeId($chargeId);
+        if ($row->stripe_charge_id === null && $chargeId !== null) {
+            $values['stripe_charge_id'] = $chargeId;
+        }
+        DB::table('billing_payments')->where('id', $paymentId)->update($values);
+
+        TenantBillingService::logAudit(
+            (int) $row->tenant_id,
+            null,
+            'payment_disputed',
+            ['payment_id' => $paymentId, 'dispute_status' => $row->dispute_status],
+            ['payment_id' => $paymentId, 'dispute_status' => $status],
+            "payment {$paymentId}: dispute {$status} in Stripe"
+        );
+
+        return true;
+    }
+
+    /** Stripe's word for a dispute as stored: lower case, letters and underscores, at most 40. */
+    public static function cleanDisputeStatus(mixed $status): string
+    {
+        $status = is_string($status) ? strtolower(trim($status)) : '';
+
+        return preg_match('/^[a-z_]{1,40}$/', $status) === 1 ? $status : 'unknown';
+    }
+
+    /**
+     * What a stored dispute status means for a reader: `open` (Stripe still
+     * wants an answer, or is deciding), `won` (it ended and the payment
+     * stands) or `lost` (the money went back to the cardholder). Null with no
+     * dispute.
+     */
+    public static function disputeState(?string $status): ?string
+    {
+        if ($status === null || $status === '') {
+            return null;
+        }
+        if ($status === 'lost') {
+            return 'lost';
+        }
+
+        return in_array($status, self::DISPUTE_WON, true) ? 'won' : 'open';
+    }
+
+    /**
+     * Which communities have a card payment that was refunded lately or is
+     * disputed, for Billing control's list. A refund is flagged for
+     * PAYMENT_ALERT_DAYS from the day it was recorded; a dispute while it is
+     * open, and for the same number of days from the day it was opened.
+     *
+     * @param list<int> $tenantIds
+     * @return array<int, array{refunded: bool, disputed: bool}> only communities with a flag
+     */
+    public static function paymentAlerts(array $tenantIds): array
+    {
+        $ids = array_values(array_unique(array_map('intval', $tenantIds)));
+        if ($ids === []) {
+            return [];
+        }
+
+        $since = now()->subDays(self::PAYMENT_ALERT_DAYS);
+        $alerts = [];
+
+        foreach (array_chunk($ids, 500) as $chunk) {
+            $rows = DB::table('billing_payments')
+                ->whereIn('tenant_id', $chunk)
+                ->where(static function ($q): void {
+                    $q->whereNotNull('refunded_at')->orWhereNotNull('dispute_status');
+                })
+                ->get(['tenant_id', 'refunded_at', 'dispute_status', 'disputed_at']);
+
+            foreach ($rows as $row) {
+                $refunded = $row->refunded_at !== null && (string) $row->refunded_at >= $since->toDateTimeString();
+                $disputed = $row->dispute_status !== null && (
+                    self::disputeState((string) $row->dispute_status) === 'open'
+                    || ($row->disputed_at !== null && (string) $row->disputed_at >= $since->toDateTimeString())
+                );
+                if (!$refunded && !$disputed) {
+                    continue;
+                }
+
+                $tenantId = (int) $row->tenant_id;
+                $alerts[$tenantId] = [
+                    'refunded' => ($alerts[$tenantId]['refunded'] ?? false) || $refunded,
+                    'disputed' => ($alerts[$tenantId]['disputed'] ?? false) || $disputed,
+                ];
+            }
+        }
+
+        return $alerts;
+    }
+
     /**
      * Void a payment recorded by hand. It is never deleted: the row stays,
      * marked with who voided it, when and why, and the history shows it
@@ -696,6 +897,7 @@ final class BillingStandingService
                 'bp.paid_until_before', 'bp.paid_until_after', 'bp.recorded_by_user_id', 'bp.created_at',
                 'bp.stripe_invoice_id', 'bp.payee_tenant_id',
                 'bp.voided_at', 'bp.void_reason',
+                'bp.refunded_amount', 'bp.refunded_at', 'bp.dispute_status', 'bp.disputed_at',
                 'payee.name as payee_name',
                 'u.is_god as recorder_is_god', 'u.is_super_admin as recorder_is_super_admin',
                 'v.is_god as voider_is_god', 'v.is_super_admin as voider_is_super_admin',
@@ -734,6 +936,11 @@ final class BillingStandingService
                 // What a person may do with it: a card payment is undone in
                 // Stripe, and a payment is voided once.
                 'can_void' => $row->stripe_invoice_id === null && $row->voided_at === null,
+                // What Stripe has reported since about a card payment.
+                'refunded_amount' => $row->refunded_amount !== null ? number_format((float) $row->refunded_amount, 2, '.', '') : null,
+                'refunded_at' => $row->refunded_at !== null ? (string) $row->refunded_at : null,
+                'dispute_state' => self::disputeState($row->dispute_status !== null ? (string) $row->dispute_status : null),
+                'disputed_at' => $row->disputed_at !== null ? (string) $row->disputed_at : null,
             ];
         }
 

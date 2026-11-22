@@ -1058,6 +1058,16 @@
     "plan_changed_price": "Su precio es de <strong>{{monthly}}</strong> al mes o <strong>{{yearly}}</strong> al año.",
     "plan_changed_price_monthly": "Su precio es de <strong>{{monthly}}</strong> al mes.",
     "plan_changed_price_yearly": "Su precio es de <strong>{{yearly}}</strong> al año.",
-    "plan_changed_no_charge": "No hay ningún cargo registrado para este plan."
+    "plan_changed_no_charge": "No hay ningún cargo registrado para este plan.",
+    "card_refund_subject": "Se ha reembolsado un pago con tarjeta de {{community}}",
+    "card_refund_title": "Se ha reembolsado un pago con tarjeta",
+    "card_refund_body": "Se han reembolsado en Stripe <strong>{{refunded}}</strong> de un pago con tarjeta de <strong>{{amount}}</strong> de <strong>{{community}}</strong> (factura {{invoice}}).",
+    "card_dispute_subject": "Disputa de un pago con tarjeta de {{community}}",
+    "card_dispute_title": "Disputa de un pago con tarjeta",
+    "card_dispute_body_open": "El banco del titular de la tarjeta ha abierto una disputa sobre un pago con tarjeta de <strong>{{amount}}</strong> de <strong>{{community}}</strong> (factura {{invoice}}).",
+    "card_dispute_body_won": "La disputa sobre el pago con tarjeta de <strong>{{amount}}</strong> de <strong>{{community}}</strong> (factura {{invoice}}) ha terminado y el pago se mantiene.",
+    "card_dispute_body_lost": "Se ha perdido la disputa sobre el pago con tarjeta de <strong>{{amount}}</strong> de <strong>{{community}}</strong> (factura {{invoice}}). El dinero ha vuelto al titular de la tarjeta.",
+    "card_dispute_where": "Una disputa se responde en el panel de Stripe, y Stripe fija un plazo para ello.",
+    "card_nothing_automatic": "No se ha cambiado nada automáticamente. La comunidad no está en pausa y su fecha de pago sigue como estaba."
   }
 }

@@ -1058,6 +1058,16 @@
     "plan_changed_price": "Der Preis beträgt <strong>{{monthly}}</strong> im Monat oder <strong>{{yearly}}</strong> im Jahr.",
     "plan_changed_price_monthly": "Der Preis beträgt <strong>{{monthly}}</strong> im Monat.",
     "plan_changed_price_yearly": "Der Preis beträgt <strong>{{yearly}}</strong> im Jahr.",
-    "plan_changed_no_charge": "Für diesen Tarif ist kein Preis erfasst."
+    "plan_changed_no_charge": "Für diesen Tarif ist kein Preis erfasst.",
+    "card_refund_subject": "Eine Kartenzahlung von {{community}} wurde erstattet",
+    "card_refund_title": "Eine Kartenzahlung wurde erstattet",
+    "card_refund_body": "<strong>{{refunded}}</strong> einer Kartenzahlung über <strong>{{amount}}</strong> von <strong>{{community}}</strong> wurden in Stripe erstattet (Rechnung {{invoice}}).",
+    "card_dispute_subject": "Anfechtung einer Kartenzahlung von {{community}}",
+    "card_dispute_title": "Anfechtung einer Kartenzahlung",
+    "card_dispute_body_open": "Die Bank des Karteninhabers hat eine Kartenzahlung über <strong>{{amount}}</strong> von <strong>{{community}}</strong> angefochten (Rechnung {{invoice}}).",
+    "card_dispute_body_won": "Die Anfechtung der Kartenzahlung über <strong>{{amount}}</strong> von <strong>{{community}}</strong> (Rechnung {{invoice}}) ist beendet, und die Zahlung bleibt bestehen.",
+    "card_dispute_body_lost": "Die Anfechtung der Kartenzahlung über <strong>{{amount}}</strong> von <strong>{{community}}</strong> (Rechnung {{invoice}}) wurde verloren. Das Geld ist an den Karteninhaber zurückgegangen.",
+    "card_dispute_where": "Eine Anfechtung wird im Stripe-Dashboard beantwortet, und Stripe setzt dafür eine Frist.",
+    "card_nothing_automatic": "Es wurde nichts automatisch geändert. Die Community ist nicht pausiert, und ihr Bezahlt-bis-Datum ist unverändert."
   }
 }

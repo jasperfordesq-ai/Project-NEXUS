@@ -79,6 +79,10 @@ const makePayment = (overrides: Record<string, unknown> = {}) => ({
   voided_by_platform_team: false,
   void_reason: null,
   can_void: true,
+  refunded_amount: null,
+  refunded_at: null,
+  dispute_state: null,
+  disputed_at: null,
   ...overrides,
 });
 
@@ -292,6 +296,24 @@ describe('RecordPaymentDialog', () => {
 
     await waitFor(() => expect(screen.getByText('HUB-INV-7')).toBeInTheDocument());
     expect(screen.getAllByText('Paid to Munster Hub')).toHaveLength(1);
+  });
+
+  it('says what was refunded of a card payment and how a dispute on it stands', async () => {
+    servePayments([
+      makePayment({
+        id: 9, method: 'card', reference: 'in_1QxCardInvoice', amount: '420.00', currency: 'GBP', source: 'card', can_void: false,
+        refunded_amount: '120.00', refunded_at: '2026-11-20 09:00:00', dispute_state: 'open', disputed_at: '2026-11-21 14:00:00',
+      }),
+      makePayment({ id: 8, method: 'card', reference: 'in_1QxLost', source: 'card', can_void: false, dispute_state: 'lost', disputed_at: '2026-10-01 10:00:00' }),
+      makePayment({ id: 7, method: 'card', reference: 'in_1QxWon', source: 'card', can_void: false, dispute_state: 'won', disputed_at: '2026-09-01 10:00:00' }),
+    ]);
+    await renderDialog();
+
+    await waitFor(() => expect(screen.getByText('in_1QxCardInvoice')).toBeInTheDocument());
+    expect(screen.getByText((text) => text.startsWith('Refunded:') && text.includes('120') && text.includes(formatDate('2026-11-20 09:00:00')))).toBeInTheDocument();
+    expect(screen.getByText(`Disputed on ${formatDate('2026-11-21 14:00:00')}. Open: it is answered in Stripe.`)).toBeInTheDocument();
+    expect(screen.getByText(`Disputed on ${formatDate('2026-10-01 10:00:00')}. Lost: the money went back to the cardholder.`)).toBeInTheDocument();
+    expect(screen.getByText(`Disputed on ${formatDate('2026-09-01 10:00:00')}. Ended: the payment stands.`)).toBeInTheDocument();
   });
 
   // ── Voiding ───────────────────────────────────────────────────────────────

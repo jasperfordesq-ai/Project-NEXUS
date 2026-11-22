@@ -1058,6 +1058,16 @@
     "plan_changed_price": "Is é an praghas <strong>{{monthly}}</strong> sa mhí nó <strong>{{yearly}}</strong> sa bhliain.",
     "plan_changed_price_monthly": "Is é an praghas <strong>{{monthly}}</strong> sa mhí.",
     "plan_changed_price_yearly": "Is é an praghas <strong>{{yearly}}</strong> sa bhliain.",
-    "plan_changed_no_charge": "Níl aon táille taifeadta don phlean seo."
+    "plan_changed_no_charge": "Níl aon táille taifeadta don phlean seo.",
+    "card_refund_subject": "Aisíocadh íocaíocht chárta ó {{community}}",
+    "card_refund_title": "Aisíocadh íocaíocht chárta",
+    "card_refund_body": "Aisíocadh <strong>{{refunded}}</strong> d’íocaíocht chárta <strong>{{amount}}</strong> ó <strong>{{community}}</strong> in Stripe (sonrasc {{invoice}}).",
+    "card_dispute_subject": "Díospóid faoi íocaíocht chárta ó {{community}}",
+    "card_dispute_title": "Díospóid faoi íocaíocht chárta",
+    "card_dispute_body_open": "D’oscail banc shealbhóir an chárta díospóid faoi íocaíocht chárta <strong>{{amount}}</strong> ó <strong>{{community}}</strong> (sonrasc {{invoice}}).",
+    "card_dispute_body_won": "Tá deireadh leis an díospóid faoin íocaíocht chárta <strong>{{amount}}</strong> ó <strong>{{community}}</strong> (sonrasc {{invoice}}) agus seasann an íocaíocht.",
+    "card_dispute_body_lost": "Cailleadh an díospóid faoin íocaíocht chárta <strong>{{amount}}</strong> ó <strong>{{community}}</strong> (sonrasc {{invoice}}). Tá an t-airgead imithe ar ais chuig sealbhóir an chárta.",
+    "card_dispute_where": "Freagraítear díospóid i ndeais Stripe, agus socraíonn Stripe spriocdháta dó sin.",
+    "card_nothing_automatic": "Níor athraíodh aon rud go huathoibríoch. Níl an pobal ar sos agus tá a dháta íoctha go dtí mar a bhí."
   }
 }

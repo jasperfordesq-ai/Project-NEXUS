@@ -1058,6 +1058,16 @@
     "plan_changed_price": "سعرها <strong>{{monthly}}</strong> شهريًا أو <strong>{{yearly}}</strong> سنويًا.",
     "plan_changed_price_monthly": "سعرها <strong>{{monthly}}</strong> شهريًا.",
     "plan_changed_price_yearly": "سعرها <strong>{{yearly}}</strong> سنويًا.",
-    "plan_changed_no_charge": "لا توجد رسوم مسجّلة لهذه الخطة."
+    "plan_changed_no_charge": "لا توجد رسوم مسجّلة لهذه الخطة.",
+    "card_refund_subject": "استُردّت دفعة بالبطاقة من {{community}}",
+    "card_refund_title": "استُردّت دفعة بالبطاقة",
+    "card_refund_body": "استُردّ مبلغ <strong>{{refunded}}</strong> من دفعة بالبطاقة قيمتها <strong>{{amount}}</strong> من <strong>{{community}}</strong> في Stripe (الفاتورة {{invoice}}).",
+    "card_dispute_subject": "اعتراض على دفعة بالبطاقة من {{community}}",
+    "card_dispute_title": "اعتراض على دفعة بالبطاقة",
+    "card_dispute_body_open": "فتح مصرف حامل البطاقة اعتراضًا على دفعة بالبطاقة قيمتها <strong>{{amount}}</strong> من <strong>{{community}}</strong> (الفاتورة {{invoice}}).",
+    "card_dispute_body_won": "انتهى الاعتراض على الدفعة بالبطاقة التي قيمتها <strong>{{amount}}</strong> من <strong>{{community}}</strong> (الفاتورة {{invoice}}) وبقيت الدفعة قائمة.",
+    "card_dispute_body_lost": "خُسر الاعتراض على الدفعة بالبطاقة التي قيمتها <strong>{{amount}}</strong> من <strong>{{community}}</strong> (الفاتورة {{invoice}}). أُعيد المبلغ إلى حامل البطاقة.",
+    "card_dispute_where": "يُردّ على الاعتراض من لوحة تحكم Stripe، وتحدد Stripe مهلة لذلك.",
+    "card_nothing_automatic": "لم يتغيّر شيء تلقائيًا. المجتمع غير موقوف وتاريخ انتهاء الدفع كما كان."
   }
 }

@@ -74,6 +74,12 @@ interface ManualPayment {
   void_reason: string | null;
   /** False for a card payment (undone in Stripe) and for one already voided. */
   can_void: boolean;
+  /** What Stripe says has been refunded of a card payment, in total; a decimal as a string. */
+  refunded_amount: string | null;
+  refunded_at: string | null;
+  /** A dispute on a card payment: still open, ended with the payment standing, or lost. */
+  dispute_state: 'open' | 'won' | 'lost' | null;
+  disputed_at: string | null;
 }
 
 export interface RecordPaymentCommunity {
@@ -458,6 +464,19 @@ export function RecordPaymentDialog({ community, onClose, onRecorded, via = 'pla
                           {voidedBy
                             ? t('control.history_voided', { date: formatDate(payment.voided_at), name: voidedBy, reason: payment.void_reason ?? '' })
                             : t('control.history_voided_no_name', { date: formatDate(payment.voided_at), reason: payment.void_reason ?? '' })}
+                        </span>
+                      ) : null}
+                      {payment.refunded_amount !== null && payment.refunded_at ? (
+                        <span className="col-span-2 text-xs text-warning sm:col-span-6">
+                          {t('control.history_refunded', {
+                            amount: formatAmount(payment.refunded_amount, payment.currency),
+                            date: formatDate(payment.refunded_at),
+                          })}
+                        </span>
+                      ) : null}
+                      {payment.dispute_state !== null && payment.disputed_at ? (
+                        <span className={`col-span-2 text-xs sm:col-span-6 ${payment.dispute_state === 'won' ? 'text-muted' : 'text-danger'}`}>
+                          {t(`control.history_dispute_${payment.dispute_state}`, { date: formatDate(payment.disputed_at) })}
                         </span>
                       ) : null}
                       {payment.can_void ? (

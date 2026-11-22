@@ -416,6 +416,9 @@ class TenantBillingService
             ];
         }
 
+        // A card payment refunded lately, or disputed: flagged on the row.
+        $paymentAlerts = BillingStandingService::paymentAlerts(array_map('intval', $tenantIds));
+
         $snapshot = [];
         foreach ($tenants as $tenant) {
             $id           = (int) $tenant->id;
@@ -487,6 +490,7 @@ class TenantBillingService
                     $standing['suspended_at'] !== null
                 ),
                 'last_payment'        => $lastPaymentMap[$id] ?? null,
+                'payment_alerts'      => $paymentAlerts[$id] ?? ['refunded' => false, 'disputed' => false],
             ] + self::overLimitFields($id, $activeCount);
         }
 

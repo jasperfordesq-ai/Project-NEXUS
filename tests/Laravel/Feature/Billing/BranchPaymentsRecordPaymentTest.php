@@ -227,7 +227,7 @@ final class BranchPaymentsRecordPaymentTest extends TestCase
         $list = $response->json('data');
         $this->assertSame(['HUB-INV-7', 'BY-PLATFORM-TEAM'], array_column($list, 'reference'), 'newest first; nothing paid to the platform; nothing of the sibling');
         $this->assertSame(
-            ['id', 'received_on', 'method', 'reference', 'amount', 'currency', 'paid_until_before', 'paid_until_after', 'recorded_by_user_id', 'recorded_by_name', 'created_at', 'source', 'payee_tenant_id', 'payee_name', 'recorded_by_platform_team', 'voided_at', 'voided_by_name', 'voided_by_platform_team', 'void_reason', 'can_void'],
+            ['id', 'received_on', 'method', 'reference', 'amount', 'currency', 'paid_until_before', 'paid_until_after', 'recorded_by_user_id', 'recorded_by_name', 'created_at', 'source', 'payee_tenant_id', 'payee_name', 'recorded_by_platform_team', 'voided_at', 'voided_by_name', 'voided_by_platform_team', 'void_reason', 'can_void', 'refunded_amount', 'refunded_at', 'dispute_state', 'disputed_at'],
             array_keys($list[0])
         );
 

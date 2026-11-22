@@ -1058,6 +1058,16 @@
     "plan_changed_price": "O preço é de <strong>{{monthly}}</strong> por mês ou <strong>{{yearly}}</strong> por ano.",
     "plan_changed_price_monthly": "O preço é de <strong>{{monthly}}</strong> por mês.",
     "plan_changed_price_yearly": "O preço é de <strong>{{yearly}}</strong> por ano.",
-    "plan_changed_no_charge": "Não há nenhuma cobrança registrada para este plano."
+    "plan_changed_no_charge": "Não há nenhuma cobrança registrada para este plano.",
+    "card_refund_subject": "Um pagamento por cartão de {{community}} foi reembolsado",
+    "card_refund_title": "Um pagamento por cartão foi reembolsado",
+    "card_refund_body": "<strong>{{refunded}}</strong> de um pagamento por cartão de <strong>{{amount}}</strong> de <strong>{{community}}</strong> foram reembolsados na Stripe (fatura {{invoice}}).",
+    "card_dispute_subject": "Contestação de um pagamento por cartão de {{community}}",
+    "card_dispute_title": "Contestação de um pagamento por cartão",
+    "card_dispute_body_open": "O banco do titular do cartão abriu uma contestação sobre um pagamento por cartão de <strong>{{amount}}</strong> de <strong>{{community}}</strong> (fatura {{invoice}}).",
+    "card_dispute_body_won": "A contestação do pagamento por cartão de <strong>{{amount}}</strong> de <strong>{{community}}</strong> (fatura {{invoice}}) terminou e o pagamento mantém-se.",
+    "card_dispute_body_lost": "A contestação do pagamento por cartão de <strong>{{amount}}</strong> de <strong>{{community}}</strong> (fatura {{invoice}}) foi perdida. O dinheiro voltou para o titular do cartão.",
+    "card_dispute_where": "Uma contestação é respondida no painel da Stripe, e a Stripe define um prazo para isso.",
+    "card_nothing_automatic": "Nada foi alterado automaticamente. A comunidade não está em pausa e a sua data de pagamento continua como estava."
   }
 }

@@ -1694,6 +1694,143 @@ class StripeSubscriptionService
     }
 
     /**
+     * Handle charge.refunded for a community's card payment.
+     *
+     * The matching payment in the payments list is marked with the amount
+     * Stripe says has been refunded (in total), and the platform team is
+     * emailed. Nothing is paused and no paid-until date moves: what a refund
+     * means for the community is a person's decision.
+     *
+     * A charge that is not a community's plan payment (a donation, a
+     * marketplace order) matches nothing and is left to its own handler.
+     *
+     * The email goes BEFORE the record is marked. If the mailer refuses it,
+     * this throws, the webhook answers 500 and Stripe sends the event again;
+     * marked first, the retry would find nothing new and tell nobody.
+     */
+    public static function handleChargeRefunded(object $charge): void
+    {
+        $chargeId = is_string($charge->id ?? null) ? $charge->id : null;
+        $payment = BillingStandingService::cardPaymentFor([
+            'charge' => $chargeId,
+            'payment_intent' => self::idOf($charge->payment_intent ?? null),
+            'invoice' => self::idOf($charge->invoice ?? null),
+        ]);
+        if ($payment === null) {
+            return;
+        }
+
+        $refundedCents = is_numeric($charge->amount_refunded ?? null) ? (int) $charge->amount_refunded : 0;
+        if ($refundedCents <= 0) {
+            return;
+        }
+
+        $refunded = number_format($refundedCents / 100, 2, '.', '');
+        $already = $payment->refunded_amount !== null ? number_format((float) $payment->refunded_amount, 2, '.', '') : null;
+        if ($already === $refunded) {
+            return;
+        }
+
+        static::requireTold(
+            BillingStandingNotifier::cardPaymentRefunded((int) $payment->tenant_id, [
+                'amount' => (float) $payment->amount,
+                'refunded' => (float) $refunded,
+                'currency' => (string) $payment->currency,
+                'invoice' => (string) $payment->stripe_invoice_id,
+            ]),
+            'a refund on a card payment',
+            (int) $payment->tenant_id,
+            (int) $payment->id
+        );
+
+        BillingStandingService::recordCardRefund((int) $payment->id, $refundedCents, $chargeId);
+    }
+
+    /**
+     * Handle charge.dispute.created / .updated / .closed for a community's
+     * card payment: the matching payment is marked with Stripe's word for the
+     * dispute, and the platform team is emailed when that word changes.
+     * Nothing is paused. Told before marked, as for a refund.
+     */
+    public static function handleChargeDispute(object $dispute): void
+    {
+        $chargeId = self::idOf($dispute->charge ?? null);
+        $payment = BillingStandingService::cardPaymentFor([
+            'charge' => $chargeId,
+            'payment_intent' => self::idOf($dispute->payment_intent ?? null),
+        ]);
+        if ($payment === null) {
+            return;
+        }
+
+        $status = BillingStandingService::cleanDisputeStatus($dispute->status ?? null);
+        if ($payment->dispute_status === $status) {
+            return;
+        }
+
+        // Stripe moves an open dispute between several words (needs a
+        // response, under review). One email when it opens and one when it
+        // ends is what a person needs; the record follows every word.
+        $stateBefore = BillingStandingService::disputeState($payment->dispute_status !== null ? (string) $payment->dispute_status : null);
+        $stateNow = BillingStandingService::disputeState($status);
+        if ($stateBefore !== $stateNow) {
+            static::requireTold(
+                BillingStandingNotifier::cardPaymentDisputed((int) $payment->tenant_id, [
+                    'amount' => (float) $payment->amount,
+                    'currency' => (string) $payment->currency,
+                    'invoice' => (string) $payment->stripe_invoice_id,
+                    'state' => $stateNow,
+                ]),
+                'a dispute on a card payment',
+                (int) $payment->tenant_id,
+                (int) $payment->id
+            );
+        }
+
+        BillingStandingService::recordCardDispute(
+            (int) $payment->id,
+            $status,
+            is_numeric($dispute->created ?? null) ? (int) $dispute->created : null,
+            $chargeId
+        );
+    }
+
+    /** A Stripe reference as its id: the id itself, or the id of an expanded object. */
+    private static function idOf(mixed $value): ?string
+    {
+        if (is_object($value)) {
+            $value = $value->id ?? null;
+        }
+
+        return is_string($value) && $value !== '' ? $value : null;
+    }
+
+    /**
+     * The platform team must have been told. Throws when a send was tried
+     * and the mailer accepted none, so the webhook fails and Stripe sends the
+     * event again. With nobody on the platform team who can be mailed there
+     * is nobody to wait for: that is logged at `error` and the record is
+     * marked all the same.
+     *
+     * @param array{tried:int, accepted:int} $counts
+     */
+    private static function requireTold(array $counts, string $what, int $tenantId, int $paymentId): void
+    {
+        if ($counts['tried'] === 0) {
+            Log::error("Stripe reported {$what} and there is nobody on the platform team to tell", [
+                'tenant_id' => $tenantId,
+                'payment_id' => $paymentId,
+            ]);
+
+            return;
+        }
+
+        if ($counts['accepted'] === 0) {
+            throw new \RuntimeException("The platform team could not be told about {$what} (payment {$paymentId}); Stripe will send the event again.");
+        }
+    }
+
+    /**
      * Handle invoice.payment_failed — log warning.
      *
      * Leaves the community's paid-until date alone on purpose: the daily

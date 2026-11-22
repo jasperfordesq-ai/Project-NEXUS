@@ -232,7 +232,7 @@ final class BillingPaymentVoidTest extends TestCase
 
         $this->assertCount(3, $byId, 'the voided payment is still listed');
         $this->assertSame(
-            ['id', 'received_on', 'method', 'reference', 'amount', 'currency', 'paid_until_before', 'paid_until_after', 'recorded_by_user_id', 'recorded_by_name', 'created_at', 'source', 'payee_tenant_id', 'payee_name', 'recorded_by_platform_team', 'voided_at', 'voided_by_name', 'voided_by_platform_team', 'void_reason', 'can_void'],
+            ['id', 'received_on', 'method', 'reference', 'amount', 'currency', 'paid_until_before', 'paid_until_after', 'recorded_by_user_id', 'recorded_by_name', 'created_at', 'source', 'payee_tenant_id', 'payee_name', 'recorded_by_platform_team', 'voided_at', 'voided_by_name', 'voided_by_platform_team', 'void_reason', 'can_void', 'refunded_amount', 'refunded_at', 'dispute_state', 'disputed_at'],
             array_keys($byId[$voided])
         );
         $this->assertNotNull($byId[$voided]['voided_at']);

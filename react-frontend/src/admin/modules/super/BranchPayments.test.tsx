@@ -304,6 +304,10 @@ describe('BranchPayments', () => {
     voided_by_platform_team: false,
     void_reason: null,
     can_void: true,
+    refunded_amount: null,
+    refunded_at: null,
+    dispute_state: null,
+    disputed_at: null,
     ...overrides,
   });
 

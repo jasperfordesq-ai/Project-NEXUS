@@ -152,6 +152,8 @@ interface TenantSnapshot {
   pause_on: string | null;
   /** The newest payment recorded by hand, if any. */
   last_payment: { received_on: string; method: PaymentMethod } | null;
+  /** A card payment refunded in the last 60 days, or disputed (open, or opened in the last 60 days). */
+  payment_alerts: { refunded: boolean; disputed: boolean };
 }
 
 /** A row of GET /v2/admin/plans. Prices arrive as the database's strings. */
@@ -802,6 +804,18 @@ export function BillingControl() {
                             date: formatDate(row.last_payment.received_on),
                             method: t(`control.method_${row.last_payment.method}`),
                           })}
+                        </span>
+                      ) : null}
+                      {/* What Stripe has reported on a card payment. Optional
+                          chaining: a row cached from before these were sent. */}
+                      {row.payment_alerts?.refunded || row.payment_alerts?.disputed ? (
+                        <span className="mt-1 flex flex-wrap gap-1">
+                          {row.payment_alerts.disputed ? (
+                            <Chip size="sm" variant="soft" color="danger">{t('control.alert_disputed')}</Chip>
+                          ) : null}
+                          {row.payment_alerts.refunded ? (
+                            <Chip size="sm" variant="soft" color="warning">{t('control.alert_refunded')}</Chip>
+                          ) : null}
                         </span>
                       ) : null}
                       {/* The earliest day the daily check would pause it */}

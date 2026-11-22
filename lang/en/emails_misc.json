@@ -1058,6 +1058,16 @@
     "plan_changed_price": "Its price is <strong>{{monthly}}</strong> a month or <strong>{{yearly}}</strong> a year.",
     "plan_changed_price_monthly": "Its price is <strong>{{monthly}}</strong> a month.",
     "plan_changed_price_yearly": "Its price is <strong>{{yearly}}</strong> a year.",
-    "plan_changed_no_charge": "No charge is recorded for this plan."
+    "plan_changed_no_charge": "No charge is recorded for this plan.",
+    "card_refund_subject": "A card payment from {{community}} was refunded",
+    "card_refund_title": "A card payment was refunded",
+    "card_refund_body": "<strong>{{refunded}}</strong> of a card payment of <strong>{{amount}}</strong> from <strong>{{community}}</strong> has been refunded in Stripe (invoice {{invoice}}).",
+    "card_dispute_subject": "A dispute on a card payment from {{community}}",
+    "card_dispute_title": "A dispute on a card payment",
+    "card_dispute_body_open": "The cardholder’s bank has opened a dispute on a card payment of <strong>{{amount}}</strong> from <strong>{{community}}</strong> (invoice {{invoice}}).",
+    "card_dispute_body_won": "The dispute on the card payment of <strong>{{amount}}</strong> from <strong>{{community}}</strong> (invoice {{invoice}}) has ended and the payment stands.",
+    "card_dispute_body_lost": "The dispute on the card payment of <strong>{{amount}}</strong> from <strong>{{community}}</strong> (invoice {{invoice}}) was lost. The money has gone back to the cardholder.",
+    "card_dispute_where": "A dispute is answered in the Stripe dashboard, and Stripe sets a deadline for it.",
+    "card_nothing_automatic": "Nothing has been changed automatically. The community is not paused and its paid-until date is as it was."
   }
 }

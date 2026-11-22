@@ -52,6 +52,8 @@ final class BillingSnapshotContractTest extends TestCase
         'over_limit_rule', 'upgrade_allowed',
         // 21 Nov 2026: the currency a special price typed for it is in.
         'billing_currency',
+        // 22 Nov 2026: a card payment refunded lately, or disputed.
+        'payment_alerts',
     ];
 
     /** Read off `over_limit_rule`, key for key (same as a Branch payments row's `over_limit`). */
