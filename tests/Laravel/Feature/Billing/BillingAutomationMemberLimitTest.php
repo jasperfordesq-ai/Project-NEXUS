@@ -1197,6 +1197,51 @@ final class BillingAutomationMemberLimitTest extends TestCase
         $this->assertNotNull(\App\Support\Billing\JoiningGate::closedBy($this->community), 'Told, so the door is shut.');
     }
 
+    /**
+     * Finding B23. Under "stop new members joining", a community that went
+     * over and then sat at EXACTLY its member number through its warning
+     * period had its episode ended with the notice date cleared. The door
+     * reads that date as "its admins were told", so the door opened while the
+     * community was full, and stayed open until someone joined and the next
+     * morning's run sent a new "over" notice.
+     */
+    public function test_under_stop_new_members_the_door_stays_shut_at_exactly_the_member_number_when_an_episode_ends(): void
+    {
+        $this->standing($this->community, ['over_limit_action' => 'block_joining', 'over_limit_grace_days' => 10]);
+        $this->addActiveMembers($this->community, 101);
+        $this->assertSame(['member_limit:over'], $this->actionsFor(BillingAutomationService::run($this->today), $this->community));
+        \App\Support\Billing\JoiningGate::flush();
+        $this->assertNotNull(\App\Support\Billing\JoiningGate::closedBy($this->community), 'Over and told: shut.');
+
+        $this->retire($this->community, 1); // exactly at its number: full, not over
+        $this->assertSame([], $this->actionsFor(BillingAutomationService::run($this->day(9)), $this->community));
+        \App\Support\Billing\JoiningGate::flush();
+        $this->assertNotNull(\App\Support\Billing\JoiningGate::closedBy($this->community), 'Still within the episode: shut.');
+
+        // Day 10: the episode ends (through its warning period, not over).
+        $this->assertSame([], $this->actionsFor(BillingAutomationService::run($this->day(10)), $this->community));
+        $row = $this->standingRow($this->community);
+        $this->assertNull($row->over_limit_since, 'The episode has ended.');
+        $this->assertSame('reached', $row->limit_notice_stage);
+        \App\Support\Billing\JoiningGate::flush();
+        $this->assertNotNull(\App\Support\Billing\JoiningGate::closedBy($this->community), 'It is still full and its admins were told: the door stays shut.');
+
+        // And it stays shut on the mornings after, with no new email.
+        $this->assertSame([], $this->actionsFor(BillingAutomationService::run($this->day(11)), $this->community));
+        \App\Support\Billing\JoiningGate::flush();
+        $this->assertNotNull(\App\Support\Billing\JoiningGate::closedBy($this->community));
+        $this->assertCount(1, $this->mailTo($this->admin), 'Only the one "over" notice was ever sent.');
+
+        // Going over again is a new episode, with its own notice.
+        $this->addActiveMembers($this->community, 1);
+        $this->assertSame(['member_limit:over'], $this->actionsFor(BillingAutomationService::run($this->day(12)), $this->community));
+
+        // Dropping a member opens the door, as it always did.
+        $this->retire($this->community, 2);
+        \App\Support\Billing\JoiningGate::flush();
+        $this->assertNull(\App\Support\Billing\JoiningGate::closedBy($this->community), 'One under its number: open.');
+    }
+
     public function test_the_pause_date_is_the_notice_day_plus_the_days(): void
     {
         $this->pauseAfterThirtyDays();

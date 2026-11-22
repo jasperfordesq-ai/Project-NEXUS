@@ -1339,6 +1339,23 @@ final class BillingAutomationService
                 $state['over_limit_since'] = null;
                 $state['limit_notice_at'] = null;
                 $state['limit_notice_stage'] = $names[$current] ?? null;
+
+                // Under "stop new members joining", a community still AT its
+                // number is still full, and its admins were told so in this
+                // episode's "over" notice. The door (JoiningGate) reads the
+                // notice date as "told": emptied here, the door opened on a
+                // full community and stayed open until someone joined and the
+                // next run warned afresh. The date is kept. It is not an
+                // "over" notice any more (the stage is "reached" and there is
+                // no first day over), so going over again still starts a new
+                // episode with its own notice.
+                if (
+                    $rule['effective_action'] === 'block_joining'
+                    && $stage === 'reached'
+                    && $row?->limit_notice_at !== null
+                ) {
+                    unset($state['limit_notice_at']);
+                }
             }
             if ($newRecorded !== $recorded && !$reachedShutsDoor) {
                 $names = array_flip(self::LIMIT_STAGES);
