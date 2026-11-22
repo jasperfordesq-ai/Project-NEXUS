@@ -730,7 +730,36 @@ final class JoiningClosedDoorsTest extends TestCase
         ])->assertOk();
     }
 
-    public function test_left_open_an_identity_check_result(): void
+    /**
+     * A member who was already approved: an identity check passing afterwards
+     * is not letting someone new in.
+     */
+    public function test_left_open_an_identity_check_result_for_a_member_already_approved(): void
+    {
+        $this->identityPolicy();
+        $member = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'pending', 'is_approved' => true, 'verification_status' => 'pending', 'email_verified_at' => now(),
+        ]);
+        $this->limit($this->testTenantId, 'at');
+
+        RegistrationOrchestrationService::applyPostVerificationAction((int) $member->id, $this->testTenantId, 'passed');
+
+        $this->assertSame('active', (string) DB::table('users')->where('id', $member->id)->value('status'));
+    }
+
+    // ================================================================
+    // A waiting sign-up is not let in by an identity check either
+    // ================================================================
+    //
+    // Until 21 Nov 2026 the two cases below were pinned as "left open", with
+    // a sign-up that had NOT been approved. That let a person who signed up
+    // before the door shut walk in after it, by passing an identity check or
+    // by an admin approving one. The owner's rule (hub plans decision 18):
+    // "A waiting sign-up cannot be let in by any button while the door is
+    // shut." The account waits, and goes through once the door opens
+    // (JoiningDoorAutomaticApprovalTest).
+
+    public function test_closed_a_waiting_sign_up_passing_an_identity_check(): void
     {
         $this->identityPolicy();
         $member = User::factory()->forTenant($this->testTenantId)->create([
@@ -740,10 +769,10 @@ final class JoiningClosedDoorsTest extends TestCase
 
         RegistrationOrchestrationService::applyPostVerificationAction((int) $member->id, $this->testTenantId, 'passed');
 
-        $this->assertSame('active', (string) DB::table('users')->where('id', $member->id)->value('status'));
+        $this->assertSame('pending', (string) DB::table('users')->where('id', $member->id)->value('status'));
     }
 
-    public function test_left_open_an_admins_approval_of_an_identity_check(): void
+    public function test_closed_an_admins_approval_of_a_waiting_sign_ups_identity_check(): void
     {
         $this->identityPolicy();
         $admin = $this->admin();
@@ -756,7 +785,7 @@ final class JoiningClosedDoorsTest extends TestCase
 
         RegistrationOrchestrationService::adminReview($sessionId, (int) $admin->id, 'approve');
 
-        $this->assertSame('active', (string) DB::table('users')->where('id', $member->id)->value('status'));
+        $this->assertSame('pending', (string) DB::table('users')->where('id', $member->id)->value('status'));
     }
 
     // ------------------------------------------------------------------ helpers

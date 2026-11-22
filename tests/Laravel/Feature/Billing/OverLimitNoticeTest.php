@@ -278,6 +278,13 @@ final class OverLimitNoticeTest extends TestCase
             'email' => 'admin.' . bin2hex(random_bytes(4)) . '@nowhere.test',
             'status' => 'active', 'is_approved' => true, 'role' => 'admin', 'preferred_language' => 'en',
         ]);
+        // The hub's manager cannot be reached either. Without a manager at
+        // all, the platform team is told instead (since 21 Nov 2026), which
+        // is a different thing from this test's subject.
+        User::factory()->forTenant($hub)->create([
+            'email' => 'manager.' . bin2hex(random_bytes(4)) . '@nowhere.test',
+            'status' => 'active', 'is_approved' => true, 'role' => 'admin', 'is_tenant_super_admin' => true, 'preferred_language' => 'en',
+        ]);
 
         $this->assertSame(['tried' => 0, 'accepted' => 0], BillingStandingNotifier::limitOver($child, $this->facts(['active_members' => 101, 'rule' => 'none'])));
     }
