@@ -322,10 +322,14 @@ class EmailMailerRoutingTest extends TestCase
             'Billing upgrade requests must track the dispatch result before reporting sent=true.'
         );
 
+        // The message goes to every platform team member since 21 Nov 2026, so
+        // the callback answers "did at least one of them accept it", counted
+        // from each EmailDispatchService result. It was `return $sent;` while
+        // there was one recipient.
         $this->assertStringContainsString(
-            'return $sent;',
+            'return $accepted > 0;',
             $source,
-            'Billing upgrade requests must return the EmailDispatchService result from the locale callback.'
+            'Billing upgrade requests must return the EmailDispatchService results from the locale callback.'
         );
 
         $this->assertStringContainsString(
