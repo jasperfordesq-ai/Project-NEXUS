@@ -1910,9 +1910,9 @@ class StripeSubscriptionService
                 }
 
                 $planName = $assignment->plan_name ?? '';
-                $dateFormatted = \Carbon\Carbon::parse($assignment->stripe_current_period_end)
-                    ->locale(\App\I18n\FormattingLocale::carbon())
-                    ->isoFormat('LL');
+                // Written out inside each reader's own language (see
+                // dateForReader()), not here in the scheduler's.
+                $dateFormatted = self::dateForReader((string) $assignment->stripe_current_period_end);
 
                 $sentEmail = static::sendTenantAdminEmail(
                     (int) $assignment->tenant_id,
@@ -1966,9 +1966,7 @@ class StripeSubscriptionService
                 $periodEnd    = strtotime($assignment->stripe_current_period_end);
                 $now          = time();
                 $daysUntilEnd = ($periodEnd - $now) / 86400;
-                $dateFormatted = \Carbon\Carbon::createFromTimestamp($periodEnd)
-                    ->locale(\App\I18n\FormattingLocale::carbon())
-                    ->isoFormat('LL');
+                $dateFormatted = self::dateForReader((string) $assignment->stripe_current_period_end);
                 $communityName = htmlspecialchars($assignment->community_name ?? '', ENT_QUOTES, 'UTF-8');
 
                 // 7-day window: between 6 and 8 days away
@@ -2028,8 +2026,42 @@ class StripeSubscriptionService
     }
 
     /**
+     * A date for an email, written out only when the email is being built for
+     * one reader, so it is in that reader's language and order. Formatted
+     * where the reminder is prepared, it came out in the language of whatever
+     * ran the job (the scheduler's default) inside a sentence in the reader's
+     * own. sendTenantAdminEmail() works a closure out inside its per-reader
+     * language block (emailParams()).
+     */
+    private static function dateForReader(string $date): \Closure
+    {
+        return static fn (): string => \Carbon\Carbon::parse($date)
+            ->locale(\App\I18n\FormattingLocale::carbon())
+            ->isoFormat('LL');
+    }
+
+    /**
+     * The values for one sentence of an email, with every closure worked out
+     * now: called inside the reader's language block.
+     *
+     * @param array<string, mixed> $params
+     * @return array<string, mixed>
+     */
+    private static function emailParams(array $params): array
+    {
+        foreach ($params as $name => $value) {
+            if ($value instanceof \Closure) {
+                $params[$name] = (string) $value();
+            }
+        }
+
+        return $params;
+    }
+
+    /**
      * Send a templated email to the tenant admin, rendering subject/title/body/CTA
-     * in the admin's preferred_language.
+     * in the admin's preferred_language. A value given as a closure (a date)
+     * is worked out per reader, inside that reader's language.
      *
      * @param array{key:string,params?:array} $subject
      * @param array{key:string,params?:array} $title
@@ -2083,13 +2115,13 @@ class StripeSubscriptionService
                     }
 
                     $html = $builder
-                        ->title(__($title['key'], $title['params'] ?? []))
+                        ->title(__($title['key'], self::emailParams($title['params'] ?? [])))
                         ->greeting($firstName)
-                        ->paragraph(__($body['key'], $body['params'] ?? []))
-                        ->button(__($ctaText['key'], $ctaText['params'] ?? []), $fullUrl)
+                        ->paragraph(__($body['key'], self::emailParams($body['params'] ?? [])))
+                        ->button(__($ctaText['key'], self::emailParams($ctaText['params'] ?? [])), $fullUrl)
                         ->render();
 
-                    return (bool) \App\Services\EmailDispatchService::sendRaw($admin->email, __($subject['key'], $subject['params'] ?? []), $html, null, null, null, 'billing', ['tenant_id' => $tenantId]);
+                    return (bool) \App\Services\EmailDispatchService::sendRaw($admin->email, __($subject['key'], self::emailParams($subject['params'] ?? [])), $html, null, null, null, 'billing', ['tenant_id' => $tenantId]);
                 });
 
                 if ($sent) {

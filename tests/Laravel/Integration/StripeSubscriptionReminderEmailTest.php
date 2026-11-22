@@ -75,6 +75,65 @@ class StripeSubscriptionReminderEmailTest extends TestCase
         $this->assertSame($tenantId, $mailer->calls[0]['options']['tenant_id']);
     }
 
+    /**
+     * The date in a reminder was written out before the reader's language was
+     * switched to, so every admin read it in the language of whatever ran the
+     * job (English, for the scheduler), inside a sentence in their own.
+     */
+    public function test_each_admin_reads_the_renewal_date_in_their_own_language(): void
+    {
+        $tenantId = $this->createBillingTenant('renewal-languages');
+        $periodEnd = now()->addDays(4)->setSecond(0);
+        $english = $this->createBillingAdmin($tenantId);
+        $japanese = $this->createBillingAdmin($tenantId);
+        DB::table('users')->where('id', $japanese->id)->update(['preferred_language' => 'ja']);
+        $this->createPlanAssignment($tenantId, 'active', $periodEnd);
+        Cache::forget('subscription_renewal_reminder:' . $tenantId . ':' . $periodEnd->format('Y-m-d'));
+
+        $mailer = $this->fakeBillingMailer(true);
+        app()->instance(EmailDispatchService::class, $mailer);
+
+        $this->assertSame(['sent' => 1, 'errors' => 0], StripeSubscriptionService::sendRenewalReminders());
+
+        $bodies = array_column($mailer->calls, 'body', 'to');
+        $inEnglish = $this->dateAsReadIn('en', $periodEnd);
+        $inJapanese = $this->dateAsReadIn('ja', $periodEnd);
+        $this->assertNotSame($inEnglish, $inJapanese);
+
+        $this->assertStringContainsString($inEnglish, $bodies[$english->email]);
+        $this->assertStringContainsString($inJapanese, $bodies[$japanese->email]);
+        $this->assertStringNotContainsString($inEnglish, $bodies[$japanese->email], 'not the scheduler\'s language');
+    }
+
+    public function test_each_admin_reads_the_trial_end_date_in_their_own_language(): void
+    {
+        $tenantId = $this->createBillingTenant('trial-languages');
+        $periodEnd = now()->addDays(7)->setSecond(0);
+        $english = $this->createBillingAdmin($tenantId);
+        $japanese = $this->createBillingAdmin($tenantId);
+        DB::table('users')->where('id', $japanese->id)->update(['preferred_language' => 'ja']);
+        $this->createPlanAssignment($tenantId, 'trial', $periodEnd);
+        Cache::forget('trial_ending_reminder:' . $tenantId . ':7d');
+
+        $mailer = $this->fakeBillingMailer(true);
+        app()->instance(EmailDispatchService::class, $mailer);
+
+        $this->assertSame(['sent' => 1, 'errors' => 0], StripeSubscriptionService::sendTrialEndingReminders());
+
+        $bodies = array_column($mailer->calls, 'body', 'to');
+        $this->assertStringContainsString($this->dateAsReadIn('en', $periodEnd), $bodies[$english->email]);
+        $this->assertStringContainsString($this->dateAsReadIn('ja', $periodEnd), $bodies[$japanese->email]);
+        $this->assertStringNotContainsString($this->dateAsReadIn('en', $periodEnd), $bodies[$japanese->email]);
+    }
+
+    /** A date written the way a reader of that language is shown dates in emails. */
+    private function dateAsReadIn(string $locale, \DateTimeInterface $date): string
+    {
+        return (string) \App\I18n\LocaleContext::withLocale($locale, static fn (): string => Carbon::parse($date)
+            ->locale(\App\I18n\FormattingLocale::carbon())
+            ->isoFormat('LL'));
+    }
+
     public function test_renewal_reminder_stays_deduped_past_twenty_four_hours(): void
     {
         $tenantId = $this->createBillingTenant('renewal-window');
