@@ -4,8 +4,8 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import React, { createContext, useContext, useRef, useState } from 'react';
+import { render, screen, waitFor, fireEvent, within } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 import userEvent from '@testing-library/user-event';
 import { formatDate } from '@/lib/helpers';
@@ -18,8 +18,40 @@ import { formatDate } from '@/lib/helpers';
 // everything else (including useDisclosure, useConfirm, hooks) to the original.
 vi.mock('@/components/ui', async () => {
   const base = (await import('@/test/uiMock')).uiMock as Record<string, unknown>;
+  // A row's "More" menu. Closed until its trigger is pressed, as the real one
+  // is: an item that is not on screen cannot be found or clicked by a test.
+  const MenuContext = createContext<{ open: boolean; toggle: () => void; act: (key: string) => void; setAct: (fn: (key: string) => void) => void }>({
+    open: false, toggle: () => {}, act: () => {}, setAct: () => {},
+  });
 
   const tableOverrides: Record<string, unknown> = {
+    Dropdown: ({ children }: { children?: React.ReactNode }) => {
+      const [open, setOpen] = useState(false);
+      const action = useRef<(key: string) => void>(() => {});
+      return (
+        <MenuContext.Provider value={{
+          open,
+          toggle: () => setOpen((was) => !was),
+          act: (key) => { setOpen(false); action.current(key); },
+          setAct: (fn) => { action.current = fn; },
+        }}>
+          <div data-row-menu="">{children}</div>
+        </MenuContext.Provider>
+      );
+    },
+    DropdownTrigger: ({ children }: { children?: React.ReactNode }) => {
+      const menu = useContext(MenuContext);
+      return <span onClick={menu.toggle}>{children}</span>;
+    },
+    DropdownMenu: ({ children, onAction }: { children?: React.ReactNode; onAction?: (key: string) => void }) => {
+      const menu = useContext(MenuContext);
+      menu.setAct((key) => onAction?.(key));
+      return menu.open ? <div role="menu">{children}</div> : null;
+    },
+    DropdownItem: ({ children, id }: { children?: React.ReactNode; id?: string }) => {
+      const menu = useContext(MenuContext);
+      return <button type="button" role="menuitem" onClick={() => menu.act(String(id))}>{children}</button>;
+    },
     // A native select, so the over-limit rule dialog's choice can be made.
     Select: ({ children, label, selectedKeys, onSelectionChange, isDisabled }: {
       children?: React.ReactNode; label?: string; isDisabled?: boolean;
@@ -231,6 +263,22 @@ const PLAN_LIST = [
 const button = (label: string) =>
   screen.queryAllByRole('button').find((b) => b.textContent?.trim() === label);
 
+/**
+ * An item of a row's "More" menu, opening that menu first if it is closed.
+ * The first row's menu unless a community is named. Undefined when the menu
+ * has no such item.
+ */
+const more = (label: string, community?: string) => {
+  const trigger = screen.queryAllByRole('button').find((b) => {
+    const name = b.getAttribute('aria-label') ?? '';
+    return community ? name === `More actions for ${community}` : name.startsWith('More actions for');
+  });
+  const box = trigger?.closest('[data-row-menu]');
+  if (!trigger || !(box instanceof HTMLElement)) return undefined;
+  if (!within(box).queryByRole('menu')) fireEvent.click(trigger);
+  return within(box).queryAllByRole('menuitem').find((b) => b.textContent?.trim() === label);
+};
+
 /** Every GET this screen makes, answered in the server's shape. */
 const serveGets = (rows: unknown[]) => {
   mockApi.get.mockImplementation((url: string) => {
@@ -435,7 +483,7 @@ describe('BillingControl', () => {
       return Promise.resolve({ success: true, data: [] });
     });
 
-    fireEvent.click(button('Exempt')!);
+    fireEvent.click(more('Exempt')!);
     await userEvent.type(await screen.findByLabelText(/reason/i), 'Founding member');
     fireEvent.click(screen.getAllByRole('button').filter((b) => b.textContent?.trim() === 'Exempt this community').pop()!);
 
@@ -559,21 +607,40 @@ describe('BillingControl', () => {
 
   // ── Pausing, restoring, exempting ─────────────────────────────────────────
 
+  it('keeps three actions in view and gathers the rest in the More menu', async () => {
+    await renderWith([makeSnapshot()]);
+
+    for (const label of ['Assign Plan', 'Record a payment', 'Set paid-until date']) {
+      expect(button(label)).toBeDefined();
+    }
+    // Not on screen until the menu is opened.
+    for (const label of ['Change how it pays', 'Over-limit rule', 'Pause community', 'Exempt']) {
+      expect(button(label)).toBeUndefined();
+      expect(screen.queryAllByRole('menuitem').filter((b) => b.textContent?.trim() === label)).toHaveLength(0);
+    }
+
+    fireEvent.click(screen.getByRole('button', { name: 'More actions for Cork Timebank' }));
+
+    expect(screen.getAllByRole('menuitem').map((b) => b.textContent?.trim())).toEqual([
+      'Change how it pays', 'Over-limit rule', 'Pause community', 'Exempt',
+    ]);
+  });
+
   it('shows an open community as open and offers to pause or exempt it', async () => {
     await renderWith([makeSnapshot()]);
 
     expect(screen.getByText('Open')).toBeInTheDocument();
-    expect(button('Pause community')).toBeDefined();
-    expect(button('Exempt')).toBeDefined();
-    expect(button('Restore community')).toBeUndefined();
-    expect(button('Remove exemption')).toBeUndefined();
+    expect(more('Pause community')).toBeDefined();
+    expect(more('Exempt')).toBeDefined();
+    expect(more('Restore community')).toBeUndefined();
+    expect(more('Remove exemption')).toBeUndefined();
   });
 
   it('posts the community id and the note when pausing', async () => {
     const user = userEvent.setup();
     await renderWith([makeSnapshot()]);
 
-    await user.click(button('Pause community')!);
+    await user.click(more('Pause community')!);
     await user.type(screen.getByLabelText('Note (optional, kept in the record)'), 'Two invoices unpaid');
     await user.click(screen.getByRole('button', { name: 'Pause this community' }));
 
@@ -593,9 +660,9 @@ describe('BillingControl', () => {
     ]);
 
     expect(screen.getByText('Paused')).toBeInTheDocument();
-    expect(button('Pause community')).toBeUndefined();
+    expect(more('Pause community')).toBeUndefined();
 
-    await user.click(button('Restore community')!);
+    await user.click(more('Restore community')!);
 
     await waitFor(() => {
       expect(mockApi.post).toHaveBeenCalledWith('/v2/admin/super/billing/standing/restore', { tenant_id: 5 });
@@ -608,16 +675,16 @@ describe('BillingControl', () => {
     ]);
 
     expect(screen.getByText('Paused (community above)')).toBeInTheDocument();
-    expect(button('Restore community')).toBeUndefined();
+    expect(more('Restore community')).toBeUndefined();
     // Exempting it is how the platform team opens it while the parent stays paused.
-    expect(button('Exempt')).toBeDefined();
+    expect(more('Exempt')).toBeDefined();
   });
 
   it('requires a reason before exempting', async () => {
     const user = userEvent.setup();
     await renderWith([makeSnapshot()]);
 
-    await user.click(button('Exempt')!);
+    await user.click(more('Exempt')!);
     const confirm = screen.getByRole('button', { name: 'Exempt this community' });
     expect(confirm).toBeDisabled();
 
@@ -639,9 +706,9 @@ describe('BillingControl', () => {
     await renderWith([makeSnapshot({ standing: makeStanding({ exempt: true, exempt_reason: 'Council contract' }) })]);
 
     expect(screen.getByText('Exempt', { selector: 'span, div' })).toBeInTheDocument();
-    expect(button('Pause community')).toBeUndefined();
+    expect(more('Pause community')).toBeUndefined();
 
-    await user.click(button('Remove exemption')!);
+    await user.click(more('Remove exemption')!);
 
     await waitFor(() => {
       expect(mockApi.post).toHaveBeenCalledWith('/v2/admin/super/billing/standing/exempt', { tenant_id: 5, exempt: false });
@@ -653,7 +720,7 @@ describe('BillingControl', () => {
     mockApi.post.mockResolvedValue({ success: false, error: 'This community is exempt. Remove the exemption first.', code: 'COMMUNITY_IS_EXEMPT' });
     await renderWith([makeSnapshot()]);
 
-    await user.click(button('Pause community')!);
+    await user.click(more('Pause community')!);
     await user.click(screen.getByRole('button', { name: 'Pause this community' }));
 
     await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('This community is exempt. Remove the exemption first.'));
@@ -837,7 +904,7 @@ describe('BillingControl', () => {
     const user = userEvent.setup();
     await renderWith([makeSnapshot({ standing: makeStanding({ payer: 'not_billed', payer_is_default: true }) })]);
 
-    await user.click(button('Change how it pays')!);
+    await user.click(more('Change how it pays')!);
     await user.click(button('Save')!);
 
     await waitFor(() => {
@@ -851,7 +918,7 @@ describe('BillingControl', () => {
 
     expect(button('Set paid-until date')).toBeDefined();
     expect(button('Record a payment')).toBeDefined();
-    expect(button('Change how it pays')).toBeDefined();
+    expect(more('Change how it pays')).toBeDefined();
   });
 
   it('shows the automatic checks card above the table', async () => {
@@ -932,7 +999,7 @@ describe('BillingControl', () => {
     const user = userEvent.setup();
     await renderWith([makeSnapshot()]);
 
-    await user.click(button('Over-limit rule')!);
+    await user.click(more('Over-limit rule')!);
     expect(ruleSelect().value).toBe('default');
     fireEvent.change(ruleSelect(), { target: { value: 'upgrade' } });
     fireEvent.change(screen.getByLabelText('After how many days over'), { target: { value: '20' } });
@@ -950,21 +1017,21 @@ describe('BillingControl', () => {
     expect(screen.getByRole('columnheader', { name: 'If over' })).toBeInTheDocument();
     expect(screen.queryByText(/^Pause after/)).not.toBeInTheDocument();
     expect(screen.queryByTestId('over-limit-summary')).not.toBeInTheDocument();
-    expect(button('Over-limit rule')).toBeUndefined();
+    expect(more('Over-limit rule')).toBeUndefined();
   });
 
   it('draws the rule and its action for a community that has one', async () => {
     await renderWith([makeSnapshot()]);
 
     expect(screen.getByTestId('over-limit-summary')).toBeInTheDocument();
-    expect(button('Over-limit rule')).toBeDefined();
+    expect(more('Over-limit rule')).toBeDefined();
   });
 
   it('leaves out moving up for a community that pays by card', async () => {
     const user = userEvent.setup();
     await renderWith([makeSnapshot({ upgrade_allowed: false })]);
 
-    await user.click(button('Over-limit rule')!);
+    await user.click(more('Over-limit rule')!);
 
     expect(Array.from(ruleSelect().options).map((o) => o.textContent)).not.toContain('Move up to the next plan');
   });
@@ -974,7 +1041,7 @@ describe('BillingControl', () => {
     mockApi.post.mockResolvedValue({ success: false, error: 'Move up cannot be chosen for a card payer.', code: 'RULE_NOT_ALLOWED' });
     await renderWith([makeSnapshot()]);
 
-    await user.click(button('Over-limit rule')!);
+    await user.click(more('Over-limit rule')!);
     await user.click(screen.getByRole('button', { name: 'Save rule' }));
 
     await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Move up cannot be chosen for a card payer.'));

@@ -1,4 +1,4 @@
-import { Alert, Button, Card, CardBody, CardHeader, Chip, Input, Spinner, Select, SelectItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Switch, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@/components/ui';
+import { Alert, Button, Card, CardBody, CardHeader, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Input, Spinner, Select, SelectItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Switch, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@/components/ui';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -6,6 +6,7 @@ import CreditCard from 'lucide-react/icons/credit-card';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import Leaf from 'lucide-react/icons/leaf';
 import Download from 'lucide-react/icons/download';
+import MoreVertical from 'lucide-react/icons/ellipsis-vertical';
 import { usePageTitle } from '@/hooks';
 import { useAuth, useToast } from '@/contexts';
 import { api } from '@/lib/api';
@@ -841,24 +842,18 @@ export function BillingControl() {
                     {/* Actions */}
                     <TableCell>
                       {isGod ? (
-                        // Wide enough for the buttons to sit in rows, not a
-                        // tall single column.
-                        <div className="flex min-w-[26rem] items-center gap-1 flex-wrap">
+                        // Three actions in view: the plan, a payment, and the
+                        // date on its own. Everything else is in the "More"
+                        // menu, as on Branch payments. Seven buttons a row
+                        // made the table very wide and were cut off at its
+                        // edge.
+                        <div className="flex min-w-72 items-center gap-1 flex-wrap">
                           <Button
                             size="sm"
                             variant="secondary"
                             onPress={() => handleOpenAssign(row)}
                           >
                             {t('billing.assign_plan')}
-                          </Button>
-
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            isDisabled={busy}
-                            onPress={() => openPaidUntil(row)}
-                          >
-                            {t('control.set_paid_until')}
                           </Button>
 
                           <Button
@@ -874,68 +869,55 @@ export function BillingControl() {
                             size="sm"
                             variant="tertiary"
                             isDisabled={busy}
-                            onPress={() => setPayerRow(row)}
+                            onPress={() => openPaidUntil(row)}
                           >
-                            {t('control.change_payer')}
+                            {t('control.set_paid_until')}
                           </Button>
 
-                          {row.over_limit_rule ? (
-                            <Button
-                              size="sm"
-                              variant="tertiary"
-                              isDisabled={busy}
-                              onPress={() => setRuleRow(row)}
+                          <Dropdown>
+                            <DropdownTrigger>
+                              <Button
+                                isIconOnly
+                                size="sm"
+                                variant="tertiary"
+                                aria-label={t('billing.more_actions_for', { name: row.name })}
+                                isDisabled={standingBusyId !== null}
+                                isLoading={busy}
+                              >
+                                <MoreVertical size={16} />
+                              </Button>
+                            </DropdownTrigger>
+                            <DropdownMenu
+                              aria-label={t('billing.more_actions_for', { name: row.name })}
+                              onAction={(key) => {
+                                if (key === 'payer') setPayerRow(row);
+                                else if (key === 'rule') setRuleRow(row);
+                                else if (key === 'pause') openStandingDialog(row, 'pause');
+                                else if (key === 'restore') void sendStanding(row, 'restore', {}, 'billing.done_restored');
+                                else if (key === 'exempt') openStandingDialog(row, 'exempt');
+                                else if (key === 'unexempt') void sendStanding(row, 'exempt', { exempt: false }, 'billing.done_exemption_removed');
+                              }}
                             >
-                              {t('over_limit_rule.open_dialog')}
-                            </Button>
-                          ) : null}
-
-                          {state === 'open' ? (
-                            <Button
-                              size="sm"
-                              color="warning"
-                              variant="tertiary"
-                              isDisabled={busy}
-                              onPress={() => openStandingDialog(row, 'pause')}
-                            >
-                              {t('billing.pause_community')}
-                            </Button>
-                          ) : null}
-
-                          {/* Only where this community itself is paused. One
-                              paused from above is restored on the community
-                              above, or opened here by exempting it. */}
-                          {state === 'paused' ? (
-                            <Button
-                              size="sm"
-                              color="success"
-                              variant="secondary"
-                              isLoading={busy}
-                              onPress={() => void sendStanding(row, 'restore', {}, 'billing.done_restored')}
-                            >
-                              {t('billing.restore_community')}
-                            </Button>
-                          ) : null}
-
-                          {state === 'exempt' ? (
-                            <Button
-                              size="sm"
-                              variant="tertiary"
-                              isLoading={busy}
-                              onPress={() => void sendStanding(row, 'exempt', { exempt: false }, 'billing.done_exemption_removed')}
-                            >
-                              {t('billing.remove_exemption')}
-                            </Button>
-                          ) : (
-                            <Button
-                              size="sm"
-                              variant="tertiary"
-                              isDisabled={busy}
-                              onPress={() => openStandingDialog(row, 'exempt')}
-                            >
-                              {t('billing.exempt_community')}
-                            </Button>
-                          )}
+                              {[
+                                <DropdownItem key="payer" id="payer">{t('control.change_payer')}</DropdownItem>,
+                                ...(row.over_limit_rule ? [
+                                  <DropdownItem key="rule" id="rule">{t('over_limit_rule.open_dialog')}</DropdownItem>,
+                                ] : []),
+                                ...(state === 'open' ? [
+                                  <DropdownItem key="pause" id="pause" className="text-warning">{t('billing.pause_community')}</DropdownItem>,
+                                ] : []),
+                                // Only where this community itself is paused. One
+                                // paused from above is restored on the community
+                                // above, or opened here by exempting it.
+                                ...(state === 'paused' ? [
+                                  <DropdownItem key="restore" id="restore" className="text-success">{t('billing.restore_community')}</DropdownItem>,
+                                ] : []),
+                                state === 'exempt'
+                                  ? <DropdownItem key="unexempt" id="unexempt">{t('billing.remove_exemption')}</DropdownItem>
+                                  : <DropdownItem key="exempt" id="exempt">{t('billing.exempt_community')}</DropdownItem>,
+                              ]}
+                            </DropdownMenu>
+                          </Dropdown>
                         </div>
                       ) : null}
                     </TableCell>
