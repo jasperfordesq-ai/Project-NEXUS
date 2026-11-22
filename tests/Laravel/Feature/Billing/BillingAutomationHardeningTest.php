@@ -157,6 +157,99 @@ final class BillingAutomationHardeningTest extends TestCase
         $this->assertSame('suspend', $this->standingRow($this->community)->last_notice_stage);
     }
 
+    /**
+     * Finding B22. The pause stage used to be recorded BEFORE the pause was
+     * made: if pausing then failed, the record said "paused", the next run
+     * saw nothing left to do, and the community was never paused. The pause
+     * now comes first, so a failure leaves no record and the next morning's
+     * run tries again.
+     *
+     * The failure is made here by refusing the one write that pauses (the
+     * `suspended_at` update of the standing row) while a flag is up.
+     */
+    public function test_a_pause_that_failed_is_tried_again_the_next_day(): void
+    {
+        $this->standing($this->community, ['paid_until' => $this->today->toDateString()]);
+        $this->assertSame(['payment:due'], $this->check($this->day(1)));
+        $this->assertSame(['payment:final_warning'], $this->check($this->day(7)));
+
+        $failing = true;
+        DB::connection()->beforeExecuting(static function (string $sql) use (&$failing): void {
+            if ($failing && str_contains($sql, 'tenant_billing_standing') && str_contains($sql, 'suspended_at') && str_starts_with(ltrim($sql), 'update')) {
+                throw new \RuntimeException('The database refused the pause in this test');
+            }
+        });
+
+        try {
+            // The pause day. The pause fails; the run carries on for everyone else.
+            $this->assertSame([], $this->check($this->day(14)), 'a pause that did not happen is not reported as one');
+            BillingLock::flush();
+            $this->assertFalse(BillingLock::isLocked($this->community));
+            $row = $this->standingRow($this->community);
+            $this->assertNull($row->suspended_at);
+            $this->assertSame('final_warning', $row->last_notice_stage, 'the pause is NOT recorded as made');
+
+            // The next morning the fault is gone, and the pause is made.
+            $failing = false;
+            $this->assertSame(['payment:suspend'], $this->check($this->day(15)));
+            BillingLock::flush();
+            $this->assertTrue(BillingLock::isLocked($this->community));
+            $row = $this->standingRow($this->community);
+            $this->assertSame('suspend', $row->last_notice_stage);
+            $this->assertSame('non_payment', $row->suspension_reason);
+        } finally {
+            $failing = false;
+        }
+    }
+
+    /**
+     * A community that pays the platform by card has nobody to pay by hand:
+     * its card is charged. Its payment emails used to say "payment is made to
+     * the platform team", which sent it looking for an invoice.
+     */
+    public function test_a_card_payer_is_told_to_check_its_card_not_to_pay_the_platform_team(): void
+    {
+        $mailer = new class extends EmailDispatchService {
+            /** @var array<int, array{to: string, body: string}> */
+            public array $calls = [];
+
+            public function send(string $to, string $subject, string $body, array $options = []): bool
+            {
+                $this->calls[] = ['to' => $to, 'body' => $body];
+
+                return true;
+            }
+        };
+        app()->instance(EmailDispatchService::class, $mailer);
+        $bodyTo = fn (string $email): string => implode("\n", array_column(
+            array_filter($mailer->calls, static fn (array $c): bool => $c['to'] === $email),
+            'body'
+        ));
+
+        // By invoice: paid to the platform team.
+        $this->standing($this->community, ['paid_until' => $this->today->toDateString()]);
+        $this->assertSame(['payment:due'], $this->check($this->day(1)));
+        $this->assertStringContainsString('Payment is made to the platform team', $bodyTo($this->admin));
+        $this->assertStringNotContainsString('card on file', $bodyTo($this->admin));
+
+        // By card, with Stripe no longer retrying (so the notice is due).
+        $card = $this->makeCommunity('Hardening card ' . bin2hex(random_bytes(3)), 1, '/1/');
+        $cardAdmin = $this->person($card, ['role' => 'admin']);
+        DB::table('tenant_plan_assignments')->insert([
+            'tenant_id' => $card, 'pay_plan_id' => $this->plan, 'status' => 'expired',
+            'stripe_subscription_id' => 'sub_hardening_' . bin2hex(random_bytes(5)), 'stripe_status' => 'unpaid',
+            'starts_at' => now(), 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $this->standing($card, ['paid_until' => $this->today->toDateString()]);
+        $this->assertSame('platform_card', \App\Services\BillingStandingService::get($card)['payer']);
+
+        $this->assertSame(['payment:due'], $this->actionsFor(BillingAutomationService::run($this->day(1)), $card));
+
+        $this->assertStringContainsString('Payment is taken from the card on file', $bodyTo($cardAdmin));
+        $this->assertStringContainsString('Manage Payment', $bodyTo($cardAdmin));
+        $this->assertStringNotContainsString('Payment is made to the platform team', $bodyTo($cardAdmin));
+    }
+
     public function test_a_first_notice_the_provider_refused_is_tried_again_the_next_day(): void
     {
         $this->standing($this->community, ['paid_until' => $this->today->toDateString()]);
