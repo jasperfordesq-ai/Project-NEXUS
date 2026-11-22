@@ -120,12 +120,15 @@ describe('PlansAdmin', () => {
     });
   });
 
-  it('shows active/inactive chip correctly', async () => {
-    resolveList([FREE_PLAN]);
+  it('marks a plan that is switched off beside its name, and marks no other', async () => {
+    // The status had a column of its own, the last one, which sat hidden
+    // behind the pinned Actions column on an ordinary laptop screen.
+    resolveList([FREE_PLAN, { ...PRO_PLAN, id: 99, name: 'Retired plan', slug: 'retired-plan', is_active: false }]);
     render(<PlansAdmin />);
-    await waitFor(() => {
-      expect(screen.getByText(/active/i)).toBeInTheDocument();
-    });
+
+    await waitFor(() => expect(screen.getByText('Retired plan')).toBeInTheDocument());
+    expect(screen.getAllByText('Inactive')).toHaveLength(1);
+    expect(screen.queryByText('Active')).not.toBeInTheDocument();
   });
 
   it('shows Stripe synced chip for synced plans', async () => {

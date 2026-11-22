@@ -145,6 +145,14 @@ export function PlansAdmin() {
           ) : (
             <span className="font-semibold">{item.name}</span>
           )}
+          {/* A plan that is switched off says so here. It had a column of
+              its own, the last one, which sat hidden behind the pinned
+              Actions column on an ordinary laptop screen. */}
+          {!item.is_active ? (
+            <Chip size="sm" variant="soft" color="default" className="self-start">
+              {t('content.label_inactive')}
+            </Chip>
+          ) : null}
           {item.description && (
             <span className="text-xs text-muted line-clamp-2">{item.description}</span>
           )}
@@ -241,15 +249,6 @@ export function PlansAdmin() {
             </span>
           </span>
         </Tooltip>
-      ),
-    },
-    {
-      key: 'is_active',
-      label: t('content.label_status'),
-      render: (item) => (
-        <Chip size="sm" variant="soft" color={item.is_active ? 'success' : 'default'}>
-          {item.is_active ? t('content.label_active') : t('content.label_inactive')}
-        </Chip>
       ),
     },
     ...(isSuperAdmin ? [{
