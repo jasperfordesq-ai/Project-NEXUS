@@ -686,16 +686,17 @@ class StripeSubscriptionService
     /**
      * Whether a setup fee is still to be taken from this community: only when
      * it has never paid before, in any way. That is no setup fee recorded as
-     * taken by card, no payment recorded by hand (a community already paying
-     * by invoice was set up long ago), and no plan record that ever carried a
-     * card subscription (one that subscribed before the fee was charged here).
+     * taken by card, no payment on record (a community already paying by
+     * invoice was set up long ago; a payment voided as a mistake is not one),
+     * and no plan record that ever carried a card subscription (one that
+     * subscribed before the fee was charged here).
      */
     public static function setupFeeApplies(int $tenantId): bool
     {
         if (DB::table('tenant_billing_standing')->where('tenant_id', $tenantId)->whereNotNull('setup_fee_paid_at')->exists()) {
             return false;
         }
-        if (DB::table('billing_payments')->where('tenant_id', $tenantId)->exists()) {
+        if (DB::table('billing_payments')->where('tenant_id', $tenantId)->whereNull('voided_at')->exists()) {
             return false;
         }
 

@@ -8,7 +8,9 @@
  * The platform team records a payment that did not come through Stripe (a bank
  * transfer, a cheque …) and the date the community is now paid up to. Below
  * the form, the community's payment history: every payment recorded by hand
- * and every card payment Stripe reported.
+ * and every card payment Stripe reported. A payment recorded by hand can be
+ * voided from its row: it stays in the history, struck through, with the
+ * reason, and the paid-until date may be set in the same step.
  *
  * A parent community's manager uses the same dialog from Branch payments
  * (`via="branch"`) for a community that pays it.
@@ -65,6 +67,13 @@ interface ManualPayment {
   payee_name: string | null;
   /** True when a platform team member recorded it. A hub's manager is then given no name. */
   recorded_by_platform_team: boolean;
+  /** A voided payment stays in the list, struck through. */
+  voided_at: string | null;
+  voided_by_name: string | null;
+  voided_by_platform_team: boolean;
+  void_reason: string | null;
+  /** False for a card payment (undone in Stripe) and for one already voided. */
+  can_void: boolean;
 }
 
 export interface RecordPaymentCommunity {
@@ -88,19 +97,31 @@ interface RecordPaymentDialogProps {
   via?: 'platform' | 'branch';
   /** With `via="branch"`: the community the payment is made to. */
   payeeName?: string | null;
+  /**
+   * Called after a payment was voided. The dialog stays open; the caller
+   * reloads its list, because the paid-until date may have been set with it.
+   */
+  onVoided?: () => void;
 }
 
 /** The two endpoints for one community, by who is asking. */
-function endpointsFor(via: 'platform' | 'branch', tenantId: number): { history: string; record: string } {
+function endpointsFor(via: 'platform' | 'branch', tenantId: number): { history: string; record: string; void: string } {
   return via === 'branch'
     ? {
         history: `/v2/admin/super/branch-payments/${tenantId}/payments`,
         record: `/v2/admin/super/branch-payments/${tenantId}/record-payment`,
+        void: `/v2/admin/super/branch-payments/${tenantId}/void-payment`,
       }
     : {
         history: `/v2/admin/super/billing/standing/payments?tenant_id=${tenantId}`,
         record: '/v2/admin/super/billing/standing/record-payment',
+        void: '/v2/admin/super/billing/standing/void-payment',
       };
+}
+
+/** What the server answers a void with: the community's standing afterwards. */
+interface VoidAnswer {
+  standing?: { paid_until?: string | null };
 }
 
 /** Today in the browser's own calendar, as the date field writes it. */
@@ -121,7 +142,7 @@ function formatAmount(amount: string, currency: string | null): string {
   }
 }
 
-export function RecordPaymentDialog({ community, onClose, onRecorded, via = 'platform', payeeName = null }: RecordPaymentDialogProps) {
+export function RecordPaymentDialog({ community, onClose, onRecorded, via = 'platform', payeeName = null, onVoided }: RecordPaymentDialogProps) {
   const { t } = useTranslation('admin_billing');
   const toast = useToast();
 
@@ -136,8 +157,17 @@ export function RecordPaymentDialog({ community, onClose, onRecorded, via = 'pla
   const [history, setHistory] = useState<ManualPayment[] | null>(null);
   const [historyFailed, setHistoryFailed] = useState(false);
 
+  // Voiding a payment: the dialog shows this form in place of the other.
+  const [voiding, setVoiding] = useState<ManualPayment | null>(null);
+  const [voidReason, setVoidReason] = useState('');
+  const [voidDate, setVoidDate] = useState('');
+  const [voidSaving, setVoidSaving] = useState(false);
+  // The paid-until date after a void that set one, until the caller's own
+  // list has been reloaded: `undefined` = as the caller gave it.
+  const [paidUntilAfterVoid, setPaidUntilAfterVoid] = useState<string | null | undefined>(undefined);
+
   const communityId = community?.id ?? null;
-  const communityPaidUntil = community?.paidUntil ?? null;
+  const communityPaidUntil = paidUntilAfterVoid !== undefined ? paidUntilAfterVoid : (community?.paidUntil ?? null);
 
   const loadHistory = useCallback(async (tenantId: number) => {
     setHistory(null);
@@ -161,8 +191,43 @@ export function RecordPaymentDialog({ community, onClose, onRecorded, via = 'pla
     // Left empty on purpose. Prefilled with the current date it was sent back
     // unchanged, and a payment that does not move the date changes nothing.
     setPaidUntil('');
+    setVoiding(null);
+    setPaidUntilAfterVoid(undefined);
     void loadHistory(communityId);
   }, [communityId, loadHistory]);
+
+  const startVoiding = (payment: ManualPayment) => {
+    setVoidReason('');
+    // Left empty on purpose: an empty date leaves the paid-until date alone.
+    setVoidDate('');
+    setVoiding(payment);
+  };
+
+  const confirmVoid = async () => {
+    if (!community || !voiding || voidReason.trim() === '' || voidSaving) return;
+    setVoidSaving(true);
+    const newDate = voidDate.trim();
+    const response = await api.post<VoidAnswer>(endpointsFor(via, community.id).void, {
+      ...(via === 'branch' ? {} : { tenant_id: community.id }),
+      payment_id: voiding.id,
+      reason: voidReason.trim(),
+      // Only said when a date was chosen: the server leaves the date alone otherwise.
+      ...(newDate === '' ? {} : { paid_until: newDate }),
+    });
+    setVoidSaving(false);
+
+    if (response.success) {
+      toast.success(t('control.done_payment_voided'));
+      if (newDate !== '') setPaidUntilAfterVoid(response.data?.standing?.paid_until ?? newDate);
+      setVoiding(null);
+      void loadHistory(community.id);
+      onVoided?.();
+      return;
+    }
+
+    // admin-i18n-ignore: localized server message — AdminSuperController void-payment refusals (lang/*/api.php)
+    toast.error(response.error || t('billing.standing_failed'));
+  };
 
   const hasAmount = amount.trim() !== '';
   // What the server accepts: up to ten digits and at most two decimals. A
@@ -206,7 +271,7 @@ export function RecordPaymentDialog({ community, onClose, onRecorded, via = 'pla
     <Modal isOpen={community !== null} onClose={onClose} size="2xl" scrollBehavior="inside">
       <ModalContent>
         <ModalHeader>
-          {t('control.record_payment')}
+          {voiding ? t('control.void_title') : t('control.record_payment')}
           {community && (
             <span className="text-muted text-sm font-normal ml-2">
               — {community.name}
@@ -214,6 +279,41 @@ export function RecordPaymentDialog({ community, onClose, onRecorded, via = 'pla
           )}
         </ModalHeader>
         <ModalBody>
+          {voiding ? (
+            <div className="flex flex-col gap-4">
+              <p className="text-sm font-medium">
+                {[
+                  formatDate(voiding.received_on),
+                  t(`control.method_${voiding.method}`),
+                  voiding.reference,
+                  voiding.amount !== null ? formatAmount(voiding.amount, voiding.currency) : null,
+                ].filter((part) => part !== null && part !== '').join(' · ')}
+              </p>
+              <p className="text-sm text-muted">{t('control.void_help')}</p>
+              <Input
+                label={t('control.void_reason_label')}
+                value={voidReason}
+                onValueChange={setVoidReason}
+                maxLength={500}
+                isRequired
+              />
+              <p className="text-sm text-muted">{t('control.void_date_note')}</p>
+              <Input
+                label={t('control.void_date_label')}
+                type="date"
+                value={voidDate}
+                onValueChange={setVoidDate}
+                description={[
+                  communityPaidUntil
+                    ? t('control.void_date_now', { date: formatDate(communityPaidUntil) })
+                    : t('control.void_date_none'),
+                  voiding.paid_until_before
+                    ? t('control.void_date_before', { date: formatDate(voiding.paid_until_before) })
+                    : null,
+                ].filter((part) => part !== null).join(' ')}
+              />
+            </div>
+          ) : (
           <div className="flex flex-col gap-4">
             <p className="text-sm text-muted">
               {via === 'branch' && payeeName
@@ -306,20 +406,31 @@ export function RecordPaymentDialog({ community, onClose, onRecorded, via = 'pla
               ) : history.length === 0 ? (
                 <p className="text-sm text-muted">{t('control.history_empty')}</p>
               ) : (
+                <>
+                {history.some((payment) => payment.source === 'card') ? (
+                  <p className="text-xs text-muted">{t('control.history_card_note')}</p>
+                ) : null}
                 <ul className="flex flex-col divide-y divide-border rounded-lg border border-border">
-                  {history.map((payment) => (
+                  {history.map((payment) => {
+                    const voided = payment.voided_at !== null;
+                    // A voided payment is struck through; its label lines are not.
+                    const value = voided ? 'line-through text-muted' : undefined;
+                    const voidedBy = payment.voided_by_name
+                      ?? (payment.voided_by_platform_team ? t('control.history_by_platform_team') : null);
+
+                    return (
                     <li key={payment.id} className="grid grid-cols-2 gap-x-3 gap-y-1 px-3 py-2 text-sm sm:grid-cols-6">
                       <span>
                         <span className="block text-xs text-muted">{t('control.history_col_received_on')}</span>
-                        <span>{formatDate(payment.received_on)}</span>
+                        <span className={value}>{formatDate(payment.received_on)}</span>
                       </span>
                       <span>
                         <span className="block text-xs text-muted">{t('control.history_col_method')}</span>
-                        <span>{t(`control.method_${payment.method}`)}</span>
+                        <span className={value}>{t(`control.method_${payment.method}`)}</span>
                       </span>
                       <span>
                         <span className="block text-xs text-muted">{t('control.history_col_reference')}</span>
-                        <span className="break-all">{payment.reference ?? '—'}</span>
+                        <span className={`break-all ${value ?? ''}`}>{payment.reference ?? '—'}</span>
                         {/* Only the platform team sees payments made to different payees. */}
                         {via === 'platform' && payment.payee_name ? (
                           <span className="block text-xs text-muted">{t('control.history_paid_to', { name: payment.payee_name })}</span>
@@ -327,11 +438,11 @@ export function RecordPaymentDialog({ community, onClose, onRecorded, via = 'pla
                       </span>
                       <span>
                         <span className="block text-xs text-muted">{t('control.history_col_amount')}</span>
-                        <span>{payment.amount !== null ? formatAmount(payment.amount, payment.currency) : '—'}</span>
+                        <span className={value}>{payment.amount !== null ? formatAmount(payment.amount, payment.currency) : '—'}</span>
                       </span>
                       <span>
                         <span className="block text-xs text-muted">{t('control.history_col_paid_until')}</span>
-                        <span>{formatDate(payment.paid_until_after)}</span>
+                        <span className={value}>{formatDate(payment.paid_until_after)}</span>
                       </span>
                       <span>
                         <span className="block text-xs text-muted">{t('control.history_col_recorded_by')}</span>
@@ -342,21 +453,54 @@ export function RecordPaymentDialog({ community, onClose, onRecorded, via = 'pla
                               ?? (payment.recorded_by_platform_team ? t('control.history_by_platform_team') : '—')}
                         </span>
                       </span>
+                      {voided && payment.voided_at ? (
+                        <span className="col-span-2 text-xs text-danger sm:col-span-6">
+                          {voidedBy
+                            ? t('control.history_voided', { date: formatDate(payment.voided_at), name: voidedBy, reason: payment.void_reason ?? '' })
+                            : t('control.history_voided_no_name', { date: formatDate(payment.voided_at), reason: payment.void_reason ?? '' })}
+                        </span>
+                      ) : null}
+                      {payment.can_void ? (
+                        <span className="col-span-2 flex justify-end sm:col-span-6">
+                          <Button
+                            size="sm"
+                            variant="tertiary"
+                            aria-label={t('control.void_action_for', { date: formatDate(payment.received_on) })}
+                            onPress={() => startVoiding(payment)}
+                          >
+                            {t('control.void_action')}
+                          </Button>
+                        </span>
+                      ) : null}
                     </li>
-                  ))}
+                    );
+                  })}
                 </ul>
+                </>
               )}
             </section>
           </div>
+          )}
         </ModalBody>
-        <ModalFooter>
-          <Button variant="tertiary" onPress={onClose} isDisabled={saving}>
-            {t('billing.cancel')}
-          </Button>
-          <Button onPress={() => void save()} isLoading={saving} isDisabled={!canSave}>
-            {t('control.record_payment_save')}
-          </Button>
-        </ModalFooter>
+        {voiding ? (
+          <ModalFooter>
+            <Button variant="tertiary" onPress={() => setVoiding(null)} isDisabled={voidSaving}>
+              {t('common.back')}
+            </Button>
+            <Button color="danger" onPress={() => void confirmVoid()} isLoading={voidSaving} isDisabled={voidReason.trim() === '' || voidSaving}>
+              {t('control.void_confirm')}
+            </Button>
+          </ModalFooter>
+        ) : (
+          <ModalFooter>
+            <Button variant="tertiary" onPress={onClose} isDisabled={saving}>
+              {t('billing.cancel')}
+            </Button>
+            <Button onPress={() => void save()} isLoading={saving} isDisabled={!canSave}>
+              {t('control.record_payment_save')}
+            </Button>
+          </ModalFooter>
+        )}
       </ModalContent>
     </Modal>
   );

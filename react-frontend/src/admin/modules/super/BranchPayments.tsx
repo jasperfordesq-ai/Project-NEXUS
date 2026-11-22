@@ -538,6 +538,7 @@ export function BranchPayments() {
           setPaymentRow(null);
           void load();
         }}
+        onVoided={() => void load()}
       />
 
       <OverLimitRuleDialog

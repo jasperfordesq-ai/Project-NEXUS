@@ -31,7 +31,9 @@ use Illuminate\Support\Facades\DB;
  * by hand and the payer: `payment_paid_until_required`,
  * `payment_received_on_invalid`, `payment_method_invalid`,
  * `payment_amount_invalid`, `payment_currency_invalid`, `payer_invalid`,
- * `payer_needs_parent`; and for the over-limit rule:
+ * `payer_needs_parent`; for voiding a payment: `payment_not_found`,
+ * `payment_card_not_voidable`, `payment_already_voided`,
+ * `payment_void_reason_required`; and for the over-limit rule:
  * `over_limit_action_invalid`, `over_limit_days_invalid`,
  * `over_limit_rule_not_allowed`.
  */
@@ -549,6 +551,89 @@ final class BillingStandingService
     }
 
     /**
+     * Void a payment recorded by hand. It is never deleted: the row stays,
+     * marked with who voided it, when and why, and the history shows it
+     * struck through.
+     *
+     * Voiding does NOT move the paid-until date by itself. A later payment,
+     * or a date set by hand since, may be what the date now rests on, and
+     * only the person voiding knows. They may set the date in the same step:
+     * give `paid_until` in `$change` (a Y-m-d date, or null to stop tracking
+     * one). It goes through setPaidUntil(), in the same transaction, so a
+     * date moved back can pause nothing by itself and the audit entry is
+     * written once.
+     *
+     * A card payment Stripe reported is not voided here: it is undone by a
+     * refund in Stripe, which is recorded against it when Stripe reports it.
+     *
+     * `$onlyPaidTo` confines a parent community's manager to the payments
+     * made to that parent: any other payment answers `payment_not_found`,
+     * exactly as one that does not exist.
+     *
+     * @param array<string, mixed> $change `paid_until` (optional key)
+     */
+    public static function voidPayment(int $tenantId, int $paymentId, int $actedBy, ?string $reason, array $change = [], ?int $onlyPaidTo = null): void
+    {
+        self::requireBillable($tenantId);
+
+        $reason = self::cleanNote($reason);
+        if ($reason === null) {
+            throw new \DomainException('payment_void_reason_required');
+        }
+
+        $setsDate = array_key_exists('paid_until', $change);
+        $paidUntil = $change['paid_until'] ?? null;
+        if ($setsDate && $paidUntil !== null && (!is_string($paidUntil) || !self::isDate($paidUntil))) {
+            throw new \DomainException('paid_until_invalid');
+        }
+
+        DB::transaction(function () use ($tenantId, $paymentId, $actedBy, $reason, $setsDate, $paidUntil, $onlyPaidTo): void {
+            $query = DB::table('billing_payments')->where('id', $paymentId)->where('tenant_id', $tenantId);
+            if ($onlyPaidTo !== null) {
+                $query->where('payee_tenant_id', $onlyPaidTo);
+            }
+            $row = $query->lockForUpdate()->first();
+
+            if ($row === null) {
+                throw new \DomainException('payment_not_found');
+            }
+            if ($row->stripe_invoice_id !== null) {
+                throw new \DomainException('payment_card_not_voidable');
+            }
+            if ($row->voided_at !== null) {
+                throw new \DomainException('payment_already_voided');
+            }
+
+            $now = now();
+            DB::table('billing_payments')->where('id', $paymentId)->where('tenant_id', $tenantId)->update([
+                'voided_at' => $now,
+                'voided_by_user_id' => $actedBy,
+                'void_reason' => $reason,
+            ]);
+
+            TenantBillingService::logAudit(
+                $tenantId,
+                $actedBy,
+                'payment_voided',
+                [
+                    'payment_id' => $paymentId,
+                    'method' => (string) $row->method,
+                    'reference' => $row->reference,
+                    'amount' => $row->amount !== null ? number_format((float) $row->amount, 2, '.', '') : null,
+                    'currency' => $row->currency,
+                    'received_on' => substr((string) $row->received_on, 0, 10),
+                ],
+                ['payment_id' => $paymentId, 'voided_at' => $now->toDateTimeString()],
+                $reason
+            );
+
+            if ($setsDate) {
+                self::setPaidUntil($tenantId, $paidUntil, $actedBy, "payment {$paymentId} voided");
+            }
+        });
+    }
+
+    /**
      * A community's payments, newest first: those recorded by hand and the
      * card payments Stripe reported. Every payment, whoever was paid: this is
      * the platform team's view.
@@ -595,6 +680,7 @@ final class BillingStandingService
         // member belongs to another community than the one they record for.
         $query = DB::table('billing_payments as bp')
             ->leftJoin('users as u', 'u.id', '=', 'bp.recorded_by_user_id')
+            ->leftJoin('users as v', 'v.id', '=', 'bp.voided_by_user_id')
             ->leftJoin('tenants as payee', 'payee.id', '=', 'bp.payee_tenant_id')
             ->where('bp.tenant_id', $tenantId);
         if ($onlyPaidTo !== null) {
@@ -609,15 +695,20 @@ final class BillingStandingService
                 'bp.id', 'bp.received_on', 'bp.method', 'bp.reference', 'bp.amount', 'bp.currency',
                 'bp.paid_until_before', 'bp.paid_until_after', 'bp.recorded_by_user_id', 'bp.created_at',
                 'bp.stripe_invoice_id', 'bp.payee_tenant_id',
+                'bp.voided_at', 'bp.void_reason',
                 'payee.name as payee_name',
                 'u.is_god as recorder_is_god', 'u.is_super_admin as recorder_is_super_admin',
+                'v.is_god as voider_is_god', 'v.is_super_admin as voider_is_super_admin',
                 DB::raw("COALESCE(NULLIF(TRIM(CONCAT_WS(' ', u.first_name, u.last_name)), ''), u.name) AS recorded_by_name"),
+                DB::raw("COALESCE(NULLIF(TRIM(CONCAT_WS(' ', v.first_name, v.last_name)), ''), v.name) AS voided_by_name"),
             ]);
 
         $list = [];
         foreach ($rows as $row) {
             $byPlatformTeam = !empty($row->recorder_is_god) && !empty($row->recorder_is_super_admin);
             $hideRecorder = $forPayee && $byPlatformTeam;
+            $voidedByPlatformTeam = !empty($row->voider_is_god) && !empty($row->voider_is_super_admin);
+            $hideVoider = $forPayee && $voidedByPlatformTeam;
 
             $list[] = [
                 'id' => (int) $row->id,
@@ -635,6 +726,14 @@ final class BillingStandingService
                 'payee_tenant_id' => $row->payee_tenant_id !== null ? (int) $row->payee_tenant_id : null,
                 'payee_name' => $row->payee_tenant_id !== null && $row->payee_name !== null ? (string) $row->payee_name : null,
                 'recorded_by_platform_team' => $byPlatformTeam,
+                // A voided payment stays in the list, struck through.
+                'voided_at' => $row->voided_at !== null ? (string) $row->voided_at : null,
+                'voided_by_name' => $row->voided_at !== null && $row->voided_by_name !== null && !$hideVoider ? (string) $row->voided_by_name : null,
+                'voided_by_platform_team' => $row->voided_at !== null && $voidedByPlatformTeam,
+                'void_reason' => $row->voided_at !== null && $row->void_reason !== null ? (string) $row->void_reason : null,
+                // What a person may do with it: a card payment is undone in
+                // Stripe, and a payment is voided once.
+                'can_void' => $row->stripe_invoice_id === null && $row->voided_at === null,
             ];
         }
 

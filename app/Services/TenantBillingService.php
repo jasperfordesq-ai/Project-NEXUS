@@ -403,6 +403,7 @@ class TenantBillingService
                         ROW_NUMBER() OVER (PARTITION BY tenant_id ORDER BY received_on DESC, id DESC) AS rn
                  FROM billing_payments
                  WHERE tenant_id IN ({$placeholders})
+                   AND voided_at IS NULL
              ) newest
              WHERE rn = 1",
             $tenantIds

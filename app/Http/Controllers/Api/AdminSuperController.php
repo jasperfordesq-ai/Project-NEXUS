@@ -3247,6 +3247,64 @@ class AdminSuperController extends BaseApiController
         ]);
     }
 
+    /**
+     * POST /api/v2/admin/super/billing/standing/void-payment
+     *   {tenant_id, payment_id, reason, paid_until?}
+     *
+     * The platform team voids a payment recorded by hand, for any community.
+     * The payment stays in the history, struck through, with the reason.
+     * Voiding does not move the paid-until date by itself: `paid_until`, when
+     * the request says it at all, sets the date in the same step (null stops
+     * tracking one). A card payment is refused: it is undone in Stripe.
+     */
+    public function voidCommunityPayment(): JsonResponse
+    {
+        $userId = $this->requireGodPlatformAdmin();
+        $input = $this->getAllInput();
+        $tenantId = (int) ($input['tenant_id'] ?? 0);
+        if ($tenantId < 1) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.tenant_id_is_required'), 'tenant_id', 422);
+        }
+
+        return $this->voidPaymentFor($tenantId, $input, $userId, null);
+    }
+
+    /**
+     * Void one payment and answer with the community's standing. Shared by
+     * the platform team's endpoint and a parent community's manager's.
+     *
+     * @param array<string, mixed> $input payment_id, reason, paid_until?
+     */
+    private function voidPaymentFor(int $tenantId, array $input, int $userId, ?int $onlyPaidTo): JsonResponse
+    {
+        $change = [];
+        if (array_key_exists('paid_until', $input)) {
+            $date = $input['paid_until'];
+            if ($date !== null && !is_string($date)) {
+                return $this->respondWithError('PAID_UNTIL_INVALID', __('api.billing_standing_paid_until_invalid'), 'paid_until', 422);
+            }
+            $change['paid_until'] = $date;
+        }
+
+        $wasClosed = $this->communityIsClosed($tenantId);
+        try {
+            BillingStandingService::voidPayment(
+                $tenantId,
+                (int) ($input['payment_id'] ?? 0),
+                $userId,
+                $this->standingNote($input['reason'] ?? null),
+                $change,
+                $onlyPaidTo
+            );
+        } catch (\DomainException $e) {
+            return $this->standingRefusal($e);
+        }
+
+        $this->tellAdminsIfStandingChanged($tenantId, $wasClosed);
+
+        return $this->respondWithData(['standing' => BillingStandingService::get($tenantId)]);
+    }
+
     /** GET /api/v2/admin/super/billing/standing/payments?tenant_id=N */
     public function communityPayments(): JsonResponse
     {
@@ -3497,6 +3555,29 @@ class AdminSuperController extends BaseApiController
         }
 
         return $this->respondWithData(BillingStandingService::paymentsPaidTo($id, $payee));
+    }
+
+    /**
+     * POST /api/v2/admin/super/branch-payments/{id}/void-payment
+     *   {payment_id, reason, paid_until?}
+     *
+     * A parent community's manager voids a payment a community below made to
+     * its parent. Only a payment made to that parent: one made to the
+     * platform, or to a parent the community had before, answers "not found"
+     * like one that does not exist.
+     */
+    public function branchPaymentsVoidPayment(int $id): JsonResponse
+    {
+        $userId = $this->requireSuperAdmin();
+        if ($refused = $this->branchPaymentsRefusal($id)) {
+            return $refused;
+        }
+        $payee = BranchPayments::payeeFor($id);
+        if ($payee === null) {
+            return $this->respondWithError(ApiErrorCodes::SUPER_PANEL_ACCESS_DENIED, __('api.super_no_access_tenant'), null, 403);
+        }
+
+        return $this->voidPaymentFor($id, $this->getAllInput(), $userId, $payee);
     }
 
     /** POST /api/v2/admin/super/branch-payments/{id}/suspend */
@@ -4083,6 +4164,10 @@ class AdminSuperController extends BaseApiController
             'payment_method_invalid' => ['api.billing_standing_payment_method_invalid', 'method'],
             'payment_amount_invalid' => ['api.billing_standing_payment_amount_invalid', 'amount'],
             'payment_currency_invalid' => ['api.billing_standing_payment_currency_invalid', 'currency'],
+            'payment_not_found' => ['api.billing_standing_payment_not_found', 'payment_id'],
+            'payment_card_not_voidable' => ['api.billing_standing_payment_card_not_voidable', 'payment_id'],
+            'payment_already_voided' => ['api.billing_standing_payment_already_voided', 'payment_id'],
+            'payment_void_reason_required' => ['api.billing_standing_payment_void_reason_required', 'reason'],
             'payer_invalid' => ['api.billing_standing_payer_invalid', 'payer'],
             'payer_needs_parent' => ['api.billing_standing_payer_needs_parent', 'payer'],
         ];

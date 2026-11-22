@@ -1173,6 +1173,7 @@ export function BillingControl() {
           setPaymentRow(null);
           void fetchSnapshot();
         }}
+        onVoided={() => void fetchSnapshot()}
       />
 
       <OverLimitRuleDialog

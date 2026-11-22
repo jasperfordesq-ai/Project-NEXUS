@@ -923,6 +923,13 @@ one is not named to it. Reach is checked at both ends
 (`BranchPayments::payeeFor()`): the paying community must be one the caller may
 act on, and the community being paid must be the caller's own or one below it.
 Pinned in `tests/Laravel/Feature/Billing/BranchPaymentsRecordPaymentTest.php`.
+A manager can also void such a payment
+(`POST /v2/admin/super/branch-payments/{id}/void-payment`): only one made to
+that parent, so a payment the community made to the platform answers "not
+found" exactly as one that does not exist. The platform team voids any payment
+recorded by hand (`POST /v2/admin/super/billing/standing/void-payment`,
+platform team only). Nothing is ever deleted. Pinned in
+`tests/Laravel/Feature/Billing/BillingPaymentVoidTest.php`.
 
 **Putting a child on a plan (21 November 2026).** On the same page, and under
 exactly the same rule (`BranchPayments::refusalFor()`: below the caller, pays

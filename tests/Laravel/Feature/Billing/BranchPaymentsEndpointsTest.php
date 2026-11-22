@@ -203,6 +203,7 @@ final class BranchPaymentsEndpointsTest extends TestCase
             'paid-until' => ['paid-until'],
             // A payment recorded with its amount and reference (22 Nov 2026).
             'record-payment' => ['record-payment'],
+            'void-payment' => ['void-payment'],
             'suspend' => ['suspend'],
             'restore' => ['restore'],
             // Hub plans Stage 4: a community's rule for going over its member number.
@@ -418,7 +419,7 @@ final class BranchPaymentsEndpointsTest extends TestCase
 
         $this->assertContains($this->apiGet("/v2/admin/super/branch-payments/{$this->child}/payments")->getStatusCode(), [401, 403]);
 
-        foreach (['paid-until', 'record-payment', 'suspend', 'restore', 'over-limit'] as $action) {
+        foreach (['paid-until', 'record-payment', 'void-payment', 'suspend', 'restore', 'over-limit'] as $action) {
             $status = $this->apiPost("/v2/admin/super/branch-payments/{$this->child}/{$action}", ['paid_until' => '2027-01-31'])->getStatusCode();
             $this->assertContains($status, [401, 403], "{$action} answered {$status}");
         }

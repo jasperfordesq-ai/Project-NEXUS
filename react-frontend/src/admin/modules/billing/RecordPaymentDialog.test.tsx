@@ -74,11 +74,17 @@ const makePayment = (overrides: Record<string, unknown> = {}) => ({
   payee_tenant_id: null,
   payee_name: null,
   recorded_by_platform_team: true,
+  voided_at: null,
+  voided_by_name: null,
+  voided_by_platform_team: false,
+  void_reason: null,
+  can_void: true,
   ...overrides,
 });
 
 const PAYMENTS_URL = '/v2/admin/super/billing/standing/payments?tenant_id=5';
 const RECORD_URL = '/v2/admin/super/billing/standing/record-payment';
+const VOID_URL = '/v2/admin/super/billing/standing/void-payment';
 
 const servePayments = (rows: unknown) => {
   mockApi.get.mockImplementation((url: string) => {
@@ -97,6 +103,7 @@ const today = (): string => {
 
 const onClose = vi.fn();
 const onRecorded = vi.fn();
+const onVoided = vi.fn();
 
 const renderDialog = async (paidUntil: string | null = '2026-12-31') => {
   const { RecordPaymentDialog } = await import('./RecordPaymentDialog');
@@ -105,6 +112,7 @@ const renderDialog = async (paidUntil: string | null = '2026-12-31') => {
       community={{ id: 5, name: 'Cork Timebank', paidUntil }}
       onClose={onClose}
       onRecorded={onRecorded}
+      onVoided={onVoided}
     />,
   );
   await waitFor(() => expect(mockApi.get).toHaveBeenCalledWith(PAYMENTS_URL));
@@ -284,6 +292,109 @@ describe('RecordPaymentDialog', () => {
 
     await waitFor(() => expect(screen.getByText('HUB-INV-7')).toBeInTheDocument());
     expect(screen.getAllByText('Paid to Munster Hub')).toHaveLength(1);
+  });
+
+  // ── Voiding ───────────────────────────────────────────────────────────────
+
+  it('offers to void a payment recorded by hand, and not a card payment or one already voided', async () => {
+    servePayments([
+      makePayment({ id: 3, received_on: '2026-11-02' }),
+      makePayment({ id: 9, received_on: '2026-11-18', method: 'card', reference: 'in_1QxCardInvoice', source: 'card', can_void: false }),
+      makePayment({ id: 2, received_on: '2026-10-01', can_void: false, voided_at: '2026-10-02 09:00:00', voided_by_name: 'Pat Murphy', void_reason: 'Typed twice' }),
+    ]);
+    await renderDialog();
+
+    await waitFor(() => expect(screen.getByText('in_1QxCardInvoice')).toBeInTheDocument());
+    expect(screen.getAllByRole('button', { name: /^Void the payment received/ })).toHaveLength(1);
+    expect(screen.getByRole('button', { name: `Void the payment received ${formatDate('2026-11-02')}` })).toBeInTheDocument();
+    expect(screen.getByText('A card payment cannot be voided here. It is refunded in Stripe.')).toBeInTheDocument();
+  });
+
+  it('shows a voided payment struck through, with who voided it, when and why', async () => {
+    servePayments([
+      makePayment({ id: 2, reference: 'INV-VOIDED', can_void: false, voided_at: '2026-11-03 09:00:00', voided_by_name: 'Pat Murphy', void_reason: 'Recorded against the wrong community' }),
+    ]);
+    await renderDialog();
+
+    await waitFor(() => expect(screen.getByText('INV-VOIDED')).toBeInTheDocument());
+    expect(screen.getByText('INV-VOIDED').className).toContain('line-through');
+    expect(screen.getByText(`Voided ${formatDate('2026-11-03 09:00:00')} by Pat Murphy: Recorded against the wrong community`)).toBeInTheDocument();
+  });
+
+  it('voids with a reason and says nothing about the date when none is chosen', async () => {
+    const user = userEvent.setup();
+    servePayments([makePayment({ id: 3, received_on: '2026-11-02' })]);
+    mockApi.post.mockResolvedValue({ success: true, data: { standing: { paid_until: '2026-12-31' } } });
+    await renderDialog();
+
+    await user.click(await screen.findByRole('button', { name: /^Void the payment received/ }));
+    expect(screen.getByText('Void a payment')).toBeInTheDocument();
+    expect(screen.getByText('Voiding does not change the paid-until date. If the date should change, set it below.')).toBeInTheDocument();
+    // Nothing can be sent without a reason.
+    expect(button('Void payment')).toBeDisabled();
+
+    fireEvent.change(screen.getByLabelText('Why it is being voided'), { target: { value: 'Typed against the wrong community' } });
+    await user.click(button('Void payment')!);
+
+    await waitFor(() => expect(mockApi.post).toHaveBeenCalledTimes(1));
+    expect(mockApi.post).toHaveBeenCalledWith(VOID_URL, { tenant_id: 5, payment_id: 3, reason: 'Typed against the wrong community' });
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('Payment voided'));
+    expect(onVoided).toHaveBeenCalledTimes(1);
+    // The dialog stays open on the history, which is asked for again.
+    expect(onRecorded).not.toHaveBeenCalled();
+    expect(onClose).not.toHaveBeenCalled();
+    await waitFor(() => expect(mockApi.get).toHaveBeenCalledTimes(2));
+    expect(screen.getByText('Record a payment')).toBeInTheDocument();
+  });
+
+  it('sends the new paid-until date when one is chosen while voiding', async () => {
+    const user = userEvent.setup();
+    servePayments([makePayment({ id: 3, paid_until_before: '2026-10-31' })]);
+    mockApi.post.mockResolvedValue({ success: true, data: { standing: { paid_until: '2026-10-31' } } });
+    await renderDialog('2027-10-31');
+
+    await user.click(await screen.findByRole('button', { name: /^Void the payment received/ }));
+    expect(screen.getByText((text) => text.includes(`Paid until now: ${formatDate('2027-10-31')}.`) && text.includes(`Before this payment it was ${formatDate('2026-10-31')}.`))).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText('Why it is being voided'), { target: { value: 'The transfer was returned' } });
+    fireEvent.change(screen.getByLabelText('New paid-until date (optional)'), { target: { value: '2026-10-31' } });
+    await user.click(button('Void payment')!);
+
+    await waitFor(() => {
+      expect(mockApi.post).toHaveBeenCalledWith(VOID_URL, { tenant_id: 5, payment_id: 3, reason: 'The transfer was returned', paid_until: '2026-10-31' });
+    });
+    // Back on the form, the date it says the community is paid until is the new one.
+    await waitFor(() => expect(screen.getByText((text) => text.includes(formatDate('2026-10-31')) && text.startsWith('Currently paid until'))).toBeInTheDocument());
+  });
+
+  it('goes back to the form without voiding anything', async () => {
+    const user = userEvent.setup();
+    servePayments([makePayment()]);
+    await renderDialog();
+
+    await user.click(await screen.findByRole('button', { name: /^Void the payment received/ }));
+    await user.click(button('Back')!);
+
+    expect(mockApi.post).not.toHaveBeenCalled();
+    expect(screen.getByText('Record a payment')).toBeInTheDocument();
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('shows the server\'s own words when it refuses to void', async () => {
+    const user = userEvent.setup();
+    servePayments([makePayment()]);
+    mockApi.post.mockResolvedValue({ success: false, error: 'That payment has already been voided.', code: 'PAYMENT_ALREADY_VOIDED' });
+    await renderDialog();
+
+    await user.click(await screen.findByRole('button', { name: /^Void the payment received/ }));
+    fireEvent.change(screen.getByLabelText('Why it is being voided'), { target: { value: 'Why' } });
+    await user.click(button('Void payment')!);
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('That payment has already been voided.'));
+    expect(mockToast.success).not.toHaveBeenCalled();
+    expect(onVoided).not.toHaveBeenCalled();
+    // Still on the void form, so the reason is not lost.
+    expect(screen.getByText('Void a payment')).toBeInTheDocument();
   });
 
   it('says so when there is no payment yet', async () => {

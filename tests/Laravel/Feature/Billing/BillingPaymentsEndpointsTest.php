@@ -252,6 +252,7 @@ final class BillingPaymentsEndpointsTest extends TestCase
         return [
             'record a payment' => ['POST', '/v2/admin/super/billing/standing/record-payment'],
             'payment history' => ['GET', '/v2/admin/super/billing/standing/payments'],
+            'void a payment' => ['POST', '/v2/admin/super/billing/standing/void-payment'],
             'how it pays' => ['POST', '/v2/admin/super/billing/standing/payer'],
         ];
     }

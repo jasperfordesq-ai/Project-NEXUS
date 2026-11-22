@@ -3325,6 +3325,7 @@ Route::get('/v2/admin/super/branch-payments', [\App\Http\Controllers\Api\AdminSu
 Route::post('/v2/admin/super/branch-payments/{id}/paid-until', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsSetPaidUntil'])->whereNumber('id');
 Route::post('/v2/admin/super/branch-payments/{id}/record-payment', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsRecordPayment'])->whereNumber('id');
 Route::get('/v2/admin/super/branch-payments/{id}/payments', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsHistory'])->whereNumber('id');
+Route::post('/v2/admin/super/branch-payments/{id}/void-payment', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsVoidPayment'])->whereNumber('id');
 Route::post('/v2/admin/super/branch-payments/{id}/suspend', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsSuspend'])->whereNumber('id');
 Route::post('/v2/admin/super/branch-payments/{id}/restore', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsRestore'])->whereNumber('id');
 Route::get('/v2/admin/super/branch-payments/{id}/plans', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsPlans'])->whereNumber('id');
@@ -3502,6 +3503,7 @@ Route::post('/v2/admin/super/billing/standing/paid-until', [\App\Http\Controller
 // Payments recorded by hand (bank transfer, cheque...) and who a community pays (Stage 6).
 Route::post('/v2/admin/super/billing/standing/record-payment', [\App\Http\Controllers\Api\AdminSuperController::class, 'recordCommunityPayment']);
 Route::get('/v2/admin/super/billing/standing/payments', [\App\Http\Controllers\Api\AdminSuperController::class, 'communityPayments']);
+Route::post('/v2/admin/super/billing/standing/void-payment', [\App\Http\Controllers\Api\AdminSuperController::class, 'voidCommunityPayment']);
 Route::post('/v2/admin/super/billing/standing/payer', [\App\Http\Controllers\Api\AdminSuperController::class, 'setCommunityPayer']);
 Route::post('/v2/admin/super/billing/standing/over-limit', [\App\Http\Controllers\Api\AdminSuperController::class, 'setCommunityOverLimitRule']);
 Route::get('/v2/admin/super/billing/standing/preview', [\App\Http\Controllers\Api\AdminSuperController::class, 'previewBillingAutomation']);

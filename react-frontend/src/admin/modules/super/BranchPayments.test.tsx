@@ -299,6 +299,11 @@ describe('BranchPayments', () => {
     payee_tenant_id: 3,
     payee_name: 'Munster Hub',
     recorded_by_platform_team: false,
+    voided_at: null,
+    voided_by_name: null,
+    voided_by_platform_team: false,
+    void_reason: null,
+    can_void: true,
     ...overrides,
   });
 
@@ -349,6 +354,24 @@ describe('BranchPayments', () => {
     expect(screen.getByText('Platform team')).toBeInTheDocument();
     // A manager's list holds only payments made to its community: no "Paid to" line.
     expect(screen.queryByText((text) => text.startsWith('Paid to'))).not.toBeInTheDocument();
+  });
+
+  it('voids a payment through the manager\'s own endpoint, and reloads the list', async () => {
+    const user = userEvent.setup();
+    await renderWithHistory([makeRow({ parent_name: 'Munster Hub' })], [makePayment({ id: 12 })]);
+    mockApi.post.mockResolvedValue({ success: true, data: { standing: { paid_until: null } } });
+
+    await user.click(button('Record a payment')!);
+    await user.click(await screen.findByRole('button', { name: /^Void the payment received/ }));
+    fireEvent.change(screen.getByLabelText('Why it is being voided'), { target: { value: 'The cheque was returned unpaid' } });
+    await user.click(screen.getByRole('button', { name: 'Void payment' }));
+
+    await waitFor(() => expect(mockApi.post).toHaveBeenCalledTimes(1));
+    expect(mockApi.post).toHaveBeenCalledWith('/v2/admin/super/branch-payments/7/void-payment', { payment_id: 12, reason: 'The cheque was returned unpaid' });
+    // The list behind the dialog is asked for again: the date may have changed.
+    await waitFor(() => {
+      expect(mockApi.get.mock.calls.filter(([url]) => url === '/v2/admin/super/branch-payments')).toHaveLength(2);
+    });
   });
 
   it('opens on the date already recorded and sends null when it is emptied', async () => {
