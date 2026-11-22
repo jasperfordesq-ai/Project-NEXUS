@@ -305,6 +305,17 @@ final class BillingAutomationService
             return null;
         }
 
+        // "Move up" that will not happen by itself (no plan offered to it is
+        // big enough, or its price was specially agreed) names no date: on
+        // that day a person is asked to decide, and nothing is moved. The
+        // lists used to say "Move up on <date>" for these.
+        if ($rule['effective_action'] === 'upgrade') {
+            $move = self::moveOutcome($tenantId, $limit, $rule, $active);
+            if ($move['reason'] !== null || $move['target'] === null || $move['price'] === null) {
+                return null;
+            }
+        }
+
         $row = DB::table('tenant_billing_standing')->where('tenant_id', $tenantId)->first(['exempt', 'suspended_at', 'over_limit_since', 'limit_notice_stage', 'limit_notice_at', 'limit_terms_key']);
         if ($row !== null && (!empty($row->exempt) || $row->suspended_at !== null)) {
             return null;

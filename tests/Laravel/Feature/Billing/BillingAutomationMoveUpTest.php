@@ -286,6 +286,30 @@ final class BillingAutomationMoveUpTest extends TestCase
 
     // ── Not moving ──────────────────────────────────────────────────────────
 
+    /**
+     * The lists showed "Move up on <date>" for a community that would NOT be
+     * moved on that date: no plan fits it, or its price was specially agreed,
+     * so a person has to decide. A date is named only for a move that will
+     * really happen.
+     */
+    public function test_no_move_date_is_named_when_no_move_will_happen(): void
+    {
+        $this->addActiveMembers($this->community, 35); // more than any plan offered to it allows
+        BillingAutomationService::run($this->today);
+
+        $this->assertNull(\App\Support\Billing\OverLimitRule::describe($this->community)['acts_on'], 'no plan fits: nothing will move it');
+        $this->assertNull(BillingAutomationService::memberLimitState($this->community)['acts_on']);
+    }
+
+    public function test_no_move_date_is_named_for_a_specially_agreed_price(): void
+    {
+        $this->assignPlan($this->community, $this->small, ['custom_price_monthly' => 99.00]);
+        $this->addActiveMembers($this->community, 12);
+        BillingAutomationService::run($this->today);
+
+        $this->assertNull(\App\Support\Billing\OverLimitRule::describe($this->community)['acts_on'], 'a person must decide its plan and price');
+    }
+
     public function test_no_plan_fits_moves_nothing_and_asks_once(): void
     {
         $this->addActiveMembers($this->community, 35);
