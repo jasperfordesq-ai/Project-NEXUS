@@ -189,6 +189,86 @@ final class CheckBillingLockTest extends TestCase
     }
 
     /**
+     * A person must always be able to stop emails. Every unsubscribe link an
+     * email carries was refused for a paused community (found 22 Nov 2026):
+     * the one-click link on a notification email, the newsletter link, and
+     * the older newsletter address without the /api prefix that emails
+     * already sent still point at.
+     */
+    public function test_stopping_emails_stays_open_for_a_paused_community(): void
+    {
+        BillingStandingService::suspend($this->child, null, 'manual');
+        $this->testTenantId = $this->child;
+        TenantContext::setById($this->child);
+
+        $calls = [
+            ['GET', '/api/v2/notifications/unsubscribe?token=not-a-real-token'],
+            ['POST', '/api/v2/notifications/unsubscribe?token=not-a-real-token'],
+            ['GET', '/api/v2/newsletter/unsubscribe?token=not-a-real-token'],
+            ['POST', '/api/v2/newsletter/unsubscribe'],
+            ['GET', '/v2/newsletter/unsubscribe?token=not-a-real-token'],
+            ['POST', '/v2/newsletter/unsubscribe'],
+        ];
+
+        foreach ($calls as [$method, $uri]) {
+            $response = $method === 'GET'
+                ? $this->getJson($uri, $this->withTenantHeader([]))
+                : $this->postJson($uri, ['token' => 'not-a-real-token'], $this->withTenantHeader([]));
+
+            // Some of these answer with a page, not JSON, so the body is read as text.
+            $this->assertStringNotContainsString(
+                CheckBillingLock::CODE,
+                (string) $response->getContent(),
+                "{$method} {$uri} stops emails and must stay open for a paused community"
+            );
+        }
+    }
+
+    /**
+     * Asked of the middleware itself: an address with no route behind it
+     * never reaches the middleware over HTTP, so it cannot be tried that way.
+     */
+    public function test_only_the_unsubscribe_addresses_are_opened_not_their_neighbours(): void
+    {
+        TenantContext::setById($this->child);
+
+        $middleware = new class extends CheckBillingLock {
+            protected function isLocked(int $tenantId): bool
+            {
+                return true;
+            }
+        };
+        $ask = static fn (string $path, string $method = 'GET'): int => $middleware->handle(
+            Request::create($path, $method),
+            static fn () => response()->json(['ok' => true], 200)
+        )->getStatusCode();
+
+        foreach ([
+            '/api/v2/notifications/unsubscribe',
+            '/api/v2/notifications/unsubscribe/',
+            '/api/v2/newsletter/unsubscribe',
+            '/v2/newsletter/unsubscribe',
+        ] as $open) {
+            $this->assertSame(200, $ask($open), "{$open} must stay open");
+            $this->assertSame(200, $ask($open, 'POST'), "POST {$open} must stay open");
+        }
+
+        foreach ([
+            '/api/v2/notifications',
+            '/api/v2/notifications/unsubscribed',
+            '/api/v2/notifications/unsubscribe/anything-else',
+            '/api/v2/newsletter',
+            '/api/v2/newsletter/unsubscribers',
+            '/api/v2/newsletter/subscribe',
+            '/v2/newsletter/unsubscribers',
+            '/api/v2/jobs/alerts/5/unsubscribe',
+            '/api/push/unsubscribe',
+        ] as $closed) {
+            $this->assertSame(403, $ask($closed), "{$closed} is not an unsubscribe link in an email and must stay closed");
+        }
+    }
+
+    /**
      * The Platform team panel and the super admin panel are how a paused
      * community gets restored. Their own API (not only /v2/admin/) must stay
      * reachable from a paused community's address: every route under these

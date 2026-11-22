@@ -55,9 +55,22 @@ const OPEN_PREFIXES = [
   '/service-worker.js'
 ];
 
+/**
+ * Open at exactly this address and nothing below it.
+ *
+ * The newsletter unsubscribe page: a person must always be able to stop
+ * emails, whatever the standing of the community that sent them. Laravel keeps
+ * the one request this page makes open too.
+ */
+const OPEN_PAGES = [
+  '/newsletter/unsubscribe'
+];
+
 function isOpenPath(pathname) {
   const path = String(pathname || '/');
-  return OPEN_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+  const exact = path.length > 1 ? path.replace(/\/+$/, '') : path;
+  return OPEN_PAGES.includes(exact)
+    || OPEN_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
 }
 
 function communityPausedGate(req, res, next) {

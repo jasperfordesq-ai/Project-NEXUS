@@ -62,6 +62,26 @@ describe('staysOpenWhilePaused', () => {
     }
   });
 
+  // A person must always be able to stop emails. The link in a newsletter
+  // opens this page, which was hidden behind the paused page.
+  it('keeps the newsletter unsubscribe page open, with or without a community prefix', () => {
+    expect(staysOpenWhilePaused('/newsletter/unsubscribe')).toBe(true);
+    expect(staysOpenWhilePaused('/newsletter/unsubscribe/')).toBe(true);
+    expect(staysOpenWhilePaused('/Newsletter/Unsubscribe')).toBe(true);
+    expect(staysOpenWhilePaused('/riverside/newsletter/unsubscribe', 'riverside')).toBe(true);
+  });
+
+  it('opens that one page only, not the pages beside or below it', () => {
+    for (const path of ['/newsletter', '/newsletter/archive', '/newsletter/unsubscribed', '/newsletter/unsubscribe/more', '/blog/newsletter/unsubscribe']) {
+      expect(staysOpenWhilePaused(path)).toBe(false);
+    }
+    expect(staysOpenWhilePaused('/other/newsletter/unsubscribe', 'riverside')).toBe(false);
+  });
+
+  it('does not open the unsubscribe page during maintenance: that list is unchanged', () => {
+    expect(staysOpenDuringMaintenance('/newsletter/unsubscribe')).toBe(false);
+  });
+
   it('leaves the maintenance list as it was: the super admin panel is not on it', () => {
     expect(staysOpenDuringMaintenance('/super-admin')).toBe(false);
     expect(staysOpenDuringMaintenance('/admin')).toBe(true);

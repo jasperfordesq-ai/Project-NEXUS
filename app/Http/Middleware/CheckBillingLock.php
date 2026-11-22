@@ -67,6 +67,25 @@ class CheckBillingLock
         '/favicon.ico',
     ];
 
+    /**
+     * Open whatever the method, and only at exactly this address: the
+     * unsubscribe links an email carries. A person must always be able to
+     * stop emails, whatever the standing of the community that sent them, and
+     * these change nothing but that person's own email choices. The token in
+     * the link is the proof of who is asking; no sign-in is involved.
+     *
+     * The last one has no /api prefix: newsletters already sent point at it
+     * (see RouteServiceProvider).
+     *
+     * Not here on purpose: a job alert is stopped from the member's own
+     * signed-in pages, which are closed like every other member page.
+     */
+    private const OPEN_AT_EXACTLY = [
+        '/api/v2/notifications/unsubscribe',
+        '/api/v2/newsletter/unsubscribe',
+        '/v2/newsletter/unsubscribe',
+    ];
+
     /** Open for reading only, and only at exactly this address. */
     private const OPEN_READS = [
         '/api/v2/users/me',
@@ -96,6 +115,10 @@ class CheckBillingLock
                 if (str_starts_with($path, $prefix)) {
                     return $next($request);
                 }
+            }
+
+            if (in_array($exact, self::OPEN_AT_EXACTLY, true)) {
+                return $next($request);
             }
 
             if (in_array($exact, self::OPEN_READS, true) && $request->isMethodSafe()) {

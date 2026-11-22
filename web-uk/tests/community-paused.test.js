@@ -148,6 +148,23 @@ describe('the paused page on the accessible site', () => {
       expect(response.text).not.toContain('Acme Timebank is paused');
     });
 
+    // A person must always be able to stop emails: the link in a newsletter
+    // opens this page, and the paused page was shown in its place.
+    it('leaves the newsletter unsubscribe page working', async () => {
+      const response = await request(app).get('/acme/accessible/newsletter/unsubscribe?token=abc123');
+
+      expect(response.status).toBe(200);
+      expect(response.text).not.toContain('Acme Timebank is paused');
+      expect(response.text).toMatch(/<form[^>]+action="\/acme\/accessible\/newsletter\/unsubscribe"/);
+    });
+
+    it('opens that one page only, not the pages beside it', async () => {
+      const response = await request(app).get('/acme/accessible/newsletter/unsubscribed');
+
+      expect(response.status).toBe(503);
+      expect(response.text).toContain('Acme Timebank is paused');
+    });
+
     it('renders in the reader\'s language', async () => {
       const response = await request(app).get('/acme/accessible/listings?locale=de');
 

@@ -44,6 +44,27 @@ export function staysOpenDuringMaintenance(pathname: string, slugPrefix?: string
  */
 const PANELS_OPEN_WHILE_PAUSED = ['admin', 'platform-team', 'super-admin'] as const;
 
+/**
+ * Single pages that stay open while a community is paused, at exactly this
+ * address and nothing below it.
+ *
+ * The newsletter unsubscribe page: a person must always be able to stop
+ * emails, whatever the standing of the community that sent them. The link in
+ * a newsletter opens this page, and the server keeps the one request it makes
+ * open too (CheckBillingLock::OPEN_AT_EXACTLY).
+ */
+const PAGES_OPEN_WHILE_PAUSED = ['newsletter/unsubscribe'] as const;
+
+function isExactlyPage(pages: readonly string[], pathname: string, slugPrefix?: string | null): boolean {
+  const path = pathname.toLowerCase().replace(/\/+$/, '');
+  const prefix = slugPrefix ? `/${slugPrefix.toLowerCase()}` : null;
+
+  return pages.some((page) => path === `/${page}` || (prefix !== null && path === `${prefix}/${page}`));
+}
+
 export function staysOpenWhilePaused(pathname: string, slugPrefix?: string | null): boolean {
-  return isUnderPanel(PANELS_OPEN_WHILE_PAUSED, pathname, slugPrefix);
+  return (
+    isUnderPanel(PANELS_OPEN_WHILE_PAUSED, pathname, slugPrefix) ||
+    isExactlyPage(PAGES_OPEN_WHILE_PAUSED, pathname, slugPrefix)
+  );
 }

@@ -664,6 +664,14 @@ describe('TenantShell', () => {
       expect(await screen.findByTestId('community-paused')).toBeInTheDocument();
     });
 
+    it('keeps the newsletter unsubscribe page open when billing_paused is true', async () => {
+      setupDefaultMocks({ tenant: pausedTenant });
+      renderWithRouter('/newsletter/unsubscribe?token=abc', theApp);
+
+      expect(await screen.findByTestId('the-app')).toBeInTheDocument();
+      expect(screen.queryByTestId('community-paused')).not.toBeInTheDocument();
+    });
+
     it('keeps the sign-in page open when billing_paused is true', async () => {
       setupDefaultMocks({ tenant: pausedTenant });
       renderWithRouter('/login', theApp);
