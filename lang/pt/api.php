@@ -2625,6 +2625,7 @@ return [
     'support_reports_assignment_invalid' => 'Atribua o relatório a um administrador ativo deste tenant.',
     'support_reports_update_empty' => 'Não foram fornecidas alterações ao relatório de suporte.',
     'billing_upgrade_email_send_failed' => 'O pedido de upgrade foi registado, mas não foi possível enviar o e-mail de notificação. Tente novamente ou contacte o suporte da plataforma.',
+    'billing_message_too_many' => 'A sua comunidade já enviou várias mensagens à equipe da plataforma na última hora. Aguarde um pouco antes de enviar outra.',
     'verification_email_send_failed' => 'Não foi possível enviar o e-mail de verificação neste momento. Tente novamente mais tarde.',
     'invalid_amount' => 'O montante está fora do intervalo permitido.',
     'marketplace_order_participant_required' => 'Não é participante nesta encomenda.',

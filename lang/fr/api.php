@@ -2625,6 +2625,7 @@ return [
     'support_reports_assignment_invalid' => 'Veuillez attribuer le signalement à un administrateur actif de ce tenant.',
     'support_reports_update_empty' => 'Aucune modification du signalement au support n\'a été fournie.',
     'billing_upgrade_email_send_failed' => 'La demande de mise à niveau a été enregistrée, mais l\'e-mail de notification n\'a pas pu être envoyé. Veuillez réessayer ou contacter le support de la plateforme.',
+    'billing_message_too_many' => 'Votre communauté a déjà envoyé plusieurs messages à l’équipe de la plateforme au cours de la dernière heure. Veuillez patienter avant d’en envoyer un autre.',
     'verification_email_send_failed' => 'Impossible d\'envoyer l\'e-mail de vérification pour le moment. Veuillez réessayer plus tard.',
     'invalid_amount' => 'Le montant est en dehors de la plage autorisée.',
     'marketplace_order_participant_required' => 'Vous n\'êtes pas participant à cette commande.',

@@ -2625,6 +2625,7 @@ return [
     'support_reports_assignment_invalid' => 'Assegnare la segnalazione a un amministratore attivo di questo tenant.',
     'support_reports_update_empty' => 'Non è stata fornita alcuna modifica alla segnalazione di supporto.',
     'billing_upgrade_email_send_failed' => 'La richiesta di upgrade è stata registrata, ma non è stato possibile inviare l\'e-mail di notifica. Riprovare o contattare il supporto della piattaforma.',
+    'billing_message_too_many' => 'La tua comunità ha già inviato diversi messaggi al team della piattaforma nell’ultima ora. Attendi un po’ prima di inviarne un altro.',
     'verification_email_send_failed' => 'Al momento non è stato possibile inviare l\'e-mail di verifica. Riprovare più tardi.',
     'invalid_amount' => 'L\'importo è al di fuori dell\'intervallo consentito.',
     'marketplace_order_participant_required' => 'Lei non è un partecipante di questo ordine.',

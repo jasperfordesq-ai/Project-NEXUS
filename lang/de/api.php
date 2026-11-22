@@ -2625,6 +2625,7 @@ return [
     'support_reports_assignment_invalid' => 'Bitte weisen Sie die Meldung einem aktiven Administrator dieses Mandanten zu.',
     'support_reports_update_empty' => 'Es wurden keine Änderungen an der Support-Meldung übermittelt.',
     'billing_upgrade_email_send_failed' => 'Die Upgrade-Anfrage wurde gespeichert, aber die Benachrichtigungs-E-Mail konnte nicht gesendet werden. Bitte versuchen Sie es erneut oder kontaktieren Sie den Plattform-Support.',
+    'billing_message_too_many' => 'Ihre Community hat dem Plattform-Team in der letzten Stunde bereits mehrere Nachrichten geschickt. Bitte warten Sie eine Weile, bevor Sie eine weitere senden.',
     'verification_email_send_failed' => 'Die Bestätigungs-E-Mail konnte gerade nicht gesendet werden. Bitte versuchen Sie es später erneut.',
     'invalid_amount' => 'Der Betrag liegt außerhalb des zulässigen Bereichs.',
     'marketplace_order_participant_required' => 'Sie sind kein Teilnehmer dieser Bestellung.',

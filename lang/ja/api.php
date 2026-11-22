@@ -2625,6 +2625,7 @@ return [
     'support_reports_assignment_invalid' => 'このテナントのアクティブな管理者に報告を割り当ててください。',
     'support_reports_update_empty' => 'サポート報告の変更内容がありません。',
     'billing_upgrade_email_send_failed' => 'アップグレード申請は記録されましたが、通知メールを送信できませんでした。もう一度お試しいただくか、プラットフォームサポートにお問い合わせください。',
+    'billing_message_too_many' => 'このコミュニティは、過去1時間にプラットフォームチームへ複数のメッセージを送信しています。しばらく待ってから、もう一度送信してください。',
     'verification_email_send_failed' => '現在、確認メールを送信できません。後でもう一度お試しください。',
     'invalid_amount' => '金額が許可された範囲外です。',
     'marketplace_order_participant_required' => 'この注文の参加者ではありません。',

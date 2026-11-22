@@ -2625,6 +2625,7 @@ return [
     'support_reports_assignment_invalid' => 'يرجى إسناد البلاغ إلى مسؤول نشط في هذا المستأجر.',
     'support_reports_update_empty' => 'لم يتم تقديم أي تغييرات على بلاغ الدعم.',
     'billing_upgrade_email_send_failed' => 'تم تسجيل طلب الترقية، لكن تعذر إرسال بريد الإشعار. يرجى المحاولة مرة أخرى أو التواصل مع دعم المنصة.',
+    'billing_message_too_many' => 'أرسل مجتمعك عدة رسائل إلى فريق المنصة خلال الساعة الماضية. يُرجى الانتظار قليلًا قبل إرسال رسالة أخرى.',
     'verification_email_send_failed' => 'تعذر إرسال بريد التحقق حاليًا. يرجى المحاولة لاحقًا.',
     'invalid_amount' => 'المبلغ خارج النطاق المسموح به.',
     'marketplace_order_participant_required' => 'أنت لست مشاركًا في هذا الطلب.',

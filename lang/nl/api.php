@@ -2625,6 +2625,7 @@ return [
     'support_reports_assignment_invalid' => 'Wijs de melding toe aan een actieve beheerder van deze tenant.',
     'support_reports_update_empty' => 'Er zijn geen wijzigingen aan de supportmelding doorgegeven.',
     'billing_upgrade_email_send_failed' => 'Het upgradeverzoek is vastgelegd, maar de notificatie-e-mail kon niet worden verzonden. Probeer het opnieuw of neem contact op met platformsupport.',
+    'billing_message_too_many' => 'Je gemeenschap heeft het platformteam het afgelopen uur al meerdere berichten gestuurd. Wacht even voordat je er nog een stuurt.',
     'verification_email_send_failed' => 'We konden de verificatie-e-mail nu niet verzenden. Probeer het later opnieuw.',
     'invalid_amount' => 'Het bedrag valt buiten het toegestane bereik.',
     'marketplace_order_participant_required' => 'U bent geen deelnemer aan deze bestelling.',

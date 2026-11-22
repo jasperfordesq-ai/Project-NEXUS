@@ -96,4 +96,48 @@ class AdminBillingControllerTest extends TestCase
             'action'    => 'upgrade_requested',
         ]);
     }
+
+    /**
+     * "Message the platform team" had no limit: a script, or a stuck button,
+     * could mail every member of the platform team as often as it liked.
+     * Three an hour for a community, whoever in it is sending.
+     */
+    public function test_a_community_can_message_the_platform_team_only_a_few_times_an_hour(): void
+    {
+        \Illuminate\Support\Facades\RateLimiter::clear('billing-message:' . $this->testTenantId);
+        app()->instance(\App\Services\EmailDispatchService::class, new class extends \App\Services\EmailDispatchService {
+            public function send(string $to, string $subject, string $body, array $options = []): bool
+            {
+                return true;
+            }
+        });
+        // Somebody on the platform team to receive it.
+        User::factory()->forTenant(1)->create(['is_god' => true, 'is_super_admin' => true, 'status' => 'active', 'email' => 'limit.team.' . uniqid() . '@example.com']);
+        $sent = fn (): int => \Illuminate\Support\Facades\DB::table('billing_audit_log')
+            ->where('tenant_id', $this->testTenantId)->where('action', 'upgrade_requested')->count();
+        $before = $sent();
+
+        try {
+            // Two different admins of the same community share the limit.
+            Sanctum::actingAs(User::factory()->forTenant($this->testTenantId)->admin()->create());
+            $this->apiPost('/v2/admin/billing/upgrade-request', ['message' => 'One'])->assertStatus(200);
+            $this->apiPost('/v2/admin/billing/upgrade-request', ['message' => 'Two'])->assertStatus(200);
+            Sanctum::actingAs(User::factory()->forTenant($this->testTenantId)->admin()->create());
+            $this->apiPost('/v2/admin/billing/upgrade-request', ['message' => 'Three'])->assertStatus(200);
+
+            $refused = $this->apiPost('/v2/admin/billing/upgrade-request', ['message' => 'Four']);
+            $refused->assertStatus(429);
+            $this->assertSame('TOO_MANY_MESSAGES', $refused->json('errors.0.code'));
+            $this->assertStringNotContainsString('api.', (string) $refused->json('errors.0.message'));
+            $this->assertSame($before + 3, $sent(), 'A refused message is not recorded or sent.');
+
+            // An hour on, it may write again.
+            \Carbon\Carbon::setTestNow(now()->addMinutes(61));
+            $this->apiPost('/v2/admin/billing/upgrade-request', ['message' => 'Later'])->assertStatus(200);
+            $this->assertSame($before + 4, $sent());
+        } finally {
+            \Carbon\Carbon::setTestNow();
+            \Illuminate\Support\Facades\RateLimiter::clear('billing-message:' . $this->testTenantId);
+        }
+    }
 }

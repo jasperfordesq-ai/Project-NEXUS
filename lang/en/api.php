@@ -792,6 +792,7 @@ return [
     'failed_send_test_email'               => 'Failed to send test email. Check server logs.',
     'failed_send_test_via'                 => 'Failed to send test email via :provider. Check server logs.',
     'billing_upgrade_email_send_failed'    => 'The upgrade request was recorded, but the notification email could not be sent. Please try again or contact platform support.',
+    'billing_message_too_many' => 'Your community has already sent the platform team several messages in the last hour. Please wait a while before sending another.',
 
     // ============================================
     // ADMIN — ONBOARDING

@@ -2625,6 +2625,7 @@ return [
     'support_reports_assignment_invalid' => 'Sann an tuairisc do riarthóir gníomhach sa tionónta seo.',
     'support_reports_update_empty' => 'Níor soláthraíodh aon athruithe ar an tuairisc tacaíochta.',
     'billing_upgrade_email_send_failed' => 'Taifeadadh an t-iarratas uasghrádaithe, ach níorbh fhéidir an ríomhphost fógra a sheoladh. Bain triail eile as nó déan teagmháil le tacaíocht an ardáin.',
+    'billing_message_too_many' => 'Tá roinnt teachtaireachtaí seolta ag do phobal chuig foireann an ardáin le huair an chloig anuas. Fan tamall sula seolann tú ceann eile.',
     'verification_email_send_failed' => 'Níorbh fhéidir linn an ríomhphost fíoraithe a sheoladh faoi láthair. Bain triail eile as ar ball.',
     'invalid_amount' => 'Tá an méid lasmuigh den raon ceadaithe.',
     'marketplace_order_participant_required' => 'Ní rannpháirtí thú san ordú seo.',

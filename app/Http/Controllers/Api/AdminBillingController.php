@@ -17,6 +17,7 @@ use App\Support\Billing\PlanTerms;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 
 /**
  * AdminBillingController — Tenant billing: subscription status,
@@ -25,6 +26,9 @@ use Illuminate\Support\Facades\Log;
 class AdminBillingController extends BaseApiController
 {
     protected bool $isV2Api = true;
+
+    /** How many messages one community may send the platform team in an hour. */
+    private const MESSAGES_PER_HOUR = 3;
 
     /**
      * GET /v2/admin/billing/subscription
@@ -561,6 +565,15 @@ class AdminBillingController extends BaseApiController
         $this->requireAdmin();
         $tenantId = TenantContext::getId();
         $user     = $this->resolveUser();
+
+        // A few an hour for a community, whoever in it is writing: each one
+        // mails every member of the platform team. Keyed on the community the
+        // request is for, never on anything the caller sends.
+        $limitKey = 'billing-message:' . $tenantId;
+        if (RateLimiter::tooManyAttempts($limitKey, self::MESSAGES_PER_HOUR)) {
+            return $this->respondWithError('TOO_MANY_MESSAGES', __('api.billing_message_too_many'), null, 429);
+        }
+        RateLimiter::hit($limitKey, 3600);
 
         // A note to people, kept to a size a person would write.
         $message  = mb_substr(trim((string) $this->input('message', '')), 0, 2000);

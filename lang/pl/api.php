@@ -2625,6 +2625,7 @@ return [
     'support_reports_assignment_invalid' => 'Przypisz zgłoszenie do aktywnego administratora tego tenanta.',
     'support_reports_update_empty' => 'Nie przekazano żadnych zmian w zgłoszeniu do wsparcia.',
     'billing_upgrade_email_send_failed' => 'Żądanie podwyższenia planu zostało zapisane, ale nie udało się wysłać e-maila z powiadomieniem. Spróbuj ponownie lub skontaktuj się ze wsparciem platformy.',
+    'billing_message_too_many' => 'Twoja społeczność wysłała już w ciągu ostatniej godziny kilka wiadomości do zespołu platformy. Odczekaj chwilę przed wysłaniem kolejnej.',
     'verification_email_send_failed' => 'Nie udało się teraz wysłać e-maila weryfikacyjnego. Spróbuj ponownie później.',
     'invalid_amount' => 'Kwota jest poza dozwolonym zakresem.',
     'marketplace_order_participant_required' => 'Nie jesteś uczestnikiem tego zamówienia.',
