@@ -250,6 +250,59 @@ final class BillingAutomationHardeningTest extends TestCase
         $this->assertStringNotContainsString('Payment is made to the platform team', $bodyTo($cardAdmin));
     }
 
+    /**
+     * The check may run twice in a day: a person runs the command after the
+     * scheduler has, or two scheduler containers fire in the same minute (the
+     * scheduler's own lock, kept in the shared cache, normally stops the
+     * second). Either way the second run must find nothing left to do: every
+     * notice and every pause is on record before the next run looks.
+     */
+    public function test_running_the_check_twice_in_one_day_sends_nothing_twice_and_pauses_nothing_twice(): void
+    {
+        // One community going through the payment stages...
+        $late = $this->makeCommunity('Hardening late ' . bin2hex(random_bytes(3)), 1, '/1/');
+        $lateAdmin = $this->person($late, ['role' => 'admin']);
+        $this->standing($late, ['paid_until' => $this->today->toDateString()]);
+        // ...and one over its member number.
+        $this->planRecord();
+        $this->addMembers(4);
+
+        $mail = fn (string $email): int => count($this->mailTo($email));
+        // Runs the check three times on one day. The first run may act; the
+        // second and third must do nothing and send nothing. Returns what
+        // the first run did and how many emails it sent the admin.
+        $twice = function (CarbonImmutable $day) use ($late, $lateAdmin, $mail): array {
+            $before = $mail($lateAdmin);
+            $first = $this->actionsFor(BillingAutomationService::run($day), $late);
+            $afterFirst = $mail($lateAdmin);
+            $second = $this->actionsFor(BillingAutomationService::run($day), $late);
+            $third = $this->actionsFor(BillingAutomationService::run($day), $late);
+            $this->assertSame([], $second, 'the second run of the day does nothing for it');
+            $this->assertSame([], $third);
+            $this->assertSame($afterFirst, $mail($lateAdmin), 'and sends nothing more');
+
+            return [$first, $afterFirst - $before];
+        };
+
+        // Day 0, by the command, as the scheduler and a person would run it.
+        $this->artisan('billing:apply-standing')->assertExitCode(0);
+        $overMailAfterOne = $mail($this->admin);
+        $lateMailAfterOne = $mail($lateAdmin);
+        $this->assertGreaterThan(0, $overMailAfterOne, 'the over-limit notice went out');
+        $this->artisan('billing:apply-standing')->assertExitCode(0);
+        $this->artisan('billing:apply-standing')->assertExitCode(0);
+        $this->assertSame($overMailAfterOne, $mail($this->admin), 'run again twice: not one more email');
+        $this->assertSame($lateMailAfterOne, $mail($lateAdmin));
+
+        // The payment stages, each run three times on its day.
+        $this->assertSame([['payment:due'], 1], $twice($this->day(1)));
+        $this->assertSame([['payment:final_warning'], 1], $twice($this->day(7)));
+        $this->assertSame([['payment:suspend'], 1], $twice($this->day(14)), 'told once that it is paused');
+        BillingLock::flush();
+        $this->assertTrue(BillingLock::isLocked($late));
+        $this->assertSame(1, DB::table('billing_audit_log')->where('tenant_id', $late)->where('action', 'standing_suspended')->count(), 'paused once');
+    }
+
     public function test_a_first_notice_the_provider_refused_is_tried_again_the_next_day(): void
     {
         $this->standing($this->community, ['paid_until' => $this->today->toDateString()]);
