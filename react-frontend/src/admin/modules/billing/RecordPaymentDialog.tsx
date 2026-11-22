@@ -10,9 +10,15 @@
  * the form, the community's payment history: every payment recorded by hand
  * and every card payment Stripe reported.
  *
+ * A parent community's manager uses the same dialog from Branch payments
+ * (`via="branch"`) for a community that pays it.
+ *
  * 🔴 The body and the history rows are the SERVER's shape
  * (POST /v2/admin/super/billing/standing/record-payment and
- * BillingStandingService::payments()). There is no mapping layer on purpose.
+ * BillingStandingService::payments(); for a manager,
+ * POST /v2/admin/super/branch-payments/{id}/record-payment and
+ * BillingStandingService::paymentsPaidTo()). There is no mapping layer on
+ * purpose.
  */
 
 import { useCallback, useEffect, useState } from 'react';
@@ -54,6 +60,11 @@ interface ManualPayment {
   created_at: string | null;
   /** `card` = Stripe reported it; `manual` = a person recorded it. */
   source: 'card' | 'manual';
+  /** Who was paid: null = the platform, otherwise the parent community. */
+  payee_tenant_id: number | null;
+  payee_name: string | null;
+  /** True when a platform team member recorded it. A hub's manager is then given no name. */
+  recorded_by_platform_team: boolean;
 }
 
 export interface RecordPaymentCommunity {
@@ -68,6 +79,28 @@ interface RecordPaymentDialogProps {
   onClose: () => void;
   /** Called after the server accepted the payment; the caller closes and reloads. */
   onRecorded: () => void;
+  /**
+   * Whose endpoints are used. `platform` (the default): the platform team's,
+   * for any community. `branch`: a parent community's manager's, for a
+   * community that pays it (Branch payments); the server stores the payment
+   * as paid to that parent and lists only the payments made to it.
+   */
+  via?: 'platform' | 'branch';
+  /** With `via="branch"`: the community the payment is made to. */
+  payeeName?: string | null;
+}
+
+/** The two endpoints for one community, by who is asking. */
+function endpointsFor(via: 'platform' | 'branch', tenantId: number): { history: string; record: string } {
+  return via === 'branch'
+    ? {
+        history: `/v2/admin/super/branch-payments/${tenantId}/payments`,
+        record: `/v2/admin/super/branch-payments/${tenantId}/record-payment`,
+      }
+    : {
+        history: `/v2/admin/super/billing/standing/payments?tenant_id=${tenantId}`,
+        record: '/v2/admin/super/billing/standing/record-payment',
+      };
 }
 
 /** Today in the browser's own calendar, as the date field writes it. */
@@ -88,7 +121,7 @@ function formatAmount(amount: string, currency: string | null): string {
   }
 }
 
-export function RecordPaymentDialog({ community, onClose, onRecorded }: RecordPaymentDialogProps) {
+export function RecordPaymentDialog({ community, onClose, onRecorded, via = 'platform', payeeName = null }: RecordPaymentDialogProps) {
   const { t } = useTranslation('admin_billing');
   const toast = useToast();
 
@@ -109,13 +142,13 @@ export function RecordPaymentDialog({ community, onClose, onRecorded }: RecordPa
   const loadHistory = useCallback(async (tenantId: number) => {
     setHistory(null);
     setHistoryFailed(false);
-    const response = await api.get<ManualPayment[]>(`/v2/admin/super/billing/standing/payments?tenant_id=${tenantId}`);
+    const response = await api.get<ManualPayment[]>(endpointsFor(via, tenantId).history);
     if (response.success && Array.isArray(response.data)) {
       setHistory(response.data);
     } else {
       setHistoryFailed(true);
     }
-  }, []);
+  }, [via]);
 
   // A fresh form each time the dialog opens on a community.
   useEffect(() => {
@@ -145,8 +178,10 @@ export function RecordPaymentDialog({ community, onClose, onRecorded }: RecordPa
     if (!community || !canSave) return;
     setSaving(true);
     const trimmedReference = reference.trim();
-    const response = await api.post('/v2/admin/super/billing/standing/record-payment', {
-      tenant_id: community.id,
+    const response = await api.post(endpointsFor(via, community.id).record, {
+      // The platform team's endpoint is told which community; a manager's
+      // has it in its address.
+      ...(via === 'branch' ? {} : { tenant_id: community.id }),
       paid_until: paidUntil.trim(),
       received_on: receivedOn.trim(),
       method,
@@ -163,7 +198,7 @@ export function RecordPaymentDialog({ community, onClose, onRecorded }: RecordPa
     }
 
     // The server names the rule that was broken, in the reader's language.
-    // admin-i18n-ignore: localized server message — AdminSuperController::recordCommunityPayment refusals (lang/*/api.php)
+    // admin-i18n-ignore: localized server message — AdminSuperController::recordCommunityPayment and branchPaymentsRecordPayment refusals (lang/*/api.php)
     toast.error(response.error || t('billing.standing_failed'));
   };
 
@@ -180,7 +215,11 @@ export function RecordPaymentDialog({ community, onClose, onRecorded }: RecordPa
         </ModalHeader>
         <ModalBody>
           <div className="flex flex-col gap-4">
-            <p className="text-sm text-muted">{t('control.record_payment_help')}</p>
+            <p className="text-sm text-muted">
+              {via === 'branch' && payeeName
+                ? t('control.record_payment_help_branch', { payee: payeeName })
+                : t('control.record_payment_help')}
+            </p>
 
             <Input
               label={t('control.received_on_label')}
@@ -281,6 +320,10 @@ export function RecordPaymentDialog({ community, onClose, onRecorded }: RecordPa
                       <span>
                         <span className="block text-xs text-muted">{t('control.history_col_reference')}</span>
                         <span className="break-all">{payment.reference ?? '—'}</span>
+                        {/* Only the platform team sees payments made to different payees. */}
+                        {via === 'platform' && payment.payee_name ? (
+                          <span className="block text-xs text-muted">{t('control.history_paid_to', { name: payment.payee_name })}</span>
+                        ) : null}
                       </span>
                       <span>
                         <span className="block text-xs text-muted">{t('control.history_col_amount')}</span>
@@ -295,7 +338,8 @@ export function RecordPaymentDialog({ community, onClose, onRecorded }: RecordPa
                         <span>
                           {payment.source === 'card'
                             ? t('control.history_by_stripe')
-                            : payment.recorded_by_name ?? '—'}
+                            : payment.recorded_by_name
+                              ?? (payment.recorded_by_platform_team ? t('control.history_by_platform_team') : '—')}
                         </span>
                       </span>
                     </li>

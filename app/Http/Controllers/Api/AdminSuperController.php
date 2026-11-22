@@ -3234,7 +3234,7 @@ class AdminSuperController extends BaseApiController
                 'reference' => $input['reference'] ?? null,
                 'amount' => $input['amount'] ?? null,
                 'currency' => $input['currency'] ?? null,
-            ], $userId);
+            ], $userId, $this->payeeOnRecord($tenantId));
         } catch (\DomainException $e) {
             return $this->standingRefusal($e);
         }
@@ -3433,6 +3433,70 @@ class AdminSuperController extends BaseApiController
         $this->tellAdminsIfStandingChanged($id, $wasClosed);
 
         return $this->respondWithData(['standing' => BillingStandingService::get($id)]);
+    }
+
+    /**
+     * POST /api/v2/admin/super/branch-payments/{id}/record-payment
+     *
+     * A parent community's manager records a payment a community below made
+     * to its parent: the date received, how it was paid, a reference, the
+     * amount and currency, and the date it is now paid up to. Refused for a
+     * community that pays the platform and for an exempt one, like every
+     * other write here. The payment is stored as paid to the community's
+     * direct parent (BranchPayments::payeeFor()).
+     */
+    public function branchPaymentsRecordPayment(int $id): JsonResponse
+    {
+        $userId = $this->requireSuperAdmin();
+        if ($refused = $this->branchPaymentsRefusal($id)) {
+            return $refused;
+        }
+        $payee = BranchPayments::payeeFor($id);
+        if ($payee === null) {
+            return $this->respondWithError(ApiErrorCodes::SUPER_PANEL_ACCESS_DENIED, __('api.super_no_access_tenant'), null, 403);
+        }
+
+        $input = $this->getAllInput();
+        $wasClosed = $this->communityIsClosed($id);
+        try {
+            $paymentId = BillingStandingService::recordPayment($id, [
+                'paid_until' => $input['paid_until'] ?? null,
+                'received_on' => $input['received_on'] ?? null,
+                'method' => $input['method'] ?? null,
+                'reference' => $input['reference'] ?? null,
+                'amount' => $input['amount'] ?? null,
+                'currency' => $input['currency'] ?? null,
+            ], $userId, $payee);
+        } catch (\DomainException $e) {
+            return $this->standingRefusal($e);
+        }
+
+        $this->tellAdminsIfStandingChanged($id, $wasClosed);
+
+        return $this->respondWithData([
+            'standing' => BillingStandingService::get($id),
+            'payment_id' => $paymentId,
+        ]);
+    }
+
+    /**
+     * GET /api/v2/admin/super/branch-payments/{id}/payments
+     *
+     * The payments this community made to its direct parent, newest first.
+     * Never a payment it made to the platform, or to a parent it had before.
+     */
+    public function branchPaymentsHistory(int $id): JsonResponse
+    {
+        $this->requireSuperAdmin();
+        if ($refused = $this->branchPaymentsRefusal($id)) {
+            return $refused;
+        }
+        $payee = BranchPayments::payeeFor($id);
+        if ($payee === null) {
+            return $this->respondWithError(ApiErrorCodes::SUPER_PANEL_ACCESS_DENIED, __('api.super_no_access_tenant'), null, 403);
+        }
+
+        return $this->respondWithData(BillingStandingService::paymentsPaidTo($id, $payee));
     }
 
     /** POST /api/v2/admin/super/branch-payments/{id}/suspend */
@@ -3976,6 +4040,27 @@ class AdminSuperController extends BaseApiController
     private function standingNote(mixed $value): ?string
     {
         return is_string($value) ? $value : null;
+    }
+
+    /**
+     * Who a payment the platform team records for this community is paid to:
+     * its direct parent when it pays its parent, otherwise the platform
+     * (null). A community that does not exist has nobody; the service then
+     * refuses the payment itself.
+     */
+    private function payeeOnRecord(int $tenantId): ?int
+    {
+        try {
+            if (BillingStandingService::get($tenantId)['payer'] !== 'parent') {
+                return null;
+            }
+        } catch (\DomainException) {
+            return null;
+        }
+
+        $parentId = (int) DB::table('tenants')->where('id', $tenantId)->value('parent_id');
+
+        return $parentId > 1 ? $parentId : null;
     }
 
     /**

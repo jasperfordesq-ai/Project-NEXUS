@@ -75,6 +75,39 @@ final class BranchPayments
     }
 
     /**
+     * The community a payment from this one is made to: its direct parent.
+     * Null when the caller may not record or read such a payment.
+     *
+     * Reach is checked at BOTH ends. The paying community must be one the
+     * caller may act on (refusalFor()), and the community being paid must be
+     * the caller's own or one below it. On a sound tree the second always
+     * follows from the first; it is checked anyway, because a community whose
+     * `path` and `parent_id` disagree would otherwise let a manager write
+     * into, and read from, another hub's payment record.
+     */
+    public static function payeeFor(int $tenantId): ?int
+    {
+        if (self::refusalFor($tenantId) !== null) {
+            return null;
+        }
+
+        $parentId = (int) DB::table('tenants')->where('id', $tenantId)->value('parent_id');
+        if ($parentId <= 1) {
+            return null;
+        }
+
+        $access = SuperPanelAccess::getAccess();
+        $own = (int) ($access['tenant_id'] ?? 0);
+        $platformWide = ($access['level'] ?? null) === 'master';
+
+        if (!$platformWide && $parentId !== $own && !SuperPanelAccess::canManageTenant($parentId)) {
+            return null;
+        }
+
+        return $parentId;
+    }
+
+    /**
      * Null when the caller may change this community's plan, else why not.
      *
      * Everything refusalFor() refuses, plus a community with a live card

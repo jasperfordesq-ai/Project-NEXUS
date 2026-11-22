@@ -71,6 +71,9 @@ const makePayment = (overrides: Record<string, unknown> = {}) => ({
   recorded_by_name: 'Pat Murphy',
   created_at: '2026-11-02 10:15:00',
   source: 'manual',
+  payee_tenant_id: null,
+  payee_name: null,
+  recorded_by_platform_team: true,
   ...overrides,
 });
 
@@ -270,6 +273,17 @@ describe('RecordPaymentDialog', () => {
 
     await waitFor(() => expect(screen.getByText('in_1QxCardInvoice')).toBeInTheDocument());
     expect(screen.getByText('Stripe (card payment)')).toBeInTheDocument();
+  });
+
+  it('says who a payment was made to when it was not the platform', async () => {
+    servePayments([
+      makePayment({ id: 4, reference: 'HUB-INV-7', payee_tenant_id: 3, payee_name: 'Munster Hub' }),
+      makePayment({ id: 5, reference: 'PLATFORM-INV-2' }),
+    ]);
+    await renderDialog();
+
+    await waitFor(() => expect(screen.getByText('HUB-INV-7')).toBeInTheDocument());
+    expect(screen.getAllByText('Paid to Munster Hub')).toHaveLength(1);
   });
 
   it('says so when there is no payment yet', async () => {

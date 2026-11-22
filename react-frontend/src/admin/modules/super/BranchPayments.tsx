@@ -10,8 +10,10 @@
  * below it: who each pays, the date it is paid up to, how late it is, and
  * whether it is paused, the plan it is on and how many active members it has
  * against that plan's limit, and what happens if it goes over that limit. The
- * manager records a paid-until date, pauses a community, restores it, changes
- * its plan and sets its own over-limit rule.
+ * manager records a payment (amount, reference, method and the new paid-until
+ * date) and reads the payments made to its community, sets a paid-until date
+ * on its own, pauses a community, restores it, changes its plan and sets its
+ * own over-limit rule.
  *
  * 🔴 The screen decides nothing about who may act. Every row arrives with
  * `can_act` and, when false, `cannot_act_reason`, worked out by the same rule
@@ -35,6 +37,7 @@ import { api } from '@/lib/api';
 import { formatCurrency, formatDate, formatNumber } from '@/lib/helpers';
 import { PageHeader } from '../../components/PageHeader';
 import { OverLimitRuleDialog, OverLimitSummary, type OverLimitChoice, type OverLimitState } from '../billing/OverLimitRuleDialog';
+import { RecordPaymentDialog } from '../billing/RecordPaymentDialog';
 
 /**
  * As the Branch payments list sends it: without the note against a pause and
@@ -174,6 +177,7 @@ export function BranchPayments() {
   const [planChoice, setPlanChoice] = useState('');
   const [savingPlan, setSavingPlan] = useState(false);
   const [ruleRow, setRuleRow] = useState<BranchRow | null>(null);
+  const [paymentRow, setPaymentRow] = useState<BranchRow | null>(null);
   // The community the plan dialog is open on now: a late reply for another is dropped.
   const planFor = useRef<number | null>(null);
 
@@ -408,12 +412,16 @@ export function BranchPayments() {
 
                     <TableCell>
                       {row.can_act ? (
-                        // One action in view and the rest in a menu, as the
-                        // admin lists do: five buttons in a cell were cut off
-                        // at the table's edge.
+                        // Two actions in view (a payment, and the date on its
+                        // own) and the rest in a menu, as the admin lists do:
+                        // five buttons in a cell were cut off at the table's
+                        // edge.
                         <div className="flex min-w-52 flex-col items-start gap-1">
-                          <div className="flex items-center gap-1">
-                            <Button size="sm" variant="secondary" isDisabled={busy} onPress={() => openDialog(row, 'date')} className="whitespace-nowrap">
+                          <div className="flex flex-wrap items-center gap-1">
+                            <Button size="sm" variant="secondary" isDisabled={busy} onPress={() => setPaymentRow(row)} className="whitespace-nowrap">
+                              {t('admin_billing:control.record_payment')}
+                            </Button>
+                            <Button size="sm" variant="tertiary" isDisabled={busy} onPress={() => openDialog(row, 'date')} className="whitespace-nowrap">
                               {t('branch_payments.set_date')}
                             </Button>
                             <Dropdown>
@@ -520,6 +528,17 @@ export function BranchPayments() {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      <RecordPaymentDialog
+        via="branch"
+        community={paymentRow ? { id: paymentRow.id, name: paymentRow.name, paidUntil: paymentRow.standing.paid_until } : null}
+        payeeName={paymentRow?.parent_name ?? null}
+        onClose={() => setPaymentRow(null)}
+        onRecorded={() => {
+          setPaymentRow(null);
+          void load();
+        }}
+      />
 
       <OverLimitRuleDialog
         target={ruleRow ? { id: ruleRow.id, name: ruleRow.name, state: ruleRow.over_limit, upgradeAllowed: ruleRow.upgrade_allowed } : null}

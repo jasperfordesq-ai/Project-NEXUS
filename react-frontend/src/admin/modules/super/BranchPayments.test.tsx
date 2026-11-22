@@ -280,6 +280,77 @@ describe('BranchPayments', () => {
     await waitFor(() => expect(mockToast.success).toHaveBeenCalled());
   });
 
+  // ── A payment, with its amount and reference ────────────────────────────
+
+  // BillingStandingService::paymentsPaidTo(), the server's shape.
+  const makePayment = (overrides: Record<string, unknown> = {}) => ({
+    id: 3,
+    received_on: '2026-11-02',
+    method: 'bank_transfer',
+    reference: 'HUB-INV-7',
+    amount: '120.00',
+    currency: 'EUR',
+    paid_until_before: null,
+    paid_until_after: '2027-06-30',
+    recorded_by_user_id: 9,
+    recorded_by_name: 'Hana Manager',
+    created_at: '2026-11-02 10:15:00',
+    source: 'manual',
+    payee_tenant_id: 3,
+    payee_name: 'Munster Hub',
+    recorded_by_platform_team: false,
+    ...overrides,
+  });
+
+  const renderWithHistory = async (rows: unknown[], history: unknown[]) => {
+    mockApi.get.mockImplementation((url: string) => {
+      if (url === '/v2/admin/super/branch-payments') return Promise.resolve({ success: true, data: rows });
+      if (url === '/v2/admin/super/branch-payments/7/payments') return Promise.resolve({ success: true, data: history });
+      return Promise.resolve({ success: false, error: 'unexpected' });
+    });
+    const { BranchPayments } = await import('./BranchPayments');
+    render(<BranchPayments />);
+    await waitFor(() => expect(mockApi.get).toHaveBeenCalledWith('/v2/admin/super/branch-payments'));
+    await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
+  };
+
+  it('records a payment through the manager\'s own endpoint, with no community id in the body', async () => {
+    const user = userEvent.setup();
+    await renderWithHistory([makeRow({ parent_name: 'Munster Hub' })], []);
+
+    await user.click(button('Record a payment')!);
+    await waitFor(() => expect(mockApi.get).toHaveBeenCalledWith('/v2/admin/super/branch-payments/7/payments'));
+    expect(screen.getByText((text) => text.startsWith('For a payment this community made to Munster Hub.'))).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText('Reference (optional)'), { target: { value: 'HUB-INV-7' } });
+    fireEvent.change(screen.getByLabelText('Now paid up to and including'), { target: { value: '2027-06-30' } });
+    await user.click(screen.getByRole('button', { name: 'Record payment' }));
+
+    await waitFor(() => expect(mockApi.post).toHaveBeenCalledTimes(1));
+    const [url, body] = mockApi.post.mock.calls[0] as [string, Record<string, unknown>];
+    expect(url).toBe('/v2/admin/super/branch-payments/7/record-payment');
+    expect(body).not.toHaveProperty('tenant_id');
+    expect(body).toMatchObject({ paid_until: '2027-06-30', method: 'bank_transfer', reference: 'HUB-INV-7', amount: null, currency: null });
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('Payment recorded'));
+  });
+
+  it('lists the payments made to the manager\'s community, and does not name a platform team member', async () => {
+    const user = userEvent.setup();
+    await renderWithHistory([makeRow({ parent_name: 'Munster Hub' })], [
+      makePayment(),
+      makePayment({ id: 2, reference: 'BY-PLATFORM', recorded_by_user_id: null, recorded_by_name: null, recorded_by_platform_team: true }),
+    ]);
+
+    await user.click(button('Record a payment')!);
+
+    await waitFor(() => expect(screen.getByText('HUB-INV-7')).toBeInTheDocument());
+    expect(screen.getByText('Hana Manager')).toBeInTheDocument();
+    expect(screen.getByText('BY-PLATFORM')).toBeInTheDocument();
+    expect(screen.getByText('Platform team')).toBeInTheDocument();
+    // A manager's list holds only payments made to its community: no "Paid to" line.
+    expect(screen.queryByText((text) => text.startsWith('Paid to'))).not.toBeInTheDocument();
+  });
+
   it('opens on the date already recorded and sends null when it is emptied', async () => {
     const user = userEvent.setup();
     await renderWith([makeRow({ standing: makeStanding({ paid_until: '2026-12-31' }) })]);
@@ -620,9 +691,10 @@ describe('BranchPayments', () => {
     expect(screen.queryByText((text) => text.includes('automatic checks are switched off'))).not.toBeInTheDocument();
   });
 
-  it('keeps one action in view and gathers the rest in a menu', async () => {
+  it('keeps two actions in view and gathers the rest in a menu', async () => {
     await renderWith([makeRow({ standing: makeStanding({ suspended_at: '2026-11-01 08:00:00' }) })]);
 
+    expect(screen.getByRole('button', { name: 'Record a payment' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Set paid-until date' })).toBeInTheDocument();
     const items = screen.getAllByRole('menuitem').map((b) => b.textContent?.trim());
     expect(items).toEqual(['Change plan', 'Over-limit rule', 'Restore community']);

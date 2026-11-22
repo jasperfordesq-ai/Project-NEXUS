@@ -3323,6 +3323,8 @@ Route::post('/v2/admin/super/tenants/{id}/reactivate', [\App\Http\Controllers\Ap
 // platform; never an exempt one). Pinned by BranchPaymentsEndpointsTest.
 Route::get('/v2/admin/super/branch-payments', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPayments']);
 Route::post('/v2/admin/super/branch-payments/{id}/paid-until', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsSetPaidUntil'])->whereNumber('id');
+Route::post('/v2/admin/super/branch-payments/{id}/record-payment', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsRecordPayment'])->whereNumber('id');
+Route::get('/v2/admin/super/branch-payments/{id}/payments', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsHistory'])->whereNumber('id');
 Route::post('/v2/admin/super/branch-payments/{id}/suspend', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsSuspend'])->whereNumber('id');
 Route::post('/v2/admin/super/branch-payments/{id}/restore', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsRestore'])->whereNumber('id');
 Route::get('/v2/admin/super/branch-payments/{id}/plans', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsPlans'])->whereNumber('id');

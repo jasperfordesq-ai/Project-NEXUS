@@ -363,10 +363,16 @@ final class BillingStandingService
      * and once. A payment may be recorded for an exempt community and for a
      * card payer: money that arrived is recorded whoever it came from.
      *
+     * `$payeeTenantId` is who was paid: null = the platform, otherwise the
+     * parent community the payment was made to. The caller decides it (the
+     * platform team's endpoint from who the community pays; a hub manager's
+     * from BranchPayments::payeeFor()); it is stored so a hub's manager sees
+     * the payments made to that hub and no others.
+     *
      * @param array<string, mixed> $payment paid_until, received_on, method,
      *                                      reference?, amount?, currency?
      */
-    public static function recordPayment(int $tenantId, array $payment, int $actedBy): int
+    public static function recordPayment(int $tenantId, array $payment, int $actedBy, ?int $payeeTenantId = null): int
     {
         self::requireBillable($tenantId);
 
@@ -407,7 +413,11 @@ final class BillingStandingService
             }
         }
 
-        return (int) DB::transaction(function () use ($tenantId, $paidUntil, $receivedOn, $method, $reference, $amount, $currency, $actedBy): int {
+        if ($payeeTenantId !== null && $payeeTenantId <= 1) {
+            $payeeTenantId = null;
+        }
+
+        return (int) DB::transaction(function () use ($tenantId, $paidUntil, $receivedOn, $method, $reference, $amount, $currency, $actedBy, $payeeTenantId): int {
             $row = self::row($tenantId);
             $before = isset($row->paid_until) ? substr((string) $row->paid_until, 0, 10) : null;
 
@@ -430,6 +440,7 @@ final class BillingStandingService
                 'paid_until_after' => $paidUntil,
                 'recorded_by_user_id' => $actedBy,
                 'created_at' => now(),
+                'payee_tenant_id' => $payeeTenantId,
             ]);
 
             // The audit note points at the payment record rather than
@@ -539,41 +550,75 @@ final class BillingStandingService
 
     /**
      * A community's payments, newest first: those recorded by hand and the
-     * card payments Stripe reported.
+     * card payments Stripe reported. Every payment, whoever was paid: this is
+     * the platform team's view.
      *
      * `source` is `card` for a payment Stripe reported and `manual` for one a
      * person recorded (whatever method they chose, a card taken by phone
-     * included).
+     * included). `payee_tenant_id` / `payee_name` are null for a payment made
+     * to the platform.
      *
-     * @return list<array{
-     *   id:int, received_on:string, method:string, reference:?string,
-     *   amount:?string, currency:?string, paid_until_before:?string,
-     *   paid_until_after:string, recorded_by_user_id:?int,
-     *   recorded_by_name:?string, created_at:?string, source:string
-     * }>
+     * @return list<array<string, mixed>>
      */
     public static function payments(int $tenantId, int $limit = 50): array
     {
         self::requireTenant($tenantId);
+
+        return self::paymentList($tenantId, $limit, null, false);
+    }
+
+    /**
+     * The payments a community made to one parent community, newest first:
+     * what that parent's manager may see. A payment made to the platform, or
+     * to another parent it had before, is not in the list.
+     *
+     * A recorder who is on the platform team is not named:
+     * `recorded_by_platform_team` is true and the name is null.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public static function paymentsPaidTo(int $tenantId, int $payeeTenantId, int $limit = 50): array
+    {
+        self::requireTenant($tenantId);
+
+        return self::paymentList($tenantId, $limit, $payeeTenantId, true);
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private static function paymentList(int $tenantId, int $limit, ?int $onlyPaidTo, bool $forPayee): array
+    {
         $limit = max(1, min(200, $limit));
 
         // The recorder is joined by id alone, not by tenant: a platform team
         // member belongs to another community than the one they record for.
-        $rows = DB::table('billing_payments as bp')
+        $query = DB::table('billing_payments as bp')
             ->leftJoin('users as u', 'u.id', '=', 'bp.recorded_by_user_id')
-            ->where('bp.tenant_id', $tenantId)
+            ->leftJoin('tenants as payee', 'payee.id', '=', 'bp.payee_tenant_id')
+            ->where('bp.tenant_id', $tenantId);
+        if ($onlyPaidTo !== null) {
+            $query->where('bp.payee_tenant_id', $onlyPaidTo);
+        }
+
+        $rows = $query
             ->orderByDesc('bp.received_on')
             ->orderByDesc('bp.id')
             ->limit($limit)
             ->get([
                 'bp.id', 'bp.received_on', 'bp.method', 'bp.reference', 'bp.amount', 'bp.currency',
                 'bp.paid_until_before', 'bp.paid_until_after', 'bp.recorded_by_user_id', 'bp.created_at',
-                'bp.stripe_invoice_id',
+                'bp.stripe_invoice_id', 'bp.payee_tenant_id',
+                'payee.name as payee_name',
+                'u.is_god as recorder_is_god', 'u.is_super_admin as recorder_is_super_admin',
                 DB::raw("COALESCE(NULLIF(TRIM(CONCAT_WS(' ', u.first_name, u.last_name)), ''), u.name) AS recorded_by_name"),
             ]);
 
         $list = [];
         foreach ($rows as $row) {
+            $byPlatformTeam = !empty($row->recorder_is_god) && !empty($row->recorder_is_super_admin);
+            $hideRecorder = $forPayee && $byPlatformTeam;
+
             $list[] = [
                 'id' => (int) $row->id,
                 'received_on' => substr((string) $row->received_on, 0, 10),
@@ -583,10 +628,13 @@ final class BillingStandingService
                 'currency' => $row->currency !== null ? (string) $row->currency : null,
                 'paid_until_before' => $row->paid_until_before !== null ? substr((string) $row->paid_until_before, 0, 10) : null,
                 'paid_until_after' => substr((string) $row->paid_until_after, 0, 10),
-                'recorded_by_user_id' => $row->recorded_by_user_id !== null ? (int) $row->recorded_by_user_id : null,
-                'recorded_by_name' => $row->recorded_by_name !== null ? (string) $row->recorded_by_name : null,
+                'recorded_by_user_id' => $row->recorded_by_user_id !== null && !$hideRecorder ? (int) $row->recorded_by_user_id : null,
+                'recorded_by_name' => $row->recorded_by_name !== null && !$hideRecorder ? (string) $row->recorded_by_name : null,
                 'created_at' => $row->created_at !== null ? (string) $row->created_at : null,
                 'source' => $row->stripe_invoice_id !== null ? 'card' : 'manual',
+                'payee_tenant_id' => $row->payee_tenant_id !== null ? (int) $row->payee_tenant_id : null,
+                'payee_name' => $row->payee_tenant_id !== null && $row->payee_name !== null ? (string) $row->payee_name : null,
+                'recorded_by_platform_team' => $byPlatformTeam,
             ];
         }
 

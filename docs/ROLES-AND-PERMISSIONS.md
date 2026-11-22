@@ -910,6 +910,20 @@ The super admin panel stays open for a community that is itself paused, so a
 paused parent's manager can still manage the communities below it; the broker
 panel does not.
 
+**Recording a payment and reading the history (22 November 2026).** Under the
+same rule, a hub's manager records a payment a community below made to its
+parent, with its amount, currency, method and reference
+(`POST /v2/admin/super/branch-payments/{id}/record-payment`), and reads that
+community's payments (`GET /v2/admin/super/branch-payments/{id}/payments`).
+Each payment is stored with who was paid (`billing_payments.payee_tenant_id`:
+null = the platform, otherwise the community's direct parent). A manager is
+shown only the payments made to that parent, never one made to the platform or
+to a parent the community had before, and a platform team member who recorded
+one is not named to it. Reach is checked at both ends
+(`BranchPayments::payeeFor()`): the paying community must be one the caller may
+act on, and the community being paid must be the caller's own or one below it.
+Pinned in `tests/Laravel/Feature/Billing/BranchPaymentsRecordPaymentTest.php`.
+
 **Putting a child on a plan (21 November 2026).** On the same page, and under
 exactly the same rule (`BranchPayments::refusalFor()`: below the caller, pays
 its parent, not exempt), a hub's manager can put a community on a plan:

@@ -325,7 +325,7 @@ final class BillingPaymentsServiceTest extends TestCase
 
         $this->assertSame([$third, $second, $first], array_column($list, 'id'));
         $this->assertSame(
-            ['id', 'received_on', 'method', 'reference', 'amount', 'currency', 'paid_until_before', 'paid_until_after', 'recorded_by_user_id', 'recorded_by_name', 'created_at', 'source'],
+            ['id', 'received_on', 'method', 'reference', 'amount', 'currency', 'paid_until_before', 'paid_until_after', 'recorded_by_user_id', 'recorded_by_name', 'created_at', 'source', 'payee_tenant_id', 'payee_name', 'recorded_by_platform_team'],
             array_keys($list[0])
         );
         $this->assertSame('cheque', $list[0]['method']);

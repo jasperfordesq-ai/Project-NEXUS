@@ -2,11 +2,11 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2913,
-  "api_route_rows": 2878,
-  "distinct_api_paths": 2405,
+  "total_registered_routes": 2915,
+  "api_route_rows": 2880,
+  "distinct_api_paths": 2407,
   "route_source_fingerprint": {
-    "digest": "6f543a544c6d6d314cfad2074cc3f143de720c69286ed0761dec339b30c541b2",
+    "digest": "487d6c99072b108b511d9103c51a6788c51f333c27c61746390edabd1b56f893",
     "files": [
       {
         "file": "routes/api-marketplace-admin.php",
@@ -18,7 +18,7 @@
       },
       {
         "file": "routes/api.php",
-        "sha256": "82f6ef712e0434f7c55ddbb82119b6a2205e5d61f0467dbca77a8eff31b8d07b"
+        "sha256": "bb21f40d6174647360739129bdc418f1077bdb67471186484554deb10b0df4a5"
       },
       {
         "file": "routes/channels.php",
@@ -3137,11 +3137,17 @@
     "/api/v2/admin/super/branch-payments/{id}/paid-until": [
       "POST"
     ],
+    "/api/v2/admin/super/branch-payments/{id}/payments": [
+      "GET"
+    ],
     "/api/v2/admin/super/branch-payments/{id}/plan": [
       "POST"
     ],
     "/api/v2/admin/super/branch-payments/{id}/plans": [
       "GET"
+    ],
+    "/api/v2/admin/super/branch-payments/{id}/record-payment": [
+      "POST"
     ],
     "/api/v2/admin/super/branch-payments/{id}/restore": [
       "POST"
