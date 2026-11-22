@@ -176,6 +176,8 @@ function keyword(translatedKeywords: string): string[] {
 /** The one key this menu reads off GET /v2/admin/billing/standing (pinned by BillingPausedFlagTest). */
 interface OwnPayer {
   payer?: 'platform_card' | 'platform_invoice' | 'parent' | 'not_billed';
+  /** A manager of a community above, looking in: the billing page is not theirs. */
+  visiting?: boolean;
 }
 
 /**
@@ -197,7 +199,11 @@ function usePaysPlatformByCard(ask: boolean): boolean {
     api
       .get<OwnPayer>('/v2/admin/billing/standing')
       .then((response) => {
-        if (alive) setPaysByCard(response.success === true && response.data?.payer === 'platform_card');
+        if (alive) {
+          setPaysByCard(
+            response.success === true && response.data?.payer === 'platform_card' && response.data?.visiting !== true,
+          );
+        }
       })
       .catch(() => undefined);
 

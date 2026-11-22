@@ -218,6 +218,18 @@ export function BillingPage() {
     );
   }
 
+  // A manager of a community above, looking in. The plan and the card are this
+  // community's own admins' and the platform team's, and the server refuses
+  // every billing request from a visitor, so nothing here would work.
+  if (standing?.visiting === true) {
+    return (
+      <div>
+        {header}
+        <Alert color="default" title={t('own_billing.visiting_note')} />
+      </div>
+    );
+  }
+
   return (
     <div>
       {header}

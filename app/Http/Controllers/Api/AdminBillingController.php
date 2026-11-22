@@ -12,6 +12,7 @@ use App\Services\BillingAutomationService;
 use App\Services\BillingStandingService;
 use App\Services\StripeSubscriptionService;
 use App\Services\TenantBillingService;
+use App\Support\Authorization\CrossTenantEntry;
 use App\Support\Billing\BillingLock;
 use App\Support\Billing\PlanTerms;
 use Illuminate\Http\JsonResponse;
@@ -30,6 +31,33 @@ class AdminBillingController extends BaseApiController
     /** How many messages one community may send the platform team in an hour. */
     private const MESSAGES_PER_HOUR = 3;
 
+    public const VISITING_MANAGER = 'VISITING_MANAGER_NO_BILLING';
+
+    /**
+     * A community's own billing is its own (F-640, 22 November 2026).
+     *
+     * A manager of a parent community may enter a community below it for every
+     * `/api/v2/admin/*` request (CrossTenantEntry). That reach must not include
+     * the lower community's card: these endpoints change the plan on its card
+     * subscription, start a checkout, open Stripe's portal on its customer
+     * record, show its invoices and write to the platform team in its name.
+     * Branch payments leaves exactly those communities to the platform team
+     * (`BranchPayments::refusalFor()`, `planChangeRefusalFor()`), and this
+     * page was the way round both refusals.
+     *
+     * Asked first in every method except getStanding(), before anything is
+     * read or sent. Not refused: the community's own admins, and a
+     * platform-wide account, which is never a visitor.
+     */
+    private function refuseVisitingManager(): ?JsonResponse
+    {
+        if (!CrossTenantEntry::isVisitingNow()) {
+            return null;
+        }
+
+        return $this->respondWithError(self::VISITING_MANAGER, __('api.billing_visiting_manager'), null, 403);
+    }
+
     /**
      * GET /v2/admin/billing/subscription
      *
@@ -38,6 +66,9 @@ class AdminBillingController extends BaseApiController
     public function getSubscription(): JsonResponse
     {
         $this->requireAdmin();
+        if (($refusal = $this->refuseVisitingManager()) !== null) {
+            return $refusal;
+        }
         $tenantId = TenantContext::getId();
 
         $subscription = StripeSubscriptionService::getSubscriptionDetails($tenantId);
@@ -75,6 +106,12 @@ class AdminBillingController extends BaseApiController
      *
      * And `paid_until` (`YYYY-MM-DD` or null): the date the community is paid
      * up to, its own date, so its billing page can show it.
+     *
+     * And `visiting` (bool): the reader is a manager of a community above,
+     * looking in. Every other endpoint here refuses them
+     * (refuseVisitingManager()); this one stays readable so the admin panel
+     * can say why a community is paused, and so it knows not to offer them the
+     * billing page.
      */
     public function getStanding(): JsonResponse
     {
@@ -119,7 +156,7 @@ class AdminBillingController extends BaseApiController
                 'payee' => null,
                 'payee_name' => null,
                 'payer' => $payer,
-            ] + $warnings + ['plan' => $plan]);
+            ] + $warnings + ['plan' => $plan, 'visiting' => CrossTenantEntry::isVisitingNow()]);
         }
 
         $payee = null;
@@ -143,7 +180,7 @@ class AdminBillingController extends BaseApiController
             'payee' => $payee,
             'payee_name' => $payeeName,
             'payer' => $payer,
-        ] + $warnings + ['plan' => $plan]);
+        ] + $warnings + ['plan' => $plan, 'visiting' => CrossTenantEntry::isVisitingNow()]);
     }
 
     /**
@@ -155,6 +192,9 @@ class AdminBillingController extends BaseApiController
     public function createCheckoutSession(): JsonResponse
     {
         $this->requireAdmin();
+        if (($refusal = $this->refuseVisitingManager()) !== null) {
+            return $refusal;
+        }
         $tenantId = TenantContext::getId();
 
         // A community that pays its parent pays its hub, not the platform by
@@ -302,6 +342,9 @@ class AdminBillingController extends BaseApiController
     public function changePlan(): JsonResponse
     {
         $userId = $this->requireAdmin();
+        if (($refusal = $this->refuseVisitingManager()) !== null) {
+            return $refusal;
+        }
         $tenantId = (int) TenantContext::getId();
 
         if (BillingStandingService::get($tenantId)['payer'] === 'parent') {
@@ -419,6 +462,9 @@ class AdminBillingController extends BaseApiController
     public function createPortalSession(): JsonResponse
     {
         $this->requireAdmin();
+        if (($refusal = $this->refuseVisitingManager()) !== null) {
+            return $refusal;
+        }
         $tenantId = TenantContext::getId();
 
         // Check if tenant has a Stripe customer before attempting portal
@@ -457,6 +503,9 @@ class AdminBillingController extends BaseApiController
     public function getInvoices(): JsonResponse
     {
         $this->requireAdmin();
+        if (($refusal = $this->refuseVisitingManager()) !== null) {
+            return $refusal;
+        }
         $tenantId = TenantContext::getId();
 
         $invoices = StripeSubscriptionService::getInvoiceHistory($tenantId);
@@ -563,6 +612,9 @@ class AdminBillingController extends BaseApiController
     public function requestUpgrade(): JsonResponse
     {
         $this->requireAdmin();
+        if (($refusal = $this->refuseVisitingManager()) !== null) {
+            return $refusal;
+        }
         $tenantId = TenantContext::getId();
         $user     = $this->resolveUser();
 

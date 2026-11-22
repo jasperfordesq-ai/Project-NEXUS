@@ -884,6 +884,22 @@ with `requireGodPlatformAdmin()` and pinned in
 every community below it; an exemption keeps a community, and everything below
 it, open. A community's admin may read its own standing
 (`GET /v2/admin/billing/standing`, `requireAdmin()`) and nothing else.
+
+🔴 **A community's own billing page is its own admins' (22 November 2026,
+F-640).** A tenant super admin may enter a community below its own for every
+`/api/v2/admin/*` request, but not for that community's card billing: every
+`/v2/admin/billing/*` endpoint except `standing` refuses a visiting manager
+(403 `VISITING_MANAGER_NO_BILLING`, `AdminBillingController::refuseVisitingManager()`,
+decided by `CrossTenantEntry::isVisitingNow()`) before anything is read or sent
+to Stripe. Without it a parent's manager could change the plan on a lower
+community's card subscription, start a checkout, open its Stripe portal and
+read its invoices, which is exactly what Branch payments refuses
+(`PAYS_PLATFORM`, `HAS_CARD_SUBSCRIPTION`). `standing` stays readable and
+carries `visiting`, which the admin panel uses to hide the Billing link. A
+platform-wide account is never a visitor and is unchanged. A new endpoint under
+`/v2/admin/billing/` must start with the same refusal; pinned by
+`VisitingManagerBillingTest`.
+
 **A parent community's manager and the communities below it (20 November
 2026).** The super admin panel's Branch payments page
 (`/super-admin/branch-payments`) lets a tenant super admin, or a global super

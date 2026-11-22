@@ -466,6 +466,7 @@
     "members_used": "{{used}} von {{max}} aktiven Mitgliedern",
     "no_plan": "Diese Community hat noch keinen Plan.",
     "pays_parent_note": "Diese Community zahlt an die Community über ihr. Plan und Zahlungen werden mit ihr vereinbart, nicht hier.",
+    "visiting_note": "Sie besuchen diese Community, daher wird ihre Abrechnungsseite nicht angezeigt. Ihr Plan und ihre Kartenzahlungen werden von ihren eigenen Admins und vom Plattform-Team verwaltet.",
     "price_label": "Preis",
     "request_failed": "Die Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut."
   },

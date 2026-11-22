@@ -478,6 +478,7 @@
     "members_used": "{{used}} as {{max}} ball gníomhach",
     "no_plan": "Níl plean ag an bpobal seo fós.",
     "pays_parent_note": "Íocann an pobal seo leis an bpobal os a chionn. Socraítear a phlean agus a íocaíochtaí leis siúd, ní anseo.",
+    "visiting_note": "Tá tú ar cuairt ar an bpobal seo, mar sin ní thaispeántar a leathanach billeála. Is iad a riarthóirí féin agus foireann an ardáin a bhainistíonn a phlean agus a íocaíochtaí cárta.",
     "price_label": "Praghas",
     "request_failed": "Níorbh fhéidir an t-iarratas a sheoladh. Bain triail eile as."
   },

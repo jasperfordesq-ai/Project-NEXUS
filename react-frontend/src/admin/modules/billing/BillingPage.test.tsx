@@ -223,6 +223,22 @@ describe('BillingPage', () => {
     expect(screen.queryByRole('button', { name: /request upgrade/i })).not.toBeInTheDocument();
   });
 
+  // F-640: a manager visiting from a community above is refused every billing
+  // request but the standing. The page says so and offers nothing.
+  it('shows a visiting manager a plain note and none of the community\'s billing', async () => {
+    mockBillingApi.getSubscription.mockResolvedValue({ success: false, error: 'You are visiting this community.', code: 'VISITING_MANAGER_NO_BILLING' });
+    mockBillingApi.getStanding.mockResolvedValue({ success: true, data: standing({ visiting: true }) });
+
+    render(<BillingPage />);
+
+    await waitFor(() => expect(screen.getByText(/you are visiting this community/i)).toBeInTheDocument());
+    expect(screen.queryByText('Local')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /manage payment/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /change plan/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /view invoices/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /request upgrade/i })).not.toBeInTheDocument();
+  });
+
   it('keeps the plan and "Manage Payment" on screen for a card payer whose card has failed, and says what to do', async () => {
     // Stripe "past due" is recorded as `expired`. The page then said "No
     // subscription" and hid the only way to update the card.

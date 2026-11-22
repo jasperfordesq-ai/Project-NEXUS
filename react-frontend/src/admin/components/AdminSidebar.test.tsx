@@ -798,6 +798,22 @@ describe('AdminSidebar', () => {
     expect(mockApi.get.mock.calls.filter(([url]) => url === '/v2/admin/billing/standing')).toHaveLength(1);
   });
 
+  // F-640: the page is the community's own admins'. A manager looking in from
+  // a community above is refused there, so the link is not offered.
+  it('hides the Billing link from a manager visiting a community that pays by card', async () => {
+    mockApi.get.mockImplementation((url: string) => Promise.resolve(
+      url === '/v2/admin/billing/standing'
+        ? { success: true, data: { paused: false, payer: 'platform_card', visiting: true } }
+        : { success: true, data: {} },
+    ));
+    const { AdminSidebar } = await import('./AdminSidebar');
+    const { container } = render(<AdminSidebar collapsed={false} />);
+
+    await waitFor(() => expect(mockApi.get).toHaveBeenCalledWith('/v2/admin/billing/standing'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(everyHref(container)).not.toContain('/test/admin/billing');
+  });
+
   it.each([
     ['pays the platform by invoice', 'platform_invoice', true],
     ['pays its parent', 'parent', true],

@@ -2186,6 +2186,7 @@ return [
     'branch_payments_card_subscription' => 'This community pays the platform by card, so only the platform team can change its plan.',
     'branch_payments_plan_not_offered' => 'This community\'s parent does not offer that plan, so the community cannot be put on it.',
     'billing_checkout_pays_parent' => 'This community pays its parent community, so there is nothing to pay the platform by card.',
+    'billing_visiting_manager' => 'You are visiting this community. Its plan and card payments are managed by its own admins and by the platform team.',
     'billing_checkout_already_subscribed' => 'This community already pays for a plan by card, so a second card payment cannot be started: both would be charged. To change plan, ask the platform team.',
     'billing_checkout_plan_too_small' => 'This plan allows up to :max active members and this community has :members. Choose a plan that fits.',
     'billing_checkout_special_price' => 'This community has a specially agreed price, so it pays by invoice, not by card. Ask the platform team.',

@@ -1220,6 +1220,7 @@ return [
     'branch_payments_card_subscription' => 'Íocann an pobal seo an t-ardán le cárta, mar sin ní féidir ach le foireann an ardáin a phlean a athrú.',
     'branch_payments_plan_not_offered' => 'Ní thairgeann an pobal tuismitheora an plean seo, mar sin ní féidir an pobal seo a chur air.',
     'billing_checkout_pays_parent' => 'Íocann an pobal seo a phobal tuismitheora, mar sin níl aon rud le híoc leis an ardán le cárta.',
+    'billing_visiting_manager' => 'Tá tú ar cuairt ar an bpobal seo. Is iad a riarthóirí féin agus foireann an ardáin a bhainistíonn a phlean agus a íocaíochtaí cárta.',
     'billing_checkout_already_subscribed' => 'Tá an pobal seo ag íoc as plean le cárta cheana féin, mar sin ní féidir an dara híocaíocht chárta a thosú: ghearrfaí an dá cheann. Chun an plean a athrú, iarr ar fhoireann an ardáin.',
     'billing_checkout_plan_too_small' => 'Ceadaíonn an plean seo suas le :max ball gníomhach agus tá :members ag an bpobal seo. Roghnaigh plean a oireann.',
     'billing_checkout_special_price' => 'Tá praghas comhaontaithe ar leith ag an bpobal seo, mar sin íocann sé le sonrasc, ní le cárta. Iarr ar fhoireann an ardáin.',

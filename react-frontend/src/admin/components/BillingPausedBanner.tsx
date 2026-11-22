@@ -64,6 +64,8 @@ interface BillingStanding {
   payee_name: string | null;
   /** Who this community itself pays; read by the admin sidebar. */
   payer?: 'platform_card' | 'platform_invoice' | 'parent' | 'not_billed';
+  /** A manager of a community above, looking in: the billing page is not theirs. */
+  visiting?: boolean;
   /** Whole days the payment is late; null when it is not. */
   overdue_days?: number | null;
   /** Null without a standard package with a limit. */
@@ -129,7 +131,7 @@ export function BillingPausedBanner() {
               canSeeOwnBilling). One that pays by invoice was told by email;
               one paused from above, or that pays its parent, settles it with
               the community above, which the line above names. */}
-          {standing !== 'unknown' && standing.own !== false && standing.payer === 'platform_card' ? (
+          {standing !== 'unknown' && standing.own !== false && standing.payer === 'platform_card' && standing.visiting !== true ? (
             <Link
               to={tenantPath('/admin/billing')}
               data-testid="billing-paused-link"

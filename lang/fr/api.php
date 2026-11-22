@@ -1218,6 +1218,7 @@ return [
     'branch_payments_card_subscription' => 'Cette communauté paie la plateforme par carte : seule l’équipe de la plateforme peut donc changer son forfait.',
     'branch_payments_plan_not_offered' => 'La communauté parente ne propose pas ce forfait, il ne peut donc pas être attribué à cette communauté.',
     'billing_checkout_pays_parent' => 'Cette communauté paie sa communauté parente : il n’y a donc rien à payer à la plateforme par carte.',
+    'billing_visiting_manager' => 'Vous visitez cette communauté. Sa formule et ses paiements par carte sont gérés par ses propres administrateurs et par l’équipe de la plateforme.',
     'billing_checkout_already_subscribed' => 'Cette communauté paie déjà une formule par carte : un second paiement par carte ne peut donc pas être lancé, car les deux seraient prélevés. Pour changer de formule, adressez-vous à l’équipe de la plateforme.',
     'billing_checkout_plan_too_small' => 'Cette formule permet jusqu’à :max membres actifs et cette communauté en compte :members. Choisissez une formule adaptée.',
     'billing_checkout_special_price' => 'Cette communauté bénéficie d’un prix convenu spécialement : elle paie donc sur facture, et non par carte. Adressez-vous à l’équipe de la plateforme.',

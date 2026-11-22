@@ -1220,6 +1220,7 @@ return [
     'branch_payments_card_subscription' => 'Esta comunidad paga a la plataforma con tarjeta, así que solo el equipo de la plataforma puede cambiar su plan.',
     'branch_payments_plan_not_offered' => 'La comunidad superior no ofrece este plan, así que no se puede asignar a esta comunidad.',
     'billing_checkout_pays_parent' => 'Esta comunidad paga a su comunidad superior, así que no hay nada que pagar a la plataforma con tarjeta.',
+    'billing_visiting_manager' => 'Estás visitando esta comunidad. Su plan y sus pagos con tarjeta los gestionan sus propios administradores y el equipo de la plataforma.',
     'billing_checkout_already_subscribed' => 'Esta comunidad ya paga un plan con tarjeta, por lo que no se puede iniciar un segundo pago con tarjeta: se cobrarían los dos. Para cambiar de plan, pídaselo al equipo de la plataforma.',
     'billing_checkout_plan_too_small' => 'Este plan admite hasta :max miembros activos y esta comunidad tiene :members. Elija un plan que se ajuste.',
     'billing_checkout_special_price' => 'Esta comunidad tiene un precio acordado especialmente, por lo que paga por factura y no con tarjeta. Consulte al equipo de la plataforma.',

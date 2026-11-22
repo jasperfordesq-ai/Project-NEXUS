@@ -474,6 +474,7 @@
     "members_used": "Aktywni członkowie: {{used}} z {{max}}",
     "no_plan": "Ta społeczność nie ma jeszcze planu.",
     "pays_parent_note": "Ta społeczność płaci społeczności nadrzędnej. Plan i płatności ustala się z nią, a nie tutaj.",
+    "visiting_note": "Odwiedzasz tę społeczność, dlatego jej strona rozliczeń nie jest wyświetlana. Jej planem i płatnościami kartą zarządzają jej administratorzy oraz zespół platformy.",
     "price_label": "Cena",
     "request_failed": "Nie udało się wysłać prośby. Spróbuj ponownie."
   },

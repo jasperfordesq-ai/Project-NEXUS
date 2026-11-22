@@ -124,6 +124,12 @@ export interface OwnStanding {
     currency: 'eur' | 'gbp';
     terms: 'default' | 'hub';
   } | null;
+  /**
+   * The reader is a manager of a community above, looking in. Every other
+   * billing request from them is refused (403 VISITING_MANAGER_NO_BILLING):
+   * a community's card and plan are its own admins' and the platform team's.
+   */
+  visiting?: boolean;
 }
 
 /**

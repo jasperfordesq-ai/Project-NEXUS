@@ -1151,6 +1151,7 @@ return [
     'branch_payments_card_subscription' => 'Deze gemeenschap betaalt het platform per kaart, dus alleen het platformteam kan haar pakket wijzigen.',
     'branch_payments_plan_not_offered' => 'De bovenliggende gemeenschap biedt dit pakket niet aan, dus deze gemeenschap kan er niet op worden gezet.',
     'billing_checkout_pays_parent' => 'Deze gemeenschap betaalt haar bovenliggende gemeenschap, dus er hoeft niets per kaart aan het platform te worden betaald.',
+    'billing_visiting_manager' => 'Je bezoekt deze gemeenschap. Het plan en de kaartbetalingen worden beheerd door de eigen beheerders en door het platformteam.',
     'billing_checkout_already_subscribed' => 'Deze community betaalt al met een kaart voor een plan, dus een tweede kaartbetaling kan niet worden gestart: beide zouden worden afgeschreven. Vraag het platformteam om van plan te veranderen.',
     'billing_checkout_plan_too_small' => 'Dit plan staat maximaal :max actieve leden toe en deze community heeft er :members. Kies een plan dat past.',
     'billing_checkout_special_price' => 'Voor deze community geldt een speciaal afgesproken prijs. Ze betaalt daarom per factuur, niet met een kaart. Neem contact op met het platformteam.',

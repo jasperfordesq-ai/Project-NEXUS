@@ -466,6 +466,7 @@
     "members_used": "{{used}} van {{max}} actieve leden",
     "no_plan": "Deze community heeft nog geen plan.",
     "pays_parent_note": "Deze community betaalt aan de community erboven. Het plan en de betalingen worden met die community geregeld, niet hier.",
+    "visiting_note": "Je bezoekt deze community, daarom wordt de factureringspagina niet getoond. Het plan en de kaartbetalingen worden beheerd door de eigen beheerders en door het platformteam.",
     "price_label": "Prijs",
     "request_failed": "Het verzoek kon niet worden verzonden. Probeer het opnieuw."
   },

@@ -3122,7 +3122,9 @@ Route::put('/v2/admin/plans/{id}', [\App\Http\Controllers\Api\AdminContentContro
 Route::delete('/v2/admin/plans/{id}', [\App\Http\Controllers\Api\AdminContentController::class, 'deletePlan']);
 Route::post('/v2/admin/plans/{id}/sync-stripe', [\App\Http\Controllers\Api\AdminContentController::class, 'syncPlanToStripe']);
 Route::get('/v2/admin/subscriptions', [\App\Http\Controllers\Api\AdminContentController::class, 'getSubscriptions']);
-// Billing — Stripe subscription management
+// Billing — Stripe subscription management. The community's OWN admins only: a
+// manager visiting from a community above is refused in the controller
+// (AdminBillingController::refuseVisitingManager(), F-640), except on `standing`.
 Route::get('/v2/admin/billing/subscription', [\App\Http\Controllers\Api\AdminBillingController::class, 'getSubscription']);
 Route::post('/v2/admin/billing/checkout', [\App\Http\Controllers\Api\AdminBillingController::class, 'createCheckoutSession']);
 Route::post('/v2/admin/billing/change-plan', [\App\Http\Controllers\Api\AdminBillingController::class, 'changePlan']);

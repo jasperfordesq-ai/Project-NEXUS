@@ -470,6 +470,7 @@
     "members_used": "{{used}} membres actifs sur {{max}}",
     "no_plan": "Cette communauté n’a pas encore de formule.",
     "pays_parent_note": "Cette communauté paie la communauté dont elle dépend. Sa formule et ses paiements sont convenus avec elle, pas ici.",
+    "visiting_note": "Vous visitez cette communauté : sa page de facturation n’est donc pas affichée. Sa formule et ses paiements par carte sont gérés par ses propres administrateurs et par l’équipe de la plateforme.",
     "price_label": "Prix",
     "request_failed": "La demande n’a pas pu être envoyée. Veuillez réessayer."
   },

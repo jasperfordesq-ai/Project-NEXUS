@@ -4803,7 +4803,8 @@ export default interface Resources {
       "no_plan": "This community has no plan yet.",
       "pays_parent_note": "This community pays the community above it. Its plan and payments are arranged with them, not here.",
       "price_label": "Price",
-      "request_failed": "The request could not be sent. Please try again."
+      "request_failed": "The request could not be sent. Please try again.",
+      "visiting_note": "You are visiting this community, so its billing page is not shown. Its plan and card payments are managed by its own admins and by the platform team."
     },
     "paused_banner": {
       "inherited": "This community is paused because the community above it is paused. Paused since {{date}}.",

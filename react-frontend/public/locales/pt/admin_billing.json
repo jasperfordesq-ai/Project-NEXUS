@@ -470,6 +470,7 @@
     "members_used": "{{used}} de {{max}} membros ativos",
     "no_plan": "Esta comunidade ainda não tem um plano.",
     "pays_parent_note": "Esta comunidade paga à comunidade de que depende. O plano e os pagamentos são combinados com ela, não aqui.",
+    "visiting_note": "Está a visitar esta comunidade, por isso a página de faturação dela não é mostrada. O plano e os pagamentos com cartão são geridos pelos administradores da própria comunidade e pela equipe da plataforma.",
     "price_label": "Preço",
     "request_failed": "Não foi possível enviar o pedido. Tente novamente."
   },
