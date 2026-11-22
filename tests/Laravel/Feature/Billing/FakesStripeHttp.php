@@ -44,6 +44,8 @@ trait FakesStripeHttp
             public array $invoices = [];
             /** @var array<string, mixed>|null A whole subscription to answer with (item id, currency), for a change of plan. */
             public ?array $subscription = null;
+            /** @var array<string, mixed>|null One invoice to answer a lookup by id with; null = Stripe has no such invoice. */
+            public ?array $invoice = null;
             private int $n = 0;
 
             public function request($method, $absUrl, $headers, $params, $hasFile, $apiMode = 'v1')
@@ -73,6 +75,17 @@ trait FakesStripeHttp
 
                 if ($method === 'POST' && $path === '/v1/prices') {
                     $this->priceAmounts["price_fake_{$n}"] = (int) ($params['unit_amount'] ?? 0);
+                }
+
+                if ($method === 'GET' && str_starts_with($path, '/v1/invoices/')) {
+                    $id = substr($path, strlen('/v1/invoices/'));
+                    if ($this->invoice === null) {
+                        $error = ['error' => ['type' => 'invalid_request_error', 'message' => "No such invoice in this test: {$id}"]];
+
+                        return [json_encode($error), 404, new CaseInsensitiveArray([])];
+                    }
+
+                    return [json_encode(['id' => $id, 'object' => 'invoice'] + $this->invoice), 200, new CaseInsensitiveArray([])];
                 }
 
                 if ($method === 'GET' && $path === '/v1/invoices') {

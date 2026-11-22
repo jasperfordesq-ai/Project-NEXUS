@@ -443,13 +443,113 @@ final class BillingStandingService
     }
 
     /**
-     * The payments recorded by hand for a community, newest first.
+     * Record a card payment Stripe reported as paid. Returns the new
+     * payment's id, or null when nothing was written.
+     *
+     * Once per Stripe invoice, however many times Stripe sends the event: the
+     * invoice id is unique on the table, and a second insert is ignored.
+     *
+     * Nothing is written, and that is not a fault, for: the platform's own
+     * community (never billed), an event with no invoice id (nothing to tell
+     * a second delivery by), and an invoice on which nothing was paid (a
+     * credit note, a 100% coupon).
+     *
+     * This does NOT move the paid-until date. The caller has already done
+     * that from the subscription's period, forward only; `paid_until_before`
+     * and `paid_until_after` are told to it so the row reads like every other.
+     *
+     * @param array<string, mixed> $facts stripe_invoice_id, amount_paid (in
+     *                                    the currency's smallest unit),
+     *                                    currency, paid_at (timestamp)?,
+     *                                    stripe_payment_intent_id?,
+     *                                    stripe_charge_id?,
+     *                                    paid_until_before?, paid_until_after?
+     */
+    public static function recordCardPayment(int $tenantId, array $facts): ?int
+    {
+        if ($tenantId <= 1) {
+            return null;
+        }
+
+        $invoiceId = self::cleanStripeId($facts['stripe_invoice_id'] ?? null);
+        if ($invoiceId === null) {
+            return null;
+        }
+
+        $cents = $facts['amount_paid'] ?? null;
+        if (!is_int($cents) && !(is_string($cents) && ctype_digit($cents))) {
+            return null;
+        }
+        $cents = (int) $cents;
+        if ($cents <= 0) {
+            return null;
+        }
+
+        $currency = strtoupper(trim((string) ($facts['currency'] ?? '')));
+        if (preg_match('/^[A-Z]{3}$/', $currency) !== 1) {
+            return null;
+        }
+
+        self::requireTenant($tenantId);
+
+        $paidAt = $facts['paid_at'] ?? null;
+        $receivedOn = is_numeric($paidAt) && (int) $paidAt > 0
+            ? date('Y-m-d', (int) $paidAt)
+            : now()->toDateString();
+
+        $before = self::dateOrNull($facts['paid_until_before'] ?? null);
+        // The column is not nullable. With no date on record (Stripe could
+        // not say what the payment pays up to), the day it was paid is the
+        // only date known.
+        $after = self::dateOrNull($facts['paid_until_after'] ?? null) ?? $receivedOn;
+
+        $inserted = DB::table('billing_payments')->insertOrIgnore([
+            'tenant_id' => $tenantId,
+            'received_on' => $receivedOn,
+            'method' => 'card',
+            'reference' => mb_substr($invoiceId, 0, self::REFERENCE_MAX),
+            'amount' => number_format($cents / 100, 2, '.', ''),
+            'currency' => $currency,
+            'paid_until_before' => $before,
+            'paid_until_after' => $after,
+            'recorded_by_user_id' => null,
+            'created_at' => now(),
+            'payee_tenant_id' => null,
+            'stripe_invoice_id' => $invoiceId,
+            'stripe_payment_intent_id' => self::cleanStripeId($facts['stripe_payment_intent_id'] ?? null),
+            'stripe_charge_id' => self::cleanStripeId($facts['stripe_charge_id'] ?? null),
+        ]);
+        if ($inserted === 0) {
+            return null;
+        }
+
+        $id = (int) DB::table('billing_payments')->where('stripe_invoice_id', $invoiceId)->value('id');
+
+        TenantBillingService::logAudit(
+            $tenantId,
+            null,
+            'payment_recorded',
+            null,
+            ['payment_id' => $id, 'method' => 'card', 'amount' => number_format($cents / 100, 2, '.', ''), 'currency' => $currency],
+            "payment {$id}: card, {$invoiceId}"
+        );
+
+        return $id;
+    }
+
+    /**
+     * A community's payments, newest first: those recorded by hand and the
+     * card payments Stripe reported.
+     *
+     * `source` is `card` for a payment Stripe reported and `manual` for one a
+     * person recorded (whatever method they chose, a card taken by phone
+     * included).
      *
      * @return list<array{
      *   id:int, received_on:string, method:string, reference:?string,
      *   amount:?string, currency:?string, paid_until_before:?string,
      *   paid_until_after:string, recorded_by_user_id:?int,
-     *   recorded_by_name:?string, created_at:?string
+     *   recorded_by_name:?string, created_at:?string, source:string
      * }>
      */
     public static function payments(int $tenantId, int $limit = 50): array
@@ -468,6 +568,7 @@ final class BillingStandingService
             ->get([
                 'bp.id', 'bp.received_on', 'bp.method', 'bp.reference', 'bp.amount', 'bp.currency',
                 'bp.paid_until_before', 'bp.paid_until_after', 'bp.recorded_by_user_id', 'bp.created_at',
+                'bp.stripe_invoice_id',
                 DB::raw("COALESCE(NULLIF(TRIM(CONCAT_WS(' ', u.first_name, u.last_name)), ''), u.name) AS recorded_by_name"),
             ]);
 
@@ -485,6 +586,7 @@ final class BillingStandingService
                 'recorded_by_user_id' => $row->recorded_by_user_id !== null ? (int) $row->recorded_by_user_id : null,
                 'recorded_by_name' => $row->recorded_by_name !== null ? (string) $row->recorded_by_name : null,
                 'created_at' => $row->created_at !== null ? (string) $row->created_at : null,
+                'source' => $row->stripe_invoice_id !== null ? 'card' : 'manual',
             ];
         }
 
@@ -869,6 +971,23 @@ final class BillingStandingService
         $parsed = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
 
         return $parsed !== false && $parsed->format('Y-m-d') === $value;
+    }
+
+    /** The value when it is a real Y-m-d date, else null. */
+    private static function dateOrNull(mixed $value): ?string
+    {
+        return is_string($value) && self::isDate($value) ? $value : null;
+    }
+
+    /** A Stripe object id as stored (at most 190 characters), or null. */
+    private static function cleanStripeId(mixed $value): ?string
+    {
+        if (!is_string($value)) {
+            return null;
+        }
+        $value = trim($value);
+
+        return $value === '' || mb_strlen($value) > 190 ? null : $value;
     }
 
     /**

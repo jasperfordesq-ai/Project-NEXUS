@@ -70,6 +70,7 @@ const makePayment = (overrides: Record<string, unknown> = {}) => ({
   recorded_by_user_id: 1,
   recorded_by_name: 'Pat Murphy',
   created_at: '2026-11-02 10:15:00',
+  source: 'manual',
   ...overrides,
 });
 
@@ -258,13 +259,23 @@ describe('RecordPaymentDialog', () => {
     expect(screen.getAllByText('Cash').length).toBeGreaterThan(1);
     expect(screen.getByText((text) => text.includes('480'))).toBeInTheDocument();
     expect(screen.getByText('Pat Murphy')).toBeInTheDocument();
-    expect(screen.queryByText('No payments have been recorded by hand yet.')).not.toBeInTheDocument();
+    expect(screen.queryByText('No payments have been recorded yet.')).not.toBeInTheDocument();
+  });
+
+  it('shows a card payment Stripe reported, and names Stripe as its recorder', async () => {
+    servePayments([
+      makePayment({ id: 9, method: 'card', reference: 'in_1QxCardInvoice', recorded_by_user_id: null, recorded_by_name: null, source: 'card' }),
+    ]);
+    await renderDialog();
+
+    await waitFor(() => expect(screen.getByText('in_1QxCardInvoice')).toBeInTheDocument());
+    expect(screen.getByText('Stripe (card payment)')).toBeInTheDocument();
   });
 
   it('says so when there is no payment yet', async () => {
     await renderDialog();
 
-    await waitFor(() => expect(screen.getByText('No payments have been recorded by hand yet.')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('No payments have been recorded yet.')).toBeInTheDocument());
   });
 
   it('says so when the history cannot be loaded', async () => {

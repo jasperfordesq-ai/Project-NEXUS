@@ -1459,7 +1459,11 @@ class StripeSubscriptionService
 
         // A card payer is kept on the same payment record as everyone else:
         // paying moves its paid-until date to the end of the period just paid.
+        $paidUntilBefore = static::paidUntilOnRecord((int) $assignment->tenant_id);
         static::recordPaidUntil((int) $assignment->tenant_id, $periodEndTs, 'Stripe invoice paid');
+
+        // And the payment itself goes in the payments list, once per invoice.
+        static::recordCardPayment((int) $assignment->tenant_id, $invoice, $paidUntilBefore);
 
         // Email tenant admin — subscription renewed successfully
         try {
@@ -1531,6 +1535,110 @@ class StripeSubscriptionService
                 'error' => $e->getMessage(),
             ]);
         }
+    }
+
+    /** The paid-until date on a community's record, or null (none, or unreadable). */
+    private static function paidUntilOnRecord(int $tenantId): ?string
+    {
+        try {
+            return BillingStandingService::get($tenantId)['paid_until'];
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * Write a paid Stripe invoice to the payments list
+     * (BillingStandingService::recordCardPayment(): once per invoice, and
+     * nothing for an invoice on which nothing was paid).
+     *
+     * The payment intent and charge are kept with it so a later refund or
+     * dispute, which Stripe reports against the charge, can be matched to
+     * this payment. Older Stripe API versions put both on the invoice; newer
+     * ones (from 2025-03-31) list them under `payments`. An event that names
+     * neither is asked of Stripe once.
+     *
+     * A failure is logged at `error` and NOT rethrown, for the reason
+     * recordPaidUntil() gives: the handler's own work is done, and a retry
+     * re-runs all of it.
+     */
+    private static function recordCardPayment(int $tenantId, object $invoice, ?string $paidUntilBefore): void
+    {
+        $invoiceId = is_string($invoice->id ?? null) ? trim($invoice->id) : '';
+        $amountPaid = $invoice->amount_paid ?? null;
+        if ($invoiceId === '' || !is_numeric($amountPaid) || (int) $amountPaid <= 0) {
+            return;
+        }
+
+        try {
+            if (DB::table('billing_payments')->where('stripe_invoice_id', $invoiceId)->exists()) {
+                return;
+            }
+
+            [$paymentIntentId, $chargeId] = self::paymentOfInvoice($invoice);
+            if ($paymentIntentId === null && $chargeId === null) {
+                try {
+                    [$paymentIntentId, $chargeId] = self::paymentOfInvoice(StripeService::client()->invoices->retrieve($invoiceId));
+                } catch (\Throwable $e) {
+                    Log::warning('Stripe could not say which payment an invoice was taken on; a later refund will not be matched to it', [
+                        'tenant_id' => $tenantId,
+                        'invoice_id' => $invoiceId,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            BillingStandingService::recordCardPayment($tenantId, [
+                'stripe_invoice_id' => $invoiceId,
+                'amount_paid' => (int) $amountPaid,
+                'currency' => is_string($invoice->currency ?? null) ? $invoice->currency : '',
+                'paid_at' => $invoice->status_transitions->paid_at ?? null,
+                'stripe_payment_intent_id' => $paymentIntentId,
+                'stripe_charge_id' => $chargeId,
+                'paid_until_before' => $paidUntilBefore,
+                'paid_until_after' => self::paidUntilOnRecord($tenantId),
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Stripe card payment could not be added to the payments list', [
+                'tenant_id' => $tenantId,
+                'invoice_id' => $invoiceId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * The payment intent and the charge an invoice was paid on, each an id or
+     * null.
+     *
+     * @return array{0: ?string, 1: ?string}
+     */
+    private static function paymentOfInvoice(object $invoice): array
+    {
+        $idOf = static function (mixed $value): ?string {
+            if (is_object($value)) {
+                $value = $value->id ?? null;
+            }
+
+            return is_string($value) && $value !== '' ? $value : null;
+        };
+
+        $paymentIntentId = $idOf($invoice->payment_intent ?? null);
+        $chargeId = $idOf($invoice->charge ?? null);
+
+        $payments = $invoice->payments->data ?? null;
+        if (is_iterable($payments)) {
+            foreach ($payments as $entry) {
+                $payment = is_object($entry) ? ($entry->payment ?? null) : null;
+                if (!is_object($payment)) {
+                    continue;
+                }
+                $paymentIntentId ??= $idOf($payment->payment_intent ?? null);
+                $chargeId ??= $idOf($payment->charge ?? null);
+            }
+        }
+
+        return [$paymentIntentId, $chargeId];
     }
 
     /**

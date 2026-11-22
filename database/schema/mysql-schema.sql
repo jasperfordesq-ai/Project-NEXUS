@@ -939,8 +939,22 @@ CREATE TABLE `billing_payments` (
   `paid_until_after` date NOT NULL,
   `recorded_by_user_id` int(10) unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
+  `payee_tenant_id` int(11) DEFAULT NULL,
+  `stripe_invoice_id` varchar(190) DEFAULT NULL,
+  `stripe_payment_intent_id` varchar(190) DEFAULT NULL,
+  `stripe_charge_id` varchar(190) DEFAULT NULL,
+  `voided_at` timestamp NULL DEFAULT NULL,
+  `voided_by_user_id` int(10) unsigned DEFAULT NULL,
+  `void_reason` varchar(500) DEFAULT NULL,
+  `refunded_amount` decimal(12,2) DEFAULT NULL,
+  `refunded_at` timestamp NULL DEFAULT NULL,
+  `dispute_status` varchar(40) DEFAULT NULL,
+  `disputed_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `idx_bp_tenant_received` (`tenant_id`,`received_on`)
+  UNIQUE KEY `uq_bp_stripe_invoice` (`stripe_invoice_id`),
+  KEY `idx_bp_tenant_received` (`tenant_id`,`received_on`),
+  KEY `idx_bp_stripe_pi` (`stripe_payment_intent_id`),
+  KEY `idx_bp_stripe_charge` (`stripe_charge_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `blog_posts`;

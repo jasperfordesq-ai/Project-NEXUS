@@ -7,7 +7,8 @@
  * RecordPaymentDialog
  * The platform team records a payment that did not come through Stripe (a bank
  * transfer, a cheque …) and the date the community is now paid up to. Below
- * the form, every payment already recorded by hand for that community.
+ * the form, the community's payment history: every payment recorded by hand
+ * and every card payment Stripe reported.
  *
  * 🔴 The body and the history rows are the SERVER's shape
  * (POST /v2/admin/super/billing/standing/record-payment and
@@ -51,6 +52,8 @@ interface ManualPayment {
   recorded_by_user_id: number | null;
   recorded_by_name: string | null;
   created_at: string | null;
+  /** `card` = Stripe reported it; `manual` = a person recorded it. */
+  source: 'card' | 'manual';
 }
 
 export interface RecordPaymentCommunity {
@@ -289,7 +292,11 @@ export function RecordPaymentDialog({ community, onClose, onRecorded }: RecordPa
                       </span>
                       <span>
                         <span className="block text-xs text-muted">{t('control.history_col_recorded_by')}</span>
-                        <span>{payment.recorded_by_name ?? '—'}</span>
+                        <span>
+                          {payment.source === 'card'
+                            ? t('control.history_by_stripe')
+                            : payment.recorded_by_name ?? '—'}
+                        </span>
                       </span>
                     </li>
                   ))}
