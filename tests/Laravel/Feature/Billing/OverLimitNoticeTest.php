@@ -155,7 +155,7 @@ final class OverLimitNoticeTest extends TestCase
             // so "reached" says so plainly; "approaching" names what is to come.
             'stop new members' => ['block_joining', 'new members will not be able to join', 'From now on, new members cannot join until it is back under the limit'],
             'pause' => ['pause', 'stays over for 21 days, it will be paused automatically', 'stays over for 21 days, it will be paused automatically'],
-            'move up' => ['upgrade', 'stays over for 21 days, it will be moved automatically to the smallest package that fits', 'stays over for 21 days, it will be moved automatically to the smallest package that fits'],
+            'move up' => ['upgrade', 'stays over for 21 days, it will be moved automatically to the smallest plan that fits', 'stays over for 21 days, it will be moved automatically to the smallest plan that fits'],
         ];
     }
 
@@ -199,7 +199,7 @@ final class OverLimitNoticeTest extends TestCase
         $this->assertCount(2, $mail);
         foreach ($mail as $one) {
             $this->assertStringNotContainsString('it will be moved automatically', $one['body']);
-            $this->assertStringContainsString('cannot be moved to a bigger package automatically', $one['body']);
+            $this->assertStringContainsString('cannot be moved to a bigger plan automatically', $one['body']);
         }
     }
 
@@ -212,9 +212,9 @@ final class OverLimitNoticeTest extends TestCase
             'warn only' => [['rule' => 'none', 'rule_action' => 'none'], 'Nothing has changed for its members'],
             'pause' => [['rule' => 'pause', 'rule_action' => 'pause', 'pause_date' => '2027-04-09'], 'If it is still over the limit on <strong>2027-04-09</strong>, it will be paused'],
             'stop new members' => [['rule' => 'block_joining', 'rule_action' => 'block_joining'], 'new members cannot join until it is back under the limit'],
-            'move up' => [['rule' => 'upgrade', 'rule_action' => 'upgrade', 'move_date' => '2027-04-09', 'move_plan' => 'Local'], 'it will be moved automatically to the <strong>Local</strong> package'],
-            'move up with no plan that fits' => [['rule' => 'upgrade', 'rule_action' => 'upgrade'], 'cannot be moved to a bigger package automatically'],
-            'move up on a card payer' => [['rule' => 'none', 'rule_action' => 'upgrade'], 'cannot be moved to a bigger package automatically'],
+            'move up' => [['rule' => 'upgrade', 'rule_action' => 'upgrade', 'move_date' => '2027-04-09', 'move_plan' => 'Local'], 'it will be moved automatically to the <strong>Local</strong> plan'],
+            'move up with no plan that fits' => [['rule' => 'upgrade', 'rule_action' => 'upgrade'], 'cannot be moved to a bigger plan automatically'],
+            'move up on a card payer' => [['rule' => 'none', 'rule_action' => 'upgrade'], 'cannot be moved to a bigger plan automatically'],
         ];
     }
 
@@ -240,7 +240,7 @@ final class OverLimitNoticeTest extends TestCase
         ]));
 
         $body = $this->body($this->childAdmin);
-        $this->assertStringContainsString('<strong>Local</strong> package (£199.00 a month)', $body);
+        $this->assertStringContainsString('<strong>Local</strong> plan (£199.00 a month)', $body);
         $this->assertStringContainsString('2027-04-09', $body);
         $this->assertStringNotContainsString('€', $body);
     }
@@ -251,7 +251,7 @@ final class OverLimitNoticeTest extends TestCase
             'active_members' => 101, 'rule' => 'upgrade', 'move_date' => '2027-04-09', 'move_plan' => 'Local', 'move_price_monthly' => 0,
         ]));
 
-        $this->assertStringContainsString('<strong>Local</strong> package, the smallest that fits', $this->body($this->childAdmin));
+        $this->assertStringContainsString('<strong>Local</strong> plan, the smallest that fits', $this->body($this->childAdmin));
     }
 
     public function test_the_limit_notices_say_how_many_sends_the_mailer_accepted(): void
@@ -325,7 +325,7 @@ final class OverLimitNoticeTest extends TestCase
         $fits = PlanTerms::smallestFitting($this->platformPayer, $sparkMax + 1);
         $this->assertSame($fits['name'], $entry['detail']['move_plan']);
         $this->assertSame('2027-03-20', $entry['detail']['move_date']);
-        $this->assertStringContainsString('<strong>' . $fits['name'] . '</strong> package', $this->body($admin));
+        $this->assertStringContainsString('<strong>' . $fits['name'] . '</strong> plan', $this->body($admin));
         $this->assertFalse(BillingLock::isLocked($this->platformPayer), 'Move up never pauses.');
     }
 
@@ -349,7 +349,7 @@ final class OverLimitNoticeTest extends TestCase
         $this->assertSame('custom_price', $entry['detail']['move_decision']);
         $body = $this->body($admin);
         $this->assertStringNotContainsString('it will be moved automatically', $body);
-        $this->assertStringContainsString('cannot be moved to a bigger package automatically', $body);
+        $this->assertStringContainsString('cannot be moved to a bigger plan automatically', $body);
     }
 
     public function test_the_platform_team_is_told_once_that_a_card_payer_set_to_move_up_needs_moving_by_hand(): void
@@ -369,7 +369,7 @@ final class OverLimitNoticeTest extends TestCase
 
         $mail = $this->mailer->to($this->team);
         $this->assertCount(1, $mail, 'Once per over episode.');
-        $this->assertStringContainsString('cannot be moved to a bigger package automatically', $mail[0]['body']);
+        $this->assertStringContainsString('cannot be moved to a bigger plan automatically', $mail[0]['body']);
     }
 
     private function addActiveMembers(int $tenantId, int $count): void

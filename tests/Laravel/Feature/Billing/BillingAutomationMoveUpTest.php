@@ -169,7 +169,7 @@ final class BillingAutomationMoveUpTest extends TestCase
         $this->assertSame($this->day(10)->toDateString(), $detail['move_date']);
         $over = $this->subjectsContaining($this->admin, 'is over its member limit');
         $this->assertCount(1, $over);
-        $this->assertStringContainsString('<strong>Medium</strong> package (', $over[0]['body'], 'The plan it will move to, with its price.');
+        $this->assertStringContainsString('<strong>Medium</strong> plan (', $over[0]['body'], 'The plan it will move to, with its price.');
         $this->assertStringContainsString('30.00', $over[0]['body']);
         $this->assertStringContainsString('a month', $over[0]['body']);
 
@@ -182,12 +182,12 @@ final class BillingAutomationMoveUpTest extends TestCase
         $this->assertSame($this->medium, $this->detail($outcome, $this->community)['move_plan_id']);
         $this->assertFalse(BillingLock::isLocked($this->community), 'A move never pauses.');
 
-        $moved = $this->subjectsContaining($this->admin, 'has moved to the Medium package');
+        $moved = $this->subjectsContaining($this->admin, 'has moved to the Medium plan');
         $this->assertCount(1, $moved);
         $this->assertStringContainsString('Small', $moved[0]['body']);
         $this->assertStringContainsString('<strong>20</strong>', $moved[0]['body']);
         $this->assertStringContainsString('30.00', $moved[0]['body']);
-        $this->assertCount(1, $this->subjectsContaining($this->team, 'has moved to the Medium package'), 'Whoever it pays is told too.');
+        $this->assertCount(1, $this->subjectsContaining($this->team, 'has moved to the Medium plan'), 'Whoever it pays is told too.');
 
         // The next morning it fits: no second "over" notice, nothing else.
         $before = count($this->mailer->sent);
@@ -261,10 +261,10 @@ final class BillingAutomationMoveUpTest extends TestCase
         $this->assertSame(['member_limit:move_up'], $this->actionsFor(BillingAutomationService::run($this->day(10)), $child));
         $this->assertSame($this->large, $this->planOf($child), 'Medium is hidden by the hub: never chosen.');
 
-        $moved = $this->subjectsContaining($manager, 'has moved to the Large package');
+        $moved = $this->subjectsContaining($manager, 'has moved to the Large plan');
         $this->assertCount(1, $moved, 'Whoever it pays (its hub) is told.');
         $this->assertStringContainsString('55.00', $moved[0]['body'], "The hub's price.");
-        $this->assertCount(1, $this->subjectsContaining($childAdmin, 'has moved to the Large package'));
+        $this->assertCount(1, $this->subjectsContaining($childAdmin, 'has moved to the Large plan'));
     }
 
     public function test_a_discount_and_the_non_profit_flag_survive_the_move(): void
@@ -280,7 +280,7 @@ final class BillingAutomationMoveUpTest extends TestCase
         $this->assertSame(1, (int) $row->nonprofit_verified);
 
         // 30.00 less 20% (non-profit) less 10%.
-        $moved = $this->subjectsContaining($this->admin, 'has moved to the Medium package');
+        $moved = $this->subjectsContaining($this->admin, 'has moved to the Medium plan');
         $this->assertStringContainsString('21.60', $moved[0]['body']);
     }
 
@@ -292,7 +292,7 @@ final class BillingAutomationMoveUpTest extends TestCase
 
         $outcome = BillingAutomationService::run($this->today);
         $this->assertArrayNotHasKey('move_plan', $this->detail($outcome, $this->community));
-        $this->assertStringContainsString('cannot be moved to a bigger package automatically', $this->subjectsContaining($this->admin, 'is over its member limit')[0]['body']);
+        $this->assertStringContainsString('cannot be moved to a bigger plan automatically', $this->subjectsContaining($this->admin, 'is over its member limit')[0]['body']);
 
         $this->assertSame([], $this->actionsFor(BillingAutomationService::run($this->day(9)), $this->community));
         $outcome = BillingAutomationService::run($this->day(10));
@@ -301,9 +301,9 @@ final class BillingAutomationMoveUpTest extends TestCase
         $this->assertSame($this->small, $this->planOf($this->community));
         $this->assertSame('needs_decision', $this->standingRow($this->community)->limit_notice_stage);
 
-        $decision = $this->subjectsContaining($this->team, 'needs a decision about its package');
+        $decision = $this->subjectsContaining($this->team, 'needs a decision about its plan');
         $this->assertCount(1, $decision, 'The platform team (whoever it pays) is told once.');
-        $this->assertStringContainsString('No package', $decision[0]['body']);
+        $this->assertStringContainsString('No plan', $decision[0]['body']);
         $this->assertCount(0, $this->subjectsContaining($this->admin, 'needs a decision'));
 
         $before = count($this->mailer->sent);
@@ -515,7 +515,7 @@ final class BillingAutomationMoveUpTest extends TestCase
 
         $outcome = BillingAutomationService::run($this->today);
         $this->assertArrayNotHasKey('move_plan', $this->detail($outcome, $child));
-        $this->assertStringContainsString('cannot be moved to a bigger package automatically', $this->mailer->to($admin)[0]['body']);
+        $this->assertStringContainsString('cannot be moved to a bigger plan automatically', $this->mailer->to($admin)[0]['body']);
 
         $this->hubTerms($hub, $this->large, ['is_offered' => 1]);
         $this->assertRestartedOnDayFiveAndMovedOnDayFifteen($child, $this->large, 'Large');
@@ -599,7 +599,7 @@ final class BillingAutomationMoveUpTest extends TestCase
         BillingAutomationService::run($this->today);
 
         $over = $this->mailer->to($admin)[0]['body'];
-        $this->assertSame(1, preg_match('#<strong>([^<]+)</strong> package \(([^)]+) a month\)#', $over, $named));
+        $this->assertSame(1, preg_match('#<strong>([^<]+)</strong> plan \(([^)]+) a month\)#', $over, $named));
         [, $namedPlan, $namedPrice] = $named;
 
         BillingAutomationService::run($this->day(10));
