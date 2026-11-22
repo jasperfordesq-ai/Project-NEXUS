@@ -3027,75 +3027,59 @@ class AdminSuperController extends BaseApiController
         ]);
     }
 
+    // ── Retired on 22 November 2026 ─────────────────────────────────────
+    //
+    // "Billing delegates", "pause billing" / "resume billing" and the "grace
+    // period" each wrote a value nothing ever read, and answered "success"
+    // whether or not anything had changed. No screen offers them. The
+    // endpoints stay so that anything still calling one is told plainly, in
+    // the reader's language, that it is retired and what to use instead.
+    // Platform team only, as before: nobody else learns anything from them.
+
     /** POST /api/v2/admin/super/billing/delegate/grant */
     public function grantBillingDelegate(): JsonResponse
     {
-        $userId = $this->requireGodPlatformAdmin();
-        $input        = $this->getAllInput();
-        $targetUserId = (int) ($input['user_id'] ?? 0);
-        $scope        = $input['scope'] ?? '';
-        if (!in_array($scope, ['view_billing', 'edit_own_price', 'manage_children'], true)) {
-            return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_delegate_scope'), null, 422);
-        }
-        TenantBillingService::grantDelegate($targetUserId, $scope, $userId);
-        return $this->respondWithData(['granted' => true]);
+        $this->requireGodPlatformAdmin();
+
+        return $this->retired('api.billing_delegates_retired');
     }
 
     /** POST /api/v2/admin/super/billing/delegate/revoke */
     public function revokeBillingDelegate(): JsonResponse
     {
-        $userId = $this->requireGodPlatformAdmin();
-        $input        = $this->getAllInput();
-        $targetUserId = (int) ($input['user_id'] ?? 0);
-        $scope        = $input['scope'] ?? '';
-        if (!in_array($scope, ['view_billing', 'edit_own_price', 'manage_children'], true)) {
-            return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_delegate_scope'), null, 422);
-        }
-        TenantBillingService::revokeDelegate($targetUserId, $scope, $userId);
-        return $this->respondWithData(['revoked' => true]);
+        $this->requireGodPlatformAdmin();
+
+        return $this->retired('api.billing_delegates_retired');
     }
 
     /** POST /api/v2/admin/super/billing/pause */
     public function pauseTenantBilling(): JsonResponse
     {
-        $userId   = $this->requireGodPlatformAdmin();
-        $input    = $this->getAllInput();
-        $tenantId = (int) ($input['tenant_id'] ?? 0);
-        if ($tenantId < 1) {
-            return $this->respondWithError('VALIDATION_ERROR', __('api.tenant_id_is_required'), 'tenant_id', 422);
-        }
-        TenantBillingService::pauseBilling($tenantId, $userId);
-        return $this->respondWithData(['paused' => true, 'tenant_id' => $tenantId]);
+        $this->requireGodPlatformAdmin();
+
+        return $this->retired('api.billing_pause_billing_retired');
     }
 
     /** POST /api/v2/admin/super/billing/resume */
     public function resumeTenantBilling(): JsonResponse
     {
-        $userId   = $this->requireGodPlatformAdmin();
-        $input    = $this->getAllInput();
-        $tenantId = (int) ($input['tenant_id'] ?? 0);
-        if ($tenantId < 1) {
-            return $this->respondWithError('VALIDATION_ERROR', __('api.tenant_id_is_required'), 'tenant_id', 422);
-        }
-        TenantBillingService::resumeBilling($tenantId, $userId);
-        return $this->respondWithData(['resumed' => true, 'tenant_id' => $tenantId]);
+        $this->requireGodPlatformAdmin();
+
+        return $this->retired('api.billing_pause_billing_retired');
     }
 
     /** POST /api/v2/admin/super/billing/grace-period */
     public function setBillingGracePeriod(): JsonResponse
     {
-        $userId   = $this->requireGodPlatformAdmin();
-        $input    = $this->getAllInput();
-        $tenantId = (int) ($input['tenant_id'] ?? 0);
-        $days     = (int) ($input['days'] ?? 0);
-        if ($tenantId < 1) {
-            return $this->respondWithError('VALIDATION_ERROR', __('api.tenant_id_is_required'), 'tenant_id', 422);
-        }
-        if ($days < 1 || $days > 365) {
-            return $this->respondWithError('VALIDATION_ERROR', __('api.grace_period_days_invalid'), 'days', 422);
-        }
-        TenantBillingService::setGracePeriod($tenantId, $days, $userId);
-        return $this->respondWithData(['grace_period_set' => true, 'tenant_id' => $tenantId, 'days' => $days]);
+        $this->requireGodPlatformAdmin();
+
+        return $this->retired('api.billing_grace_period_retired');
+    }
+
+    /** 410 Gone, with a sentence saying what replaced the feature. */
+    private function retired(string $messageKey): JsonResponse
+    {
+        return $this->respondWithError('FEATURE_RETIRED', __($messageKey), null, 410);
     }
 
     // =====================================================================

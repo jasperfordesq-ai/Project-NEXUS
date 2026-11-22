@@ -77,8 +77,6 @@ interface CurrentPlan {
   custom_price_yearly: number | null;
   discount_percentage: number;
   discount_reason: string | null;
-  grace_period_ends_at: string | null;
-  is_paused: boolean;
   nonprofit_verified: boolean;
   expires_at: string | null;
   effective_price: EffectivePrice;
@@ -146,8 +144,6 @@ interface TenantSnapshot {
   over_limit_rule: OverLimitState | null;
   /** False when "Move up to the next plan" may not be chosen (it pays the platform by card). */
   upgrade_allowed: boolean;
-  is_in_grace_period: boolean;
-  grace_days_remaining: number;
   standing: Standing;
   /** Earliest day the daily check would pause it (paid-until + the pause days); null when none applies. */
   pause_on: string | null;
@@ -692,7 +688,7 @@ export function BillingControl() {
                     {/* Community name with depth indent */}
                     <TableCell>
                       <div className={`block min-w-44 break-normal text-sm font-medium ${indentFor(row.depth)}`}>
-                        {row.over_limit && !row.is_in_grace_period && (
+                        {row.over_limit && (
                           <AlertTriangle size={14} className="inline mr-1 text-warning-soft-foreground" aria-hidden="true" />
                         )}
                         {row.name}
@@ -725,9 +721,6 @@ export function BillingControl() {
                         </Chip>
                         {row.over_limit ? (
                           <Chip size="sm" variant="soft" color="warning">{t('billing.over_limit')}</Chip>
-                        ) : null}
-                        {row.is_in_grace_period ? (
-                          <Chip size="sm" variant="soft" color="danger">{t('billing.in_grace_period')}</Chip>
                         ) : null}
                         {row.current_plan && row.current_plan.assignment_status !== 'active' ? (
                           <Chip

@@ -20,8 +20,14 @@ use App\Support\Billing\StandardPlans;
  * dashboard for the super admin panel.
  *
  * Provides per-tenant user counts (including subtree descendants), current plan
- * lookups, over-limit detection, atomic plan upserts with audit logging,
- * grace periods, billing pause/resume, delegate management, and CSV export.
+ * lookups, over-limit detection, atomic plan upserts with audit logging and
+ * CSV export.
+ *
+ * "Pause billing", the "grace period" and "billing delegates" were retired on
+ * 22 November 2026: each wrote a value nothing ever read
+ * (`tenant_plan_assignments.is_paused`, `.grace_period_ends_at`, the
+ * `billing_delegates` table). The columns and the table are kept; nothing
+ * writes them any more, and their endpoints refuse.
  */
 class TenantBillingService
 {
@@ -319,7 +325,7 @@ class TenantBillingService
             "SELECT tpa.tenant_id, tpa.status AS assignment_status,
                     tpa.custom_price_monthly, tpa.custom_price_yearly,
                     tpa.discount_percentage, tpa.discount_reason,
-                    tpa.grace_period_ends_at, tpa.is_paused, tpa.nonprofit_verified,
+                    tpa.nonprofit_verified,
                     tpa.expires_at, tpa.notes, tpa.billing_interval,
                     pp.id AS plan_id, pp.name AS plan_name, pp.slug AS plan_slug,
                     pp.max_users, pp.price_monthly, pp.price_yearly,
@@ -370,8 +376,6 @@ class TenantBillingService
                 'custom_price_yearly'   => $row->custom_price_yearly !== null ? (float) $row->custom_price_yearly : null,
                 'discount_percentage'   => (int) ($row->discount_percentage ?? 0),
                 'discount_reason'       => $row->discount_reason,
-                'grace_period_ends_at'  => $row->grace_period_ends_at,
-                'is_paused'             => (bool) ($row->is_paused ?? false),
                 'nonprofit_verified'    => (bool) ($row->nonprofit_verified ?? false),
                 'expires_at'            => $row->expires_at,
                 'assignment_status'     => (string) ($row->assignment_status ?? 'active'),
@@ -443,18 +447,6 @@ class TenantBillingService
                     : null;
             }
 
-            // Grace period status.
-            $isInGracePeriod  = false;
-            $graceDaysRemaining = 0;
-            if ($currentPlan !== null && !empty($currentPlan['grace_period_ends_at'])) {
-                $graceEnds = strtotime($currentPlan['grace_period_ends_at']);
-                $now       = time();
-                if ($graceEnds !== false && $graceEnds > $now) {
-                    $isInGracePeriod    = true;
-                    $graceDaysRemaining = (int) ceil(($graceEnds - $now) / 86400);
-                }
-            }
-
             $standing = BillingStandingService::get($id);
 
             $snapshot[] = [
@@ -474,8 +466,6 @@ class TenantBillingService
                 'current_plan'        => $currentPlan,
                 'suggested_plan'      => $suggested,
                 'over_limit'          => $overLimit,
-                'is_in_grace_period'  => $isInGracePeriod,
-                'grace_days_remaining'=> $graceDaysRemaining,
                 // Payment standing: who it pays, paid until, paused or exempt.
                 // One definition, shared with every other caller, at the cost
                 // of a few small queries per row on a platform-team-only page
@@ -1068,178 +1058,6 @@ class TenantBillingService
             'currency'      => $terms['currency'],
             'payee_name'    => $payeeName !== null ? (string) $payeeName : null,
         ];
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Grace Period / Pause / Resume
-    // ─────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Set a grace period on the tenant's active plan assignment.
-     */
-    public static function setGracePeriod(int $tenantId, int $days, int $actedBy): void
-    {
-        $existing = DB::selectOne(
-            "SELECT id, grace_period_ends_at FROM tenant_plan_assignments WHERE tenant_id = ? AND status = 'active' LIMIT 1",
-            [$tenantId]
-        );
-
-        if (!$existing) {
-            return;
-        }
-
-        $oldValue = ['grace_period_ends_at' => $existing->grace_period_ends_at];
-
-        DB::table('tenant_plan_assignments')
-            ->where('id', $existing->id)
-            ->update([
-                'grace_period_ends_at' => DB::raw("DATE_ADD(NOW(), INTERVAL {$days} DAY)"),
-                'updated_at'           => now(),
-            ]);
-
-        $newEnds = DB::selectOne(
-            "SELECT grace_period_ends_at FROM tenant_plan_assignments WHERE id = ?",
-            [$existing->id]
-        );
-
-        self::logAudit(
-            $tenantId,
-            $actedBy,
-            'grace_period_set',
-            $oldValue,
-            ['grace_period_ends_at' => $newEnds->grace_period_ends_at ?? null, 'days' => $days],
-            "Grace period set for {$days} days"
-        );
-    }
-
-    /**
-     * Pause billing for a tenant (sets is_paused = true).
-     */
-    public static function pauseBilling(int $tenantId, int $actedBy): void
-    {
-        $existing = DB::selectOne(
-            "SELECT id, is_paused FROM tenant_plan_assignments WHERE tenant_id = ? AND status = 'active' LIMIT 1",
-            [$tenantId]
-        );
-
-        if (!$existing) {
-            return;
-        }
-
-        DB::table('tenant_plan_assignments')
-            ->where('id', $existing->id)
-            ->update(['is_paused' => 1, 'updated_at' => now()]);
-
-        self::logAudit(
-            $tenantId,
-            $actedBy,
-            'plan_paused',
-            ['is_paused' => (bool) $existing->is_paused],
-            ['is_paused' => true],
-            null
-        );
-    }
-
-    /**
-     * Resume billing for a tenant (sets is_paused = false, clears grace period).
-     */
-    public static function resumeBilling(int $tenantId, int $actedBy): void
-    {
-        $existing = DB::selectOne(
-            "SELECT id, is_paused, grace_period_ends_at FROM tenant_plan_assignments WHERE tenant_id = ? AND status = 'active' LIMIT 1",
-            [$tenantId]
-        );
-
-        if (!$existing) {
-            return;
-        }
-
-        DB::table('tenant_plan_assignments')
-            ->where('id', $existing->id)
-            ->update([
-                'is_paused'            => 0,
-                'grace_period_ends_at' => null,
-                'updated_at'           => now(),
-            ]);
-
-        self::logAudit(
-            $tenantId,
-            $actedBy,
-            'plan_resumed',
-            ['is_paused' => (bool) $existing->is_paused, 'grace_period_ends_at' => $existing->grace_period_ends_at],
-            ['is_paused' => false, 'grace_period_ends_at' => null],
-            null
-        );
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Delegates
-    // ─────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Grant a billing delegate scope to a user.
-     * Upserts: if a previously revoked row exists it is reactivated.
-     */
-    public static function grantDelegate(int $userId, string $scope, int $grantedBy): void
-    {
-        $existing = DB::selectOne(
-            "SELECT id FROM billing_delegates WHERE user_id = ? AND scope = ? LIMIT 1",
-            [$userId, $scope]
-        );
-
-        $now = now();
-
-        if ($existing) {
-            DB::table('billing_delegates')
-                ->where('id', $existing->id)
-                ->update([
-                    'revoked_at'      => null,
-                    'granted_by_user_id' => $grantedBy,
-                    'granted_at'      => $now,
-                    'updated_at'      => $now,
-                ]);
-        } else {
-            DB::table('billing_delegates')->insert([
-                'user_id'            => $userId,
-                'granted_by_user_id' => $grantedBy,
-                'scope'              => $scope,
-                'granted_at'         => $now,
-                'revoked_at'         => null,
-                'created_at'         => $now,
-                'updated_at'         => $now,
-            ]);
-        }
-
-        // Audit log: tenant_id = 0 since delegates are global.
-        self::logAudit(
-            0,
-            $grantedBy,
-            'delegate_granted',
-            null,
-            ['user_id' => $userId, 'scope' => $scope],
-            "Delegate scope '{$scope}' granted to user #{$userId}"
-        );
-    }
-
-    /**
-     * Revoke a billing delegate scope from a user.
-     */
-    public static function revokeDelegate(int $userId, string $scope, int $revokedBy): void
-    {
-        DB::table('billing_delegates')
-            ->where('user_id', $userId)
-            ->where('scope', $scope)
-            ->whereNull('revoked_at')
-            ->update(['revoked_at' => now(), 'updated_at' => now()]);
-
-        self::logAudit(
-            0,
-            $revokedBy,
-            'delegate_revoked',
-            ['user_id' => $userId, 'scope' => $scope],
-            null,
-            "Delegate scope '{$scope}' revoked from user #{$userId}"
-        );
     }
 
     // ─────────────────────────────────────────────────────────────────────────

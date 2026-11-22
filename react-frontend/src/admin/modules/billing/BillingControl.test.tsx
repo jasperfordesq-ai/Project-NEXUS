@@ -190,8 +190,6 @@ const makePlanOnRow = (overrides = {}) => ({
   custom_price_yearly: null,
   discount_percentage: 0,
   discount_reason: null,
-  grace_period_ends_at: null,
-  is_paused: false,
   nonprofit_verified: false,
   expires_at: null,
   effective_price: { monthly: 49, yearly: 490, has_custom: false, discount_pct: 0, nonprofit: false },
@@ -232,8 +230,6 @@ const makeSnapshot = (overrides: Record<string, unknown> = {}) => ({
   over_limit: false,
   over_limit_rule: makeOverLimit(),
   upgrade_allowed: true,
-  is_in_grace_period: false,
-  grace_days_remaining: 0,
   standing: makeStanding(),
   pause_on: null,
   last_payment: null,
@@ -952,10 +948,10 @@ describe('BillingControl', () => {
     });
   });
 
-  it('shows an "in grace period" chip beside the plan name', async () => {
-    await renderWith([makeSnapshot({ is_in_grace_period: true, grace_days_remaining: 12 })]);
+  it('shows no "grace period" marker: that switch was retired and never did anything', async () => {
+    await renderWith([makeSnapshot()]);
 
-    expect(screen.getByText('In Grace Period')).toBeInTheDocument();
+    expect(screen.queryByText('In Grace Period')).not.toBeInTheDocument();
     expect(screen.getByText('Pro')).toBeInTheDocument();
   });
 

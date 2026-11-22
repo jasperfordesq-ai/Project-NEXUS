@@ -19,9 +19,10 @@ use Illuminate\Support\Facades\Queue;
  * Strategy:
  * - getEffectivePrice: pure computation — no DB required; tested exhaustively.
  * - getSubtreeUserCount: DB-backed; seed a minimal tenant + users.
- * - assignPlan / pauseBilling / resumeBilling / setGracePeriod: DB-backed;
- *   verify rows written and audit log entries created.
- * - grantDelegate / revokeDelegate: DB-backed; verify billing_delegates rows.
+ * - assignPlan: DB-backed; verify rows written and audit log entries created.
+ *   (pauseBilling / resumeBilling / setGracePeriod / grantDelegate /
+ *   revokeDelegate were retired on 22 Nov 2026: they wrote values nothing
+ *   read. Their endpoints' refusal is pinned in RetiredBillingSwitchesTest.)
  * - getBillingSnapshot / getRevenueDashboard / getAuditLog / exportCsv:
  *   verified via real DB rows using tenant 2.
  *
@@ -521,185 +522,6 @@ class TenantBillingServiceTest extends TestCase
     }
 
     // ─────────────────────────────────────────────────────────────────────
-    // pauseBilling / resumeBilling — DB-backed
-    // ─────────────────────────────────────────────────────────────────────
-
-    public function test_pauseBilling_sets_is_paused_flag(): void
-    {
-        $planId = $this->insertPlan();
-        $assignId = $this->insertPlanAssignment(self::TENANT_ID, $planId);
-
-        TenantBillingService::pauseBilling(self::TENANT_ID, 1);
-
-        $row = DB::table('tenant_plan_assignments')->where('id', $assignId)->first();
-        $this->assertSame(1, (int) $row->is_paused);
-    }
-
-    public function test_pauseBilling_writes_audit_log_with_plan_paused_action(): void
-    {
-        $planId = $this->insertPlan();
-        $this->insertPlanAssignment(self::TENANT_ID, $planId);
-
-        $before = DB::table('billing_audit_log')
-            ->where('tenant_id', self::TENANT_ID)
-            ->where('action', 'plan_paused')
-            ->count();
-
-        TenantBillingService::pauseBilling(self::TENANT_ID, 1);
-
-        $after = DB::table('billing_audit_log')
-            ->where('tenant_id', self::TENANT_ID)
-            ->where('action', 'plan_paused')
-            ->count();
-
-        $this->assertSame($before + 1, $after);
-    }
-
-    public function test_resumeBilling_clears_is_paused_and_grace_period(): void
-    {
-        $planId = $this->insertPlan();
-        $assignId = $this->insertPlanAssignment(self::TENANT_ID, $planId, [
-            'is_paused'            => 1,
-            'grace_period_ends_at' => now()->addDays(7),
-        ]);
-
-        TenantBillingService::resumeBilling(self::TENANT_ID, 1);
-
-        $row = DB::table('tenant_plan_assignments')->where('id', $assignId)->first();
-        $this->assertSame(0, (int) $row->is_paused);
-        $this->assertNull($row->grace_period_ends_at);
-    }
-
-    public function test_pauseBilling_is_noop_when_no_active_assignment_exists(): void
-    {
-        // Use a tenant with no assignments — no exception should be thrown.
-        $tempTenantId = 98010;
-        DB::table('tenants')->insertOrIgnore([
-            'id' => $tempTenantId, 'name' => 'Noop', 'slug' => 'noop-' . $tempTenantId,
-            'is_active' => 1, 'depth' => 0, 'allows_subtenants' => 0,
-            'created_at' => now(), 'updated_at' => now(),
-        ]);
-
-        // Should silently return without writing anything.
-        TenantBillingService::pauseBilling($tempTenantId, 1);
-
-        $count = DB::table('billing_audit_log')
-            ->where('tenant_id', $tempTenantId)
-            ->where('action', 'plan_paused')
-            ->count();
-
-        $this->assertSame(0, $count);
-    }
-
-    // ─────────────────────────────────────────────────────────────────────
-    // setGracePeriod — DB-backed
-    // ─────────────────────────────────────────────────────────────────────
-
-    public function test_setGracePeriod_sets_future_grace_period_ends_at(): void
-    {
-        $planId   = $this->insertPlan();
-        $assignId = $this->insertPlanAssignment(self::TENANT_ID, $planId);
-
-        TenantBillingService::setGracePeriod(self::TENANT_ID, 14, 1);
-
-        $row = DB::table('tenant_plan_assignments')->where('id', $assignId)->first();
-        $this->assertNotNull($row->grace_period_ends_at);
-
-        // grace_period_ends_at should be in the future.
-        $this->assertGreaterThan(time(), strtotime($row->grace_period_ends_at));
-    }
-
-    public function test_setGracePeriod_writes_audit_log(): void
-    {
-        $planId = $this->insertPlan();
-        $this->insertPlanAssignment(self::TENANT_ID, $planId);
-
-        $before = DB::table('billing_audit_log')
-            ->where('tenant_id', self::TENANT_ID)
-            ->where('action', 'grace_period_set')
-            ->count();
-
-        TenantBillingService::setGracePeriod(self::TENANT_ID, 7, 1);
-
-        $after = DB::table('billing_audit_log')
-            ->where('tenant_id', self::TENANT_ID)
-            ->where('action', 'grace_period_set')
-            ->count();
-
-        $this->assertSame($before + 1, $after);
-    }
-
-    // ─────────────────────────────────────────────────────────────────────
-    // grantDelegate / revokeDelegate — DB-backed
-    // ─────────────────────────────────────────────────────────────────────
-
-    public function test_grantDelegate_inserts_billing_delegate_row(): void
-    {
-        $userId = $this->insertUser();
-
-        TenantBillingService::grantDelegate($userId, 'view_billing', 1);
-
-        $row = DB::table('billing_delegates')
-            ->where('user_id', $userId)
-            ->where('scope', 'view_billing')
-            ->whereNull('revoked_at')
-            ->first();
-
-        $this->assertNotNull($row);
-        $this->assertSame('view_billing', $row->scope);
-    }
-
-    public function test_grantDelegate_reactivates_previously_revoked_row(): void
-    {
-        $userId = $this->insertUser();
-
-        // Insert a pre-revoked row.
-        DB::table('billing_delegates')->insertOrIgnore([
-            'user_id'            => $userId,
-            'granted_by_user_id' => 1,
-            'scope'              => 'edit_own_price',
-            'granted_at'         => now()->subDays(10),
-            'revoked_at'         => now()->subDays(5),
-            'created_at'         => now()->subDays(10),
-            'updated_at'         => now()->subDays(5),
-        ]);
-
-        TenantBillingService::grantDelegate($userId, 'edit_own_price', 1);
-
-        $row = DB::table('billing_delegates')
-            ->where('user_id', $userId)
-            ->where('scope', 'edit_own_price')
-            ->whereNull('revoked_at')
-            ->first();
-
-        $this->assertNotNull($row, 'Revoked row should be reactivated');
-    }
-
-    public function test_revokeDelegate_sets_revoked_at(): void
-    {
-        $userId = $this->insertUser();
-
-        DB::table('billing_delegates')->insert([
-            'user_id'            => $userId,
-            'granted_by_user_id' => 1,
-            'scope'              => 'manage_children',
-            'granted_at'         => now(),
-            'revoked_at'         => null,
-            'created_at'         => now(),
-            'updated_at'         => now(),
-        ]);
-
-        TenantBillingService::revokeDelegate($userId, 'manage_children', 1);
-
-        $row = DB::table('billing_delegates')
-            ->where('user_id', $userId)
-            ->where('scope', 'manage_children')
-            ->first();
-
-        $this->assertNotNull($row->revoked_at);
-    }
-
-    // ─────────────────────────────────────────────────────────────────────
     // getAuditLog — DB-backed
     // ─────────────────────────────────────────────────────────────────────
 
@@ -742,8 +564,6 @@ class TenantBillingServiceTest extends TestCase
             $this->assertArrayHasKey('subtree_user_count', $first);
             $this->assertArrayHasKey('suggested_plan', $first);
             $this->assertArrayHasKey('over_limit', $first);
-            $this->assertArrayHasKey('is_in_grace_period', $first);
-            $this->assertArrayHasKey('grace_days_remaining', $first);
         }
 
         // Returns at least a valid array (even if empty on a minimal test DB).

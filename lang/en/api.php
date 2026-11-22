@@ -793,6 +793,9 @@ return [
     'failed_send_test_via'                 => 'Failed to send test email via :provider. Check server logs.',
     'billing_upgrade_email_send_failed'    => 'The upgrade request was recorded, but the notification email could not be sent. Please try again or contact platform support.',
     'billing_message_too_many' => 'Your community has already sent the platform team several messages in the last hour. Please wait a while before sending another.',
+    'billing_pause_billing_retired' => '“Pause billing” has been retired: it never stopped anything. To close a community, pause it on Billing control. To stop it being billed, exempt it there or set how it pays to “Not billed”.',
+    'billing_grace_period_retired' => 'The grace period has been retired: nothing ever read it. To give a community more time, move its paid-until date on Billing control, or change the days in its over-limit rule.',
+    'billing_delegates_retired' => 'Billing delegates have been retired: the permission was never checked anywhere. The managers of a parent community look after the payments of the communities below it on Branch payments.',
 
     // ============================================
     // ADMIN — ONBOARDING
