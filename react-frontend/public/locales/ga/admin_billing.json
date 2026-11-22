@@ -359,7 +359,7 @@
     "paid_until_label": "Íoctha suas go dtí agus lena n-áirítear",
     "pause_on_line": "Sos uathoibríoch: {{date}}",
     "payer_default": "Úsáid an réamhshocrú",
-    "payer_help_default": "Socraíonn an t-ardán: íocann pobal atá faoi phobal eile a mháthairphobal; murach sin íocann sé an t-ardán, le cárta má tá síntiús Stripe beo aige agus le sonrasc mura bhfuil.",
+    "payer_help_default": "Socraíonn an t-ardán: íocann pobal a bhfuil síntiús Stripe beo aige an t-ardán le cárta. Gan síntiús, íocann pobal atá faoi phobal eile a mháthairphobal, agus íocann aon phobal eile an t-ardán le sonrasc.",
     "payer_help_not_billed": "Ní ghearrtar bille air riamh. Ní bhaineann na seiceálacha uathoibríocha íocaíochta leis.",
     "payer_help_parent": "Íocann sé an pobal os a chionn, ní an t-ardán.",
     "payer_help_platform_card": "Íocann sé an t-ardán le cárta trí Stripe. Ní sheoltar aon mheabhrúchán roimh an dáta, agus déanann Stripe cárta a theip a thriail arís.",

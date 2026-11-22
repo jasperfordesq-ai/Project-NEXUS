@@ -450,7 +450,35 @@ final class BillingStandingServiceTest extends TestCase
         $this->assertSame('platform_invoice', BillingStandingService::defaultPayer($this->top));
     }
 
-    public function test_a_card_never_changes_who_a_hubs_community_pays(): void
+    /**
+     * A card subscription is with the platform, wherever the community sits.
+     * Until 22 November 2026 a community under a hub was "pays its parent"
+     * before a card was even looked for, so one that already paid the
+     * platform by card was handed to its hub: the hub could set its date and
+     * pause it, its notices named the hub as payee, and the wait for Stripe's
+     * retries did not apply to it.
+     */
+    public function test_a_hubs_community_that_pays_the_platform_by_card_is_a_card_payer(): void
+    {
+        $this->assertSame('parent', BillingStandingService::defaultPayer($this->child), 'with no card it pays its hub');
+
+        $planId = (int) DB::table('pay_plans')->insertGetId([
+            'name' => 'Standing test plan',
+            'slug' => 'standing-plan-' . bin2hex(random_bytes(4)),
+            'created_at' => now(),
+        ]);
+        DB::table('tenant_plan_assignments')->insert([
+            'tenant_id' => $this->child, 'pay_plan_id' => $planId, 'status' => 'active',
+            'stripe_subscription_id' => 'sub_test_' . bin2hex(random_bytes(6)), 'stripe_status' => 'active',
+        ]);
+
+        $this->assertSame('platform_card', BillingStandingService::defaultPayer($this->child));
+        $standing = BillingStandingService::get($this->child);
+        $this->assertSame('platform_card', $standing['payer']);
+        $this->assertTrue($standing['payer_is_default']);
+    }
+
+    public function test_a_hubs_community_whose_card_has_failed_is_still_a_card_payer(): void
     {
         $planId = (int) DB::table('pay_plans')->insertGetId([
             'name' => 'Standing test plan',
@@ -462,7 +490,42 @@ final class BillingStandingServiceTest extends TestCase
             'stripe_subscription_id' => 'sub_test_' . bin2hex(random_bytes(6)), 'stripe_status' => 'past_due',
         ]);
 
+        $this->assertSame('platform_card', BillingStandingService::defaultPayer($this->child));
+    }
+
+    public function test_a_hubs_community_whose_card_subscription_stripe_has_ended_pays_its_hub_again(): void
+    {
+        $planId = (int) DB::table('pay_plans')->insertGetId([
+            'name' => 'Standing test plan',
+            'slug' => 'standing-plan-' . bin2hex(random_bytes(4)),
+            'created_at' => now(),
+        ]);
+        DB::table('tenant_plan_assignments')->insert([
+            'tenant_id' => $this->child, 'pay_plan_id' => $planId, 'status' => 'cancelled',
+            'stripe_subscription_id' => 'sub_test_' . bin2hex(random_bytes(6)), 'stripe_status' => 'canceled',
+        ]);
+
         $this->assertSame('parent', BillingStandingService::defaultPayer($this->child));
+    }
+
+    public function test_a_stored_payer_still_wins_over_a_card(): void
+    {
+        $planId = (int) DB::table('pay_plans')->insertGetId([
+            'name' => 'Standing test plan',
+            'slug' => 'standing-plan-' . bin2hex(random_bytes(4)),
+            'created_at' => now(),
+        ]);
+        DB::table('tenant_plan_assignments')->insert([
+            'tenant_id' => $this->child, 'pay_plan_id' => $planId, 'status' => 'active',
+            'stripe_subscription_id' => 'sub_test_' . bin2hex(random_bytes(6)), 'stripe_status' => 'active',
+        ]);
+        // The platform team has said it pays its hub (it is being moved over
+        // and the card has not been cancelled yet).
+        BillingStandingService::setPayer($this->child, 'parent', $this->actor);
+
+        $standing = BillingStandingService::get($this->child);
+        $this->assertSame('parent', $standing['payer']);
+        $this->assertFalse($standing['payer_is_default']);
     }
 
     public function test_a_community_moved_directly_under_the_platform_stops_paying_a_parent_it_no_longer_has(): void

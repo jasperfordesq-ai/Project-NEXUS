@@ -357,7 +357,7 @@
     "paid_until_label": "Pago até (inclusive)",
     "pause_on_line": "Pausa automática: {{date}}",
     "payer_default": "Usar a predefinição",
-    "payer_help_default": "A plataforma decide: uma comunidade que está abaixo de outra paga à comunidade superior; caso contrário paga à plataforma, por cartão se tiver uma subscrição Stripe ativa e por fatura se não tiver.",
+    "payer_help_default": "A plataforma decide: uma comunidade com uma subscrição Stripe ativa paga à plataforma por cartão. Sem ela, uma comunidade que está abaixo de outra paga à comunidade superior, e qualquer outra paga à plataforma por fatura.",
     "payer_help_not_billed": "Nunca é faturada. As verificações automáticas de pagamento não lhe tocam.",
     "payer_help_parent": "Paga à comunidade superior, não à plataforma.",
     "payer_help_platform_card": "Paga à plataforma por cartão através da Stripe. Não são enviados lembretes antes da data, e a Stripe volta a tentar um cartão recusado.",

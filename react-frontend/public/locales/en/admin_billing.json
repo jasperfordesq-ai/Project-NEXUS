@@ -356,7 +356,7 @@
     "paid_until_label": "Paid up to and including",
     "pause_on_line": "Automatic pause: {{date}}",
     "payer_default": "Use the default",
-    "payer_help_default": "The platform decides: a community under another community pays its parent; otherwise it pays the platform, by card if it has a live Stripe subscription and by invoice if not.",
+    "payer_help_default": "The platform decides: a community with a live Stripe subscription pays the platform by card. Without one, a community under another community pays its parent, and any other pays the platform by invoice.",
     "payer_help_not_billed": "Never billed. The automatic payment checks leave it alone.",
     "payer_help_parent": "Pays the community above it, not the platform.",
     "payer_help_platform_card": "Pays the platform by card through Stripe. No reminders are sent before the date, and Stripe retries a failed card.",

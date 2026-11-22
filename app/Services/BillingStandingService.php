@@ -92,15 +92,23 @@ final class BillingStandingService
     /**
      * Who a community pays when nobody has said otherwise.
      *
-     * The platform's own community is never billed. A community directly under
-     * it pays the platform — by card when it holds a card subscription Stripe
-     * has not ended, by invoice otherwise. Anything deeper pays its direct
-     * parent.
+     * The platform's own community is never billed. A community that holds a
+     * card subscription Stripe has not ended pays the platform by card,
+     * WHEREVER it sits: the card is charged by the platform, so a community
+     * under a hub that still has one is not its hub's to chase, pause or
+     * re-price. Without a card, a community directly under the platform pays
+     * it by invoice, and anything deeper pays its direct parent.
      *
      * "A card subscription Stripe has not ended" is
      * TenantBillingService::hasLiveCardSubscription(): a community whose card
      * has just failed is still a card payer. It used to become "by invoice"
      * at that moment, which switched off the wait for Stripe's retries.
+     *
+     * Until 22 November 2026 a community under a hub answered "parent" before
+     * a card was looked for. One that already paid the platform by card was
+     * handed to its hub: the hub could set its paid-until date and pause it,
+     * its notices named the hub as payee, and Stripe's retries were not
+     * waited for.
      */
     public static function defaultPayer(int $tenantId): string
     {
@@ -111,11 +119,11 @@ final class BillingStandingService
         $tenant = self::requireTenant($tenantId);
         $parentId = $tenant->parent_id !== null ? (int) $tenant->parent_id : null;
 
-        if ($parentId !== null && $parentId > 1) {
-            return 'parent';
+        if (TenantBillingService::hasLiveCardSubscription($tenantId)) {
+            return 'platform_card';
         }
 
-        return TenantBillingService::hasLiveCardSubscription($tenantId) ? 'platform_card' : 'platform_invoice';
+        return $parentId !== null && $parentId > 1 ? 'parent' : 'platform_invoice';
     }
 
     /**

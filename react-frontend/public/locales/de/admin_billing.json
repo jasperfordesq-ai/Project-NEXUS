@@ -356,7 +356,7 @@
     "paid_until_label": "Bezahlt bis einschließlich",
     "pause_on_line": "Automatische Pause: {{date}}",
     "payer_default": "Standard verwenden",
-    "payer_help_default": "Die Plattform entscheidet: Eine Community unter einer anderen Community bezahlt ihre übergeordnete Community; sonst bezahlt sie die Plattform, per Karte bei einem laufenden Stripe-Abonnement, andernfalls per Rechnung.",
+    "payer_help_default": "Die Plattform entscheidet: Eine Community mit einem laufenden Stripe-Abonnement bezahlt die Plattform per Karte. Ohne ein solches bezahlt eine Community unter einer anderen Community ihre übergeordnete Community, und jede andere bezahlt die Plattform per Rechnung.",
     "payer_help_not_billed": "Wird nie in Rechnung gestellt. Die automatischen Zahlungsprüfungen lassen sie unberührt.",
     "payer_help_parent": "Bezahlt die übergeordnete Community, nicht die Plattform.",
     "payer_help_platform_card": "Bezahlt die Plattform per Karte über Stripe. Vor dem Datum werden keine Erinnerungen verschickt, und Stripe versucht eine fehlgeschlagene Karte erneut.",

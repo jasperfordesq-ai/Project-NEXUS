@@ -219,11 +219,27 @@ final class OverLimitRuleTest extends TestCase
 
     public function test_a_child_with_a_live_card_subscription_is_not_moved_up_either(): void
     {
+        // Since 22 Nov 2026 a live card subscription makes a community a card
+        // payer by default, wherever it sits, and then it is not its hub's at
+        // all. This is the case in between: the platform team has said it
+        // pays its hub, and its card subscription has not been ended yet.
+        BillingStandingService::setPayer($this->child, 'parent', 1);
         $this->standing($this->hub, ['children_over_limit_action' => 'upgrade']);
         $this->assertSame('upgrade', OverLimitRule::for($this->child)['effective_action']);
 
         $this->giveCardSubscription($this->child);
         $this->assertSame('none', OverLimitRule::for($this->child)['effective_action']);
+    }
+
+    public function test_a_child_that_pays_the_platform_by_card_follows_the_platforms_rule_not_its_hubs(): void
+    {
+        $this->standing($this->hub, ['children_over_limit_action' => 'block_joining']);
+        $this->assertSame('block_joining', OverLimitRule::for($this->child)['effective_action'], 'While it pays its hub, its hub\'s default applies.');
+
+        $this->giveCardSubscription($this->child);
+
+        $this->assertSame('platform_card', BillingStandingService::get($this->child)['payer']);
+        $this->assertNotSame('hub', OverLimitRule::for($this->child)['action_source'] ?? null, 'It pays the platform now: its hub\'s default is not its rule.');
     }
 
     public function test_move_up_cannot_be_chosen_for_a_card_payer(): void

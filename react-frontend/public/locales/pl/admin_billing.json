@@ -358,7 +358,7 @@
     "paid_until_label": "Opłacono do (włącznie)",
     "pause_on_line": "Automatyczne wstrzymanie: {{date}}",
     "payer_default": "Użyj ustawienia domyślnego",
-    "payer_help_default": "Decyduje platforma: społeczność podległa innej płaci społeczności nadrzędnej; w przeciwnym razie płaci platformie, kartą, jeśli ma aktywną subskrypcję Stripe, a jeśli nie, na fakturę.",
+    "payer_help_default": "Decyduje platforma: społeczność z aktywną subskrypcją Stripe płaci platformie kartą. Bez niej społeczność podległa innej płaci społeczności nadrzędnej, a każda inna płaci platformie na fakturę.",
     "payer_help_not_billed": "Nigdy nie jest obciążana. Automatyczne kontrole płatności jej nie dotyczą.",
     "payer_help_parent": "Płaci społeczności nadrzędnej, nie platformie.",
     "payer_help_platform_card": "Płaci platformie kartą przez Stripe. Przed terminem nie są wysyłane przypomnienia, a Stripe ponawia nieudane obciążenie karty.",

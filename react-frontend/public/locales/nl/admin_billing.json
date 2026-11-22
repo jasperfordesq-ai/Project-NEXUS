@@ -356,7 +356,7 @@
     "paid_until_label": "Betaald tot en met",
     "pause_on_line": "Automatische pauze: {{date}}",
     "payer_default": "Standaard gebruiken",
-    "payer_help_default": "Het platform bepaalt het: een community onder een andere community betaalt haar bovenliggende community; anders betaalt ze het platform, per kaart als ze een lopend Stripe-abonnement heeft en anders per factuur.",
+    "payer_help_default": "Het platform bepaalt het: een community met een lopend Stripe-abonnement betaalt het platform per kaart. Zonder abonnement betaalt een community onder een andere community haar bovenliggende community, en elke andere betaalt het platform per factuur.",
     "payer_help_not_billed": "Wordt nooit gefactureerd. De automatische betalingscontroles laten haar met rust.",
     "payer_help_parent": "Betaalt de bovenliggende community, niet het platform.",
     "payer_help_platform_card": "Betaalt het platform per kaart via Stripe. Vóór de datum worden geen herinneringen verstuurd, en Stripe probeert een mislukte kaart opnieuw.",

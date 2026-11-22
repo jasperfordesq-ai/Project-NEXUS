@@ -252,7 +252,11 @@ final class OverLimitRuleEndpointsTest extends TestCase
     {
         // "Move up" was stored before the community paid by card. Saving it
         // again, or changing only its days, is not choosing it.
-        $this->standing($this->child, ['over_limit_action' => 'upgrade', 'over_limit_grace_days' => 10]);
+        // Since 22 Nov 2026 a live card subscription makes a community a card
+        // payer by default, wherever it sits, and then it is not its hub's at
+        // all. This is the case in between: the platform team has said it
+        // pays its hub, and its card subscription has not been ended yet.
+        $this->standing($this->child, ['payer' => 'parent', 'over_limit_action' => 'upgrade', 'over_limit_grace_days' => 10]);
         $this->assign($this->child, $this->local, ['stripe_subscription_id' => 'sub_ruleep_' . bin2hex(random_bytes(4))]);
         $this->asManagerOf($this->hub);
 
@@ -269,6 +273,11 @@ final class OverLimitRuleEndpointsTest extends TestCase
 
     public function test_move_up_is_refused_for_a_child_with_a_card_subscription(): void
     {
+        // Since 22 Nov 2026 a live card subscription makes a community a card
+        // payer by default, wherever it sits, and then it is not its hub's at
+        // all. This is the case in between: the platform team has said it
+        // pays its hub, and its card subscription has not been ended yet.
+        $this->standing($this->child, ['payer' => 'parent']);
         $this->assign($this->child, $this->local, ['stripe_subscription_id' => 'sub_ruleep_' . bin2hex(random_bytes(4))]);
         $this->asManagerOf($this->hub);
 

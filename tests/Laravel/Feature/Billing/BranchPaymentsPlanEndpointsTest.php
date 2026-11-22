@@ -533,6 +533,26 @@ final class BranchPaymentsPlanEndpointsTest extends TestCase
 
     // ── A live card subscription is the platform team's (fix round 1) ───────
 
+    public function test_a_child_with_a_live_card_subscription_and_no_stored_payer_is_not_its_hubs_at_all(): void
+    {
+        $this->onCard($this->child, $this->spark);
+        $this->asManagerOf($this->hub);
+
+        $row = collect($this->apiGet('/v2/admin/super/branch-payments')->json('data'))->firstWhere('id', $this->child);
+        $this->assertFalse($row['can_act']);
+        $this->assertSame('pays_platform', $row['cannot_act_reason']);
+        $this->assertSame('platform_card', $row['standing']['payer']);
+
+        $response = $this->apiPost("/v2/admin/super/branch-payments/{$this->child}/plan", ['plan_id' => $this->local]);
+        $response->assertStatus(422);
+        $this->assertSame('PAYS_PLATFORM', $response->json('errors.0.code'));
+        $this->assertSame($this->spark, $this->planOf($this->child));
+
+        $pause = $this->apiPost("/v2/admin/super/branch-payments/{$this->child}/suspend", []);
+        $pause->assertStatus(422);
+        $this->assertFalse(\App\Support\Billing\BillingLock::isLocked($this->child), 'A hub cannot pause a community that pays the platform by card.');
+    }
+
     private function onCard(int $tenantId, int $planId, string $status = 'active'): void
     {
         $this->assign($tenantId, $planId, [
@@ -543,6 +563,11 @@ final class BranchPaymentsPlanEndpointsTest extends TestCase
 
     public function test_a_hub_cannot_change_the_plan_of_a_child_paying_the_platform_by_card(): void
     {
+        // Since 22 Nov 2026 a live card subscription makes a community a card
+        // payer by default, wherever it sits, and then it is not its hub's at
+        // all. This is the case in between: the platform team has said it
+        // pays its hub, and its card subscription has not been ended yet.
+        BillingStandingService::setPayer($this->child, 'parent', 1);
         $this->onCard($this->child, $this->spark);
         $admin = 'planbr.' . bin2hex(random_bytes(5)) . '@example.com';
         User::factory()->forTenant($this->child)->create(['email' => $admin, 'role' => 'admin', 'status' => 'active', 'is_approved' => true]);
@@ -560,6 +585,11 @@ final class BranchPaymentsPlanEndpointsTest extends TestCase
 
     public function test_the_list_says_a_card_payer_s_plan_is_the_platform_team_s(): void
     {
+        // Since 22 Nov 2026 a live card subscription makes a community a card
+        // payer by default, wherever it sits, and then it is not its hub's at
+        // all. This is the case in between: the platform team has said it
+        // pays its hub, and its card subscription has not been ended yet.
+        BillingStandingService::setPayer($this->child, 'parent', 1);
         $this->onCard($this->child, $this->spark);
         $this->assign($this->sibling, $this->spark);
         $this->asManagerOf($this->hub);

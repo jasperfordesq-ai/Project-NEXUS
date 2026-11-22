@@ -357,7 +357,7 @@
     "paid_until_label": "Payé jusqu’au (inclus)",
     "pause_on_line": "Pause automatique : {{date}}",
     "payer_default": "Utiliser la valeur par défaut",
-    "payer_help_default": "La plateforme décide : une communauté placée sous une autre paie sa communauté parente ; sinon elle paie la plateforme, par carte si elle a un abonnement Stripe actif, sur facture sinon.",
+    "payer_help_default": "La plateforme décide : une communauté qui a un abonnement Stripe actif paie la plateforme par carte. Sans abonnement, une communauté placée sous une autre paie sa communauté parente, et toute autre paie la plateforme sur facture.",
     "payer_help_not_billed": "Jamais facturée. Les contrôles de paiement automatiques ne la concernent pas.",
     "payer_help_parent": "Paie la communauté parente, pas la plateforme.",
     "payer_help_platform_card": "Paie la plateforme par carte via Stripe. Aucun rappel n’est envoyé avant la date, et Stripe réessaie une carte refusée.",
