@@ -48,7 +48,6 @@ import Clock from 'lucide-react/icons/clock';
 import Info from 'lucide-react/icons/info';
 import MoreVertical from 'lucide-react/icons/ellipsis-vertical';
 import TriangleAlert from 'lucide-react/icons/triangle-alert';
-import type { LucideIcon } from 'lucide-react';
 import { Alert, Button, Card, CardBody, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Radio, RadioGroup, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@/components/ui';
 import { usePageTitle } from '@/hooks';
 import { useToast } from '@/contexts';
@@ -60,6 +59,7 @@ import {
   blockIndentFor, nameIndentFor, type MembersLevel,
 } from '../billing/CommunityGrid';
 import { OverLimitRuleDialog, OverLimitSummary, type OverLimitChoice, type OverLimitState } from '../billing/OverLimitRuleDialog';
+import { Glance } from '../billing/Glance';
 import { RecordPaymentDialog } from '../billing/RecordPaymentDialog';
 
 /**
@@ -150,32 +150,6 @@ function membersLevel(members: Members): MembersLevel {
   if (members.percent !== null && members.percent >= 100) return 'over';
   if (members.percent !== null && members.percent >= 80) return 'near';
   return 'ok';
-}
-
-type GlanceTone = 'accent' | 'warning' | 'danger' | 'quiet';
-
-const GLANCE_TONE: Record<GlanceTone, string> = {
-  accent: 'text-accent-soft-foreground bg-accent/10',
-  warning: 'text-warning bg-warning/10',
-  danger: 'text-danger bg-danger/10',
-  quiet: 'text-muted bg-surface-tertiary',
-};
-
-/** One figure of the summary above the list: slim, so the list stays in view. */
-function Glance({ icon: Icon, label, value, tone }: { icon: LucideIcon; label: string; value: string; tone: GlanceTone }) {
-  return (
-    <Card>
-      <CardBody className="flex flex-row items-center gap-3 px-4 py-3">
-        <span className={`flex size-9 shrink-0 items-center justify-center rounded-xl ${GLANCE_TONE[tone]}`}>
-          <Icon size={18} aria-hidden="true" />
-        </span>
-        <span className="flex min-w-0 flex-col">
-          <span className="text-xl font-semibold leading-tight tabular-nums">{value}</span>
-          <span className="break-normal text-xs text-muted">{label}</span>
-        </span>
-      </CardBody>
-    </Card>
-  );
 }
 
 /** Money may arrive as a numeric string from a decimal column. */

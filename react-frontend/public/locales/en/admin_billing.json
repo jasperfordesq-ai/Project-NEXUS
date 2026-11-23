@@ -504,6 +504,9 @@
     "per_month": "Expected per month",
     "per_year": "Expected per year",
     "recent": "Latest billing changes",
+    "section_expected": "Expected income",
+    "section_communities": "Communities and members",
+    "section_attention": "Needs a look",
     "without_plan": "No plan"
   }
 }

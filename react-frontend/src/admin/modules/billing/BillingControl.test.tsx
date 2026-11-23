@@ -510,6 +510,35 @@ describe('BillingControl', () => {
     expect(screen.getByText('No community matches this filter.')).toBeInTheDocument();
   });
 
+  it('opens already filtered when the address asks for it, as the Revenue page\'s links do', async () => {
+    window.history.pushState({}, '', '/?show=no_plan');
+    try {
+      await renderWith([
+        makeSnapshot(),
+        makeSnapshot({ id: 6, name: 'Galway Timebank', current_plan: null, standing: makeStanding({ tenant_id: 6 }) }),
+      ]);
+
+      expect((screen.getByLabelText('Show') as HTMLSelectElement).value).toBe('no_plan');
+      expect(screen.getByText('Galway Timebank')).toBeInTheDocument();
+      expect(screen.queryByText('Cork Timebank')).not.toBeInTheDocument();
+      expect(screen.getByTestId('billing-filter-count')).toHaveTextContent('Showing 1 of 2 communities');
+    } finally {
+      window.history.pushState({}, '', '/');
+    }
+  });
+
+  it('shows every community when the address asks for a filter it does not know', async () => {
+    window.history.pushState({}, '', '/?show=everything-please');
+    try {
+      await renderWith([makeSnapshot()]);
+
+      expect((screen.getByLabelText('Show') as HTMLSelectElement).value).toBe('all');
+      expect(screen.getByText('Cork Timebank')).toBeInTheDocument();
+    } finally {
+      window.history.pushState({}, '', '/');
+    }
+  });
+
   it('keeps the page on screen while it reloads after an action', async () => {
     await renderWith([makeSnapshot()]);
     // The reload after an action never resolves here: the table must stay.

@@ -504,6 +504,9 @@
     "per_month": "月あたりの見込み",
     "per_year": "年あたりの見込み",
     "recent": "最近の請求に関する変更",
+    "section_expected": "見込み収入",
+    "section_communities": "コミュニティとメンバー",
+    "section_attention": "要確認",
     "without_plan": "プランなし"
   }
 }

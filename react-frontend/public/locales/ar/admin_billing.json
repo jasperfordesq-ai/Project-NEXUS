@@ -520,6 +520,9 @@
     "per_month": "المتوقع شهريًا",
     "per_year": "المتوقع سنويًا",
     "recent": "آخر تغييرات الفوترة",
+    "section_expected": "الدخل المتوقع",
+    "section_communities": "المجتمعات والأعضاء",
+    "section_attention": "يحتاج إلى مراجعة",
     "without_plan": "بلا خطة"
   }
 }

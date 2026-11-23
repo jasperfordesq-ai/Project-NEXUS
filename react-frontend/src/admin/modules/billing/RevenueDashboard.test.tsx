@@ -124,6 +124,42 @@ describe('RevenueDashboard — platform team', () => {
     expect(screen.getByText(/Euro and pounds are never added together/)).toBeInTheDocument();
   });
 
+  it('gives each currency one card, named, with how many communities the figure comes from', async () => {
+    render(<RevenueDashboard />);
+
+    const euro = await screen.findByTestId('revenue-total-eur');
+    expect(euro.textContent).toMatch(/Euro/i);
+    expect(euro.textContent).toMatch(/€\s?4[,.]800/);
+    expect(euro.textContent).toMatch(/€\s?57[,.]600/);
+    expect(screen.getByTestId('revenue-total-eur-communities')).toHaveTextContent('Pay the platform: 9');
+
+    const pounds = screen.getByTestId('revenue-total-gbp');
+    expect(pounds.textContent).toMatch(/pound/i);
+    // A pound figure is never inside the euro card.
+    expect(euro.textContent).not.toMatch(/£/);
+    expect(screen.getByTestId('revenue-total-gbp-communities')).toHaveTextContent('Pay the platform: 3');
+  });
+
+  it('groups the figures under three headings', async () => {
+    render(<RevenueDashboard />);
+
+    expect(await screen.findByRole('heading', { name: 'Expected income' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Communities and members' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Needs a look' })).toBeInTheDocument();
+  });
+
+  it('links each figure that needs a look to Billing control, already showing those communities', async () => {
+    render(<RevenueDashboard />);
+
+    const link = async (label: string) => (await screen.findByText(label)).closest('a');
+    expect((await link('No plan'))?.getAttribute('href')).toContain('/platform-team/billing?show=no_plan');
+    expect((await link('Over their member number'))?.getAttribute('href')).toContain('/platform-team/billing?show=over_limit');
+    expect((await link('Paused'))?.getAttribute('href')).toContain('/platform-team/billing?show=paused');
+    // The plain counts lead nowhere.
+    expect(await link('Not billed')).toBeNull();
+    expect(await link('Active members')).toBeNull();
+  });
+
   it('says so when nobody pays the platform yet', async () => {
     mockApi.get.mockResolvedValue({ success: true, data: { ...REVENUE_DATA, totals: [] } });
     render(<RevenueDashboard />);

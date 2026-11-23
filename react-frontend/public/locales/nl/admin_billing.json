@@ -504,6 +504,9 @@
     "per_month": "Verwacht per maand",
     "per_year": "Verwacht per jaar",
     "recent": "Laatste wijzigingen in de facturering",
+    "section_expected": "Verwachte inkomsten",
+    "section_communities": "Gemeenschappen en leden",
+    "section_attention": "Vraagt aandacht",
     "without_plan": "Geen plan"
   }
 }

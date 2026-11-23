@@ -4871,6 +4871,9 @@ export default interface Resources {
       "per_month": "Expected per month",
       "per_year": "Expected per year",
       "recent": "Latest billing changes",
+      "section_attention": "Needs a look",
+      "section_communities": "Communities and members",
+      "section_expected": "Expected income",
       "without_plan": "No plan"
     },
     "shared": {

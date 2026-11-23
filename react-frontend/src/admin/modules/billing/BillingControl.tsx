@@ -1,6 +1,7 @@
 import { Alert, Button, Card, CardBody, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Input, Spinner, Select, SelectItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Switch, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@/components/ui';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import Leaf from 'lucide-react/icons/leaf';
@@ -276,7 +277,13 @@ export function BillingControl() {
   const [snapshot, setSnapshot] = useState<TenantSnapshot[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
-  const [filter, setFilter] = useState<RowFilter>('all');
+  // `?show=paused` opens the list already filtered: the Revenue page's
+  // "needs a look" figures link here. Anything else in the address is ignored.
+  const [searchParams] = useSearchParams();
+  const [filter, setFilter] = useState<RowFilter>(() => {
+    const asked = searchParams.get('show') as RowFilter | null;
+    return asked !== null && ROW_FILTERS.includes(asked) ? asked : 'all';
+  });
 
   // ---- plans state ----
   const [plans, setPlans] = useState<PlanItem[]>([]);

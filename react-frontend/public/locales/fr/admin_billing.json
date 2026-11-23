@@ -508,6 +508,9 @@
     "per_month": "Attendu par mois",
     "per_year": "Attendu par an",
     "recent": "Derniers changements de facturation",
+    "section_expected": "Revenus attendus",
+    "section_communities": "Communautés et membres",
+    "section_attention": "À vérifier",
     "without_plan": "Sans formule"
   }
 }

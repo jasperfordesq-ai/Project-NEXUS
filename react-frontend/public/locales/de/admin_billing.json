@@ -504,6 +504,9 @@
     "per_month": "Erwartet pro Monat",
     "per_year": "Erwartet pro Jahr",
     "recent": "Letzte Änderungen an der Abrechnung",
+    "section_expected": "Erwartete Einnahmen",
+    "section_communities": "Gemeinschaften und Mitglieder",
+    "section_attention": "Bitte prüfen",
     "without_plan": "Kein Plan"
   }
 }
