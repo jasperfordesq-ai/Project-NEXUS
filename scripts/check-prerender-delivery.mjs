@@ -28,6 +28,17 @@
  * was satisfied. A freeze is invisible to a check that only asks whether words
  * arrived. See the freshness section below for how staleness is judged.
  *
+ * 🔴 One answer that is not words is still correct (added 2026-11-23): a
+ * community paused for billing deliberately answers a crawler 503 with its
+ * "paused" page, so a search engine comes back later instead of replacing what
+ * it holds. The 22 Nov 2026 deploy reported that as "FAIL — 1 of 30 … empty
+ * shell", the platform-wide fault, for the one community paused the day
+ * before — and would have on every deploy while any community stayed paused,
+ * which is how a check stops being read. The plan now says which communities
+ * are paused, and a 503 is excused only when BOTH hold: the plan marks the
+ * community paused, and the response is the paused page itself. A bare 503,
+ * or the paused page from a community nobody paused, is still reported.
+ *
  * Usage:
  *   node scripts/check-prerender-delivery.mjs                 # hosts from config
  *   node scripts/check-prerender-delivery.mjs https://a.tld   # explicit origins
@@ -36,7 +47,8 @@
  *   NEXUS_DELIVERY_PATHS=/,/about node scripts/...            # override paths
  *   NEXUS_DELIVERY_EXPECT_COMMIT=<sha> node scripts/...       # commit being deployed
  *
- * Exit codes:  0 = every probed page is real and current
+ * Exit codes:  0 = every probed page is real and current (or belongs to a
+ *                  paused community and answered with its paused page)
  *              1 = at least one is blank, stale, or missing an SEO tag
  *              2 = could not complete the check (never reported as a pass)
  */
@@ -265,14 +277,86 @@ function originsFromPlan(plan) {
   const tenants = Array.isArray(plan?.tenants) ? plan.tenants : [];
   const origins = [];
   for (const tenant of tenants) {
-    const host = String(tenant?.host || '').trim().toLowerCase();
-    if (!/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$/.test(host)) continue;
-    const prefix = String(tenant?.prefix || '').trim().replace(/\/+$/, '');
-    if (prefix && (!/^(?:\/[A-Za-z0-9._~-]+)+$/.test(prefix) || prefix.split('/').some((s) => s === '.' || s === '..'))) continue;
-    const origin = `https://${host}${prefix}`;
-    if (!origins.includes(origin)) origins.push(origin);
+    const origin = originOfPlanTenant(tenant);
+    if (origin && !origins.includes(origin)) origins.push(origin);
   }
   return origins;
+}
+
+/** One plan row as an origin, or null when its host or path is not acceptable. */
+function originOfPlanTenant(tenant) {
+  const host = String(tenant?.host || '').trim().toLowerCase();
+  if (!/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$/.test(host)) return null;
+  const prefix = String(tenant?.prefix || '').trim().replace(/\/+$/, '');
+  if (prefix && (!/^(?:\/[A-Za-z0-9._~-]+)+$/.test(prefix) || prefix.split('/').some((s) => s === '.' || s === '..'))) return null;
+  return `https://${host}${prefix}`;
+}
+
+/**
+ * The origins of the communities the plan marks as paused for billing
+ * (`paused: true` on the row — `prerender:plan-routes` reads BillingLock, so a
+ * community paused through one above it is marked too).
+ *
+ * Only the boolean `true` counts. A plan written before the flag existed, or a
+ * value of any other type, pauses nobody: the probe then excuses nothing,
+ * which is the behaviour it had before it knew about pausing.
+ */
+function pausedOriginsFromPlan(plan) {
+  const tenants = Array.isArray(plan?.tenants) ? plan.tenants : [];
+  const paused = [];
+  for (const tenant of tenants) {
+    if (tenant?.paused !== true) continue;
+    const origin = originOfPlanTenant(tenant);
+    if (origin && !paused.includes(origin)) paused.push(origin);
+  }
+  return paused;
+}
+
+/**
+ * Is this response the community-paused page, served as "come back later"?
+ *
+ * Two things must both be true. The status is 503, and the document carries
+ * the marker the paused page itself emits (`<meta name="prerender-status-code"
+ * content="503">`, CommunityPausedPage.tsx). A 503 from the web server or a
+ * proxy has no such marker: that is an outage, and it must stay a failure. The
+ * marker on a page served 200 means the status was never applied, which is a
+ * fault of its own.
+ *
+ * 🔴 The maintenance page emits the same marker, so this alone does not prove
+ * "paused". It is never used alone: see verdictFor, which also requires the
+ * plan to say the community is paused.
+ */
+function isPausedNotice(status, body) {
+  if (status !== 503 || typeof body !== 'string') return false;
+  const tags = body.match(/<meta\b[^>]*>/gi) || [];
+  for (const tag of tags) {
+    if (!/\bname\s*=\s*(["'])\s*prerender-status-code\s*\1/i.test(tag)) continue;
+    const content = tag.match(/\bcontent\s*=\s*(["'])\s*(\d{3})\s*\1/i);
+    if (content && content[2] === '503') return true;
+  }
+  return false;
+}
+
+/**
+ * What one probe result means. `paused` is whether the plan marks the
+ * community this page belongs to as paused for billing.
+ *
+ *   unavailable — the probe could not complete; never a pass
+ *   paused      — a paused community answered with its paused page: expected
+ *   real        — a real page; goes on to the freshness check
+ *   blank       — the empty shell, an error status, or too few bytes
+ *   seo         — a real page missing a tag a crawler uses
+ *
+ * A paused community is excused ONLY for the paused page. Anything else it
+ * serves is judged exactly as for any other community: an earlier real page
+ * is still a real page, and an empty shell is still an empty shell.
+ */
+function verdictFor(r, { paused = false } = {}) {
+  if (r.error) return 'unavailable';
+  if (paused === true && r.pausedNotice === true) return 'paused';
+  if (r.real) return 'real';
+  if (r.isShell) return 'blank';
+  return 'seo';
 }
 
 function readPlanFile(file) {
@@ -299,11 +383,16 @@ function compareOriginLists(handKept, live) {
 
 function originsFromArgs(argv = process.argv.slice(2)) {
   const planArg = argv.find((a) => a.startsWith('--from-plan='));
-  if (planArg) return { origins: originsFromPlan(readPlanFile(planArg.slice('--from-plan='.length))), source: 'plan' };
+  if (planArg) {
+    const plan = readPlanFile(planArg.slice('--from-plan='.length));
+    return { origins: originsFromPlan(plan), paused: pausedOriginsFromPlan(plan), source: 'plan' };
+  }
+  // Only the plan knows which communities are paused. Addresses given by hand
+  // carry no such knowledge, so nothing is excused for them.
   const args = argv.filter((a) => !a.startsWith('-'));
-  if (args.length) return { origins: args.map((a) => (a.startsWith('http') ? a : `https://${a}`)), source: 'args' };
+  if (args.length) return { origins: args.map((a) => (a.startsWith('http') ? a : `https://${a}`)), paused: [], source: 'args' };
   const hand = handKeptOrigins();
-  return hand ? { origins: hand, source: 'deploy.env' } : null;
+  return hand ? { origins: hand, paused: [], source: 'deploy.env' } : null;
 }
 
 /**
@@ -424,11 +513,13 @@ async function probe(origin, path) {
     const real = !isShell && hasH1 && hasDescription;
     const buildCommit = isShell ? null : buildCommitOf(body);
     const renderAgeHours = isShell ? null : renderAgeHoursFrom(res.headers.get('last-modified'));
+    const pausedNotice = isPausedNotice(res.status, body);
     return { url, status: res.status, bytes, hasH1, hasDescription, emptyRoot, isShell, real,
-             buildCommit, renderAgeHours, error: null };
+             pausedNotice, buildCommit, renderAgeHours, error: null };
   } catch (err) {
     return { url, status: 0, bytes: 0, hasH1: false, hasDescription: false,
-             emptyRoot: false, real: false, buildCommit: null, renderAgeHours: null,
+             emptyRoot: false, isShell: false, real: false, pausedNotice: false,
+             buildCommit: null, renderAgeHours: null,
              error: String(err && err.message || err) };
   } finally {
     clearTimeout(timer);
@@ -474,21 +565,34 @@ async function main() {
   let shells = 0;      // served the empty SPA shell — platform-wide fault
   let seoGaps = 0;     // real page, but missing a tag a crawler uses
   let stale = 0;       // real, current-looking page built from an old commit
+  let pausedPages = 0; // a paused community answering with its paused page — expected
+  let unexcusedNotices = 0; // blank pages that are a paused/maintenance page nobody excused
   let probed = 0;
   let unavailable = 0;
   const staleDetail = [];
   const ageCache = new Map();
+  const pausedOrigins = new Set(chosen.paused || []);
+  if (pausedOrigins.size > 0) {
+    console.log(`  paused for billing, per the plan: ${[...pausedOrigins].join(', ')}`);
+    console.log('  (their paused page, answered 503, is expected; anything else they serve is judged as usual)\n');
+  }
 
   for (const origin of origins) {
     for (const path of PATHS) {
       const r = await probe(origin, path);
       probed += 1;
-      if (r.error) {
+      const verdict = verdictFor(r, { paused: pausedOrigins.has(origin) });
+      if (verdict === 'unavailable') {
         unavailable += 1;
         console.log(`  ?  ${origin}${path} — UNAVAILABLE (${r.error})`);
         continue;
       }
-      if (r.real) {
+      if (verdict === 'paused') {
+        pausedPages += 1;
+        console.log(`  paused ${origin}${path} — this community is paused; a crawler is told "temporarily unavailable" (http 503), as intended`);
+        continue;
+      }
+      if (verdict === 'real') {
         // Freshness is judged only on a page that is otherwise fine. A blank
         // page is already the louder fault and does not need a second label.
         const freshness = judgeFreshness(r.buildCommit, expected, ageCache, r.renderAgeHours, ageLimitHoursFor(path));
@@ -499,14 +603,22 @@ async function main() {
         } else {
           console.log(`  ok ${origin}${path} — ${r.bytes} bytes, h1 + description present${freshness.note}`);
         }
-      } else if (r.isShell) {
+      } else if (verdict === 'blank') {
         shells += 1;
         const why = [
           !r.status || r.status >= 400 ? `http ${r.status}` : null,
           r.bytes < MIN_BYTES ? `only ${r.bytes} bytes` : null,
           r.emptyRoot ? 'empty <div id="root">' : null,
         ].filter(Boolean).join(', ');
-        console.log(`  BLANK ${origin}${path} — ${why}`);
+        // The paused (or maintenance) page from a community the plan does not
+        // mark as paused is still a failure, but say what it is: it sends the
+        // reader to Billing control or the maintenance switch, not the marker.
+        if (r.pausedNotice) unexcusedNotices += 1;
+        const hint = !r.pausedNotice ? ''
+          : (chosen.source === 'plan'
+            ? ' — this is a "temporarily unavailable" page (paused or maintenance), but the plan does not mark this community as paused'
+            : ' — this is a "temporarily unavailable" page (paused or maintenance); only --from-plan knows which communities are paused');
+        console.log(`  BLANK ${origin}${path} — ${why}${hint}`);
       } else {
         seoGaps += 1;
         const why = [
@@ -523,6 +635,22 @@ async function main() {
     console.error(`check-prerender-delivery: UNAVAILABLE — all ${probed} probe(s) failed to complete.`);
     console.error('  Not reporting this as a pass. Exit 2.');
     process.exit(2);
+  }
+  if (shells > 0 && shells === unexcusedNotices) {
+    // Every blank page is a deliberate "temporarily unavailable" page. That is
+    // not the empty-shell fault, and sending the reader after the serving
+    // marker would be wrong: prerendering is plainly being served.
+    console.error(`check-prerender-delivery: FAIL — ${shells} of ${probed} probed page(s) told a crawler "temporarily unavailable" (http 503) and nothing excused it.`);
+    console.error('  Prerendering IS being served. Do not go looking for the serving marker.');
+    console.error('  Each is a paused-community or maintenance page (see the BLANK lines above). Either:');
+    console.error('    - maintenance mode is on:            sudo bash scripts/maintenance.sh status');
+    console.error('    - the community is paused for billing but this run had no list of paused communities');
+    console.error('      (addresses given by hand, or a plan from before `paused` existed): use --from-plan');
+    console.error('    - a community is showing the paused page while its standing says it is open:');
+    console.error('      check it in Billing control, then re-render it:  sudo bash scripts/prerender-tenants.sh --tenant <slug>');
+    if (seoGaps > 0) console.error(`  Separately, ${seoGaps} real page(s) are missing an SEO tag — see the SEO lines above.`);
+    if (stale > 0) console.error(`  Separately, ${stale} real page(s) are frozen at an old build — see the STALE lines above.`);
+    process.exit(1);
   }
   if (shells > 0) {
     console.error(`check-prerender-delivery: FAIL — ${shells} of ${probed} probed page(s) reached a crawler as an empty shell.`);
@@ -562,7 +690,11 @@ async function main() {
     console.error('    sudo bash scripts/prerender-tenants.sh --routes <comma,separated,routes>');
     process.exit(1);
   }
-  console.log(`check-prerender-delivery: OK — ${probed - unavailable} page(s) served real content to a crawler.`);
+  console.log(`check-prerender-delivery: OK — ${probed - unavailable - pausedPages} page(s) served real content to a crawler.`);
+  if (pausedPages) {
+    console.log(`  ${pausedPages} page(s) belong to a community that is paused for billing and answered "temporarily unavailable", as intended.`);
+    console.log('  They are not counted as real content and not counted as a fault.');
+  }
   if (!expected) {
     console.log('  Freshness was NOT checked: no expected commit was available, so a frozen snapshot');
     console.log('  would have passed here. Set NEXUS_DELIVERY_EXPECT_COMMIT, or run inside the repo.');
@@ -578,6 +710,7 @@ export {
   judgeFreshness, sameCommit, buildCommitOf, expectedCommit, renderAgeHoursFrom,
   loadTtlTable, refreshIntervalHoursFor, ageLimitHoursFor,
   originsFromPlan, compareOriginLists, originsFromArgs,
+  pausedOriginsFromPlan, isPausedNotice, verdictFor,
 };
 
 // Only probe when run as a command. Importing this file for its helpers must

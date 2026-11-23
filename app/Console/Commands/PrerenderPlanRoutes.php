@@ -11,6 +11,7 @@ namespace App\Console\Commands;
 use App\Core\TenantContext;
 use App\Services\PrerenderService;
 use App\Services\SitemapService;
+use App\Support\Billing\BillingLock;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -174,6 +175,17 @@ class PrerenderPlanRoutes extends Command
                 'slug'      => (string) $t->slug,
                 'host'      => $host,
                 'prefix'    => $prefix,
+                // Paused for billing (itself, or a community above it). Read by
+                // the crawler delivery probe (scripts/check-prerender-delivery.mjs):
+                // a paused community deliberately answers a crawler 503, and the
+                // probe reported that as a serving fault on every deploy until it
+                // was told. A paused community stays in the plan: it is still
+                // active, and its paused page is what gets rendered.
+                //
+                // If the standing cannot be read this says false and logs at
+                // error. False is the strict answer here: the probe then excuses
+                // nothing, and route planning does not fail over a billing read.
+                'paused'    => BillingLock::isLockedFailOpen((int) $t->id, 'prerender:plan-routes'),
                 'routes'    => array_keys($routes),
             ];
         }

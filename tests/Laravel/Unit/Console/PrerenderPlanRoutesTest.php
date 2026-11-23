@@ -25,7 +25,7 @@ use Tests\Laravel\TestCase;
  *      uses its own domain, else its parent's domain + /slug, else the app host.
  *   2. For each tenant calls PrerenderService::routesForTenant() for the static floor.
  *   3. Optionally calls SitemapService::generateForTenant() for dynamic routes.
- *   4. Outputs JSON: { "tenants": [ { tenant_id, slug, host, prefix, routes } ] }.
+ *   4. Outputs JSON: { "tenants": [ { tenant_id, slug, host, prefix, paused, routes } ] }.
  *
  * We bind mocks for PrerenderService and SitemapService to avoid any
  * filesystem / HTTP / headless-renderer calls.
@@ -188,6 +188,43 @@ class PrerenderPlanRoutesTest extends TestCase
         $this->assertArrayHasKey('prefix', $row);
         $this->assertArrayHasKey('routes', $row);
         $this->assertIsArray($row['routes']);
+    }
+
+    // =========================================================================
+    // The plan says which communities are paused for billing.
+    // =========================================================================
+
+    /**
+     * Regression (22 Nov 2026): the crawler delivery probe in deploy.sh reads
+     * this plan for its addresses. A paused community deliberately answers a
+     * crawler 503, and the probe reported that as a platform-wide fault on
+     * every deploy because nothing told it the community was paused.
+     */
+    public function test_plan_marks_a_paused_community_and_no_other(): void
+    {
+        $this->prerenderMock->shouldReceive('routesForTenant')->andReturn(['/']);
+
+        $open = $this->findRow($this->callAndDecode(['--include-sitemap' => 0]));
+        $this->assertIsArray($open);
+        $this->assertFalse($open['paused'], 'A community nobody paused must be marked not paused');
+
+        \App\Services\BillingStandingService::suspend(self::TENANT_ID, null, 'manual');
+        \App\Support\Billing\BillingLock::flush();
+
+        try {
+            $decoded = $this->callAndDecode(['--include-sitemap' => 0]);
+            $paused = $this->findRow($decoded);
+            $this->assertIsArray($paused, 'A paused community stays in the plan: it is still active');
+            $this->assertTrue($paused['paused']);
+
+            foreach ($decoded['tenants'] as $t) {
+                if ((int) $t['tenant_id'] === 1) {
+                    $this->assertFalse($t['paused'], 'Pausing one community must not mark the platform master');
+                }
+            }
+        } finally {
+            \App\Support\Billing\BillingLock::flush();
+        }
     }
 
     // =========================================================================

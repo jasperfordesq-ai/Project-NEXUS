@@ -1170,6 +1170,16 @@ jobs:
       - name: "BLOCKING: Crawler delivery probe follows the tenants table"
         run: node --test scripts/test/check-prerender-delivery-origins.test.mjs
 
+      # Added 2026-11-23. A community paused for billing deliberately answers a
+      # crawler 503 with its paused page. The probe reported that as the
+      # platform-wide "empty shell" fault on the 22 Nov deploy, and would have on
+      # every deploy while any community stayed paused. It is now excused only
+      # when the plan marks the community paused AND the response is the paused
+      # page; a bare 503, or the paused page from a community nobody paused,
+      # must stay a failure.
+      - name: "BLOCKING: Crawler delivery probe knows a paused community"
+        run: node --test scripts/test/check-prerender-delivery-paused.test.mjs
+
       - name: "BLOCKING: DB column references resolve against the schema dump"
         run: node scripts/check-db-column-references.mjs
 
