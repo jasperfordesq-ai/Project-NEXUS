@@ -3323,25 +3323,25 @@ Route::post('/v2/admin/super/tenants/{id}/reactivate', [\App\Http\Controllers\Ap
 // communities below it. Safe in this tier: every one confines itself through
 // BranchPayments (canManageTenant: below only; never a community that pays the
 // platform; never an exempt one). Pinned by BranchPaymentsEndpointsTest.
-Route::get('/v2/admin/super/branch-payments', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPayments']);
-Route::post('/v2/admin/super/branch-payments/{id}/paid-until', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsSetPaidUntil'])->whereNumber('id');
-Route::post('/v2/admin/super/branch-payments/{id}/record-payment', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsRecordPayment'])->whereNumber('id');
-Route::get('/v2/admin/super/branch-payments/{id}/payments', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsHistory'])->whereNumber('id');
-Route::post('/v2/admin/super/branch-payments/{id}/void-payment', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsVoidPayment'])->whereNumber('id');
-Route::post('/v2/admin/super/branch-payments/{id}/suspend', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsSuspend'])->whereNumber('id');
-Route::post('/v2/admin/super/branch-payments/{id}/restore', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsRestore'])->whereNumber('id');
-Route::get('/v2/admin/super/branch-payments/{id}/plans', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsPlans'])->whereNumber('id');
-Route::post('/v2/admin/super/branch-payments/{id}/plan', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsSetPlan'])->whereNumber('id');
-Route::post('/v2/admin/super/branch-payments/{id}/over-limit', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPaymentsSetOverLimit'])->whereNumber('id');
+Route::get('/v2/admin/super/branch-payments', [\App\Http\Controllers\Api\AdminBranchPaymentsController::class, 'branchPayments']);
+Route::post('/v2/admin/super/branch-payments/{id}/paid-until', [\App\Http\Controllers\Api\AdminBranchPaymentsController::class, 'branchPaymentsSetPaidUntil'])->whereNumber('id');
+Route::post('/v2/admin/super/branch-payments/{id}/record-payment', [\App\Http\Controllers\Api\AdminBranchPaymentsController::class, 'branchPaymentsRecordPayment'])->whereNumber('id');
+Route::get('/v2/admin/super/branch-payments/{id}/payments', [\App\Http\Controllers\Api\AdminBranchPaymentsController::class, 'branchPaymentsHistory'])->whereNumber('id');
+Route::post('/v2/admin/super/branch-payments/{id}/void-payment', [\App\Http\Controllers\Api\AdminBranchPaymentsController::class, 'branchPaymentsVoidPayment'])->whereNumber('id');
+Route::post('/v2/admin/super/branch-payments/{id}/suspend', [\App\Http\Controllers\Api\AdminBranchPaymentsController::class, 'branchPaymentsSuspend'])->whereNumber('id');
+Route::post('/v2/admin/super/branch-payments/{id}/restore', [\App\Http\Controllers\Api\AdminBranchPaymentsController::class, 'branchPaymentsRestore'])->whereNumber('id');
+Route::get('/v2/admin/super/branch-payments/{id}/plans', [\App\Http\Controllers\Api\AdminBranchPaymentsController::class, 'branchPaymentsPlans'])->whereNumber('id');
+Route::post('/v2/admin/super/branch-payments/{id}/plan', [\App\Http\Controllers\Api\AdminBranchPaymentsController::class, 'branchPaymentsSetPlan'])->whereNumber('id');
+Route::post('/v2/admin/super/branch-payments/{id}/over-limit', [\App\Http\Controllers\Api\AdminBranchPaymentsController::class, 'branchPaymentsSetOverLimit'])->whereNumber('id');
 // Branch plans: a hub's own version of the default plans. Safe in this tier:
 // every one confines itself through BranchPlans::refusalForHub (the caller's
 // own community or one below it; never tenant 1). Pinned by
 // BranchPlansEndpointsTest.
-Route::get('/v2/admin/super/branch-plans', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPlans']);
-Route::put('/v2/admin/super/branch-plans/{hubId}/plans/{planId}', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPlansUpdate'])->whereNumber(['hubId', 'planId']);
-Route::delete('/v2/admin/super/branch-plans/{hubId}/plans/{planId}', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPlansReset'])->whereNumber(['hubId', 'planId']);
-Route::put('/v2/admin/super/branch-plans/{hubId}/over-limit', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPlansSetOverLimit'])->whereNumber('hubId');
-Route::put('/v2/admin/super/branch-plans/{hubId}/how-to-pay', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPlansSetHowToPay'])->whereNumber('hubId');
+Route::get('/v2/admin/super/branch-plans', [\App\Http\Controllers\Api\AdminBranchPlansController::class, 'branchPlans']);
+Route::put('/v2/admin/super/branch-plans/{hubId}/plans/{planId}', [\App\Http\Controllers\Api\AdminBranchPlansController::class, 'branchPlansUpdate'])->whereNumber(['hubId', 'planId']);
+Route::delete('/v2/admin/super/branch-plans/{hubId}/plans/{planId}', [\App\Http\Controllers\Api\AdminBranchPlansController::class, 'branchPlansReset'])->whereNumber(['hubId', 'planId']);
+Route::put('/v2/admin/super/branch-plans/{hubId}/over-limit', [\App\Http\Controllers\Api\AdminBranchPlansController::class, 'branchPlansSetOverLimit'])->whereNumber('hubId');
+Route::put('/v2/admin/super/branch-plans/{hubId}/how-to-pay', [\App\Http\Controllers\Api\AdminBranchPlansController::class, 'branchPlansSetHowToPay'])->whereNumber('hubId');
 Route::post('/v2/admin/super/tenants/{id}/toggle-hub', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantToggleHub']);
 Route::post('/v2/admin/super/tenants/{id}/move', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantMove']);
 
@@ -3483,38 +3483,38 @@ Route::put('/v2/admin/super/identity/fee', [\App\Http\Controllers\Api\AdminSuper
 // Billing snapshot and plan assignment (god-level only).
 // 🔴 These read a tenant id from the body with no canAccessTenant() check — see
 // reason 2 in the block comment above.
-Route::get('/v2/admin/super/billing/snapshot', [\App\Http\Controllers\Api\AdminSuperController::class, 'getBillingSnapshot']);
+Route::get('/v2/admin/super/billing/snapshot', [\App\Http\Controllers\Api\AdminBillingControlController::class, 'getBillingSnapshot']);
 // Platform fallback Google Translate key (platform team only since 15 Nov 2026).
 Route::get('/v2/admin/super/translation/google-key', [\App\Http\Controllers\Api\SuperTranslationKeyController::class, 'show']);
 Route::put('/v2/admin/super/translation/google-key', [\App\Http\Controllers\Api\SuperTranslationKeyController::class, 'update']);
 Route::delete('/v2/admin/super/translation/google-key', [\App\Http\Controllers\Api\SuperTranslationKeyController::class, 'destroy']);
-Route::post('/v2/admin/super/billing/assign-plan', [\App\Http\Controllers\Api\AdminSuperController::class, 'assignPlan']);
-Route::get('/v2/admin/super/billing/revenue', [\App\Http\Controllers\Api\AdminSuperController::class, 'getRevenueDashboard']);
-Route::get('/v2/admin/super/billing/export', [\App\Http\Controllers\Api\AdminSuperController::class, 'exportBillingCsv']);
-Route::post('/v2/admin/super/billing/delegate/grant', [\App\Http\Controllers\Api\AdminSuperController::class, 'grantBillingDelegate']);
-Route::post('/v2/admin/super/billing/delegate/revoke', [\App\Http\Controllers\Api\AdminSuperController::class, 'revokeBillingDelegate']);
-Route::post('/v2/admin/super/billing/pause', [\App\Http\Controllers\Api\AdminSuperController::class, 'pauseTenantBilling']);
-Route::post('/v2/admin/super/billing/resume', [\App\Http\Controllers\Api\AdminSuperController::class, 'resumeTenantBilling']);
-Route::post('/v2/admin/super/billing/grace-period', [\App\Http\Controllers\Api\AdminSuperController::class, 'setBillingGracePeriod']);
+Route::post('/v2/admin/super/billing/assign-plan', [\App\Http\Controllers\Api\AdminBillingControlController::class, 'assignPlan']);
+Route::get('/v2/admin/super/billing/revenue', [\App\Http\Controllers\Api\AdminBillingControlController::class, 'getRevenueDashboard']);
+Route::get('/v2/admin/super/billing/export', [\App\Http\Controllers\Api\AdminBillingControlController::class, 'exportBillingCsv']);
+Route::post('/v2/admin/super/billing/delegate/grant', [\App\Http\Controllers\Api\AdminBillingControlController::class, 'grantBillingDelegate']);
+Route::post('/v2/admin/super/billing/delegate/revoke', [\App\Http\Controllers\Api\AdminBillingControlController::class, 'revokeBillingDelegate']);
+Route::post('/v2/admin/super/billing/pause', [\App\Http\Controllers\Api\AdminBillingControlController::class, 'pauseTenantBilling']);
+Route::post('/v2/admin/super/billing/resume', [\App\Http\Controllers\Api\AdminBillingControlController::class, 'resumeTenantBilling']);
+Route::post('/v2/admin/super/billing/grace-period', [\App\Http\Controllers\Api\AdminBillingControlController::class, 'setBillingGracePeriod']);
 // Payment standing: pause a community for non-payment, restore it, exempt it, set
 // its paid-until date; the daily check's settings and its "what would happen
 // today" list. Platform team only.
-Route::post('/v2/admin/super/billing/standing/suspend', [\App\Http\Controllers\Api\AdminSuperController::class, 'suspendCommunityForBilling']);
-Route::post('/v2/admin/super/billing/standing/restore', [\App\Http\Controllers\Api\AdminSuperController::class, 'restoreCommunityForBilling']);
-Route::post('/v2/admin/super/billing/standing/exempt', [\App\Http\Controllers\Api\AdminSuperController::class, 'setCommunityBillingExemption']);
-Route::post('/v2/admin/super/billing/standing/paid-until', [\App\Http\Controllers\Api\AdminSuperController::class, 'setCommunityPaidUntil']);
+Route::post('/v2/admin/super/billing/standing/suspend', [\App\Http\Controllers\Api\AdminBillingControlController::class, 'suspendCommunityForBilling']);
+Route::post('/v2/admin/super/billing/standing/restore', [\App\Http\Controllers\Api\AdminBillingControlController::class, 'restoreCommunityForBilling']);
+Route::post('/v2/admin/super/billing/standing/exempt', [\App\Http\Controllers\Api\AdminBillingControlController::class, 'setCommunityBillingExemption']);
+Route::post('/v2/admin/super/billing/standing/paid-until', [\App\Http\Controllers\Api\AdminBillingControlController::class, 'setCommunityPaidUntil']);
 // Payments recorded by hand (bank transfer, cheque...) and who a community pays (Stage 6).
-Route::post('/v2/admin/super/billing/standing/record-payment', [\App\Http\Controllers\Api\AdminSuperController::class, 'recordCommunityPayment']);
-Route::get('/v2/admin/super/billing/standing/payments', [\App\Http\Controllers\Api\AdminSuperController::class, 'communityPayments']);
-Route::post('/v2/admin/super/billing/standing/void-payment', [\App\Http\Controllers\Api\AdminSuperController::class, 'voidCommunityPayment']);
-Route::post('/v2/admin/super/billing/standing/payer', [\App\Http\Controllers\Api\AdminSuperController::class, 'setCommunityPayer']);
-Route::get('/v2/admin/super/billing/how-to-pay', [\App\Http\Controllers\Api\AdminSuperController::class, 'getPlatformHowToPay']);
-Route::put('/v2/admin/super/billing/how-to-pay', [\App\Http\Controllers\Api\AdminSuperController::class, 'setPlatformHowToPay']);
-Route::post('/v2/admin/super/billing/standing/over-limit', [\App\Http\Controllers\Api\AdminSuperController::class, 'setCommunityOverLimitRule']);
-Route::get('/v2/admin/super/billing/standing/preview', [\App\Http\Controllers\Api\AdminSuperController::class, 'previewBillingAutomation']);
-Route::get('/v2/admin/super/billing/standing/last-run', [\App\Http\Controllers\Api\AdminSuperController::class, 'lastBillingAutomationRun']);
-Route::get('/v2/admin/super/billing/settings', [\App\Http\Controllers\Api\AdminSuperController::class, 'getBillingAutomationSettings']);
-Route::put('/v2/admin/super/billing/settings', [\App\Http\Controllers\Api\AdminSuperController::class, 'updateBillingAutomationSettings']);
+Route::post('/v2/admin/super/billing/standing/record-payment', [\App\Http\Controllers\Api\AdminBillingControlController::class, 'recordCommunityPayment']);
+Route::get('/v2/admin/super/billing/standing/payments', [\App\Http\Controllers\Api\AdminBillingControlController::class, 'communityPayments']);
+Route::post('/v2/admin/super/billing/standing/void-payment', [\App\Http\Controllers\Api\AdminBillingControlController::class, 'voidCommunityPayment']);
+Route::post('/v2/admin/super/billing/standing/payer', [\App\Http\Controllers\Api\AdminBillingControlController::class, 'setCommunityPayer']);
+Route::get('/v2/admin/super/billing/how-to-pay', [\App\Http\Controllers\Api\AdminBillingControlController::class, 'getPlatformHowToPay']);
+Route::put('/v2/admin/super/billing/how-to-pay', [\App\Http\Controllers\Api\AdminBillingControlController::class, 'setPlatformHowToPay']);
+Route::post('/v2/admin/super/billing/standing/over-limit', [\App\Http\Controllers\Api\AdminBillingControlController::class, 'setCommunityOverLimitRule']);
+Route::get('/v2/admin/super/billing/standing/preview', [\App\Http\Controllers\Api\AdminBillingControlController::class, 'previewBillingAutomation']);
+Route::get('/v2/admin/super/billing/standing/last-run', [\App\Http\Controllers\Api\AdminBillingControlController::class, 'lastBillingAutomationRun']);
+Route::get('/v2/admin/super/billing/settings', [\App\Http\Controllers\Api\AdminBillingControlController::class, 'getBillingAutomationSettings']);
+Route::put('/v2/admin/super/billing/settings', [\App\Http\Controllers\Api\AdminBillingControlController::class, 'updateBillingAutomationSettings']);
 
 // AG44 — Tenant provisioning queue (review + approve).
 // Approval assigns a parent tenant anywhere in the tree, so platform-only —
