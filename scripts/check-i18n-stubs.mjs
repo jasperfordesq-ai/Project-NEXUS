@@ -67,8 +67,6 @@ const REVIEWED_ADMIN_INVARIANTS = new Map([
   ['admin_analytics.json:analytics.regional.age_groups.55_64', '55-64'],
   ['admin_api_partners.json:api_partners.credentials_modal.client_id', 'client_id'],
   ['admin_api_partners.json:api_partners.credentials_modal.client_secret', 'client_secret'],
-  ['admin_billing.json:billing.arr', 'ARR'],
-  ['admin_billing.json:billing.mrr', 'MRR'],
   ['admin_blog.json:content.stripe', 'Stripe'],
   ['admin_caring_community.json:external_integrations.categories.ahv', 'AHV'],
   ['admin_caring_community.json:external_integrations.table.dsa', 'DSA'],

@@ -332,6 +332,23 @@
     ]
   },
   {
+    "id": "admin_billing",
+    "icon": "wallet",
+    "gate": null,
+    "articles": [
+      {
+        "id": "admin_billing_your_community",
+        "link": "/admin/billing"
+      },
+      {
+        "id": "admin_billing_parent_community"
+      },
+      {
+        "id": "admin_billing_platform_team"
+      }
+    ]
+  },
+  {
     "id": "admin_federation",
     "icon": "globe",
     "gate": null,
