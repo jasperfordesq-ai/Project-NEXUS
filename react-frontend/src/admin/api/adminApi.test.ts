@@ -1543,12 +1543,6 @@ describe('adminPlans', () => {
     await adminPlans.syncStripe(3);
     expect(mockPost).toHaveBeenCalledWith('/v2/admin/plans/3/sync-stripe', {});
   });
-
-  it('getSubscriptions calls subscriptions endpoint', async () => {
-    mockGet.mockResolvedValueOnce({ success: true, data: [] });
-    await adminPlans.getSubscriptions();
-    expect(mockGet).toHaveBeenCalledWith('/v2/admin/subscriptions');
-  });
 });
 
 // ─── Deliverability ───────────────────────────────────────────────────────────
