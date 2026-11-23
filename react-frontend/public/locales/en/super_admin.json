@@ -825,7 +825,7 @@
     "load_failed": "The communities could not be loaded.",
     "empty": "There are no communities below yours.",
     "change_plan": "Change plan",
-    "col_members": "Members",
+    "col_members": "Active members",
     "col_plan": "Plan",
     "done_plan": "Plan changed",
     "no_plan": "No plan",
@@ -841,7 +841,18 @@
     "plans_empty": "There are no plans this community can be put on.",
     "plans_load_failed": "The plans could not be loaded.",
     "save_plan": "Save plan",
-    "plan_card_subscription": "Pays by card: the platform team changes its plan."
+    "plan_card_subscription": "Pays by card: the platform team changes its plan.",
+    "col_plan_members": "Plan and members",
+    "col_payment": "Payment",
+    "members_of_max": "{{active}} of {{max}}",
+    "members_all": "All members",
+    "members_note": "Active members are those who signed in during the last {{days}} days. Each number includes the communities below. A plan's limit counts active members, not everyone with an account.",
+    "pays_named": "Pays {{name}}",
+    "pays_the_platform": "Pays the platform",
+    "summary_communities": "Communities",
+    "summary_over": "Over their plan",
+    "summary_late": "Payment late",
+    "summary_paused": "Paused"
   },
   "branch_plans": {
     "title": "Branch plans",

@@ -15,6 +15,7 @@ use App\Services\BillingStandingService;
 use App\Services\TenantBillingService;
 use App\Support\Billing\BillingLock;
 use App\Support\Billing\PlanTerms;
+use App\Support\Billing\StandardPlans;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
@@ -211,7 +212,7 @@ final class BranchPaymentsPlanEndpointsTest extends TestCase
         $response->assertStatus(200);
         $this->assertSame($this->local, $this->planOf($this->child));
         $this->assertSame($this->local, $response->json('data.plan.plan_id'));
-        $this->assertSame(['active', 'max', 'percent'], array_keys($response->json('data.members')));
+        $this->assertSame(['active', 'total', 'window_days', 'max', 'percent'], array_keys($response->json('data.members')));
 
         $row = DB::table('tenant_plan_assignments')->where('tenant_id', $this->child)->first();
         $this->assertNull($row->custom_price_monthly);
@@ -499,6 +500,14 @@ final class BranchPaymentsPlanEndpointsTest extends TestCase
         // Members of a grandchild count towards its parent's number.
         $this->activeMembers($this->child, 3);
         $this->activeMembers($this->grandchild, 2);
+        // Members who are not "active" in the plan's sense but are members all
+        // the same: one who has never signed in, one who last signed in long
+        // ago. And two who are not members: waiting for approval, and banned.
+        $base = ['is_approved' => true, 'role' => 'member'];
+        User::factory()->forTenant($this->child)->create($base + ['status' => 'active', 'last_login_at' => null]);
+        User::factory()->forTenant($this->grandchild)->create($base + ['status' => 'active', 'last_login_at' => now()->subDays(200)]);
+        User::factory()->forTenant($this->child)->create($base + ['status' => 'pending', 'last_login_at' => now()->subDays(2)]);
+        User::factory()->forTenant($this->child)->create($base + ['status' => 'banned', 'last_login_at' => now()->subDays(2)]);
         $this->asManagerOf($this->hub);
 
         $response = $this->apiGet('/v2/admin/super/branch-payments');
@@ -517,11 +526,21 @@ final class BranchPaymentsPlanEndpointsTest extends TestCase
 
         $active = TenantBillingService::getSubtreeActiveMemberCount($this->child);
         $this->assertSame(5, $active);
-        $this->assertSame(['active' => 5, 'max' => 200, 'percent' => 2], $child['members']);
+        // `total` is every member with an account in good standing in the
+        // branch, signed in lately or not: the figure a manager thinks of as
+        // "our members". The plan's number is checked against `active` only.
+        $this->assertSame(
+            ['active' => 5, 'total' => 7, 'window_days' => StandardPlans::ACTIVE_WINDOW_DAYS, 'max' => 200, 'percent' => 2],
+            $child['members']
+        );
+        $this->assertSame(TenantBillingService::getSubtreeUserCount($this->child), $child['members']['total']);
 
         $grandchild = $rows->firstWhere('id', $this->grandchild);
         $this->assertNull($grandchild['plan']);
-        $this->assertSame(['active' => 2, 'max' => null, 'percent' => null], $grandchild['members']);
+        $this->assertSame(
+            ['active' => 2, 'total' => 3, 'window_days' => StandardPlans::ACTIVE_WINDOW_DAYS, 'max' => null, 'percent' => null],
+            $grandchild['members']
+        );
     }
 
     public function test_changePlanOnly_refuses_a_source_it_does_not_know(): void

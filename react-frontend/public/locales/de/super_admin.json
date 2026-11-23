@@ -825,7 +825,7 @@
     "load_failed": "Die Communitys konnten nicht geladen werden.",
     "empty": "Unterhalb Ihrer Community gibt es keine Communitys.",
     "change_plan": "Plan ändern",
-    "col_members": "Mitglieder",
+    "col_members": "Aktive Mitglieder",
     "col_plan": "Plan",
     "done_plan": "Plan geändert",
     "no_plan": "Kein Plan",
@@ -841,7 +841,18 @@
     "plans_empty": "Es gibt keine Pläne, die für diese Community infrage kommen.",
     "plans_load_failed": "Die Pläne konnten nicht geladen werden.",
     "save_plan": "Plan speichern",
-    "plan_card_subscription": "Zahlt per Karte: Den Plan ändert das Plattform-Team."
+    "plan_card_subscription": "Zahlt per Karte: Den Plan ändert das Plattform-Team.",
+    "col_plan_members": "Plan und Mitglieder",
+    "col_payment": "Zahlung",
+    "members_of_max": "{{active}} von {{max}}",
+    "members_all": "Alle Mitglieder",
+    "members_note": "Aktive Mitglieder haben sich in den letzten {{days}} Tagen angemeldet. Jede Zahl schließt die untergeordneten Gemeinschaften ein. Die Grenze eines Plans zählt aktive Mitglieder, nicht alle mit einem Konto.",
+    "pays_named": "Zahlt an {{name}}",
+    "pays_the_platform": "Zahlt an die Plattform",
+    "summary_communities": "Gemeinschaften",
+    "summary_over": "Über dem Plan-Limit",
+    "summary_late": "Zahlung überfällig",
+    "summary_paused": "Pausiert"
   },
   "branch_plans": {
     "title": "Pläne im Zweig",

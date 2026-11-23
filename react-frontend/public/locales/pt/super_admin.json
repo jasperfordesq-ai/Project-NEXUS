@@ -825,7 +825,7 @@
     "load_failed": "Não foi possível carregar as comunidades.",
     "empty": "Não há comunidades abaixo da sua.",
     "change_plan": "Mudar plano",
-    "col_members": "Membros",
+    "col_members": "Membros ativos",
     "col_plan": "Plano",
     "done_plan": "Plano alterado",
     "no_plan": "Sem plano",
@@ -841,7 +841,18 @@
     "plans_empty": "Não há planos disponíveis para esta comunidade.",
     "plans_load_failed": "Não foi possível carregar os planos.",
     "save_plan": "Guardar plano",
-    "plan_card_subscription": "Paga com cartão: é a equipa da plataforma que muda o plano."
+    "plan_card_subscription": "Paga com cartão: é a equipa da plataforma que muda o plano.",
+    "col_plan_members": "Plano e membros",
+    "col_payment": "Pagamento",
+    "members_of_max": "{{active}} de {{max}}",
+    "members_all": "Todos os membros",
+    "members_note": "Os membros ativos são os que iniciaram sessão nos últimos {{days}} dias. Cada número inclui as comunidades abaixo. O limite de um plano conta os membros ativos, não todas as pessoas com conta.",
+    "pays_named": "Paga a {{name}}",
+    "pays_the_platform": "Paga à plataforma",
+    "summary_communities": "Comunidades",
+    "summary_over": "Acima do seu plano",
+    "summary_late": "Pagamento em atraso",
+    "summary_paused": "Em pausa"
   },
   "branch_plans": {
     "title": "Planos do ramo",

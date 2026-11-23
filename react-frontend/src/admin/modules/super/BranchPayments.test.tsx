@@ -195,7 +195,7 @@ const makeRow = (overrides: Record<string, unknown> = {}) => ({
   cannot_act_reason: null,
   paused_from_above: false,
   plan: null,
-  members: { active: 61, max: null, percent: null },
+  members: { active: 61, total: 140, window_days: 90, max: null, percent: null },
   plan_change_refusal: null,
   over_limit: makeOverLimit(),
   upgrade_allowed: true,
@@ -245,11 +245,48 @@ describe('BranchPayments', () => {
     ]);
 
     expect(screen.getByText('Bandon Timebank')).toBeInTheDocument();
-    expect(screen.getAllByText('Cork Timebank')).toHaveLength(2);
+    expect(screen.getAllByText('Pays Cork Timebank')).toHaveLength(2);
     expect(screen.getByText((text) => text.includes('2026'))).toBeInTheDocument();
-    expect(screen.getByText('9')).toBeInTheDocument();
+    // "Days late" is a line of its own, and only on a community that is late.
+    expect(screen.getByTestId('days-late-7')).toHaveTextContent('9');
+    expect(screen.queryByTestId('days-late-8')).not.toBeInTheDocument();
     expect(screen.getAllByText('No date set')).toHaveLength(1);
     expect(screen.getAllByText('Open')).toHaveLength(2);
+  });
+
+  it('has five columns, and none of the nine it had when it scrolled sideways', async () => {
+    await renderWith([makeRow()]);
+
+    expect(screen.getAllByRole('columnheader').map((th) => th.textContent)).toEqual([
+      'Community', 'Plan and members', 'If over', 'Payment', 'Actions',
+    ]);
+    // The hint that the table is wider than the screen is gone with the width.
+    expect(screen.queryByText((text) => text.includes('scroll sideways'))).not.toBeInTheDocument();
+  });
+
+  it('counts, above the list, the communities that need a look', async () => {
+    await renderWith([
+      makeRow(),
+      makeRow({ id: 8, name: 'Kinsale Timebank', days_late: 4, members: { active: 104, total: 300, window_days: 90, max: 100, percent: 104 } }),
+      makeRow({ id: 9, name: 'Clonakilty Timebank', standing: makeStanding({ suspended_at: '2026-11-20 10:00:00', locked: true, locked_by_tenant_id: 9 }) }),
+      makeRow({ id: 10, name: 'Skibbereen Timebank', paused_from_above: true, standing: makeStanding({ locked: true, locked_by_tenant_id: 9 }) }),
+    ]);
+
+    const summary = screen.getByTestId('branch-summary');
+    // Each figure sits just before its label.
+    const figure = (label: string) =>
+      Array.from(summary.querySelectorAll('span')).find((el) => el.textContent === label)?.previousElementSibling?.textContent;
+    expect(figure('Communities')).toBe('4');
+    expect(figure('Over their plan')).toBe('1');
+    expect(figure('Payment late')).toBe('1');
+    // Paused itself, and paused because the community above it is.
+    expect(figure('Paused')).toBe('2');
+  });
+
+  it('shows no summary when there is nothing below', async () => {
+    await renderWith([]);
+
+    expect(screen.queryByTestId('branch-summary')).not.toBeInTheDocument();
   });
 
   it('says so when there are no communities below', async () => {
@@ -413,7 +450,8 @@ describe('BranchPayments', () => {
       makeRow({ standing: makeStanding({ suspended_at: '2026-11-20 10:00:00', suspension_source: 'manual', locked: true, locked_by_tenant_id: 7 }) }),
     ]);
 
-    expect(screen.getByText('Paused')).toBeInTheDocument();
+    // Once as the community's standing, once as the heading of the count above.
+    expect(screen.getAllByText('Paused')).toHaveLength(2);
     expect(button('Pause community')).toBeUndefined();
 
     await user.click(button('Restore community')!);
@@ -442,7 +480,7 @@ describe('BranchPayments', () => {
     ]);
 
     expect(screen.getByText('Pays the platform. Only the platform team can change this.')).toBeInTheDocument();
-    expect(screen.getByText('The platform')).toBeInTheDocument();
+    expect(screen.getByText('Pays the platform')).toBeInTheDocument();
     expect(button('Set paid-until date')).toBeUndefined();
     expect(button('Pause community')).toBeUndefined();
   });
@@ -483,11 +521,11 @@ describe('BranchPayments', () => {
 
   it('shows each community\'s plan, or that it has none, and marks a plan on its hub\'s terms', async () => {
     await renderWith([
-      makeRow({ plan: makePlan({ terms: 'hub', hub_tenant_id: 5 }), members: { active: 212, max: 250, percent: 84 } }),
+      makeRow({ plan: makePlan({ terms: 'hub', hub_tenant_id: 5 }), members: { active: 212, total: 260, window_days: 90, max: 250, percent: 84 } }),
       makeRow({ id: 8, name: 'Kinsale Timebank', plan: null }),
     ]);
 
-    expect(screen.getByText('Plan')).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Plan and members' })).toBeInTheDocument();
     expect(screen.getByText('Local')).toBeInTheDocument();
     expect(screen.getByText('On its hub\'s terms')).toBeInTheDocument();
     expect(screen.getByText('No plan')).toBeInTheDocument();
@@ -502,22 +540,57 @@ describe('BranchPayments', () => {
 
   it('shows the member number against the plan\'s limit, coloured as it fills', async () => {
     await renderWith([
-      makeRow({ id: 7, members: { active: 120, max: 250, percent: 48 } }),
-      makeRow({ id: 8, name: 'Kinsale Timebank', members: { active: 212, max: 250, percent: 84 } }),
-      makeRow({ id: 9, name: 'Clonakilty Timebank', members: { active: 104, max: 100, percent: 104 } }),
-      makeRow({ id: 10, name: 'Skibbereen Timebank', members: { active: 61, max: null, percent: null } }),
+      makeRow({ id: 7, members: { active: 120, total: 400, window_days: 90, max: 250, percent: 48 } }),
+      makeRow({ id: 8, name: 'Kinsale Timebank', members: { active: 212, total: 230, window_days: 90, max: 250, percent: 84 } }),
+      makeRow({ id: 9, name: 'Clonakilty Timebank', members: { active: 104, total: 190, window_days: 90, max: 100, percent: 104 } }),
+      makeRow({ id: 10, name: 'Skibbereen Timebank', members: { active: 61, total: 75, window_days: 90, max: null, percent: null } }),
     ]);
 
-    expect(screen.getByText('Members')).toBeInTheDocument();
-    const calm = screen.getByText('120 / 250');
+    // The number against the limit is the ACTIVE one, and it is labelled so.
+    expect(screen.getAllByText('Active members')).toHaveLength(4);
+    const calm = screen.getByTestId('members-active-7');
+    expect(calm).toHaveTextContent('120 of 250');
     expect(calm.className).not.toMatch(/text-(warning|danger)/);
-    const near = screen.getByText('212 / 250');
+    const near = screen.getByTestId('members-active-8');
+    expect(near).toHaveTextContent('212 of 250');
     expect(near.className).toMatch(/text-warning/);
     expect(near.className).not.toMatch(/font-semibold/);
-    const over = screen.getByText('104 / 100');
+    const over = screen.getByTestId('members-active-9');
+    expect(over).toHaveTextContent('104 of 100');
     expect(over.className).toMatch(/text-danger/);
     expect(over.className).toMatch(/font-semibold/);
-    expect(screen.getByText('61')).toBeInTheDocument();
+    // No plan limit: the number on its own.
+    expect(screen.getByTestId('members-active-10').textContent).toBe('61');
+  });
+
+  it('shows everyone with an account beside the active number, and never colours it', async () => {
+    // Owner, 23 Nov 2026: 35 of 50 read as broken beside a community of 274.
+    await renderWith([
+      makeRow({ id: 7, plan: makePlan({ name: 'Starter', max_users: 50 }), members: { active: 35, total: 274, window_days: 90, max: 50, percent: 70 } }),
+      makeRow({ id: 9, name: 'Clonakilty Timebank', members: { active: 104, total: 190, window_days: 90, max: 100, percent: 104 } }),
+    ]);
+
+    expect(screen.getAllByText('All members')).toHaveLength(2);
+    expect(screen.getByTestId('members-active-7')).toHaveTextContent('35 of 50');
+    expect(screen.getByTestId('members-total-7')).toHaveTextContent('274');
+    // Over its plan on ACTIVE members: the total is information, not a warning.
+    expect(screen.getByTestId('members-total-9').className).not.toMatch(/text-(warning|danger)/);
+  });
+
+  it('says once what an active member is, with the number of days the server sends', async () => {
+    await renderWith([makeRow({ members: { active: 61, total: 140, window_days: 45, max: null, percent: null } })]);
+
+    expect(screen.getByText(
+      'Active members are those who signed in during the last 45 days. Each number includes the communities below. A plan\'s limit counts active members, not everyone with an account.',
+    )).toBeInTheDocument();
+  });
+
+  it('still shows the active number when an older server sends no total', async () => {
+    await renderWith([makeRow({ members: { active: 61, max: null, percent: null } })]);
+
+    expect(screen.getByTestId('members-active-7').textContent).toBe('61');
+    expect(screen.queryByTestId('members-total-7')).not.toBeInTheDocument();
+    expect(screen.queryByText('All members')).not.toBeInTheDocument();
   });
 
   it('offers to change the plan only where the manager may act', async () => {
@@ -718,13 +791,15 @@ describe('BranchPayments', () => {
     expect(screen.queryByText((text) => text.includes('automatic checks are switched off'))).not.toBeInTheDocument();
   });
 
-  it('keeps two actions in view and gathers the rest in a menu', async () => {
+  it('keeps one action in view and gathers the rest in a menu', async () => {
     await renderWith([makeRow({ standing: makeStanding({ suspended_at: '2026-11-01 08:00:00' }) })]);
 
     expect(screen.getByRole('button', { name: 'Record a payment' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Set paid-until date' })).toBeInTheDocument();
+    // Setting the date on its own moved into the menu: two buttons and a menu
+    // were the widest thing on the row.
+    expect(screen.queryByRole('button', { name: 'Set paid-until date' })).not.toBeInTheDocument();
     const items = screen.getAllByRole('menuitem').map((b) => b.textContent?.trim());
-    expect(items).toEqual(['Change plan', 'Over-limit rule', 'Restore community']);
+    expect(items).toEqual(['Set paid-until date', 'Change plan', 'Over-limit rule', 'Restore community']);
   });
 
   it('opens on the community’s own rule and posts the choice', async () => {

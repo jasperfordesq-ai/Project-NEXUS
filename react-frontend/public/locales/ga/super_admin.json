@@ -825,7 +825,7 @@
     "load_failed": "Níorbh fhéidir na pobail a lódáil.",
     "empty": "Níl aon phobal faoi do phobal féin.",
     "change_plan": "Athraigh an plean",
-    "col_members": "Baill",
+    "col_members": "Baill ghníomhacha",
     "col_plan": "Plean",
     "done_plan": "Athraíodh an plean",
     "no_plan": "Gan phlean",
@@ -841,7 +841,18 @@
     "plans_empty": "Níl aon phleananna is féidir a chur ar an bpobal seo.",
     "plans_load_failed": "Níorbh fhéidir na pleananna a lódáil.",
     "save_plan": "Sábháil an plean",
-    "plan_card_subscription": "Íocann sé le cárta: athraíonn foireann an ardáin a phlean."
+    "plan_card_subscription": "Íocann sé le cárta: athraíonn foireann an ardáin a phlean.",
+    "col_plan_members": "Plean agus baill",
+    "col_payment": "Íocaíocht",
+    "members_of_max": "{{active}} as {{max}}",
+    "members_all": "Na baill uile",
+    "members_note": "Is iad na baill ghníomhacha iad siúd a shínigh isteach le {{days}} lá anuas. Cuimsíonn gach uimhir na pobail faoina bun. Áiríonn teorainn plean baill ghníomhacha, ní gach duine a bhfuil cuntas acu.",
+    "pays_named": "Íocann le {{name}}",
+    "pays_the_platform": "Íocann leis an ardán",
+    "summary_communities": "Pobail",
+    "summary_over": "Thar a bplean",
+    "summary_late": "Íocaíocht déanach",
+    "summary_paused": "Ar sos"
   },
   "branch_plans": {
     "title": "Pleananna an bhrainse",

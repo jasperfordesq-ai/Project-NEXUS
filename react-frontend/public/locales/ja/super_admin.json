@@ -825,7 +825,7 @@
     "load_failed": "コミュニティを読み込めませんでした。",
     "empty": "あなたのコミュニティの下位にコミュニティはありません。",
     "change_plan": "プランを変更",
-    "col_members": "メンバー",
+    "col_members": "アクティブメンバー",
     "col_plan": "プラン",
     "done_plan": "プランを変更しました",
     "no_plan": "プランなし",
@@ -841,7 +841,18 @@
     "plans_empty": "このコミュニティに設定できるプランはありません。",
     "plans_load_failed": "プランを読み込めませんでした。",
     "save_plan": "プランを保存",
-    "plan_card_subscription": "カード払いのため、プランはプラットフォームチームが変更します。"
+    "plan_card_subscription": "カード払いのため、プランはプラットフォームチームが変更します。",
+    "col_plan_members": "プランとメンバー",
+    "col_payment": "支払い",
+    "members_of_max": "{{active}} / {{max}}",
+    "members_all": "全メンバー",
+    "members_note": "アクティブメンバーとは、過去 {{days}} 日以内にサインインしたメンバーです。各数値には配下のコミュニティも含まれます。プランの上限はアクティブメンバー数で判定され、アカウントを持つ全員の数ではありません。",
+    "pays_named": "支払先: {{name}}",
+    "pays_the_platform": "支払先: プラットフォーム",
+    "summary_communities": "コミュニティ",
+    "summary_over": "プラン上限を超過",
+    "summary_late": "支払い遅延",
+    "summary_paused": "一時停止中"
   },
   "branch_plans": {
     "title": "ブランチのプラン",

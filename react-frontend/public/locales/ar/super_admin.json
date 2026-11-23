@@ -825,7 +825,7 @@
     "load_failed": "تعذّر تحميل المجتمعات.",
     "empty": "لا توجد مجتمعات تحت مجتمعك.",
     "change_plan": "تغيير الخطة",
-    "col_members": "الأعضاء",
+    "col_members": "الأعضاء النشطون",
     "col_plan": "الخطة",
     "done_plan": "تم تغيير الخطة",
     "no_plan": "بلا خطة",
@@ -841,7 +841,18 @@
     "plans_empty": "لا توجد خطط متاحة لهذا المجتمع.",
     "plans_load_failed": "تعذّر تحميل الخطط.",
     "save_plan": "حفظ الخطة",
-    "plan_card_subscription": "يدفع بالبطاقة: فريق المنصة هو من يغيّر خطته."
+    "plan_card_subscription": "يدفع بالبطاقة: فريق المنصة هو من يغيّر خطته.",
+    "col_plan_members": "الخطة والأعضاء",
+    "col_payment": "الدفع",
+    "members_of_max": "{{active}} من {{max}}",
+    "members_all": "جميع الأعضاء",
+    "members_note": "الأعضاء النشطون هم من سجّلوا الدخول خلال آخر {{days}} يومًا. يشمل كل رقم المجتمعات التابعة له. حدّ الخطة يُحتسب على الأعضاء النشطين، لا على كل من لديه حساب.",
+    "pays_named": "يدفع إلى {{name}}",
+    "pays_the_platform": "يدفع إلى المنصة",
+    "summary_communities": "المجتمعات",
+    "summary_over": "تجاوزت حدّ خطتها",
+    "summary_late": "دفعات متأخرة",
+    "summary_paused": "متوقفة مؤقتًا"
   },
   "branch_plans": {
     "title": "خطط الفرع",

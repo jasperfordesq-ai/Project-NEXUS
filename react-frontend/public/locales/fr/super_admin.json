@@ -825,7 +825,7 @@
     "load_failed": "Les communautés n’ont pas pu être chargées.",
     "empty": "Aucune communauté ne dépend de la vôtre.",
     "change_plan": "Changer de forfait",
-    "col_members": "Membres",
+    "col_members": "Membres actifs",
     "col_plan": "Forfait",
     "done_plan": "Forfait modifié",
     "no_plan": "Aucun forfait",
@@ -841,7 +841,18 @@
     "plans_empty": "Aucun forfait n'est possible pour cette communauté.",
     "plans_load_failed": "Les forfaits n'ont pas pu être chargés.",
     "save_plan": "Enregistrer le forfait",
-    "plan_card_subscription": "Paie par carte : c'est l'équipe de la plateforme qui change son forfait."
+    "plan_card_subscription": "Paie par carte : c'est l'équipe de la plateforme qui change son forfait.",
+    "col_plan_members": "Forfait et membres",
+    "col_payment": "Paiement",
+    "members_of_max": "{{active}} sur {{max}}",
+    "members_all": "Tous les membres",
+    "members_note": "Les membres actifs sont ceux qui se sont connectés au cours des {{days}} derniers jours. Chaque chiffre inclut les communautés situées en dessous. La limite d'un forfait porte sur les membres actifs, et non sur toutes les personnes ayant un compte.",
+    "pays_named": "Paie à {{name}}",
+    "pays_the_platform": "Paie à la plateforme",
+    "summary_communities": "Communautés",
+    "summary_over": "Au-delà de leur forfait",
+    "summary_late": "Paiement en retard",
+    "summary_paused": "En pause"
   },
   "branch_plans": {
     "title": "Forfaits de la branche",

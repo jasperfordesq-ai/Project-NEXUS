@@ -825,7 +825,7 @@
     "load_failed": "Nie udało się wczytać społeczności.",
     "empty": "Nie ma społeczności podległych twojej.",
     "change_plan": "Zmień plan",
-    "col_members": "Członkowie",
+    "col_members": "Aktywni członkowie",
     "col_plan": "Plan",
     "done_plan": "Plan zmieniony",
     "no_plan": "Brak planu",
@@ -841,7 +841,18 @@
     "plans_empty": "Nie ma planów dostępnych dla tej społeczności.",
     "plans_load_failed": "Nie udało się wczytać planów.",
     "save_plan": "Zapisz plan",
-    "plan_card_subscription": "Płaci kartą: plan zmienia zespół platformy."
+    "plan_card_subscription": "Płaci kartą: plan zmienia zespół platformy.",
+    "col_plan_members": "Plan i członkowie",
+    "col_payment": "Płatność",
+    "members_of_max": "{{active}} z {{max}}",
+    "members_all": "Wszyscy członkowie",
+    "members_note": "Aktywni członkowie to osoby, które zalogowały się w ciągu ostatnich {{days}} dni. Każda liczba obejmuje też społeczności podrzędne. Limit planu dotyczy aktywnych członków, a nie wszystkich osób z kontem.",
+    "pays_named": "Płaci: {{name}}",
+    "pays_the_platform": "Płaci platformie",
+    "summary_communities": "Społeczności",
+    "summary_over": "Ponad limit planu",
+    "summary_late": "Płatność opóźniona",
+    "summary_paused": "Wstrzymane"
   },
   "branch_plans": {
     "title": "Plany gałęzi",

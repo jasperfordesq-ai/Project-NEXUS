@@ -213,7 +213,16 @@ final class BranchPayments
      * member number. `max` and `percent` are null without a plan or with a
      * plan that has no member number.
      *
-     * @return array{active: int, max: ?int, percent: ?int}
+     * `total` is every member of the branch with an account in good standing,
+     * whether or not they signed in lately: the number a manager thinks of as
+     * "our members" (owner, 23 Nov 2026: the page showed 35 for a community
+     * of 274 and read as broken). It is shown beside `active` and decides
+     * nothing: the plan's number is checked against `active` alone, and
+     * `percent` is `active` against `max`. `window_days` is how recently a
+     * member must have signed in to count as active, so the screen can say
+     * so without holding its own copy of the number.
+     *
+     * @return array{active: int, total: int, window_days: int, max: ?int, percent: ?int}
      */
     public static function members(int $tenantId, ?int $maxUsers): array
     {
@@ -222,6 +231,8 @@ final class BranchPayments
 
         return [
             'active' => $active,
+            'total' => TenantBillingService::getSubtreeUserCount($tenantId),
+            'window_days' => StandardPlans::ACTIVE_WINDOW_DAYS,
             'max' => $max,
             'percent' => $max !== null ? intdiv($active * 100, $max) : null,
         ];

@@ -15,6 +15,19 @@
  * on its own, pauses a community, restores it, changes its plan and sets its
  * own over-limit rule.
  *
+ * 🔴 Layout (23 Nov 2026). This was a nine-column table 1,180px wide that
+ * scrolled sideways inside its card; the scroll bar went unnoticed and half
+ * the columns with it. It is still one HeroUI table (same roles, same keyboard
+ * movement), but each row is laid out as a grid: five aligned columns from the
+ * `xl` breakpoint, and a stacked block with its own small labels below it. It
+ * never needs to scroll sideways. Do not put `min-w-[…]` back on the table.
+ *
+ * 🔴 "Members" is two numbers. A plan's limit is on ACTIVE members (signed in
+ * within `members.window_days`, the pricing page's definition); `members.total`
+ * is everyone with an account in good standing and is shown for information
+ * only. The page says which is which, because 35 read as broken beside a
+ * community of 274.
+ *
  * 🔴 The screen decides nothing about who may act. Every row arrives with
  * `can_act` and, when false, `cannot_act_reason`, worked out by the same rule
  * the server applies to the write (App\Support\Billing\BranchPayments). So a
@@ -28,9 +41,14 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import Banknote from 'lucide-react/icons/banknote';
+import Building2 from 'lucide-react/icons/building-2';
+import CirclePause from 'lucide-react/icons/circle-pause';
+import Clock from 'lucide-react/icons/clock';
+import Info from 'lucide-react/icons/info';
 import MoreVertical from 'lucide-react/icons/ellipsis-vertical';
-import { Alert, Button, Card, CardBody, CardHeader, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Radio, RadioGroup, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@/components/ui';
+import TriangleAlert from 'lucide-react/icons/triangle-alert';
+import type { LucideIcon } from 'lucide-react';
+import { Alert, Button, Card, CardBody, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Input, Meter, MeterFill, MeterTrack, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Radio, RadioGroup, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@/components/ui';
 import { usePageTitle } from '@/hooks';
 import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
@@ -74,9 +92,16 @@ interface Terms {
   is_standard: boolean;
 }
 
-/** Active members (TenantBillingService::getSubtreeActiveMemberCount()) against the plan's limit. */
+/**
+ * `active`: signed in within `window_days`, whole branch
+ * (TenantBillingService::getSubtreeActiveMemberCount()), against the plan's
+ * limit. `total`: every member of the branch with an account in good standing
+ * (getSubtreeUserCount()); shown for information, checked against nothing.
+ */
 interface Members {
   active: number;
+  total: number;
+  window_days: number;
   max: number | null;
   percent: number | null;
 }
@@ -117,23 +142,88 @@ function standingState(row: BranchRow): StandingState {
 
 // How far a community sits below the top of the list, as whole class names so
 // the stylesheet keeps them (inline styles are not allowed in new pages).
-const INDENT = ['pl-0', 'pl-4', 'pl-8', 'pl-12', 'pl-16', 'pl-20'] as const;
+// In columns (from `xl`) the name is indented; stacked, the whole block is, so
+// a community still sits visibly under the one above it. Shallower on a small
+// screen, where every 16px counts.
+const NAME_INDENT = ['xl:pl-0', 'xl:pl-4', 'xl:pl-8', 'xl:pl-12', 'xl:pl-16', 'xl:pl-20'] as const;
+const BLOCK_INDENT = ['max-xl:ml-0', 'max-xl:ml-4', 'max-xl:ml-8', 'max-xl:ml-10', 'max-xl:ml-12', 'max-xl:ml-12'] as const;
 
-function indentFor(depth: number): string {
-  return INDENT[Math.min(INDENT.length - 1, Math.max(0, depth - 1))] ?? INDENT[0];
+function indentStep(depth: number): number {
+  return Math.min(NAME_INDENT.length - 1, Math.max(0, depth - 1));
 }
 
-/** Warning colour from 80% of the plan's limit, danger and bold from 100%. */
-function membersClass(members: Members): string {
-  if (members.percent !== null && members.percent >= 100) return 'text-sm font-semibold text-danger';
-  if (members.percent !== null && members.percent >= 80) return 'text-sm text-warning';
-  return 'text-sm';
+function nameIndentFor(depth: number): string {
+  return NAME_INDENT[indentStep(depth)] ?? NAME_INDENT[0];
 }
 
-function membersText(members: Members): string {
-  return members.max === null
-    ? formatNumber(members.active)
-    : `${formatNumber(members.active)} / ${formatNumber(members.max)}`;
+function blockIndentFor(depth: number): string {
+  return BLOCK_INDENT[indentStep(depth)] ?? BLOCK_INDENT[0];
+}
+
+type MembersLevel = 'ok' | 'near' | 'over';
+
+/** Near from 80% of the plan's limit, over from 100%. */
+function membersLevel(members: Members): MembersLevel {
+  if (members.percent !== null && members.percent >= 100) return 'over';
+  if (members.percent !== null && members.percent >= 80) return 'near';
+  return 'ok';
+}
+
+const MEMBERS_TEXT: Record<MembersLevel, string> = {
+  ok: 'font-medium',
+  near: 'font-medium text-warning',
+  over: 'font-semibold text-danger',
+};
+
+const MEMBERS_METER: Record<MembersLevel, 'accent' | 'warning' | 'danger'> = {
+  ok: 'accent',
+  near: 'warning',
+  over: 'danger',
+};
+
+// One grid for the heading row and every community's row, so the columns line
+// up from `xl`. Written out in full twice: the stylesheet only keeps class
+// names it can read whole in the source.
+const ROW_COLUMNS = 'xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1.3fr)_minmax(0,1.1fr)_minmax(0,1.15fr)_12.5rem]';
+const HEAD_COLUMNS = 'xl:[&>tr]:grid-cols-[minmax(0,1.5fr)_minmax(0,1.3fr)_minmax(0,1.1fr)_minmax(0,1.15fr)_12.5rem]';
+
+type GlanceTone = 'accent' | 'warning' | 'danger' | 'quiet';
+
+const GLANCE_TONE: Record<GlanceTone, string> = {
+  accent: 'text-accent-soft-foreground bg-accent/10',
+  warning: 'text-warning bg-warning/10',
+  danger: 'text-danger bg-danger/10',
+  quiet: 'text-muted bg-surface-tertiary',
+};
+
+/** One figure of the summary above the list: slim, so the list stays in view. */
+function Glance({ icon: Icon, label, value, tone }: { icon: LucideIcon; label: string; value: string; tone: GlanceTone }) {
+  return (
+    <Card>
+      <CardBody className="flex flex-row items-center gap-3 px-4 py-3">
+        <span className={`flex size-9 shrink-0 items-center justify-center rounded-xl ${GLANCE_TONE[tone]}`}>
+          <Icon size={18} aria-hidden="true" />
+        </span>
+        <span className="flex min-w-0 flex-col">
+          <span className="text-xl font-semibold leading-tight tabular-nums">{value}</span>
+          <span className="break-normal text-xs text-muted">{label}</span>
+        </span>
+      </CardBody>
+    </Card>
+  );
+}
+
+/**
+ * The column's name above a block when the rows are stacked (below `xl` the
+ * heading row is off screen). Hidden from assistive technology: the table
+ * already ties each cell to its column heading.
+ */
+function StackedLabel({ children }: { children: string }) {
+  return (
+    <span aria-hidden="true" className="mb-1.5 block text-xs font-medium text-muted xl:hidden">
+      {children}
+    </span>
+  );
 }
 
 /** Money may arrive as a numeric string from a decimal column. */
@@ -311,6 +401,12 @@ export function BranchPayments() {
   // The same switch for every row: the platform's automatic checks.
   const automationOff = rows[0]?.over_limit?.automation_enabled === false;
 
+  // At a glance, above the list: how many need a look, and for what.
+  const overCount = rows.filter((row) => membersLevel(row.members) === 'over').length;
+  const lateCount = rows.filter((row) => (row.days_late ?? 0) > 0).length;
+  const pausedCount = rows.filter((row) => row.standing.suspended_at !== null || row.standing.locked).length;
+  const windowDays = rows[0]?.members.window_days ?? null;
+
   return (
     <div className="space-y-6">
       {header}
@@ -319,25 +415,46 @@ export function BranchPayments() {
         <Alert color="warning" title={t('admin_billing:over_limit_rule.automation_off_note')} />
       ) : null}
 
+      {rows.length > 0 ? (
+        <div data-testid="branch-summary" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <Glance icon={Building2} label={t('branch_payments.summary_communities')} value={formatNumber(rows.length)} tone="accent" />
+          <Glance icon={TriangleAlert} label={t('branch_payments.summary_over')} value={formatNumber(overCount)} tone={overCount > 0 ? 'danger' : 'quiet'} />
+          <Glance icon={Clock} label={t('branch_payments.summary_late')} value={formatNumber(lateCount)} tone={lateCount > 0 ? 'warning' : 'quiet'} />
+          <Glance icon={CirclePause} label={t('branch_payments.summary_paused')} value={formatNumber(pausedCount)} tone={pausedCount > 0 ? 'danger' : 'quiet'} />
+        </div>
+      ) : null}
+
       <Card>
-        <CardHeader className="flex flex-row items-center justify-start gap-2 pb-0">
-          <Banknote size={18} className="text-accent" aria-hidden="true" />
-          <span className="font-semibold text-sm">{t('branch_payments.title')}</span>
-        </CardHeader>
         <CardBody className="p-0">
-          {/* Wider than a phone, and than many laptops: the table scrolls
-              sideways inside this card, never the page. */}
-          <p className="px-4 pt-2 text-xs text-muted 2xl:hidden">{t('admin_billing:billing.table_scrolls')}</p>
-          <Table aria-label={t('branch_payments.title')} removeWrapper classNames={{ table: 'min-w-[1180px]' }}>
+          {/* What "active" means, said once: the plan's limit is on active
+              members, not on everyone with an account. */}
+          {windowDays !== null ? (
+            <p className="flex items-start gap-2 px-4 py-3 text-xs text-muted">
+              <Info size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
+              <span>{t('branch_payments.members_note', { days: formatNumber(windowDays) })}</span>
+            </p>
+          ) : null}
+
+          {/* One table, laid out as a grid: five aligned columns from `xl`,
+              a stacked block per community below it. Never wider than its
+              card, so nothing has to be found by scrolling sideways. */}
+          <Table
+            aria-label={t('branch_payments.title')}
+            removeWrapper
+            classNames={{
+              table: '!block',
+              thead: `block max-xl:sr-only [&>tr]:grid [&>tr]:gap-x-4 [&>tr]:px-4 ${HEAD_COLUMNS}`,
+              th: '!px-0 after:!hidden',
+              tbody: 'block',
+              tr: `grid grid-cols-1 gap-x-4 gap-y-4 px-4 py-4 sm:grid-cols-2 ${ROW_COLUMNS}`,
+              td: '!block !h-auto min-w-0 !border-0 !bg-transparent !p-0',
+            }}
+          >
             <TableHeader>
               <TableColumn>{t('branch_payments.col_community')}</TableColumn>
-              <TableColumn>{t('admin_billing:billing.col_pays')}</TableColumn>
-              <TableColumn>{t('branch_payments.col_plan')}</TableColumn>
-              <TableColumn>{t('branch_payments.col_members')}</TableColumn>
+              <TableColumn>{t('branch_payments.col_plan_members')}</TableColumn>
               <TableColumn>{t('admin_billing:over_limit_rule.col_if_over')}</TableColumn>
-              <TableColumn>{t('branch_payments.col_paid_until')}</TableColumn>
-              <TableColumn>{t('branch_payments.col_days_late')}</TableColumn>
-              <TableColumn>{t('admin_billing:billing.col_standing')}</TableColumn>
+              <TableColumn>{t('branch_payments.col_payment')}</TableColumn>
               <TableColumn>{t('admin_billing:billing.col_actions')}</TableColumn>
             </TableHeader>
             <TableBody emptyContent={t('branch_payments.empty')} items={rows}>
@@ -346,83 +463,107 @@ export function BranchPayments() {
                 const busy = busyId === row.id;
                 const paysParent = row.standing.payer === 'parent';
                 const canChangePlan = row.plan_change_refusal !== 'card_subscription';
+                const level = membersLevel(row.members);
+                const activeText = row.members.max === null
+                  ? formatNumber(row.members.active)
+                  : t('branch_payments.members_of_max', { active: formatNumber(row.members.active), max: formatNumber(row.members.max) });
+                // Nobody is paid by a community that is not billed: it read "The platform".
+                const paysText = row.standing.payer === 'not_billed'
+                  ? t('admin_billing:billing.payer_not_billed')
+                  : paysParent && row.parent_name
+                    ? t('branch_payments.pays_named', { name: row.parent_name })
+                    : t('branch_payments.pays_the_platform');
 
                 return (
-                  <TableRow key={row.id}>
-                    <TableCell>
+                  <TableRow key={row.id} className={blockIndentFor(row.depth)}>
+                    <TableCell className="sm:col-span-2 xl:col-span-1">
                       {/* A block, so every line of a long name is indented and
                           the hierarchy shows; words wrap whole. */}
-                      <div className={`block min-w-48 break-normal text-sm font-medium ${indentFor(row.depth)}`}>
-                        {row.name}
+                      <div className={`break-normal ${nameIndentFor(row.depth)}`}>
+                        <div className="text-sm font-semibold text-foreground">{row.name}</div>
+                        <div className="mt-0.5 text-xs text-muted">{paysText}</div>
                       </div>
                     </TableCell>
 
                     <TableCell>
-                      <div className="min-w-36 break-normal text-sm text-muted">
-                        {/* Nobody is paid by a community that is not billed: it read "The platform". */}
-                        {row.standing.payer === 'not_billed'
-                          ? t('admin_billing:billing.payer_not_billed')
-                          : paysParent && row.parent_name ? row.parent_name : t('branch_payments.pays_platform')}
-                      </div>
-                    </TableCell>
+                      <StackedLabel>{t('branch_payments.col_plan_members')}</StackedLabel>
+                      <div className="flex flex-col gap-1.5 break-normal">
+                        {row.plan ? (
+                          <div>
+                            <span className="text-sm font-medium">{row.plan.name}</span>
+                            {row.plan.terms === 'hub' ? (
+                              <span className="block text-xs text-muted">{t('branch_payments.plan_hub_terms')}</span>
+                            ) : null}
+                          </div>
+                        ) : (
+                          <span className="text-sm text-muted">{t('branch_payments.no_plan')}</span>
+                        )}
 
-                    <TableCell>
-                      {row.plan ? (
-                        <div className="flex min-w-32 flex-col break-normal">
-                          <span className="text-sm">{row.plan.name}</span>
-                          {row.plan.terms === 'hub' ? (
-                            <span className="text-xs text-muted">{t('branch_payments.plan_hub_terms')}</span>
+                        {row.members.max !== null ? (
+                          <Meter
+                            aria-label={t('branch_payments.col_members')}
+                            value={Math.min(row.members.active, row.members.max)}
+                            maxValue={row.members.max}
+                            valueLabel={activeText}
+                            color={MEMBERS_METER[level]}
+                            size="sm"
+                            className="max-w-48"
+                          >
+                            <MeterTrack>
+                              <MeterFill />
+                            </MeterTrack>
+                          </Meter>
+                        ) : null}
+
+                        <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-0.5 text-xs">
+                          <dt className="text-muted">{t('branch_payments.col_members')}</dt>
+                          <dd data-testid={`members-active-${row.id}`} className={MEMBERS_TEXT[level]}>{activeText}</dd>
+                          {typeof row.members.total === 'number' ? (
+                            <>
+                              <dt className="text-muted">{t('branch_payments.members_all')}</dt>
+                              <dd data-testid={`members-total-${row.id}`}>{formatNumber(row.members.total)}</dd>
+                            </>
                           ) : null}
-                        </div>
-                      ) : (
-                        <span className="text-sm text-muted whitespace-nowrap">{t('branch_payments.no_plan')}</span>
-                      )}
+                        </dl>
+                      </div>
                     </TableCell>
 
                     <TableCell>
-                      <span className={`${membersClass(row.members)} whitespace-nowrap`}>{membersText(row.members)}</span>
-                    </TableCell>
-
-                    <TableCell>
+                      <StackedLabel>{t('admin_billing:over_limit_rule.col_if_over')}</StackedLabel>
                       <OverLimitSummary rule={row.over_limit ?? null} />
                     </TableCell>
 
                     <TableCell>
-                      <span className="text-sm text-muted whitespace-nowrap">
-                        {row.standing.paid_until ? formatDate(row.standing.paid_until) : t('branch_payments.no_date')}
-                      </span>
-                    </TableCell>
-
-                    <TableCell>
-                      <span className={`text-sm ${row.days_late ? 'font-semibold text-danger' : 'text-muted'}`}>
-                        {row.days_late ?? '—'}
-                      </span>
-                    </TableCell>
-
-                    <TableCell>
-                      <div className="flex min-w-32 flex-col items-start gap-1 break-normal">
+                      <StackedLabel>{t('branch_payments.col_payment')}</StackedLabel>
+                      <div className="flex flex-col items-start gap-1.5 break-normal">
                         <Chip size="sm" variant="soft" color={STANDING_COLOR[state]}>
                           {t(`admin_billing:billing.standing_${state}`)}
                         </Chip>
                         {row.paused_from_above ? (
                           <span className="text-xs text-muted">{t('branch_payments.paused_from_above_note')}</span>
                         ) : null}
+                        <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-0.5 text-xs">
+                          <dt className="text-muted">{t('branch_payments.col_paid_until')}</dt>
+                          <dd>{row.standing.paid_until ? formatDate(row.standing.paid_until) : t('branch_payments.no_date')}</dd>
+                          {row.days_late ? (
+                            <>
+                              <dt className="text-muted">{t('branch_payments.col_days_late')}</dt>
+                              <dd data-testid={`days-late-${row.id}`} className="font-semibold text-danger">{formatNumber(row.days_late)}</dd>
+                            </>
+                          ) : null}
+                        </dl>
                       </div>
                     </TableCell>
 
                     <TableCell>
                       {row.can_act ? (
-                        // Two actions in view (a payment, and the date on its
-                        // own) and the rest in a menu, as the admin lists do:
-                        // five buttons in a cell were cut off at the table's
-                        // edge.
-                        <div className="flex min-w-52 flex-col items-start gap-1">
+                        // One action in view (a payment, the commonest) and
+                        // the rest in a menu, as the admin lists do: a row of
+                        // buttons was cut off at the table's edge.
+                        <div className="flex flex-col items-start gap-1">
                           <div className="flex flex-wrap items-center gap-1">
                             <Button size="sm" variant="secondary" isDisabled={busy} onPress={() => setPaymentRow(row)} className="whitespace-nowrap">
                               {t('admin_billing:control.record_payment')}
-                            </Button>
-                            <Button size="sm" variant="tertiary" isDisabled={busy} onPress={() => openDialog(row, 'date')} className="whitespace-nowrap">
-                              {t('branch_payments.set_date')}
                             </Button>
                             <Dropdown>
                               <DropdownTrigger>
@@ -440,13 +581,15 @@ export function BranchPayments() {
                               <DropdownMenu
                                 aria-label={t('admin_billing:billing.more_actions_for', { name: row.name })}
                                 onAction={(key) => {
-                                  if (key === 'plan') void openPlanDialog(row);
+                                  if (key === 'date') openDialog(row, 'date');
+                                  else if (key === 'plan') void openPlanDialog(row);
                                   else if (key === 'rule') setRuleRow(row);
                                   else if (key === 'pause') openDialog(row, 'pause');
                                   else if (key === 'restore') void send(row, 'restore', {}, 'admin_billing:billing.done_restored');
                                 }}
                               >
                                 {[
+                                  <DropdownItem key="date" id="date">{t('branch_payments.set_date')}</DropdownItem>,
                                   ...(canChangePlan ? [
                                     <DropdownItem key="plan" id="plan">{t('branch_payments.change_plan')}</DropdownItem>,
                                   ] : []),
@@ -469,7 +612,7 @@ export function BranchPayments() {
                           )}
                         </div>
                       ) : (
-                        <span className="block min-w-48 text-xs text-muted break-normal">
+                        <span className="block text-xs text-muted break-normal">
                           {row.cannot_act_reason === 'exempt'
                             ? t('branch_payments.cannot_exempt')
                             : t('branch_payments.cannot_pays_platform')}
