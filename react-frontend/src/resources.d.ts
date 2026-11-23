@@ -4613,6 +4613,8 @@ export default interface Resources {
       "yes": "Yes"
     },
     "control": {
+      "agreed_price_help": "Leave these empty to charge the plan's own price. A special price replaces the plan's price. A verified non-profit then pays 20% less, and a discount is taken off after that.",
+      "agreed_price_title": "Agreed price (optional)",
       "alert_disputed": "Card payment disputed",
       "alert_refunded": "Card payment refunded",
       "amount_from_plan": "Filled in from the plan's price. Change it if a different amount was paid.",
@@ -4620,6 +4622,7 @@ export default interface Resources {
       "amount_label": "Amount (optional)",
       "card_payer_note": "This community pays by card. Its plan and price are changed from its own Billing page. Only the notes and the review date can be changed here.",
       "change_payer": "Change how it pays",
+      "change_plan_price": "Change plan or price",
       "col_paid_until": "Paid until",
       "currency_label": "Currency",
       "currency_required": "Choose the currency of the amount.",
@@ -4628,6 +4631,7 @@ export default interface Resources {
       "done_payer_set": "Saved how this community pays",
       "done_payment_recorded": "Payment recorded",
       "done_payment_voided": "Payment voided",
+      "edit_plan_title": "Plan and price",
       "filter_all": "All communities",
       "filter_count": "Showing {{shown}} of {{total}} communities",
       "filter_label": "Show",
@@ -4667,6 +4671,7 @@ export default interface Resources {
       "no_date": "No date set",
       "none_match": "No community matches this filter.",
       "none_yet": "There are no communities yet.",
+      "paid_until_after_plan": "The plan is saved. Now set the date this community is paid up to, so that reminders and checks can start.",
       "paid_until_help": "The community is paid up to and including this date. Leave it empty to stop tracking a date.",
       "paid_until_label": "Paid up to and including",
       "pause_on_line": "Automatic pause: {{date}}",
@@ -4678,6 +4683,7 @@ export default interface Resources {
       "payer_help_platform_invoice": "Pays the platform by invoice or bank transfer. Record its payments here by hand.",
       "payer_label": "How this community pays",
       "payment_paid_until_label": "Now paid up to and including",
+      "plans_failed": "The plans could not be loaded. Close this box and try again.",
       "quick_month": "Add one month: {{date}}",
       "quick_year": "Add one year: {{date}}",
       "received_on_label": "Received on",
@@ -4695,6 +4701,7 @@ export default interface Resources {
       "special_price_monthly": "Special price per month ({{currency}})",
       "special_price_yearly": "Special price per year ({{currency}})",
       "suggested": "Suggested: {{plan}}",
+      "team_only_help": "For the platform team only. The community does not see these.",
       "try_again": "Try again",
       "void_action": "Void",
       "void_action_for": "Void the payment received {{date}}",
@@ -4706,7 +4713,8 @@ export default interface Resources {
       "void_date_now": "Paid until now: {{date}}.",
       "void_help": "The payment stays in the history, struck through, with your reason. It is never deleted.",
       "void_reason_label": "Why it is being voided",
-      "void_title": "Void a payment"
+      "void_title": "Void a payment",
+      "will_pay_label": "It will pay"
     },
     "over_limit_rule": {
       "automation_off_note": "The platform’s automatic checks are switched off, so nothing here acts until the platform team switches them on. You can still set the rule now.",

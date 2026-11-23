@@ -578,14 +578,15 @@ describe('BillingControl', () => {
       makeSnapshot({ current_plan: makePlanOnRow({ notes: 'Agreed in March.', expires_at: '2027-03-01 00:00:00' }) }),
     ]);
 
-    fireEvent.click(more('Assign plan')!);
+    fireEvent.click(more('Change plan or price')!);
 
     expect(await screen.findByLabelText('Review date')).toHaveValue('2027-03-01');
     expect(screen.getByLabelText('Notes')).toHaveValue('Agreed in March.');
     expect(screen.getByText('A reminder for the platform team. Nothing happens automatically on this date.')).toBeInTheDocument();
 
+    fireEvent.click(button('Agreed price (optional)')!);
     await userEvent.type(screen.getByLabelText('Special price per month (EUR)'), '30');
-    fireEvent.click(screen.getAllByRole('button').filter((b) => b.textContent?.trim() === 'Assign plan').pop()!);
+    fireEvent.click(screen.getAllByRole('button').filter((b) => b.textContent?.trim() === 'Save').pop()!);
 
     await waitFor(() => {
       expect(mockApi.post).toHaveBeenCalledWith('/v2/admin/super/billing/assign-plan', expect.objectContaining({
@@ -614,8 +615,10 @@ describe('BillingControl', () => {
     render(<BillingControl />);
     await waitFor(() => expect(screen.queryAllByRole('row').length).toBeGreaterThan(1));
 
-    fireEvent.click(more('Assign plan')!);
+    fireEvent.click(more('Change plan or price')!);
 
+    await screen.findByLabelText('Review date');
+    fireEvent.click(button('Agreed price (optional)')!);
     const monthly = await screen.findByLabelText('Special price per month (GBP)');
     expect(monthly).toHaveAttribute('placeholder', '42.00');
     expect(screen.getByLabelText('Special price per year (GBP)')).toBeInTheDocument();
@@ -626,7 +629,7 @@ describe('BillingControl', () => {
       makeSnapshot({ current_plan: makePlanOnRow({ id: 12, name: 'Old Starter', slug: 'legacy-starter-3', is_active: false }) }),
     ]);
 
-    fireEvent.click(more('Assign plan')!);
+    fireEvent.click(more('Change plan or price')!);
 
     const select = await screen.findByLabelText('Select plan') as HTMLSelectElement;
     expect(Array.from(select.options).map((option) => option.textContent)).toEqual(['Pro', 'Growth', 'Old Starter (retired)']);
@@ -636,7 +639,7 @@ describe('BillingControl', () => {
   it('tells the platform team a card payer changes plan on its own Billing page, and locks the plan and price', async () => {
     await renderWith([makeSnapshot({ standing: makeStanding({ payer: 'platform_card' }) })]);
 
-    fireEvent.click(more('Assign plan')!);
+    fireEvent.click(more('Change plan or price')!);
 
     expect(await screen.findByText(/pays by card\. Its plan and price are changed from its own Billing page/)).toBeInTheDocument();
     expect(screen.getByLabelText('Select plan')).toBeDisabled();
@@ -650,13 +653,119 @@ describe('BillingControl', () => {
     await renderWith([makeSnapshot()]);
     mockApi.post.mockResolvedValue({ success: false, error: 'This community pays by card, and its card is charged for the plan on its card payment.' });
 
-    fireEvent.click(more('Assign plan')!);
+    fireEvent.click(more('Change plan or price')!);
     await screen.findByLabelText('Review date');
-    fireEvent.click(screen.getAllByRole('button').filter((b) => b.textContent?.trim() === 'Assign plan').pop()!);
+    fireEvent.click(screen.getAllByRole('button').filter((b) => b.textContent?.trim() === 'Save').pop()!);
 
     await waitFor(() => {
       expect(mockToast.error).toHaveBeenCalledWith('This community pays by card, and its card is charged for the plan on its card payment.');
     });
+  });
+
+  // ── Assign plan: plain about the price (23 Nov 2026) ─────────────────────
+
+  it('says what the community will pay, and keeps the price adjustments folded away', async () => {
+    await renderWith([makeSnapshot()]);
+
+    fireEvent.click(more('Change plan or price')!);
+
+    const willPay = await screen.findByTestId('assign-will-pay');
+    expect(willPay).toHaveTextContent('It will pay');
+    expect(willPay).toHaveTextContent(/€\s?49 per month/);
+    expect(willPay).toHaveTextContent(/€\s?490 per year/);
+
+    // Closed: this community has no agreed price.
+    expect(button('Agreed price (optional)')).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByLabelText('Special price per month (EUR)')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Discount (%)')).not.toBeInTheDocument();
+
+    fireEvent.click(button('Agreed price (optional)')!);
+    expect(screen.getByText(/A special price replaces the plan's price\./)).toBeInTheDocument();
+    // No "0" sitting in the discount as if somebody had typed it.
+    expect(screen.getByLabelText('Discount (%)')).toHaveValue(null);
+
+    // The figure follows what is typed, before anything is saved.
+    await userEvent.type(screen.getByLabelText('Special price per month (EUR)'), '30');
+    expect(willPay).toHaveTextContent(/€\s?30 per month/);
+    expect(willPay).toHaveTextContent(/€\s?490 per year/);
+  });
+
+  it('opens the agreed price for a community that has one, and works the figure out as the server does', async () => {
+    await renderWith([
+      makeSnapshot({
+        current_plan: makePlanOnRow({ custom_price_monthly: 30, discount_percentage: 50, nonprofit_verified: true }),
+      }),
+    ]);
+
+    fireEvent.click(more('Change plan or price')!);
+
+    // 30 a month: 20% off for a non-profit is 24, then half off is 12.
+    // 490 a year: 392, then 196.
+    const willPay = await screen.findByTestId('assign-will-pay');
+    expect(willPay).toHaveTextContent(/€\s?12 per month/);
+    expect(willPay).toHaveTextContent(/€\s?196 per year/);
+
+    expect(button('Agreed price (optional)')).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByLabelText('Special price per month (EUR)')).toHaveValue(30);
+    expect(screen.getByLabelText('Discount (%)')).toHaveValue(50);
+  });
+
+  it('names the dialog and its button for what is being done', async () => {
+    await renderWith([makeSnapshot({ current_plan: null, usage_percent: null })]);
+
+    fireEvent.click(button('Assign plan')!);
+    await screen.findByLabelText('Review date');
+
+    // No plan yet: it is being assigned.
+    expect(screen.getAllByText('Assign plan').length).toBeGreaterThan(1);
+    expect(button('Save')).toBeUndefined();
+    expect(screen.queryByText('Plan and price')).not.toBeInTheDocument();
+  });
+
+  it('asks for the paid-until date straight after a plan is saved for a community that has none', async () => {
+    await renderWith([makeSnapshot()]);
+    mockApi.post.mockResolvedValue({ success: true, data: {} });
+
+    fireEvent.click(more('Change plan or price')!);
+    await screen.findByLabelText('Review date');
+    fireEvent.click(screen.getAllByRole('button').filter((b) => b.textContent?.trim() === 'Save').pop()!);
+
+    expect(await screen.findByText(
+      'The plan is saved. Now set the date this community is paid up to, so that reminders and checks can start.',
+    )).toBeInTheDocument();
+    expect(screen.getByLabelText('Paid up to and including')).toBeInTheDocument();
+  });
+
+  it('does not ask for a date the community already has, or one nobody bills it for', async () => {
+    await renderWith([
+      makeSnapshot({ standing: makeStanding({ paid_until: '2027-01-31' }) }),
+      makeSnapshot({ id: 7, name: 'Bandon Timebank', standing: makeStanding({ tenant_id: 7, exempt: true }) }),
+    ]);
+    mockApi.post.mockResolvedValue({ success: true, data: {} });
+
+    for (const community of ['Cork Timebank', 'Bandon Timebank']) {
+      fireEvent.click(more('Change plan or price', community)!);
+      await screen.findByLabelText('Review date');
+      fireEvent.click(screen.getAllByRole('button').filter((b) => b.textContent?.trim() === 'Save').pop()!);
+      await waitFor(() => expect(screen.queryByLabelText('Review date')).not.toBeInTheDocument());
+      expect(screen.queryByLabelText('Paid up to and including')).not.toBeInTheDocument();
+    }
+    expect(mockApi.post).toHaveBeenCalledTimes(2);
+  });
+
+  it('says so when the plans could not be loaded, and does not show an empty list as if there were none', async () => {
+    serveGets([makeSnapshot()]);
+    const served = mockApi.get.getMockImplementation()!;
+    mockApi.get.mockImplementation((url: string) => (
+      url.includes('/plans') ? Promise.resolve({ success: false, data: null }) : served(url)
+    ));
+    const { BillingControl } = await import('./BillingControl');
+    render(<BillingControl />);
+    await waitFor(() => expect(screen.queryAllByRole('row').length).toBeGreaterThan(1));
+
+    fireEvent.click(more('Change plan or price')!);
+
+    expect(await screen.findByText('The plans could not be loaded. Close this box and try again.')).toBeInTheDocument();
   });
 
   it('shows who each community pays', async () => {
@@ -678,7 +787,7 @@ describe('BillingControl', () => {
     // A community with a plan: the next thing it needs is a payment.
     expect(button('Record a payment')).toBeDefined();
     // Not on screen until the menu is opened.
-    for (const label of ['Assign plan', 'Set paid-until date', 'Payment history', 'Change how it pays', 'Over-limit rule', 'Pause community', 'Exempt']) {
+    for (const label of ['Change plan or price', 'Set paid-until date', 'Payment history', 'Change how it pays', 'Over-limit rule', 'Pause community', 'Exempt']) {
       expect(button(label)).toBeUndefined();
       expect(screen.queryAllByRole('menuitem').filter((b) => b.textContent?.trim() === label)).toHaveLength(0);
     }
@@ -686,7 +795,7 @@ describe('BillingControl', () => {
     fireEvent.click(screen.getByRole('button', { name: 'More actions for Cork Timebank' }));
 
     expect(screen.getAllByRole('menuitem').map((b) => b.textContent?.trim())).toEqual([
-      'Assign plan', 'Set paid-until date', 'Payment history', 'Change how it pays', 'Over-limit rule', 'Pause community', 'Exempt',
+      'Change plan or price', 'Set paid-until date', 'Payment history', 'Change how it pays', 'Over-limit rule', 'Pause community', 'Exempt',
     ]);
   });
 

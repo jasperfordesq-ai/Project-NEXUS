@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
+import ChevronDown from 'lucide-react/icons/chevron-down';
 import Leaf from 'lucide-react/icons/leaf';
 import Download from 'lucide-react/icons/download';
 import Info from 'lucide-react/icons/info';
@@ -301,6 +302,12 @@ export function BillingControl() {
   const [discountReason, setDiscountReason] = useState('');
   const [nonprofitVerified, setNonprofitVerified] = useState(false);
   const [assigning, setAssigning] = useState(false);
+  // "Agreed price (optional)": open only when the community already has one.
+  const [agreedOpen, setAgreedOpen] = useState(false);
+  // The plan list could not be loaded: said in the dialog, not left as an empty list.
+  const [plansFailed, setPlansFailed] = useState(false);
+  // Set when the paid-until dialog was opened straight after a plan was saved.
+  const [paidUntilAfterPlan, setPaidUntilAfterPlan] = useState(false);
 
   // ---- pause / exempt dialog, and the row an action is running on ----
   const [standingDialog, setStandingDialog] = useState<StandingDialog>(null);
@@ -354,8 +361,11 @@ export function BillingControl() {
     const response = await api.get<PlanItem[]>('/v2/admin/plans');
     if (response.success && Array.isArray(response.data)) {
       setPlans(response.data);
+      setPlansFailed(false);
+    } else {
+      // Said in the dialog: an empty list of plans read as "there are none".
+      setPlansFailed(true);
     }
-    // failure is non-critical — plans list will be empty
     setPlansLoading(false);
   }, [plans.length]);
 
@@ -383,6 +393,10 @@ export function BillingControl() {
     setDiscountPct(String(plan?.discount_percentage ?? 0));
     setDiscountReason(plan?.discount_reason ?? '');
     setNonprofitVerified(plan?.nonprofit_verified ?? false);
+    setAgreedOpen(Boolean(plan && (
+      plan.custom_price_monthly !== null || plan.custom_price_yearly !== null
+      || plan.discount_percentage > 0 || plan.nonprofit_verified
+    )));
     void fetchPlans();
   };
 
@@ -402,8 +416,16 @@ export function BillingControl() {
     });
     if (response.success) {
       toast.success(t('billing.plan_assigned'));
+      const saved = selectedTenant;
       onAssignClose();
       void fetchSnapshot();
+      // A plan with no paid-until date is never reminded or checked: the daily
+      // check looks only at communities that have a date. So the date is asked
+      // for straight away, where one is still missing and somebody bills it.
+      if (saved.standing.paid_until === null && !saved.standing.exempt && saved.standing.payer !== 'not_billed') {
+        setPaidUntilAfterPlan(true);
+        openPaidUntil(saved);
+      }
     } else {
       // The server says why (a card payer, a retired plan, a bad date) in
       // the reader's language. "Failed to assign" said nothing.
@@ -475,6 +497,7 @@ export function BillingControl() {
   const closePaidUntil = () => {
     setPaidUntilRow(null);
     setPaidUntilText('');
+    setPaidUntilAfterPlan(false);
   };
 
   const confirmPaidUntil = async () => {
@@ -586,6 +609,22 @@ export function BillingControl() {
   const plansForDialog = plans.filter(
     (plan) => assignablePlans([plan]).length === 1 || plan.id === selectedTenant?.current_plan?.id,
   );
+  // What the community will pay, as TenantBillingService::getEffectivePrice()
+  // works it out: the special price in place of the plan's, then 20% off for a
+  // verified non-profit, then the discount, never below zero.
+  const pricePreview = (() => {
+    if (!selectedPlan) return null;
+    const pct = Math.max(0, Math.min(100, Math.trunc(Number(discountPct) || 0)));
+    const figure = (period: 'monthly' | 'yearly', special: string): number => {
+      const own = dialogCurrency === 'GBP' ? selectedPlan[`price_${period}_gbp`] : selectedPlan[`price_${period}`];
+      let value = special.trim() !== '' && Number.isFinite(Number(special)) ? Number(special) : Number(own ?? 0) || 0;
+      if (nonprofitVerified) value *= 0.8;
+      value *= (100 - pct) / 100;
+      return Math.max(0, Math.round(value * 100) / 100);
+    };
+    return { monthly: figure('monthly', customPriceMonthly), yearly: figure('yearly', customPriceYearly) };
+  })();
+
   const placeholderPrice = (period: 'monthly' | 'yearly'): string => {
     if (!selectedPlan) return '';
     const value = dialogCurrency === 'GBP' ? selectedPlan[`price_${period}_gbp`] : selectedPlan[`price_${period}`];
@@ -909,7 +948,7 @@ export function BillingControl() {
                               {[
                                 // Whichever of the two is not the button in view.
                                 hasPlan
-                                  ? <DropdownItem key="assign" id="assign">{t('billing.assign_plan')}</DropdownItem>
+                                  ? <DropdownItem key="assign" id="assign">{t('control.change_plan_price')}</DropdownItem>
                                   : <DropdownItem key="payment" id="payment">{t('control.record_payment')}</DropdownItem>,
                                 <DropdownItem key="paid_until" id="paid_until">{t('control.set_paid_until')}</DropdownItem>,
                                 <DropdownItem key="history" id="history">{t('control.history_title')}</DropdownItem>,
@@ -949,7 +988,7 @@ export function BillingControl() {
       <Modal isOpen={isAssignOpen} onClose={onAssignClose} size="lg" scrollBehavior="inside">
         <ModalContent>
           <ModalHeader>
-            {t('billing.assign_plan_title')}
+            {selectedTenant?.current_plan ? t('control.edit_plan_title') : t('billing.assign_plan_title')}
             {selectedTenant && (
               <span className="text-muted text-sm font-normal ml-2">
                 — {selectedTenant.name}
@@ -963,6 +1002,12 @@ export function BillingControl() {
               </div>
             ) : (
               <div className="flex flex-col gap-4">
+                {plansFailed && plans.length === 0 ? (
+                  <Alert color="danger" role="alert">
+                    <span>{t('control.plans_failed')}</span>
+                  </Alert>
+                ) : null}
+
                 {selectedPaysByCard ? (
                   <Alert color="warning">
                     <span>{t('control.card_payer_note')}</span>
@@ -1007,77 +1052,120 @@ export function BillingControl() {
                   </div>
                 ) : null}
 
-                {/* Nothing acts on this date: it is a note of when to look
-                    again. It was labelled "Expiry Date", which it never was. */}
-                <Input
-                  label={t('control.review_date')}
-                  description={t('control.review_date_help')}
-                  type="date"
-                  value={expiresAt}
-                  onValueChange={setExpiresAt}
-                />
+                {/* What the community will pay once everything below is counted.
+                    Worked out here as the server works it out
+                    (TenantBillingService::getEffectivePrice()), so the person
+                    sees the figure before saving, not after. */}
+                {pricePreview ? (
+                  <p data-testid="assign-will-pay" className="text-sm">
+                    <span className="text-muted">{t('control.will_pay_label')}</span>{' '}
+                    <span className="font-medium">
+                      {[
+                        t('billing.amount_per_month', { amount: money(pricePreview.monthly, dialogCurrency.toLowerCase() as Currency) }),
+                        t('billing.amount_per_year', { amount: money(pricePreview.yearly, dialogCurrency.toLowerCase() as Currency) }),
+                      ].join(' · ')}
+                    </span>
+                  </p>
+                ) : null}
 
-                <Input
-                  label={t('billing.notes')}
-                  value={notes}
-                  onValueChange={setNotes}
-                />
+                {/* Three ways to lower a price sat in a row with nothing to say
+                    how they combine. They are one optional group now, closed
+                    unless this community already has one of them. */}
+                <div className="rounded-lg border border-divider">
+                  <Button
+                    variant="tertiary"
+                    className="w-full justify-between"
+                    aria-expanded={agreedOpen}
+                    onPress={() => setAgreedOpen((open) => !open)}
+                    endContent={<ChevronDown size={16} className={agreedOpen ? 'rotate-180' : ''} aria-hidden="true" />}
+                  >
+                    {t('control.agreed_price_title')}
+                  </Button>
+                  {agreedOpen ? (
+                    <div className="flex flex-col gap-4 px-3 pb-3 pt-1">
+                      <p className="text-xs text-muted">{t('control.agreed_price_help')}</p>
 
-                {/* The placeholder is the plan's own price: what applies when
-                    this is left empty. It used to show the plan's user limit. */}
-                {/* The currency is the community's own, named in the label. A
-                    hard-coded euro sign stood here while the email that
-                    announces the price read the figure as the community's
-                    currency. */}
-                <Input
-                  label={t('control.special_price_monthly', { currency: dialogCurrency })}
-                  type="number"
-                  min={0}
-                  isDisabled={selectedPaysByCard}
-                  value={customPriceMonthly}
-                  onValueChange={setCustomPriceMonthly}
-                  placeholder={placeholderPrice('monthly')}
-                />
+                      {/* The placeholder is the plan's own price: what applies when
+                          this is left empty. It used to show the plan's user limit. */}
+                      {/* The currency is the community's own, named in the label. A
+                          hard-coded euro sign stood here while the email that
+                          announces the price read the figure as the community's
+                          currency. */}
+                      <Input
+                        label={t('control.special_price_monthly', { currency: dialogCurrency })}
+                        type="number"
+                        min={0}
+                        isDisabled={selectedPaysByCard}
+                        value={customPriceMonthly}
+                        onValueChange={setCustomPriceMonthly}
+                        placeholder={placeholderPrice('monthly')}
+                      />
 
-                <Input
-                  label={t('control.special_price_yearly', { currency: dialogCurrency })}
-                  type="number"
-                  min={0}
-                  isDisabled={selectedPaysByCard}
-                  value={customPriceYearly}
-                  onValueChange={setCustomPriceYearly}
-                  placeholder={placeholderPrice('yearly')}
-                />
+                      <Input
+                        label={t('control.special_price_yearly', { currency: dialogCurrency })}
+                        type="number"
+                        min={0}
+                        isDisabled={selectedPaysByCard}
+                        value={customPriceYearly}
+                        onValueChange={setCustomPriceYearly}
+                        placeholder={placeholderPrice('yearly')}
+                      />
 
-                <Input
-                  label={t('billing.discount_pct')}
-                  type="number"
-                  min={0}
-                  max={100}
-                  isDisabled={selectedPaysByCard}
-                  value={discountPct}
-                  onValueChange={setDiscountPct}
-                  endContent={<span className="text-muted text-sm">%</span>}
-                />
+                      <Input
+                        label={t('billing.discount_pct')}
+                        type="number"
+                        min={0}
+                        max={100}
+                        isDisabled={selectedPaysByCard}
+                        // Empty when there is none: a "0" already typed read
+                        // as a field somebody had filled in.
+                        value={discountPct === '0' ? '' : discountPct}
+                        onValueChange={(value: string) => setDiscountPct(value === '' ? '0' : value)}
+                        placeholder="0"
+                      />
 
-                <Input
-                  label={t('billing.discount_reason')}
-                  isDisabled={selectedPaysByCard}
-                  value={discountReason}
-                  onValueChange={setDiscountReason}
-                  placeholder={t('billing.discount_reason_placeholder')}
-                />
+                      <Input
+                        label={t('billing.discount_reason')}
+                        isDisabled={selectedPaysByCard}
+                        value={discountReason}
+                        onValueChange={setDiscountReason}
+                        placeholder={t('billing.discount_reason_placeholder')}
+                      />
 
-                <div className="flex items-center justify-between rounded-lg border border-border px-4 py-3">
-                  <div>
-                    <p className="text-sm font-medium">{t('billing.nonprofit_verified')}</p>
-                    <p className="text-xs text-muted">{t('billing.nonprofit_verified_desc')}</p>
-                  </div>
-                  <Switch
-                    isSelected={nonprofitVerified}
-                    isDisabled={selectedPaysByCard}
-                    onValueChange={setNonprofitVerified}
-                    aria-label={t('billing.nonprofit_verified')}
+                      <div className="flex items-center justify-between rounded-lg border border-border px-4 py-3">
+                        <div>
+                          <p className="text-sm font-medium">{t('billing.nonprofit_verified')}</p>
+                          <p className="text-xs text-muted">{t('billing.nonprofit_verified_desc')}</p>
+                        </div>
+                        <Switch
+                          isSelected={nonprofitVerified}
+                          isDisabled={selectedPaysByCard}
+                          onValueChange={setNonprofitVerified}
+                          aria-label={t('billing.nonprofit_verified')}
+                        />
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+
+                {/* The platform team's own record: nobody in the community sees these. */}
+                <div className="flex flex-col gap-4">
+                  <p className="text-xs text-muted">{t('control.team_only_help')}</p>
+
+                  {/* Nothing acts on this date: it is a note of when to look
+                      again. It was labelled "Expiry Date", which it never was. */}
+                  <Input
+                    label={t('control.review_date')}
+                    description={t('control.review_date_help')}
+                    type="date"
+                    value={expiresAt}
+                    onValueChange={setExpiresAt}
+                  />
+
+                  <Input
+                    label={t('billing.notes')}
+                    value={notes}
+                    onValueChange={setNotes}
                   />
                 </div>
               </div>
@@ -1092,7 +1180,7 @@ export function BillingControl() {
               isLoading={assigning}
               isDisabled={!selectedPlanId || plansLoading}
             >
-              {t('billing.assign_plan')}
+              {selectedTenant?.current_plan ? t('control.save') : t('billing.assign_plan')}
             </Button>
           </ModalFooter>
         </ModalContent>
@@ -1156,6 +1244,9 @@ export function BillingControl() {
           </ModalHeader>
           <ModalBody>
             <div className="flex flex-col gap-3">
+              {paidUntilAfterPlan ? (
+                <p className="text-sm font-medium">{t('control.paid_until_after_plan')}</p>
+              ) : null}
               <p className="text-sm text-muted">{t('control.paid_until_help')}</p>
               <Input
                 label={t('control.paid_until_label')}
