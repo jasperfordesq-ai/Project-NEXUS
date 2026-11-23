@@ -35,6 +35,7 @@ use Tests\Laravel\TestCase;
 final class BranchPaymentsEndpointsTest extends TestCase
 {
     use DatabaseTransactions;
+    use MakesBillingCommunities;
 
     private int $hub;
     private int $child;
@@ -66,23 +67,6 @@ final class BranchPaymentsEndpointsTest extends TestCase
         } finally {
             parent::tearDown();
         }
-    }
-
-    private function makeCommunity(string $name, int $parentId, string $parentPath, bool $hub = false): int
-    {
-        $id = (int) DB::table('tenants')->insertGetId([
-            'name' => $name,
-            'slug' => 'branch-' . bin2hex(random_bytes(5)),
-            'is_active' => 1,
-            'parent_id' => $parentId,
-            'allows_subtenants' => $hub ? 1 : 0,
-            'depth' => substr_count($parentPath, '/') - 1,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-        DB::table('tenants')->where('id', $id)->update(['path' => "{$parentPath}{$id}/"]);
-
-        return $id;
     }
 
     /** @param array<string, mixed> $attributes */

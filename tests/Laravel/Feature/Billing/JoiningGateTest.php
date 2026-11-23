@@ -30,6 +30,7 @@ final class JoiningGateTest extends TestCase
 {
     use DatabaseTransactions;
     use TellsCommunityOfMemberLimit;
+    use MakesBillingCommunities;
 
     private int $hub;
     private int $child;
@@ -441,23 +442,6 @@ final class JoiningGateTest extends TestCase
         $this->standing($tenantId, ['over_limit_action' => $rule, 'exempt' => 0]);
         // As a real run leaves it once the community has been told.
         $this->tellCommunityOfMemberLimit($tenantId);
-    }
-
-    private function makeCommunity(string $name, int $parentId, string $parentPath, bool $hub = false): int
-    {
-        $id = (int) DB::table('tenants')->insertGetId([
-            'name' => $name,
-            'slug' => 'gate-' . bin2hex(random_bytes(5)),
-            'is_active' => 1,
-            'parent_id' => $parentId,
-            'allows_subtenants' => $hub ? 1 : 0,
-            'depth' => substr_count($parentPath, '/') - 1,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-        DB::table('tenants')->where('id', $id)->update(['path' => "{$parentPath}{$id}/"]);
-
-        return $id;
     }
 
     private function makePlan(?int $maxUsers): int
