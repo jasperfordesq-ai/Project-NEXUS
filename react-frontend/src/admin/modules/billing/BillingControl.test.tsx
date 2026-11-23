@@ -256,6 +256,15 @@ const PLAN_LIST = [
   makePlan({ id: 12, name: 'Old Starter', slug: 'legacy-starter-3', is_active: 0 }),
 ];
 
+/**
+ * The list of communities itself. A community that is not set up yet is also
+ * named in "Still to set up" above it, so a name alone is found twice.
+ */
+const inList = () => {
+  const row = screen.getAllByRole('row')[0]!;
+  return within((row.closest('table,[role="grid"],[role="table"]') ?? row.parentElement) as HTMLElement);
+};
+
 const button = (label: string) =>
   screen.queryAllByRole('button').find((b) => b.textContent?.trim() === label);
 
@@ -342,7 +351,7 @@ describe('BillingControl', () => {
   it('shows each community name, plan and price from the real shape', async () => {
     await renderWith([makeSnapshot()]);
 
-    expect(screen.getByText('Cork Timebank')).toBeInTheDocument();
+    expect(inList().getByText('Cork Timebank')).toBeInTheDocument();
     expect(screen.getByText('Pro')).toBeInTheDocument();
     // 490 a year, however the locale writes the currency.
     expect(screen.getByText((text) => text.includes('490'))).toBeInTheDocument();
@@ -496,14 +505,14 @@ describe('BillingControl', () => {
     ]);
 
     fireEvent.change(filter, { target: { value: 'no_plan' } });
-    expect(screen.getByText('Galway Timebank')).toBeInTheDocument();
-    expect(screen.queryByText('Cork Timebank')).not.toBeInTheDocument();
+    expect(inList().getByText('Galway Timebank')).toBeInTheDocument();
+    expect(inList().queryByText('Cork Timebank')).not.toBeInTheDocument();
     expect(screen.getByTestId('billing-filter-count')).toHaveTextContent('Showing 1 of 3 communities');
 
     // No date to chase for a community nobody bills.
     fireEvent.change(filter, { target: { value: 'no_paid_until' } });
-    expect(screen.getByText('Galway Timebank')).toBeInTheDocument();
-    expect(screen.queryByText('Exempt Timebank')).not.toBeInTheDocument();
+    expect(inList().getByText('Galway Timebank')).toBeInTheDocument();
+    expect(inList().queryByText('Exempt Timebank')).not.toBeInTheDocument();
 
     fireEvent.change(filter, { target: { value: 'paused' } });
     expect(screen.getByText('No community matches this filter.')).toBeInTheDocument();
@@ -518,8 +527,8 @@ describe('BillingControl', () => {
       ]);
 
       expect((screen.getByLabelText('Show') as HTMLSelectElement).value).toBe('no_plan');
-      expect(screen.getByText('Galway Timebank')).toBeInTheDocument();
-      expect(screen.queryByText('Cork Timebank')).not.toBeInTheDocument();
+      expect(inList().getByText('Galway Timebank')).toBeInTheDocument();
+      expect(inList().queryByText('Cork Timebank')).not.toBeInTheDocument();
       expect(screen.getByTestId('billing-filter-count')).toHaveTextContent('Showing 1 of 2 communities');
     } finally {
       window.history.pushState({}, '', '/');
@@ -532,7 +541,7 @@ describe('BillingControl', () => {
       await renderWith([makeSnapshot()]);
 
       expect((screen.getByLabelText('Show') as HTMLSelectElement).value).toBe('all');
-      expect(screen.getByText('Cork Timebank')).toBeInTheDocument();
+      expect(inList().getByText('Cork Timebank')).toBeInTheDocument();
     } finally {
       window.history.pushState({}, '', '/');
     }
@@ -553,7 +562,7 @@ describe('BillingControl', () => {
     await waitFor(() => expect(mockApi.post).toHaveBeenCalled());
     // It used to be replaced by a spinner on every action, which threw away
     // unsaved edits on the Automatic checks card above the table.
-    expect(screen.getByText('Cork Timebank')).toBeInTheDocument();
+    expect(inList().getByText('Cork Timebank')).toBeInTheDocument();
   });
 
   it('says the list could not be loaded, and offers to try again, instead of an empty table', async () => {
@@ -768,6 +777,57 @@ describe('BillingControl', () => {
     expect(await screen.findByText('The plans could not be loaded. Close this box and try again.')).toBeInTheDocument();
   });
 
+  // ── Still to set up (23 Nov 2026) ────────────────────────────────────────
+
+  it('lists the billed communities with no plan or no paid-until date, each with one button', async () => {
+    await renderWith([
+      makeSnapshot({ standing: makeStanding({ paid_until: '2027-01-31' }) }),
+      makeSnapshot({ id: 6, name: 'Galway Timebank', current_plan: null, usage_percent: null, standing: makeStanding({ tenant_id: 6 }) }),
+      makeSnapshot({ id: 7, name: 'Leeds Timebank', standing: makeStanding({ tenant_id: 7 }) }),
+      makeSnapshot({ id: 8, name: 'Sligo Timebank', current_plan: null, usage_percent: null, standing: makeStanding({ tenant_id: 8, paid_until: '2027-01-31' }) }),
+      // Nobody bills these two: nothing is missing.
+      makeSnapshot({ id: 9, name: 'Derry Timebank', current_plan: null, usage_percent: null, standing: makeStanding({ tenant_id: 9, payer: 'not_billed' }) }),
+      makeSnapshot({ id: 10, name: 'Ennis Timebank', standing: makeStanding({ tenant_id: 10, exempt: true }) }),
+    ]);
+
+    const box = within(screen.getByTestId('still-to-set-up'));
+    expect(box.getByText('Still to set up (3)')).toBeInTheDocument();
+    expect(box.queryByText('Cork Timebank')).not.toBeInTheDocument();
+    expect(box.queryByText('Derry Timebank')).not.toBeInTheDocument();
+    expect(box.queryByText('Ennis Timebank')).not.toBeInTheDocument();
+
+    expect(within(screen.getByTestId('setup-item-6')).getByText('No plan and no paid-until date')).toBeInTheDocument();
+    expect(within(screen.getByTestId('setup-item-7')).getByText('No paid-until date')).toBeInTheDocument();
+    expect(within(screen.getByTestId('setup-item-8')).getByText('No plan')).toBeInTheDocument();
+
+    // One button each, named for the community it acts on.
+    expect(box.getByRole('button', { name: 'Assign plan: Galway Timebank' })).toBeInTheDocument();
+    expect(box.getByRole('button', { name: 'Set paid-until date: Leeds Timebank' })).toBeInTheDocument();
+    expect(box.getByRole('button', { name: 'Assign plan: Sligo Timebank' })).toBeInTheDocument();
+    expect(box.getAllByRole('button')).toHaveLength(3);
+  });
+
+  it('opens the right box from "Still to set up"', async () => {
+    await renderWith([
+      makeSnapshot({ id: 6, name: 'Galway Timebank', current_plan: null, usage_percent: null, standing: makeStanding({ tenant_id: 6 }) }),
+      makeSnapshot({ id: 7, name: 'Leeds Timebank', standing: makeStanding({ tenant_id: 7 }) }),
+    ]);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Set paid-until date: Leeds Timebank' }));
+    expect(await screen.findByLabelText('Paid up to and including')).toBeInTheDocument();
+    fireEvent.click(button('Cancel')!);
+    await waitFor(() => expect(screen.queryByLabelText('Paid up to and including')).not.toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'Assign plan: Galway Timebank' }));
+    expect(await screen.findByLabelText('Select plan')).toBeInTheDocument();
+  });
+
+  it('shows nothing to set up when every billed community has a plan and a date', async () => {
+    await renderWith([makeSnapshot({ standing: makeStanding({ paid_until: '2027-01-31' }) })]);
+
+    expect(screen.queryByTestId('still-to-set-up')).not.toBeInTheDocument();
+  });
+
   it('shows who each community pays', async () => {
     await renderWith([
       makeSnapshot(),
@@ -782,7 +842,8 @@ describe('BillingControl', () => {
   // ── Pausing, restoring, exempting ─────────────────────────────────────────
 
   it('keeps one action in view and gathers the rest in the More menu', async () => {
-    await renderWith([makeSnapshot()]);
+    // Fully set up, so "Still to set up" is not on the page with its own button.
+    await renderWith([makeSnapshot({ standing: makeStanding({ paid_until: '2027-01-31' }) })]);
 
     // A community with a plan: the next thing it needs is a payment.
     expect(button('Record a payment')).toBeDefined();
@@ -1162,8 +1223,8 @@ describe('BillingControl', () => {
       makeSnapshot({ id: 6, name: 'Dublin Timebank', standing: makeStanding({ tenant_id: 6 }) }),
     ]);
 
-    expect(screen.getByText('Cork Timebank')).toBeInTheDocument();
-    expect(screen.getByText('Dublin Timebank')).toBeInTheDocument();
+    expect(inList().getByText('Cork Timebank')).toBeInTheDocument();
+    expect(inList().getByText('Dublin Timebank')).toBeInTheDocument();
   });
   // ─── What happens when a community goes over its member number ──────────────
   const ruleSelect = () => screen.getByLabelText('What happens') as HTMLSelectElement;

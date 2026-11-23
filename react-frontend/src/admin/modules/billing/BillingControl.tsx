@@ -19,6 +19,7 @@ import { assignablePlans } from './assignablePlans';
 import { planFactLines } from './planFactLines';
 import { RecordPaymentDialog, type PaymentMethod } from './RecordPaymentDialog';
 import { PayerDialog, type Payer } from './PayerDialog';
+import { StillToSetUp, type SetupItem } from './StillToSetUp';
 import { OverLimitRuleDialog, OverLimitSummary, type OverLimitChoice, type OverLimitState } from './OverLimitRuleDialog';
 import {
   ActiveMembersNote, COMMUNITY_GRID_CLASSES, COMMUNITY_GRID_LEAD_CELL, MemberNumbers, StackedLabel,
@@ -625,6 +626,19 @@ export function BillingControl() {
     return { monthly: figure('monthly', customPriceMonthly), yearly: figure('yearly', customPriceYearly) };
   })();
 
+  // Billed, but with nothing to bill it by: no plan, or no date for the daily
+  // check to count from. Listed above everything else, each with one button.
+  const setupItems: SetupItem[] = snapshot
+    .filter((row) => !row.standing.exempt && row.standing.payer !== 'not_billed'
+      && (row.current_plan === null || row.standing.paid_until === null))
+    .map((row) => ({
+      id: row.id,
+      name: row.name,
+      noPlan: row.current_plan === null,
+      noDate: row.standing.paid_until === null,
+    }));
+  const rowById = (id: number) => snapshot.find((row) => row.id === id);
+
   const placeholderPrice = (period: 'monthly' | 'yearly'): string => {
     if (!selectedPlan) return '';
     const value = dialogCurrency === 'GBP' ? selectedPlan[`price_${period}_gbp`] : selectedPlan[`price_${period}`];
@@ -651,6 +665,21 @@ export function BillingControl() {
           </Button>
         }
       />
+
+      {isGod ? (
+        <StillToSetUp
+          items={setupItems}
+          isDisabled={standingBusyId !== null}
+          onAssignPlan={(id) => {
+            const row = rowById(id);
+            if (row) handleOpenAssign(row);
+          }}
+          onSetDate={(id) => {
+            const row = rowById(id);
+            if (row) openPaidUntil(row);
+          }}
+        />
+      ) : null}
 
       <BillingAutomationCard onWarningPercent={setWarningPercent} />
 

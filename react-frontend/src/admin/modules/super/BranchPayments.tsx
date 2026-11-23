@@ -62,6 +62,7 @@ import { OverLimitRuleDialog, OverLimitSummary, type OverLimitChoice, type OverL
 import { Glance } from '../billing/Glance';
 import { LoadFailed } from '../billing/LoadFailed';
 import { RecordPaymentDialog } from '../billing/RecordPaymentDialog';
+import { StillToSetUp, type SetupItem } from '../billing/StillToSetUp';
 
 /**
  * As the Branch payments list sends it: without the note against a pause and
@@ -136,7 +137,7 @@ interface BranchRow {
 type PlanList = Terms[] | 'loading' | 'failed';
 
 type StandingState = 'open' | 'paused' | 'paused_from_above' | 'exempt';
-type Dialog = { row: BranchRow; kind: 'date' | 'pause' } | null;
+type Dialog = { row: BranchRow; kind: 'date' | 'pause'; afterPlan?: boolean } | null;
 type ChipColor = 'success' | 'warning' | 'danger' | 'default';
 
 function standingState(row: BranchRow): StandingState {
@@ -232,9 +233,9 @@ export function BranchPayments() {
     return false;
   };
 
-  const openDialog = (row: BranchRow, kind: 'date' | 'pause') => {
+  const openDialog = (row: BranchRow, kind: 'date' | 'pause', afterPlan = false) => {
     setText(kind === 'date' ? (row.standing.paid_until ?? '') : '');
-    setDialog({ row, kind });
+    setDialog({ row, kind, afterPlan });
   };
 
   const closeDialog = () => {
@@ -279,8 +280,15 @@ export function BranchPayments() {
 
     if (response.success) {
       toast.success(t('branch_payments.done_plan'));
+      const saved = planRow;
       closePlanDialog();
       void load();
+      // A plan with no paid-until date is never reminded or checked: the
+      // daily check looks only at communities that have a date. So the date
+      // is asked for straight away where one is still missing.
+      if (saved.standing.paid_until === null && saved.standing.payer !== 'not_billed') {
+        openDialog(saved, 'date', true);
+      }
       return;
     }
 
@@ -341,6 +349,18 @@ export function BranchPayments() {
   const lateCount = rows.filter((row) => (row.days_late ?? 0) > 0).length;
   const pausedCount = rows.filter((row) => row.standing.suspended_at !== null || row.standing.locked).length;
   const windowDays = rows[0]?.members.window_days ?? null;
+  // The communities this person bills that have nothing to be billed by yet.
+  const setupItems: SetupItem[] = rows
+    .filter((row) => row.can_act && row.standing.payer !== 'not_billed'
+      && (row.plan === null || row.standing.paid_until === null))
+    .map((row) => ({
+      id: row.id,
+      name: row.name,
+      noPlan: row.plan === null,
+      noDate: row.standing.paid_until === null,
+      canAssignPlan: row.plan_change_refusal !== 'card_subscription',
+    }));
+  const rowById = (id: number) => rows.find((row) => row.id === id);
 
   return (
     <div className="space-y-6">
@@ -358,6 +378,19 @@ export function BranchPayments() {
           <Glance icon={CirclePause} label={t('branch_payments.summary_paused')} value={formatNumber(pausedCount)} tone={pausedCount > 0 ? 'danger' : 'quiet'} />
         </div>
       ) : null}
+
+      <StillToSetUp
+        items={setupItems}
+        isDisabled={busyId !== null}
+        onAssignPlan={(id) => {
+          const row = rowById(id);
+          if (row) void openPlanDialog(row);
+        }}
+        onSetDate={(id) => {
+          const row = rowById(id);
+          if (row) openDialog(row, 'date');
+        }}
+      />
 
       <Card>
         <CardBody className="p-0">
@@ -543,6 +576,9 @@ export function BranchPayments() {
           </ModalHeader>
           <ModalBody>
             <div className="flex flex-col gap-3">
+              {dialog?.kind === 'date' && dialog.afterPlan ? (
+                <p className="text-sm font-medium">{t('admin_billing:control.paid_until_after_plan')}</p>
+              ) : null}
               <p className="text-sm text-muted">
                 {dialog?.kind === 'pause' ? t('admin_billing:billing.pause_modal_body') : t('branch_payments.date_help')}
               </p>

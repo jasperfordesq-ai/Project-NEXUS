@@ -5,7 +5,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React, { createContext, useContext } from 'react';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent, within } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 import userEvent from '@testing-library/user-event';
 import { formatDate } from '@/lib/helpers';
@@ -220,6 +220,15 @@ const makePlan = (overrides: Record<string, unknown> = {}) => ({
 });
 
 // A row's action: the button in view, or an item of its actions menu.
+/**
+ * The list of communities itself. A community that is not set up yet is also
+ * named in "Still to set up" above it, so a name alone is found twice.
+ */
+const inList = () => {
+  const row = screen.getAllByRole('row')[0]!;
+  return within((row.closest('table,[role="grid"],[role="table"]') ?? row.parentElement) as HTMLElement);
+};
+
 const button = (label: string) =>
   [...screen.queryAllByRole('button'), ...screen.queryAllByRole('menuitem')].find((b) => b.textContent?.trim() === label);
 
@@ -244,7 +253,7 @@ describe('BranchPayments', () => {
       makeRow({ id: 8, name: 'Kinsale Timebank', standing: makeStanding({ tenant_id: 8 }) }),
     ]);
 
-    expect(screen.getByText('Bandon Timebank')).toBeInTheDocument();
+    expect(inList().getByText('Bandon Timebank')).toBeInTheDocument();
     expect(screen.getAllByText('Pays Cork Timebank')).toHaveLength(2);
     expect(screen.getByText((text) => text.includes('2026'))).toBeInTheDocument();
     // "Days late" is a line of its own, and only on a community that is late.
@@ -313,7 +322,7 @@ describe('BranchPayments', () => {
     mockApi.get.mockResolvedValue({ success: true, data: [makeRow()] });
     await user.click(screen.getByRole('button', { name: 'Try again' }));
 
-    expect(await screen.findByText('Bandon Timebank')).toBeInTheDocument();
+    await waitFor(() => expect(inList().getByText('Bandon Timebank')).toBeInTheDocument());
     expect(screen.queryByText('The communities could not be loaded.')).not.toBeInTheDocument();
   });
 
@@ -605,6 +614,73 @@ describe('BranchPayments', () => {
     expect(screen.getByTestId('members-active-7').textContent).toBe('61');
     expect(screen.queryByTestId('members-total-7')).not.toBeInTheDocument();
     expect(screen.queryByText('All members')).not.toBeInTheDocument();
+  });
+
+  // ── Still to set up (23 Nov 2026) ────────────────────────────────────────
+
+  it('lists the communities this manager bills that have no plan or no date, each with one button', async () => {
+    await renderWith([
+      makeRow(),
+      makeRow({ id: 8, name: 'Kinsale Timebank', plan: makePlan() }),
+      makeRow({ id: 9, name: 'Clonakilty Timebank', plan: makePlan(), standing: makeStanding({ tenant_id: 9, paid_until: '2027-01-31' }) }),
+      // Not this manager's to act on: not listed.
+      makeRow({ id: 10, name: 'Skibbereen Timebank', can_act: false, cannot_act_reason: 'pays_platform' }),
+    ]);
+
+    const box = within(screen.getByTestId('still-to-set-up'));
+    expect(box.getByText('Still to set up (2)')).toBeInTheDocument();
+    expect(within(screen.getByTestId('setup-item-7')).getByText('No plan and no paid-until date')).toBeInTheDocument();
+    expect(within(screen.getByTestId('setup-item-8')).getByText('No paid-until date')).toBeInTheDocument();
+    expect(box.queryByText('Clonakilty Timebank')).not.toBeInTheDocument();
+    expect(box.queryByText('Skibbereen Timebank')).not.toBeInTheDocument();
+    expect(box.getByRole('button', { name: 'Assign plan: Bandon Timebank' })).toBeInTheDocument();
+    expect(box.getByRole('button', { name: 'Set paid-until date: Kinsale Timebank' })).toBeInTheDocument();
+  });
+
+  it('offers the date, not the plan, where the plan is the platform team\'s to change', async () => {
+    await renderWith([makeRow({ plan_change_refusal: 'card_subscription' })]);
+
+    const box = within(screen.getByTestId('still-to-set-up'));
+    expect(box.getByRole('button', { name: 'Set paid-until date: Bandon Timebank' })).toBeInTheDocument();
+    expect(box.queryByRole('button', { name: 'Assign plan: Bandon Timebank' })).not.toBeInTheDocument();
+  });
+
+  it('shows nothing to set up when every community has a plan and a date', async () => {
+    await renderWith([makeRow({ plan: makePlan(), standing: makeStanding({ paid_until: '2027-01-31' }) })]);
+
+    expect(screen.queryByTestId('still-to-set-up')).not.toBeInTheDocument();
+  });
+
+  it('asks for the paid-until date straight after a plan is saved for a community that has none', async () => {
+    const user = userEvent.setup();
+    await renderWithPlans(
+      [makeRow()],
+      { success: true, data: [makePlan({ plan_id: 4, slug: 'community', name: 'Community', max_users: 1000 })] },
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Assign plan: Bandon Timebank' }));
+    await user.click(await screen.findByRole('radio', { name: /Community/ }));
+    await user.click(screen.getByRole('button', { name: 'Save plan' }));
+
+    expect(await screen.findByText(
+      'The plan is saved. Now set the date this community is paid up to, so that reminders and checks can start.',
+    )).toBeInTheDocument();
+    expect(screen.getByLabelText('Paid up to and including')).toBeInTheDocument();
+  });
+
+  it('does not ask for a date the community already has', async () => {
+    const user = userEvent.setup();
+    await renderWithPlans(
+      [makeRow({ standing: makeStanding({ paid_until: '2027-01-31' }) })],
+      { success: true, data: [makePlan({ plan_id: 4, slug: 'community', name: 'Community', max_users: 1000 })] },
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Assign plan: Bandon Timebank' }));
+    await user.click(await screen.findByRole('radio', { name: /Community/ }));
+    await user.click(screen.getByRole('button', { name: 'Save plan' }));
+
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('Plan changed'));
+    expect(screen.queryByLabelText('Paid up to and including')).not.toBeInTheDocument();
   });
 
   it('offers to change the plan only where the manager may act', async () => {
