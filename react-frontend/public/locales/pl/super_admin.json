@@ -855,7 +855,10 @@
   "branch_plans": {
     "title": "Plany gałęzi",
     "description": "Standardowe plany w takiej postaci, w jakiej Twoja społeczność oferuje je społecznościom, które jej płacą. Zmień plan, przestań go oferować lub przywróć standard.",
-    "hub_picker": "Plany dla płacących społeczności",
+    "hub_picker": "Społeczność, która otrzymuje płatności",
+    "hub_picker_help": "Lista zawiera społeczności, którym inne mogą płacić. Społeczność, która tylko płaci innej, nie jest tu wymieniona.",
+    "payers_label": "Społeczności, które jej płacą",
+    "no_payers_note": "Obecnie żadna społeczność nie płaci społeczności {{hub}}, więc te plany nie dotyczą jeszcze nikogo.",
     "for_hub": "Plany dla społeczności, które płacą społeczności {{hub}}",
     "col_plan": "Plan",
     "col_members": "Członkowie do",

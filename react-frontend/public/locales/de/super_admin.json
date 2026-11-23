@@ -855,7 +855,10 @@
   "branch_plans": {
     "title": "Pläne im Zweig",
     "description": "Die Standardpläne, wie Ihre Community sie den Communities anbietet, die an sie zahlen. Ändern Sie einen Plan, bieten Sie ihn nicht mehr an oder setzen Sie ihn auf den Standard zurück.",
-    "hub_picker": "Pläne für zahlende Communities",
+    "hub_picker": "Community, an die gezahlt wird",
+    "hub_picker_help": "Aufgeführt sind die Communities, an die andere zahlen können. Eine Community, die nur an eine andere zahlt, steht hier nicht.",
+    "payers_label": "Communities, die an sie zahlen",
+    "no_payers_note": "Derzeit zahlt keine Community an {{hub}}, daher gelten diese Pläne noch für niemanden.",
     "for_hub": "Pläne für die Communities, die an {{hub}} zahlen",
     "col_plan": "Plan",
     "col_members": "Mitglieder bis",

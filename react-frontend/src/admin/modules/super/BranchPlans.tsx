@@ -334,10 +334,14 @@ export function BranchPlans() {
   };
 
   const hubPicker = data && data.hubs.length > 1 ? (
+    // The community that is PAID, not one that pays: the label read as a list
+    // of payers, and a community that only pays another was looked for here
+    // (owner, 23 Nov 2026). The line under it says who is listed.
     <Select
       label={t('branch_plans.hub_picker')}
+      description={t('branch_plans.hub_picker_help')}
       size="sm"
-      className="min-w-[220px]"
+      className="w-72 max-w-full"
       selectedKeys={hubId !== null ? [String(hubId)] : []}
       onSelectionChange={(keys) => {
         if (keys === 'all') return;
@@ -465,11 +469,26 @@ export function BranchPlans() {
       ) : null}
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-start gap-2 pb-0">
-          <Layers size={18} className="text-accent" aria-hidden="true" />
-          <span className="font-semibold text-sm">
-            {hub ? t('branch_plans.for_hub', { hub: hub.name }) : t('branch_plans.title')}
-          </span>
+        <CardHeader className="flex flex-col items-start gap-1 pb-0">
+          <div className="flex flex-row items-center justify-start gap-2">
+            <Layers size={18} className="shrink-0 text-accent" aria-hidden="true" />
+            <span className="font-semibold text-sm">
+              {hub ? t('branch_plans.for_hub', { hub: hub.name }) : t('branch_plans.title')}
+            </span>
+          </div>
+          {/* Who these plans reach. A community that may have others below it
+              is listed before any exist, and its plans then apply to nobody. */}
+          {hub ? (
+            hub.children_paying > 0 ? (
+              <span data-testid="branch-plans-payers" className="text-xs text-muted">
+                {t('branch_plans.payers_label')}: <span className="font-medium text-foreground">{formatNumber(hub.children_paying)}</span>
+              </span>
+            ) : (
+              <span data-testid="branch-plans-no-payers" className="text-xs text-warning">
+                {t('branch_plans.no_payers_note', { hub: hub.name })}
+              </span>
+            )
+          ) : null}
         </CardHeader>
         <CardBody className="p-0">
           {/* One table, laid out as a grid: six aligned columns from `xl`, a

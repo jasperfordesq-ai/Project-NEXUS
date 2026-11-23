@@ -855,7 +855,10 @@
   "branch_plans": {
     "title": "Forfaits de la branche",
     "description": "Les forfaits standard tels que votre communauté les propose aux communautés qui la paient. Modifiez un forfait, cessez de le proposer ou rétablissez le standard.",
-    "hub_picker": "Forfaits pour les communautés qui paient",
+    "hub_picker": "Communauté qui reçoit les paiements",
+    "hub_picker_help": "Cette liste contient les communautés que d'autres peuvent payer. Une communauté qui ne fait que payer une autre n'y figure pas.",
+    "payers_label": "Communautés qui la paient",
+    "no_payers_note": "Aucune communauté ne paie {{hub}} pour le moment, donc ces forfaits ne s'appliquent encore à personne.",
     "for_hub": "Forfaits pour les communautés qui paient {{hub}}",
     "col_plan": "Forfait",
     "col_members": "Membres jusqu'à",

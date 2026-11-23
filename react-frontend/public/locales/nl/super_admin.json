@@ -855,7 +855,10 @@
   "branch_plans": {
     "title": "Abonnementen in de tak",
     "description": "De standaardabonnementen zoals uw community ze aanbiedt aan de community’s die haar betalen. Wijzig een abonnement, bied het niet meer aan of zet het terug naar de standaard.",
-    "hub_picker": "Abonnementen voor betalende community’s",
+    "hub_picker": "Community die betaald wordt",
+    "hub_picker_help": "Hier staan de community’s waaraan andere kunnen betalen. Een community die alleen aan een andere betaalt, staat hier niet.",
+    "payers_label": "Community’s die eraan betalen",
+    "no_payers_note": "Op dit moment betaalt geen enkele community aan {{hub}}, dus deze abonnementen gelden nog voor niemand.",
     "for_hub": "Abonnementen voor de community’s die aan {{hub}} betalen",
     "col_plan": "Abonnement",
     "col_members": "Leden tot",

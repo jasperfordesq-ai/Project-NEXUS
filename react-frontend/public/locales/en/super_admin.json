@@ -855,7 +855,10 @@
   "branch_plans": {
     "title": "Branch plans",
     "description": "The standard plans as your community offers them to the communities that pay it. Change a plan, stop offering it, or put it back to standard.",
-    "hub_picker": "Plans for communities that pay",
+    "hub_picker": "Community being paid",
+    "hub_picker_help": "Lists the communities that others can pay. A community that only pays another is not here.",
+    "payers_label": "Communities that pay it",
+    "no_payers_note": "No community pays {{hub}} at the moment, so these plans apply to nobody yet.",
     "for_hub": "Plans for the communities that pay {{hub}}",
     "col_plan": "Plan",
     "col_members": "Members up to",

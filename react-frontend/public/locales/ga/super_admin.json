@@ -855,7 +855,10 @@
   "branch_plans": {
     "title": "Pleananna an bhrainse",
     "description": "Na pleananna caighdeánacha mar a thairgeann do phobal iad do na pobail a dhéanann íocaíocht leis. Athraigh plean, stop á thairiscint, nó cuir ar ais chuig an gcaighdeán é.",
-    "hub_picker": "Pleananna do phobail a dhéanann íocaíocht",
+    "hub_picker": "An pobal a n-íoctar leis",
+    "hub_picker_help": "Liostaítear na pobail ar féidir le pobail eile íoc leo. Níl pobal nach ndéanann ach íoc le pobal eile anseo.",
+    "payers_label": "Pobail a íocann leis",
+    "no_payers_note": "Níl aon phobal ag íoc le {{hub}} faoi láthair, mar sin níl feidhm ag na pleananna seo ar aon duine fós.",
     "for_hub": "Pleananna do na pobail a dhéanann íocaíocht le {{hub}}",
     "col_plan": "Plean",
     "col_members": "Baill suas le",

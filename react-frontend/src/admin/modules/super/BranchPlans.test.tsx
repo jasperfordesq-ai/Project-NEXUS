@@ -202,7 +202,7 @@ describe('BranchPlans', () => {
   it('offers no hub picker with a single hub', async () => {
     await renderWith(makeResponse());
 
-    expect(screen.queryByLabelText('Plans for communities that pay')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Community being paid')).not.toBeInTheDocument();
   });
 
   it('offers a hub picker with several hubs, and loads the hub picked', async () => {
@@ -210,7 +210,7 @@ describe('BranchPlans', () => {
       hubs: [HUB, { id: 9, name: 'Coventry Timebank', depth: 2, children_paying: 1 }],
     }));
 
-    const picker = screen.getByLabelText('Plans for communities that pay');
+    const picker = screen.getByLabelText('Community being paid');
     expect(picker).toBeInTheDocument();
 
     fireEvent.change(picker, { target: { value: '9' } });
@@ -395,16 +395,44 @@ describe('BranchPlans', () => {
     expect(cells[3]!.querySelector('[data-testid="plan-monthly"]')!.textContent).toBe('€149');
   });
 
+  it('calls the picker the community being paid, and says who is listed in it', async () => {
+    // Owner, 23 Nov 2026: read as "communities that have to pay", a community
+    // that only pays another was looked for in it.
+    await renderWith(makeResponse({
+      hubs: [HUB, { id: 9, name: 'Coventry Timebank', depth: 2, children_paying: 1 }],
+    }));
+
+    expect(screen.getByLabelText('Community being paid')).toBeInTheDocument();
+    expect(screen.getByText('Lists the communities that others can pay. A community that only pays another is not here.')).toBeInTheDocument();
+    expect(screen.queryByText('Plans for communities that pay')).not.toBeInTheDocument();
+  });
+
+  it('says how many communities pay the one selected', async () => {
+    await renderWith(makeResponse());
+
+    expect(screen.getByTestId('branch-plans-payers')).toHaveTextContent('Communities that pay it: 4');
+    expect(screen.queryByTestId('branch-plans-no-payers')).not.toBeInTheDocument();
+  });
+
+  it('says so when no community pays the one selected, so its plans apply to nobody yet', async () => {
+    await renderWith(makeResponse({ hubs: [{ ...HUB, children_paying: 0 }] }));
+
+    expect(screen.getByTestId('branch-plans-no-payers')).toHaveTextContent(
+      'No community pays Timebanking UK at the moment, so these plans apply to nobody yet.',
+    );
+    expect(screen.queryByTestId('branch-plans-payers')).not.toBeInTheDocument();
+  });
+
   it('keeps the picker and the last good table when a reload fails, and says so', async () => {
     await renderWith(makeResponse({
       hubs: [HUB, { id: 9, name: 'Coventry Timebank', depth: 2, children_paying: 1 }],
     }));
 
     mockApi.get.mockResolvedValue({ success: false, error: 'Not in reach', code: 'NOT_IN_REACH' });
-    fireEvent.change(screen.getByLabelText('Plans for communities that pay'), { target: { value: '9' } });
+    fireEvent.change(screen.getByLabelText('Community being paid'), { target: { value: '9' } });
 
     expect(await screen.findByText('The plans could not be refreshed. Try again, or pick another community.')).toBeInTheDocument();
-    expect(screen.getByLabelText('Plans for communities that pay')).toBeInTheDocument();
+    expect(screen.getByLabelText('Community being paid')).toBeInTheDocument();
     expect(screen.getByText('Local')).toBeInTheDocument();
     expect(screen.queryByText('The plans could not be loaded.')).not.toBeInTheDocument();
 

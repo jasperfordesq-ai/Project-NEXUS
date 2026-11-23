@@ -855,7 +855,10 @@
   "branch_plans": {
     "title": "Planes de la rama",
     "description": "Los planes estándar tal como su comunidad los ofrece a las comunidades que le pagan. Cambie un plan, deje de ofrecerlo o vuelva al estándar.",
-    "hub_picker": "Planes para las comunidades que pagan",
+    "hub_picker": "Comunidad que recibe los pagos",
+    "hub_picker_help": "Aparecen las comunidades a las que otras pueden pagar. Una comunidad que solo paga a otra no aparece aquí.",
+    "payers_label": "Comunidades que le pagan",
+    "no_payers_note": "Ninguna comunidad paga a {{hub}} por ahora, así que estos planes aún no se aplican a nadie.",
     "for_hub": "Planes para las comunidades que pagan a {{hub}}",
     "col_plan": "Plan",
     "col_members": "Miembros hasta",
