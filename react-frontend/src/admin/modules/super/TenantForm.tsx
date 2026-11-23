@@ -20,7 +20,8 @@ import Copy from 'lucide-react/icons/copy';
 import Globe from 'lucide-react/icons/globe';
 import { useTranslation } from 'react-i18next';
 import { usePageTitle } from '@/hooks';
-import { useTenant, useToast } from '@/contexts';
+import { useAuth, useTenant, useToast } from '@/contexts';
+import { isPlatformTeamUser, superPanelLevel } from '@/lib/access';
 import { languageDisplayName } from '@/lib/languageDisplayName';
 import { buildPlatformTenantUrl } from '@/lib/tenant-routing';
 import { SharingImageField } from '@/admin/components/SharingImageField';
@@ -29,6 +30,13 @@ import { buildAccessibleFrontendUrl } from '@/lib/accessible-frontend';
 import { PlaceAutocompleteInput } from '@/components/location/PlaceAutocompleteInput';
 import { adminSuper } from '../../api/adminApi';
 import { PageHeader } from '../../components/PageHeader';
+import {
+  EMPTY_NEW_COMMUNITY_BILLING,
+  NewCommunityBilling,
+  saveNewCommunityBilling,
+  type NewCommunityBillingMode,
+  type NewCommunityBillingValue,
+} from '../billing/NewCommunityBilling';
 import type { SuperAdminTenant, SuperAdminTenantDetail, CreateTenantPayload } from '../../api/types';
 
 const COUNTRY_CODES = [
@@ -99,6 +107,8 @@ function TenantAddressField({ label, value, placeholder, copyLabel, onCopy }: {
 
 export function TenantForm() {
   const { t, i18n } = useTranslation('admin_super');
+  const { t: tBilling } = useTranslation('admin_billing');
+  const { user } = useAuth();
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const isEdit = !!id;
@@ -152,6 +162,9 @@ export function TenantForm() {
     supported_languages: ['en', 'ga', 'de', 'fr', 'it', 'pt', 'es', 'nl', 'pl', 'ja', 'ar'] as string[],
   });
   const [initialForm, setInitialForm] = useState<typeof form | null>(null);
+  // Plan, who it pays and paid-until date for a NEW community. Saved after it
+  // exists, through the addresses Billing control and Branch payments use.
+  const [billing, setBilling] = useState<NewCommunityBillingValue>(EMPTY_NEW_COMMUNITY_BILLING);
 
   const [slugAutoGen, setSlugAutoGen] = useState(!isEdit);
 
@@ -267,6 +280,23 @@ export function TenantForm() {
     ? parentTenants.find((parent) => String(parent.id) === form.parent_id)
     : undefined;
   const hubDomain = chosenHub?.domain?.trim() || '';
+
+  // The community it will sit under. With none chosen the server puts it under
+  // the creator's own community for a manager confined to a branch, and under
+  // the platform for everyone else (AdminSuperController::tenantCreate()).
+  const effectiveParentId = form.parent_id
+    ? Number(form.parent_id)
+    : superPanelLevel(user) === 'regional' ? (Number(user?.tenant_id ?? 0) || null) : 1;
+  // Who may set what is decided by the server on each request; this only
+  // stops the form offering what would be refused (see NewCommunityBilling).
+  const billingMode: NewCommunityBillingMode = isEdit
+    ? 'none'
+    : isPlatformTeamUser(user)
+      ? 'platform_team'
+      : effectiveParentId !== null && effectiveParentId > 1 ? 'parent_manager' : 'none';
+  const effectiveParentName = effectiveParentId !== null && effectiveParentId > 1
+    ? (parentTenants.find((parent) => parent.id === effectiveParentId)?.name ?? null)
+    : null;
   const mainAddress = buildPlatformTenantUrl(form.slug, hubDomain);
   // The search preview shows the address Google would list: the community's
   // own domain once one is entered, otherwise the platform address under the
@@ -352,6 +382,22 @@ export function TenantForm() {
         } else {
           // Navigate to the new tenant's show page if ID is returned, otherwise go to list
           const newId = (res as { data?: { tenant_id?: number } }).data?.tenant_id;
+          // The community exists. Now its plan, who it pays and its date, each
+          // through the address that already owns that rule. One that is
+          // refused is said plainly; the community stays, and it is listed
+          // under "Still to set up" until it is finished.
+          if (newId && billingMode !== 'none') {
+            const failures = await saveNewCommunityBilling(newId, billingMode, billing);
+            for (const failure of failures) {
+              const message = failure.step === 'plan'
+                ? tBilling('control.new_plan_not_saved')
+                : failure.step === 'payer'
+                  ? tBilling('control.new_payer_not_saved')
+                  : tBilling('control.new_date_not_saved');
+              // admin-i18n-ignore: localized server message — the billing addresses' own refusals (lang/*/api.php)
+              toast.error(failure.reason ? `${message} ${failure.reason}` : message);
+            }
+          }
           navigate(tenantPath(newId ? `/super-admin/tenants/${newId}` : '/super-admin/tenants'));
         }
       } else {
@@ -399,11 +445,11 @@ export function TenantForm() {
   return (
     <div>
       <nav aria-label={t('super.breadcrumb_nav_aria')} className="flex items-center gap-1 text-sm text-muted mb-1">
-        <Link to={tenantPath('/super-admin')} className="hover:text-accent">{t('tenant_form.breadcrumb_super_admin')}</Link>
+        <Link to={tenantPath('/super-admin')} className="hover:text-accent">{t('super.breadcrumb_super_admin')}</Link>
         <span>/</span>
-        <Link to={tenantPath('/super-admin/tenants')} className="hover:text-accent">{t('tenant_form.breadcrumb_tenants')}</Link>
+        <Link to={tenantPath('/super-admin/tenants')} className="hover:text-accent">{t('super.breadcrumb_tenants')}</Link>
         <span>/</span>
-        <span className="text-foreground">{isEdit ? t('tenant_form.breadcrumb_edit') : t('tenant_form.breadcrumb_create')}</span>
+        <span className="text-foreground">{isEdit ? t('super.breadcrumb_edit') : t('super.breadcrumb_create')}</span>
       </nav>
       <PageHeader
         title={isEdit ? t('tenant_form.title_edit') : t('tenant_form.title_create')}
@@ -428,10 +474,21 @@ export function TenantForm() {
         }
       />
 
-      {/* A new community has no plan and no paid-until date, and nothing on
-          this form sets them: say so, and where it is done. Until this note,
-          a sign-up could sit unbilled with nobody told it needed setting up. */}
-      {!isEdit ? (
+      {/* A new community has no plan and no paid-until date unless they are
+          set here. Until 23 Nov 2026 nothing on this form set them, and a
+          sign-up could sit unbilled with nobody told it needed setting up. */}
+      {!isEdit && billingMode !== 'none' ? (
+        <NewCommunityBilling
+          mode={billingMode}
+          parentId={effectiveParentId}
+          parentName={effectiveParentName}
+          value={billing}
+          onChange={setBilling}
+        />
+      ) : null}
+
+      {/* Only where this person cannot set them: the platform team does. */}
+      {!isEdit && billingMode === 'none' ? (
         <p data-testid="tenant-form-billing-note" className="mb-4 rounded-xl bg-surface-secondary px-4 py-3 text-sm text-muted">
           {t('tenant_form.billing_note')}{' '}
           <Link to={tenantPath('/super-admin/branch-payments')} className="font-medium text-accent underline underline-offset-2">

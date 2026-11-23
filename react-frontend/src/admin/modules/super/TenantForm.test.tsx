@@ -10,7 +10,12 @@ import { createMockContexts } from '@/test/mock-contexts';
 import userEvent from '@testing-library/user-event';
 
 // ─── Hoist mock data ─────────────────────────────────────────────────────────
-const { mockAdminSuper, mockToast, mockNavigate, mockRouteParams } = vi.hoisted(() => ({
+const { mockAdminSuper, mockToast, mockNavigate, mockRouteParams, mockApi, mockAuth } = vi.hoisted(() => ({
+  // The billing addresses the new-community form saves through once the
+  // community exists (NewCommunityBilling).
+  mockApi: { get: vi.fn(), post: vi.fn(), put: vi.fn(), patch: vi.fn(), delete: vi.fn(), download: vi.fn() },
+  // Who is signed in. Null (nobody) unless a test sets it.
+  mockAuth: { current: null as null | Record<string, unknown> },
   mockAdminSuper: {
     getTenant: vi.fn(),
     listTenants: vi.fn(),
@@ -38,8 +43,11 @@ vi.mock('react-router-dom', async (importOriginal) => {
   };
 });
 
+vi.mock('@/lib/api', () => ({ api: mockApi, default: mockApi }));
+
 vi.mock('@/contexts', () =>
   createMockContexts({
+    useAuth: () => ({ user: mockAuth.current, isAuthenticated: mockAuth.current !== null }) as never,
     useToast: () => mockToast,
     useTenant: () => ({
       tenant: { id: 2, name: 'Test', slug: 'test' },
@@ -54,6 +62,7 @@ vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 
 beforeEach(() => {
   mockRouteParams.current = {};
+  mockAuth.current = null;
 });
 
 // Stub PageHeader and heavy admin sub-components
@@ -716,5 +725,124 @@ describe('TenantForm — SEO tab preview and counters', () => {
 
     expect(screen.queryByRole('textbox', { name: 'Accessible site hub heading' })).not.toBeInTheDocument();
     expect(screen.queryByRole('textbox', { name: 'Accessible site hub intro' })).not.toBeInTheDocument();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Plan, who it pays and paid-until date on the form (owner, 23 Nov 2026).
+describe('TenantForm — billing for a new community', () => {
+  const PLATFORM_TEAM = { id: 1, tenant_id: 1, is_god: true, is_super_admin: true, super_panel_level: 'master' };
+  const PLAIN_SUPER_ADMIN = { id: 2, tenant_id: 1, is_super_admin: true, super_panel_level: 'master' };
+  const HUB_MANAGER = { id: 3, tenant_id: 5, is_tenant_super_admin: true, super_panel_level: 'regional' };
+
+  const PLATFORM_PLANS = [{ id: 2, name: 'Local', max_users: 500, is_active: 1 }];
+  const HUB_PLANS = { hubs: [], hub_id: 5, plans: [{ plan_id: 4, name: 'Community', max_users: 1000, is_offered: true }] };
+
+  const renderForm = async () => {
+    const { TenantForm } = await import('./TenantForm');
+    render(<TenantForm />);
+    await waitFor(() => screen.getByTestId('page-header'));
+  };
+
+  const create = async (name: string) => {
+    await userEvent.type(screen.getByRole('textbox', { name: /name/i }), name);
+    fireEvent.click(screen.getAllByRole('button').find((b) => b.textContent?.trim() === 'Create community')!);
+  };
+
+  beforeEach(() => {
+    vi.resetAllMocks();
+    mockAdminSuper.listTenants.mockResolvedValue({ success: true, data: [{ id: 5, name: 'Cork Timebank', depth: 1, max_depth: 0 }] });
+    mockAdminSuper.createTenant.mockResolvedValue({ success: true, data: { tenant_id: 42 } });
+    mockApi.get.mockImplementation((url: string) => Promise.resolve(
+      url === '/v2/admin/plans' ? { success: true, data: PLATFORM_PLANS } : { success: true, data: HUB_PLANS },
+    ));
+    mockApi.post.mockResolvedValue({ success: true, data: {} });
+  });
+
+  it('lets the platform team set the plan, who it pays and the date, and saves them once the community exists', async () => {
+    mockAuth.current = PLATFORM_TEAM;
+    await renderForm();
+
+    expect(screen.getByTestId('new-community-billing')).toBeInTheDocument();
+    // The note that sent people elsewhere is gone: it is set here.
+    expect(screen.queryByTestId('tenant-form-billing-note')).not.toBeInTheDocument();
+
+    await waitFor(() => expect((screen.getByLabelText('Plan') as HTMLSelectElement).options).toHaveLength(2));
+    fireEvent.change(screen.getByLabelText('Plan'), { target: { value: '2' } });
+    fireEvent.change(screen.getByLabelText('Who it pays'), { target: { value: 'platform_invoice' } });
+    fireEvent.change(screen.getByLabelText('Paid up to and including'), { target: { value: '2027-01-31' } });
+
+    // Nothing is saved for a community that does not exist yet.
+    expect(mockApi.post).not.toHaveBeenCalled();
+
+    await create('Bandon Timebank');
+
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/test/super-admin/tenants/42'));
+    expect(mockApi.post.mock.calls).toEqual([
+      ['/v2/admin/super/billing/standing/payer', { tenant_id: 42, payer: 'platform_invoice' }],
+      ['/v2/admin/super/billing/assign-plan', { tenant_id: 42, pay_plan_id: 2 }],
+      ['/v2/admin/super/billing/standing/paid-until', { tenant_id: 42, paid_until: '2027-01-31' }],
+    ]);
+    expect(mockToast.error).not.toHaveBeenCalled();
+    // Billing is not part of what creates the community.
+    expect(mockAdminSuper.createTenant.mock.calls[0]?.[0]).not.toHaveProperty('billing');
+  });
+
+  it('creates the community with nothing chosen, and sends nothing to the billing addresses', async () => {
+    mockAuth.current = PLATFORM_TEAM;
+    await renderForm();
+
+    await create('Bandon Timebank');
+
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalled());
+    expect(mockApi.post).not.toHaveBeenCalled();
+  });
+
+  it('says so, with the server\'s reason, when the community was created but its plan was refused', async () => {
+    mockAuth.current = PLATFORM_TEAM;
+    mockApi.post.mockResolvedValue({ success: false, error: 'That plan is retired.' });
+    await renderForm();
+    await waitFor(() => expect((screen.getByLabelText('Plan') as HTMLSelectElement).options).toHaveLength(2));
+    fireEvent.change(screen.getByLabelText('Plan'), { target: { value: '2' } });
+
+    await create('Bandon Timebank');
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith(
+      'The community was created, but its plan could not be saved. Set it from the “Still to set up” list. That plan is retired.',
+    ));
+    // The community exists: the form still moves on to it.
+    expect(mockToast.success).toHaveBeenCalled();
+    expect(mockNavigate).toHaveBeenCalledWith('/test/super-admin/tenants/42');
+  });
+
+  it("offers a parent community's manager that parent's plans and the date, through the Branch payments addresses", async () => {
+    mockAuth.current = HUB_MANAGER;
+    await renderForm();
+
+    // No parent chosen: the server puts it under the manager's own community.
+    await waitFor(() => expect(mockApi.get).toHaveBeenCalledWith('/v2/admin/super/branch-plans?hub_id=5'));
+    expect(await screen.findByText('It will pay Cork Timebank.')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Who it pays')).not.toBeInTheDocument();
+
+    await waitFor(() => expect((screen.getByLabelText('Plan') as HTMLSelectElement).options).toHaveLength(2));
+    fireEvent.change(screen.getByLabelText('Plan'), { target: { value: '4' } });
+    fireEvent.change(screen.getByLabelText('Paid up to and including'), { target: { value: '2027-01-31' } });
+
+    await create('Bandon Timebank');
+
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalled());
+    expect(mockApi.post.mock.calls).toEqual([
+      ['/v2/admin/super/branch-payments/42/plan', { plan_id: 4 }],
+      ['/v2/admin/super/branch-payments/42/paid-until', { paid_until: '2027-01-31' }],
+    ]);
+  });
+
+  it('offers nothing to someone who is neither on the platform team nor creating under a parent community', async () => {
+    mockAuth.current = PLAIN_SUPER_ADMIN;
+    await renderForm();
+
+    expect(screen.queryByTestId('new-community-billing')).not.toBeInTheDocument();
+    expect(screen.getByTestId('tenant-form-billing-note')).toBeInTheDocument();
+    expect(mockApi.get).not.toHaveBeenCalled();
   });
 });
