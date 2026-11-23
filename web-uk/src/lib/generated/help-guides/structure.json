@@ -28,8 +28,8 @@
       "articles": 48
     },
     "admins": {
-      "sections": 11,
-      "articles": 58
+      "sections": 12,
+      "articles": 61
     }
   },
   "linkPaths": [
@@ -39,6 +39,7 @@
     "/admin",
     "/admin/activity-log",
     "/admin/ai/module-docs",
+    "/admin/billing",
     "/admin/blog",
     "/admin/categories",
     "/admin/community-analytics",
@@ -2107,6 +2108,22 @@
           {
             "id": "admin_impact_report",
             "link": "/admin/impact-report"
+          }
+        ]
+      },
+      {
+        "id": "admin_billing",
+        "gate": null,
+        "articles": [
+          {
+            "id": "admin_billing_your_community",
+            "link": "/admin/billing"
+          },
+          {
+            "id": "admin_billing_parent_community"
+          },
+          {
+            "id": "admin_billing_platform_team"
           }
         ]
       },

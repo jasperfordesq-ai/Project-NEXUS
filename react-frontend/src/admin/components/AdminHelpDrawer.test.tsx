@@ -100,6 +100,45 @@ describe('AdminHelpDrawer — official modal drawer contract', () => {
     expect(screen.getByRole('link', { name: 'Settings' })).toBeInTheDocument();
   });
 
+  // The article is already in the reader's language (PageHeader reads it from
+  // the admin_help locale file). Until 23 Nov 2026 every line was passed
+  // through the translator again as if it were a key: nothing matched, so in
+  // development each line read "[missing] admin_help:…" and on the live site
+  // each line was reported as a missing translation.
+  it('shows the article text as it is, and asks the translator for none of it', async () => {
+    const i18n = (await import('i18next')).default;
+    const missing = vi.fn();
+    i18n.on('missingKey', missing);
+
+    try {
+      render(
+        <AdminHelpDrawer
+          isOpen
+          onClose={vi.fn()}
+          article={{
+            title: 'Billing control',
+            summary: 'A plan counts active members: those who signed in. In the last 90 days.',
+            steps: [{ label: 'Record a payment', detail: 'Press “Record a payment”. Choose one month on.' }],
+            tips: ['admin_help:not a key'],
+            caution: 'Once it is on: communities can be paused.',
+            relatedPaths: [{ label: 'Automatic checks', path: '/platform-team/billing/automatic-checks' }],
+          }}
+        />,
+      );
+
+      expect(screen.getByText('Billing control')).toBeInTheDocument();
+      expect(screen.getByText('A plan counts active members: those who signed in. In the last 90 days.')).toBeInTheDocument();
+      expect(screen.getByText('Press “Record a payment”. Choose one month on.')).toBeInTheDocument();
+      expect(screen.getByText('admin_help:not a key')).toBeInTheDocument();
+      expect(screen.getByText('Once it is on: communities can be paused.')).toBeInTheDocument();
+      expect(screen.getByText('Automatic checks')).toBeInTheDocument();
+      expect(document.body.textContent).not.toContain('[missing]');
+      expect(missing).not.toHaveBeenCalled();
+    } finally {
+      i18n.off('missingKey', missing);
+    }
+  });
+
   it('renders a minimal article without optional sections', () => {
     render(<AdminHelpDrawer article={MINIMAL_ARTICLE} isOpen onClose={vi.fn()} />);
 
@@ -136,6 +175,8 @@ describe('AdminHelpDrawer — official modal drawer contract', () => {
     const onClose = vi.fn();
     render(<AdminHelpDrawer article={FULL_ARTICLE} isOpen onClose={onClose} />);
 
+    // With the community's name in the address, as every link in the app has.
+    expect(screen.getByRole('link', { name: 'Settings' })).toHaveAttribute('href', '/test/admin/settings');
     await user.click(screen.getByRole('link', { name: 'Settings' }));
 
     expect(onClose).toHaveBeenCalledTimes(1);

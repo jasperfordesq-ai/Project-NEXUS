@@ -45,7 +45,10 @@ export function PageHeader({ title, description, subtitle, icon, actions }: Page
 
   useEffect(() => {
     let cancelled = false;
-    const normalizedPath = location.pathname.replace(/^\/[^/]+(?=\/(?:admin|caring|super-admin))/, '');
+    // The community's slug is dropped where the address carries one, for every
+    // panel that has help: the Platform team panel was missing from this list,
+    // so none of its pages could have a help button on a slug address.
+    const normalizedPath = location.pathname.replace(/^\/[^/]+(?=\/(?:admin|caring|super-admin|platform-team)(?:\/|$))/, '');
     void import('../data/helpContent').then(({ getHelpContent }) => {
       if (cancelled) return;
       const helpContent = getHelpContent(t);

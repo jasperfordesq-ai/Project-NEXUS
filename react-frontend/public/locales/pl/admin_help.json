@@ -1651,6 +1651,198 @@
           "path": "/admin/member-premium"
         }
       ]
+    },
+    "/platform-team/billing": {
+      "title": "Kontrola rozliczeń",
+      "summary": "Plan, cena i stan płatności każdej społeczności na jednej liście. Zacznij od społeczności, które trzeba jeszcze skonfigurować, a potem przejdź przez listę.",
+      "steps": [
+        {
+          "label": "Dokończ to, co zostało do ustawienia",
+          "detail": "Społeczność bez planu nie ma ceny ani limitu członków. Bez daty „opłacone do” nigdy nie dostaje przypomnień, nie jest sprawdzana ani wstrzymywana. Każdy wiersz ma jeden przycisk, który to załatwia."
+        },
+        {
+          "label": "Zapisz płatność",
+          "detail": "Kliknij “Zapisz płatność” w wierszu społeczności. Wybierz miesiąc lub rok dalej, a kwota zostanie wpisana z planu."
+        },
+        {
+          "label": "Napisz, jak płacić",
+          "detail": "Kliknij “Notatka „Jak zapłacić”” i podaj swoje dane bankowe oraz kontakt. Widzi to każda społeczność, która płaci platformie na podstawie faktury."
+        }
+      ],
+      "tips": [
+        "Limit członków planu liczy aktywnych członków: tych, którzy logowali się w ciągu ostatnich 90 dni."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Automatyczne kontrole",
+          "path": "/platform-team/billing/automatic-checks"
+        },
+        {
+          "label": "Przychody",
+          "path": "/platform-team/billing/revenue"
+        },
+        {
+          "label": "Plany i ceny",
+          "path": "/platform-team/plans"
+        }
+      ]
+    },
+    "/platform-team/billing/automatic-checks": {
+      "title": "Automatyczne kontrole",
+      "summary": "Kontrola uruchamiana każdego ranka. Wysyła przypomnienia i ostrzeżenia oraz wstrzymuje społeczność, która nie zapłaciła albo zbyt długo przekracza limit członków. Jest wyłączona, dopóki jej nie włączysz.",
+      "steps": [
+        {
+          "label": "Przeczytaj, co stałoby się dzisiaj",
+          "detail": "Lista na dole pokazuje, co kontrola zrobiłaby teraz, nawet gdy jest wyłączona. Przeczytaj ją, zanim włączysz kontrolę."
+        },
+        {
+          "label": "Ustaw dni i regułę",
+          "detail": "Przypomnienia są wysyłane przed datą „opłacone do”. Ostatnie ostrzeżenie i wstrzymanie następują ustaloną liczbę dni po niej. Reguła przekroczenia limitu mówi, co się dzieje ze społecznością mającą zbyt wielu aktywnych członków."
+        },
+        {
+          "label": "Włącz kontrolę",
+          "detail": "Włącz “Uruchamiaj automatyczne kontrole każdego ranka” i kliknij “Zapisz ustawienia”."
+        }
+      ],
+      "tips": [
+        "Społeczność nadrzędna albo pojedyncza społeczność może mieć własną regułę przekroczenia limitu. Ta strona ustala regułę dla wszystkich pozostałych."
+      ],
+      "caution": "Po włączeniu społeczności mogą być wstrzymywane bez niczyjego kliknięcia. Społeczność bez daty „opłacone do” nigdy nie jest wstrzymywana z powodu płatności.",
+      "relatedPaths": [
+        {
+          "label": "Kontrola rozliczeń",
+          "path": "/platform-team/billing"
+        }
+      ]
+    },
+    "/platform-team/billing/revenue": {
+      "title": "Przychody",
+      "summary": "Ile platforma spodziewa się otrzymać w każdym miesiącu i roku oraz które społeczności wymagają uwagi.",
+      "steps": [
+        {
+          "label": "Przeczytaj spodziewane wpływy",
+          "detail": "Liczone są tylko społeczności, które płacą platformie, mają plan i nie są zwolnione ani wstrzymane. Euro i funty są pokazywane osobno."
+        },
+        {
+          "label": "Sprawdź liczby",
+          "detail": "Liczby społeczności bez planu, ponad limitem lub wstrzymanych otwierają “Kontrola rozliczeń” z samymi tymi społecznościami."
+        },
+        {
+          "label": "Sprawdź ostatnie zmiany",
+          "detail": "Lista na dole pokazuje, kto zmienił plan, datę lub wstrzymanie i kiedy."
+        }
+      ],
+      "tips": [
+        "To ceny uzgodnione, a nie otrzymane pieniądze. Płatności zapisuje się na stronie “Kontrola rozliczeń”."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Kontrola rozliczeń",
+          "path": "/platform-team/billing"
+        }
+      ]
+    },
+    "/platform-team/plans": {
+      "title": "Plany i ceny",
+      "summary": "Plany, które może otrzymać społeczność. Każdy ma limit członków, cenę za miesiąc i za rok w euro i w funtach oraz jednorazową opłatę początkową.",
+      "steps": [
+        {
+          "label": "Zmień plan",
+          "detail": "Otwórz plan, zmień jego limit członków lub ceny i zapisz."
+        },
+        {
+          "label": "Wyślij ceny do Stripe",
+          "detail": "Po zmianie ceny kliknij “Synchronizuj z Stripe”, aby płatności kartą korzystały z nowej ceny."
+        },
+        {
+          "label": "Wycofaj plan",
+          "detail": "Wyłącz plan, aby przestał być oferowany. Społeczność, która już go ma, zachowuje go."
+        }
+      ],
+      "tips": [
+        "Limit członków planu liczy aktywnych członków, a nie wszystkich mających konto."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Kontrola rozliczeń",
+          "path": "/platform-team/billing"
+        }
+      ]
+    },
+    "/super-admin/branch-payments": {
+      "title": "Płatności gałęzi",
+      "summary": "Społeczności poniżej Twojej i stan płatności każdej z nich. Możesz działać w tych, które płacą Twojej społeczności.",
+      "steps": [
+        {
+          "label": "Dokończ to, co zostało do ustawienia",
+          "detail": "Społeczności bez planu lub bez daty „opłacone do” są na początku listy. Każda ma jeden przycisk, który to załatwia."
+        },
+        {
+          "label": "Zapisz płatność",
+          "detail": "Kliknij “Zapisz płatność” w wierszu społeczności. Wybierz miesiąc lub rok dalej albo wpisz datę, do której ma teraz opłacone."
+        },
+        {
+          "label": "Wstrzymaj lub otwórz ponownie",
+          "detail": "Otwórz menu wiersza. Wstrzymana społeczność jest zamknięta dla członków. Jej administratorzy nadal mogą się logować i nic nie jest usuwane."
+        }
+      ],
+      "tips": [
+        "Społeczność, która płaci platformie, może zmieniać tylko zespół platformy. Użyj opcji “Napisz do zespołu platformy” w jej wierszu."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Plany gałęzi",
+          "path": "/super-admin/branch-plans"
+        }
+      ]
+    },
+    "/super-admin/branch-plans": {
+      "title": "Plany gałęzi",
+      "summary": "Plany, które Twoja społeczność oferuje społecznościom, które jej płacą, oraz to, jak dowiadują się, w jaki sposób płacić.",
+      "steps": [
+        {
+          "label": "Zmień plan dla swoich społeczności",
+          "detail": "Kliknij “Zmień”, aby ustawić własną nazwę, limit członków lub ceny. “Przywróć standard” przywraca plan platformy."
+        },
+        {
+          "label": "Przestań oferować plan",
+          "detail": "Wyłącz plan, aby ukryć go przed swoimi społecznościami. Planu, z którego korzysta któraś z nich, nie można ukryć."
+        },
+        {
+          "label": "Napisz notatkę o sposobie płatności",
+          "detail": "W części “Notatka „Jak zapłacić”” napisz, jak płacić Twojej społeczności i z kim się kontaktować. Społeczności, które Ci płacą, zobaczą to na swojej stronie “Rozliczenia” i w e-mailach o płatnościach."
+        }
+      ],
+      "tips": [
+        "Obniżenie limitu członków może od razu sprawić, że społeczność go przekroczy. Strona najpierw Cię ostrzeże."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Płatności gałęzi",
+          "path": "/super-admin/branch-payments"
+        }
+      ]
+    },
+    "/admin/billing": {
+      "title": "Rozliczenia",
+      "summary": "Plan Twojej społeczności, jego cena, komu płaci, data, do której ma opłacone, i zapisane płatności.",
+      "steps": [
+        {
+          "label": "Sprawdź datę, do której masz opłacone",
+          "detail": "Jeśli data minęła, płatność jest spóźniona, a u góry panelu administracyjnego pojawia się ostrzeżenie."
+        },
+        {
+          "label": "Zobacz, jak płacić",
+          "detail": "Jeśli odbiorca płatności napisał notatkę, znajdziesz ją w części “Jak zapłacić”."
+        },
+        {
+          "label": "Zadaj pytanie",
+          "detail": "Jeśli płacisz platformie, kliknij “Napisz do zespołu platformy”. Jeśli płacisz społeczności nadrzędnej, skontaktuj się z nią."
+        }
+      ],
+      "tips": [
+        "Jeśli płacisz kartą, możesz tu zmienić plan i kartę. W innym przypadku Twój plan ustala odbiorca płatności."
+      ]
     }
   }
 }

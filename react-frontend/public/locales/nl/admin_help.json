@@ -1651,6 +1651,198 @@
           "path": "/admin/member-premium"
         }
       ]
+    },
+    "/platform-team/billing": {
+      "title": "Factuurbeheer",
+      "summary": "Het abonnement, de prijs en de betaalstatus van elke gemeenschap in één lijst. Begin met de gemeenschappen die nog moeten worden ingesteld en werk daarna de lijst af.",
+      "steps": [
+        {
+          "label": "Afmaken wat nog moet worden ingesteld",
+          "detail": "Een gemeenschap zonder abonnement heeft geen prijs en geen ledenlimiet. Zonder 'betaald tot'-datum wordt ze nooit herinnerd, gecontroleerd of gepauzeerd. Elke regel heeft één knop waarmee je het afmaakt."
+        },
+        {
+          "label": "Een betaling registreren",
+          "detail": "Klik op “Betaling vastleggen” in de rij van de gemeenschap. Kies één maand of één jaar verder; het bedrag wordt uit het abonnement ingevuld."
+        },
+        {
+          "label": "Zeggen hoe er betaald moet worden",
+          "detail": "Klik op “Notitie ‘Zo betaal je’” en schrijf je bankgegevens en een contactpersoon. Elke gemeenschap die het platform per factuur betaalt, krijgt dit te zien."
+        }
+      ],
+      "tips": [
+        "De ledenlimiet van een abonnement telt actieve leden: wie zich in de afgelopen 90 dagen heeft aangemeld."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Automatische controles",
+          "path": "/platform-team/billing/automatic-checks"
+        },
+        {
+          "label": "Inkomsten",
+          "path": "/platform-team/billing/revenue"
+        },
+        {
+          "label": "Abonnementen en prijzen",
+          "path": "/platform-team/plans"
+        }
+      ]
+    },
+    "/platform-team/billing/automatic-checks": {
+      "title": "Automatische controles",
+      "summary": "De controle die elke ochtend draait. Ze stuurt herinneringen en waarschuwingen en pauzeert een gemeenschap die niet heeft betaald of te lang boven haar ledenlimiet zit. Ze staat uit tot je haar aanzet.",
+      "steps": [
+        {
+          "label": "Lezen wat er vandaag zou gebeuren",
+          "detail": "De lijst onderaan laat zien wat de controle nu zou doen, ook als ze uit staat. Lees die voordat je de controle aanzet."
+        },
+        {
+          "label": "De dagen en de regel instellen",
+          "detail": "Herinneringen gaan vóór de 'betaald tot'-datum de deur uit. De laatste waarschuwing en de pauze volgen een vast aantal dagen erna. De regel bij overschrijding bepaalt wat er gebeurt met een gemeenschap met te veel actieve leden."
+        },
+        {
+          "label": "Aanzetten",
+          "detail": "Zet “De automatische controles elke ochtend uitvoeren” aan en klik op “Instellingen opslaan”."
+        }
+      ],
+      "tips": [
+        "Een bovenliggende gemeenschap, of één enkele gemeenschap, kan een eigen regel bij overschrijding hebben. Deze pagina stelt de regel in voor alle andere."
+      ],
+      "caution": "Staat de controle aan, dan kunnen gemeenschappen worden gepauzeerd zonder dat iemand op een knop drukt. Een gemeenschap zonder 'betaald tot'-datum wordt nooit gepauzeerd wegens betaling.",
+      "relatedPaths": [
+        {
+          "label": "Factuurbeheer",
+          "path": "/platform-team/billing"
+        }
+      ]
+    },
+    "/platform-team/billing/revenue": {
+      "title": "Inkomsten",
+      "summary": "Wat het platform per maand en per jaar verwacht te ontvangen, en welke gemeenschappen aandacht nodig hebben.",
+      "steps": [
+        {
+          "label": "De verwachte inkomsten lezen",
+          "detail": "Alleen gemeenschappen die aan het platform betalen, een abonnement hebben en niet zijn vrijgesteld of gepauzeerd, tellen mee. Euro en pond worden apart getoond."
+        },
+        {
+          "label": "De cijfers volgen",
+          "detail": "De aantallen gemeenschappen zonder abonnement, boven hun limiet of gepauzeerd openen “Factuurbeheer” met alleen die gemeenschappen."
+        },
+        {
+          "label": "De laatste wijzigingen bekijken",
+          "detail": "De lijst onderaan laat zien wie een abonnement, een datum of een pauze heeft gewijzigd, en wanneer."
+        }
+      ],
+      "tips": [
+        "Dit zijn afgesproken prijzen, geen ontvangen geld. Betalingen worden geregistreerd op “Factuurbeheer”."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Factuurbeheer",
+          "path": "/platform-team/billing"
+        }
+      ]
+    },
+    "/platform-team/plans": {
+      "title": "Abonnementen en prijzen",
+      "summary": "De abonnementen die een gemeenschap kan krijgen. Elk heeft een ledenlimiet, een prijs per maand en per jaar in euro en in pond, en eenmalige instelkosten.",
+      "steps": [
+        {
+          "label": "Een abonnement wijzigen",
+          "detail": "Open het abonnement, wijzig de ledenlimiet of de prijzen en sla op."
+        },
+        {
+          "label": "De prijzen naar Stripe sturen",
+          "detail": "Klik na een prijswijziging op “Synchroniseren met Stripe”, zodat kaartbetalingen de nieuwe prijs gebruiken."
+        },
+        {
+          "label": "Een abonnement uit gebruik nemen",
+          "detail": "Zet een abonnement uit om het niet meer aan te bieden. Een gemeenschap die het al heeft, houdt het."
+        }
+      ],
+      "tips": [
+        "De ledenlimiet van een abonnement telt actieve leden, niet iedereen met een account."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Factuurbeheer",
+          "path": "/platform-team/billing"
+        }
+      ]
+    },
+    "/super-admin/branch-payments": {
+      "title": "Betalingen in de tak",
+      "summary": "De gemeenschappen onder de jouwe en hoe elk ervoor staat met betalen. Je kunt handelen bij de gemeenschappen die aan jouw gemeenschap betalen.",
+      "steps": [
+        {
+          "label": "Afmaken wat nog moet worden ingesteld",
+          "detail": "Gemeenschappen zonder abonnement of zonder 'betaald tot'-datum staan bovenaan. Elk heeft één knop waarmee je het afmaakt."
+        },
+        {
+          "label": "Een betaling registreren",
+          "detail": "Klik op “Betaling vastleggen” in de rij van de gemeenschap. Kies één maand of één jaar verder, of typ de datum tot wanneer ze nu heeft betaald."
+        },
+        {
+          "label": "Pauzeren of weer openen",
+          "detail": "Open het menu van de rij. Een gepauzeerde gemeenschap is gesloten voor haar leden. Haar beheerders kunnen zich nog aanmelden en er wordt niets verwijderd."
+        }
+      ],
+      "tips": [
+        "Een gemeenschap die aan het platform betaalt, kan alleen het platformteam wijzigen. Gebruik “Bericht aan het platformteam” in haar rij."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Abonnementen in de tak",
+          "path": "/super-admin/branch-plans"
+        }
+      ]
+    },
+    "/super-admin/branch-plans": {
+      "title": "Abonnementen in de tak",
+      "summary": "De abonnementen die jouw gemeenschap aanbiedt aan de gemeenschappen die aan haar betalen, en hoe die te horen krijgen hoe ze moeten betalen.",
+      "steps": [
+        {
+          "label": "Een abonnement voor je gemeenschappen wijzigen",
+          "detail": "Klik op “Wijzigen” om je eigen naam, ledenlimiet of prijzen in te stellen. “Terug naar standaard” zet het abonnement terug naar dat van het platform."
+        },
+        {
+          "label": "Een abonnement niet meer aanbieden",
+          "detail": "Zet een abonnement uit om het voor je gemeenschappen te verbergen. Een abonnement dat een van hen heeft, kan niet worden verborgen."
+        },
+        {
+          "label": "Je betaalnotitie schrijven",
+          "detail": "Schrijf onder “Notitie ‘Zo betaal je’” hoe ze aan jouw gemeenschap moeten betalen en met wie ze contact kunnen opnemen. De gemeenschappen die aan jou betalen zien dit op hun pagina “Facturering” en in hun betalingsmails."
+        }
+      ],
+      "tips": [
+        "Een lagere ledenlimiet kan een gemeenschap meteen boven haar limiet brengen. De pagina waarschuwt je eerst."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Betalingen in de tak",
+          "path": "/super-admin/branch-payments"
+        }
+      ]
+    },
+    "/admin/billing": {
+      "title": "Facturering",
+      "summary": "Het abonnement van je gemeenschap, wat het kost, aan wie ze betaalt, tot wanneer ze heeft betaald en de betalingen die voor haar zijn geregistreerd.",
+      "steps": [
+        {
+          "label": "Controleren tot wanneer je hebt betaald",
+          "detail": "Is de datum voorbij, dan is de betaling te laat en verschijnt er bovenaan het beheerpaneel een waarschuwing."
+        },
+        {
+          "label": "Zien hoe je betaalt",
+          "detail": "Heeft degene aan wie je betaalt een notitie geschreven, dan staat die onder “Zo betaal je”."
+        },
+        {
+          "label": "Een vraag stellen",
+          "detail": "Betaal je aan het platform, klik dan op “Bericht aan het platformteam”. Betaal je aan een bovenliggende gemeenschap, neem dan contact op met die gemeenschap."
+        }
+      ],
+      "tips": [
+        "Betaal je per kaart, dan kun je hier je abonnement en je kaart wijzigen. Anders bepaalt degene aan wie je betaalt je abonnement."
+      ]
     }
   }
 }

@@ -1651,6 +1651,198 @@
           "path": "/admin/member-premium"
         }
       ]
+    },
+    "/platform-team/billing": {
+      "title": "Abrechnungssteuerung",
+      "summary": "Plan, Preis und Zahlungsstand jeder Gemeinschaft in einer Liste. Beginnen Sie mit den Gemeinschaften, die noch einzurichten sind, und gehen Sie dann die Liste durch.",
+      "steps": [
+        {
+          "label": "Erledigen, was noch einzurichten ist",
+          "detail": "Eine Gemeinschaft ohne Plan hat keinen Preis und kein Mitgliederlimit. Ohne „Bezahlt bis“-Datum wird sie nie erinnert, geprüft oder pausiert. Jede Zeile hat eine Schaltfläche, die das erledigt."
+        },
+        {
+          "label": "Eine Zahlung erfassen",
+          "detail": "Klicken Sie in der Zeile der Gemeinschaft auf “Zahlung erfassen”. Wählen Sie einen Monat oder ein Jahr weiter; der Betrag wird aus dem Plan übernommen."
+        },
+        {
+          "label": "Sagen, wie zu zahlen ist",
+          "detail": "Klicken Sie auf “Hinweis „So zahlen Sie“” und schreiben Sie Ihre Bankverbindung und einen Kontakt. Jede Gemeinschaft, die per Rechnung an die Plattform zahlt, bekommt das angezeigt."
+        }
+      ],
+      "tips": [
+        "Das Mitgliederlimit eines Plans zählt aktive Mitglieder: jene, die sich in den letzten 90 Tagen angemeldet haben."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Automatische Prüfungen",
+          "path": "/platform-team/billing/automatic-checks"
+        },
+        {
+          "label": "Einnahmen",
+          "path": "/platform-team/billing/revenue"
+        },
+        {
+          "label": "Pläne und Preise",
+          "path": "/platform-team/plans"
+        }
+      ]
+    },
+    "/platform-team/billing/automatic-checks": {
+      "title": "Automatische Prüfungen",
+      "summary": "Die Prüfung, die jeden Morgen läuft. Sie sendet Erinnerungen und Warnungen und pausiert eine Gemeinschaft, die nicht gezahlt hat oder zu lange über ihrem Mitgliederlimit liegt. Sie ist aus, bis Sie sie einschalten.",
+      "steps": [
+        {
+          "label": "Lesen, was heute geschehen würde",
+          "detail": "Die Liste unten zeigt, was die Prüfung jetzt tun würde, auch solange sie ausgeschaltet ist. Lesen Sie sie, bevor Sie die Prüfung einschalten."
+        },
+        {
+          "label": "Tage und Regel festlegen",
+          "detail": "Erinnerungen gehen vor dem „Bezahlt bis“-Datum hinaus. Die letzte Warnung und die Pause folgen eine festgelegte Zahl von Tagen danach. Die Regel bei Überschreitung legt fest, was mit einer Gemeinschaft mit zu vielen aktiven Mitgliedern geschieht."
+        },
+        {
+          "label": "Einschalten",
+          "detail": "Schalten Sie “Die automatischen Prüfungen jeden Morgen ausführen” ein und klicken Sie auf “Einstellungen speichern”."
+        }
+      ],
+      "tips": [
+        "Eine übergeordnete Gemeinschaft oder eine einzelne Gemeinschaft kann eine eigene Regel bei Überschreitung haben. Diese Seite legt die Regel für alle anderen fest."
+      ],
+      "caution": "Ist die Prüfung eingeschaltet, können Gemeinschaften pausiert werden, ohne dass jemand eine Schaltfläche drückt. Eine Gemeinschaft ohne „Bezahlt bis“-Datum wird nie wegen der Zahlung pausiert.",
+      "relatedPaths": [
+        {
+          "label": "Abrechnungssteuerung",
+          "path": "/platform-team/billing"
+        }
+      ]
+    },
+    "/platform-team/billing/revenue": {
+      "title": "Einnahmen",
+      "summary": "Was die Plattform pro Monat und pro Jahr an Zahlungen erwartet und welche Gemeinschaften Aufmerksamkeit brauchen.",
+      "steps": [
+        {
+          "label": "Die erwarteten Einnahmen lesen",
+          "detail": "Gezählt werden nur Gemeinschaften, die an die Plattform zahlen, einen Plan haben und weder befreit noch pausiert sind. Euro und Pfund werden getrennt angezeigt."
+        },
+        {
+          "label": "Den Zahlen folgen",
+          "detail": "Die Zahlen der Gemeinschaften ohne Plan, über ihrem Limit oder pausiert öffnen “Abrechnungssteuerung” mit genau diesen Gemeinschaften."
+        },
+        {
+          "label": "Die letzten Änderungen prüfen",
+          "detail": "Die Liste unten zeigt, wer einen Plan, ein Datum oder eine Pause geändert hat und wann."
+        }
+      ],
+      "tips": [
+        "Das sind vereinbarte Preise, kein eingegangenes Geld. Zahlungen werden auf “Abrechnungssteuerung” erfasst."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Abrechnungssteuerung",
+          "path": "/platform-team/billing"
+        }
+      ]
+    },
+    "/platform-team/plans": {
+      "title": "Pläne und Preise",
+      "summary": "Die Pläne, die eine Gemeinschaft bekommen kann. Jeder hat ein Mitgliederlimit, einen Preis pro Monat und pro Jahr in Euro und in Pfund sowie eine einmalige Einrichtungsgebühr.",
+      "steps": [
+        {
+          "label": "Einen Plan ändern",
+          "detail": "Öffnen Sie den Plan, ändern Sie sein Mitgliederlimit oder seine Preise und speichern Sie."
+        },
+        {
+          "label": "Die Preise an Stripe senden",
+          "detail": "Klicken Sie nach einer Preisänderung auf “Mit Stripe synchronisieren”, damit Kartenzahlungen den neuen Preis verwenden."
+        },
+        {
+          "label": "Einen Plan stilllegen",
+          "detail": "Schalten Sie einen Plan aus, damit er nicht mehr angeboten wird. Eine Gemeinschaft, die ihn schon hat, behält ihn."
+        }
+      ],
+      "tips": [
+        "Das Mitgliederlimit eines Plans zählt aktive Mitglieder, nicht alle mit einem Konto."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Abrechnungssteuerung",
+          "path": "/platform-team/billing"
+        }
+      ]
+    },
+    "/super-admin/branch-payments": {
+      "title": "Zahlungen im Zweig",
+      "summary": "Die Gemeinschaften unter Ihrer und der Stand ihrer Zahlungen. Handeln können Sie bei denen, die an Ihre Gemeinschaft zahlen.",
+      "steps": [
+        {
+          "label": "Erledigen, was noch einzurichten ist",
+          "detail": "Gemeinschaften ohne Plan oder ohne „Bezahlt bis“-Datum stehen zuerst. Jede hat eine Schaltfläche, die das erledigt."
+        },
+        {
+          "label": "Eine Zahlung erfassen",
+          "detail": "Klicken Sie in der Zeile der Gemeinschaft auf “Zahlung erfassen”. Wählen Sie einen Monat oder ein Jahr weiter, oder geben Sie das Datum ein, bis zu dem sie nun bezahlt hat."
+        },
+        {
+          "label": "Pausieren oder wieder öffnen",
+          "detail": "Öffnen Sie das Menü der Zeile. Eine pausierte Gemeinschaft ist für ihre Mitglieder geschlossen. Ihre Admins können sich weiter anmelden, und nichts wird gelöscht."
+        }
+      ],
+      "tips": [
+        "Eine Gemeinschaft, die an die Plattform zahlt, kann nur das Plattform-Team ändern. Nutzen Sie “Nachricht an das Plattform-Team” in ihrer Zeile."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Pläne im Zweig",
+          "path": "/super-admin/branch-plans"
+        }
+      ]
+    },
+    "/super-admin/branch-plans": {
+      "title": "Pläne im Zweig",
+      "summary": "Die Pläne, die Ihre Gemeinschaft den Gemeinschaften anbietet, die an sie zahlen, und wie diesen mitgeteilt wird, wie zu zahlen ist.",
+      "steps": [
+        {
+          "label": "Einen Plan für Ihre Gemeinschaften ändern",
+          "detail": "Mit “Ändern” legen Sie eigenen Namen, eigenes Mitgliederlimit oder eigene Preise fest. “Auf Standard zurücksetzen” setzt den Plan auf den der Plattform zurück."
+        },
+        {
+          "label": "Einen Plan nicht mehr anbieten",
+          "detail": "Schalten Sie einen Plan aus, um ihn vor Ihren Gemeinschaften zu verbergen. Ein Plan, den eine von ihnen hat, lässt sich nicht verbergen."
+        },
+        {
+          "label": "Ihren Zahlungshinweis schreiben",
+          "detail": "Schreiben Sie unter “Hinweis „So zahlen Sie“”, wie an Ihre Gemeinschaft zu zahlen ist und an wen man sich wendet. Die Gemeinschaften, die an Sie zahlen, sehen das auf ihrer Seite “Abrechnung” und in ihren Zahlungs-E-Mails."
+        }
+      ],
+      "tips": [
+        "Ein niedrigeres Mitgliederlimit kann eine Gemeinschaft sofort über ihr Limit bringen. Die Seite warnt Sie vorher."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Zahlungen im Zweig",
+          "path": "/super-admin/branch-payments"
+        }
+      ]
+    },
+    "/admin/billing": {
+      "title": "Abrechnung",
+      "summary": "Der Plan Ihrer Gemeinschaft, was er kostet, an wen sie zahlt, bis wann sie bezahlt hat und die für sie erfassten Zahlungen.",
+      "steps": [
+        {
+          "label": "Prüfen, bis wann Sie bezahlt haben",
+          "detail": "Ist das Datum vorbei, ist die Zahlung verspätet, und oben im Admin-Bereich erscheint eine Warnung."
+        },
+        {
+          "label": "Sehen, wie zu zahlen ist",
+          "detail": "Hat der Zahlungsempfänger einen Hinweis geschrieben, steht er unter “So zahlen Sie”."
+        },
+        {
+          "label": "Eine Frage stellen",
+          "detail": "Wenn Sie an die Plattform zahlen, klicken Sie auf “Nachricht an das Plattform-Team”. Wenn Sie an eine übergeordnete Gemeinschaft zahlen, wenden Sie sich an diese."
+        }
+      ],
+      "tips": [
+        "Wenn Sie per Karte zahlen, können Sie hier Plan und Karte ändern. Sonst legt der Zahlungsempfänger Ihren Plan fest."
+      ]
     }
   }
 }

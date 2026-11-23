@@ -1651,6 +1651,198 @@
           "path": "/admin/member-premium"
         }
       ]
+    },
+    "/platform-team/billing": {
+      "title": "Rialú billeála",
+      "summary": "Plean, praghas agus stádas íocaíochta gach pobail in aon liosta amháin. Tosaigh leis na pobail atá le socrú fós, ansin oibrigh síos tríd an liosta.",
+      "steps": [
+        {
+          "label": "Críochnaigh a bhfuil le socrú fós",
+          "detail": "Níl praghas ná teorainn ball ag pobal gan phlean. Gan dáta 'íoctha go dtí', ní chuirtear meabhrúchán chuige, ní sheiceáiltear é agus ní chuirtear ar sos é choíche. Tá cnaipe amháin ar gach líne a chríochnaíonn é."
+        },
+        {
+          "label": "Taifead íocaíocht",
+          "detail": "Brúigh “Taifead íocaíocht” ar shraith an phobail. Roghnaigh mí amháin nó bliain amháin níos faide, agus líontar an méid ón bplean."
+        },
+        {
+          "label": "Abair conas íoc",
+          "detail": "Brúigh “Nóta 'Conas íoc'” agus scríobh do shonraí bainc agus teagmhálaí. Taispeántar é do gach pobal a íocann an t-ardán le sonrasc."
+        }
+      ],
+      "tips": [
+        "Áiríonn teorainn ball plean baill ghníomhacha: iad siúd a shínigh isteach le 90 lá anuas."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Seiceálacha uathoibríocha",
+          "path": "/platform-team/billing/automatic-checks"
+        },
+        {
+          "label": "Ioncam",
+          "path": "/platform-team/billing/revenue"
+        },
+        {
+          "label": "Pleananna & Praghsáil",
+          "path": "/platform-team/plans"
+        }
+      ]
+    },
+    "/platform-team/billing/automatic-checks": {
+      "title": "Seiceálacha uathoibríocha",
+      "summary": "An tseiceáil a ritear gach maidin. Seolann sí meabhrúcháin agus rabhaidh, agus cuireann sí pobal ar sos mura bhfuil sé íoctha nó má tá sé os cionn a theorainn ball rófhada. Tá sí múchta go dtí go gcuireann tú ar siúl í.",
+      "steps": [
+        {
+          "label": "Léigh cad a tharlódh inniu",
+          "detail": "Taispeánann an liosta ag an mbun cad a dhéanfadh an tseiceáil anois, fiú agus í múchta. Léigh é sula gcuireann tú an tseiceáil ar siúl."
+        },
+        {
+          "label": "Socraigh na laethanta agus an riail",
+          "detail": "Seoltar meabhrúcháin roimh an dáta 'íoctha go dtí'. Tagann an rabhadh deireanach agus an sos líon socraithe laethanta ina dhiaidh. Deir an riail os cionn teorann cad a tharlaíonn do phobal a bhfuil an iomarca ball gníomhach aige."
+        },
+        {
+          "label": "Cuir ar siúl í",
+          "detail": "Cuir “Rith na seiceálacha uathoibríocha gach maidin” ar siúl agus brúigh “Sábháil na socruithe”."
+        }
+      ],
+      "tips": [
+        "Is féidir a riail os cionn teorann féin a bheith ag máthairphobal, nó ag pobal aonair. Socraíonn an leathanach seo an riail do gach pobal eile."
+      ],
+      "caution": "Nuair a bhíonn sí ar siúl, is féidir pobail a chur ar sos gan aon duine cnaipe a bhrú. Ní chuirtear pobal gan dáta 'íoctha go dtí' ar sos choíche mar gheall ar íocaíocht.",
+      "relatedPaths": [
+        {
+          "label": "Rialú billeála",
+          "path": "/platform-team/billing"
+        }
+      ]
+    },
+    "/platform-team/billing/revenue": {
+      "title": "Ioncam",
+      "summary": "An méid a bhfuil an t-ardán ag súil lena fháil gach mí agus gach bliain, agus na pobail a dteastaíonn aird uathu.",
+      "steps": [
+        {
+          "label": "Léigh an t-ioncam a bhfuiltear ag súil leis",
+          "detail": "Ní áirítear ach pobail a íocann an t-ardán, a bhfuil plean acu agus nach bhfuil díolmhaithe ná ar sos. Taispeántar euro agus puint ar leithligh."
+        },
+        {
+          "label": "Lean na huimhreacha",
+          "detail": "Osclaíonn líon na bpobal gan phlean, os cionn a dteorann nó ar sos “Rialú billeála” leis na pobail sin amháin."
+        },
+        {
+          "label": "Seiceáil na hathruithe is déanaí",
+          "detail": "Taispeánann an liosta ag an mbun cé a d'athraigh plean, dáta nó sos, agus cathain."
+        }
+      ],
+      "tips": [
+        "Is praghsanna comhaontaithe iad seo, ní airgead a fuarthas. Taifeadtar íocaíochtaí ar “Rialú billeála”."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Rialú billeála",
+          "path": "/platform-team/billing"
+        }
+      ]
+    },
+    "/platform-team/plans": {
+      "title": "Pleananna & Praghsáil",
+      "summary": "Na pleananna is féidir a thabhairt do phobal. Tá teorainn ball, praghas in aghaidh na míosa agus na bliana in euro agus i bpuint, agus táille socraithe aonuaire ag gach ceann.",
+      "steps": [
+        {
+          "label": "Athraigh plean",
+          "detail": "Oscail an plean, athraigh a theorainn ball nó a phraghsanna, agus sábháil."
+        },
+        {
+          "label": "Seol na praghsanna chuig Stripe",
+          "detail": "Brúigh “Sioncronaigh le Stripe” tar éis praghas a athrú, ionas go n-úsáidfidh íocaíochtaí cárta an praghas nua."
+        },
+        {
+          "label": "Tarraing plean siar",
+          "detail": "Múch plean chun stop a chur lena thairiscint. Coinníonn pobal a bhfuil sé aige cheana é."
+        }
+      ],
+      "tips": [
+        "Áiríonn teorainn ball plean baill ghníomhacha, ní gach duine a bhfuil cuntas aige."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Rialú billeála",
+          "path": "/platform-team/billing"
+        }
+      ]
+    },
+    "/super-admin/branch-payments": {
+      "title": "Íocaíochtaí an bhrainse",
+      "summary": "Na pobail atá faoi do phobalsa agus cá seasann gach ceann lena íocaíocht. Is féidir leat gníomhú ar na cinn a íocann le do phobal.",
+      "steps": [
+        {
+          "label": "Críochnaigh a bhfuil le socrú fós",
+          "detail": "Liostaítear ar dtús na pobail nach bhfuil plean ná dáta 'íoctha go dtí' acu. Tá cnaipe amháin ag gach ceann a chríochnaíonn é."
+        },
+        {
+          "label": "Taifead íocaíocht",
+          "detail": "Brúigh “Taifead íocaíocht” ar shraith an phobail. Roghnaigh mí amháin nó bliain amháin níos faide, nó clóscríobh an dáta a bhfuil sé íoctha go dtí é anois."
+        },
+        {
+          "label": "Cuir ar sos nó oscail arís",
+          "detail": "Oscail roghchlár na sraithe. Bíonn pobal atá ar sos dúnta dá bhaill. Is féidir lena riarthóirí síniú isteach fós, agus ní scriostar aon rud."
+        }
+      ],
+      "tips": [
+        "Ní féidir ach le foireann an ardáin pobal a íocann an t-ardán a athrú. Úsáid “Teachtaireacht chuig foireann an ardáin” ar a shraith."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Pleananna an bhrainse",
+          "path": "/super-admin/branch-plans"
+        }
+      ]
+    },
+    "/super-admin/branch-plans": {
+      "title": "Pleananna an bhrainse",
+      "summary": "Na pleananna a thairgeann do phobal do na pobail a íocann leis, agus conas a deirtear leo íoc.",
+      "steps": [
+        {
+          "label": "Athraigh plean do do phobail",
+          "detail": "Brúigh “Athraigh” chun d'ainm, do theorainn ball nó do phraghsanna féin a shocrú. Cuireann “Ar ais chuig an gcaighdeán” an plean ar ais go plean an ardáin."
+        },
+        {
+          "label": "Stop ag tairiscint plean",
+          "detail": "Múch plean chun é a cheilt ar do phobail. Ní féidir plean atá ag ceann acu a cheilt."
+        },
+        {
+          "label": "Scríobh do nóta faoi conas íoc",
+          "detail": "Faoi “Nóta 'Conas íoc'”, abair conas do phobal a íoc agus cé leis ar chóir teagmháil a dhéanamh. Feiceann na pobail a íocann leat é ar a leathanach “Billeáil” agus ina ríomhphoist íocaíochta."
+        }
+      ],
+      "tips": [
+        "Má íslítear teorainn ball, d'fhéadfadh pobal a bheith os cionn a theorann láithreach. Tugann an leathanach rabhadh duit ar dtús."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Íocaíochtaí an bhrainse",
+          "path": "/super-admin/branch-payments"
+        }
+      ]
+    },
+    "/admin/billing": {
+      "title": "Billeáil",
+      "summary": "Plean do phobail, a chostas, cé a íocann sé, an dáta a bhfuil sé íoctha go dtí é agus na híocaíochtaí atá taifeadta dó.",
+      "steps": [
+        {
+          "label": "Seiceáil an dáta a bhfuil tú íoctha go dtí é",
+          "detail": "Má tá an dáta thart, tá an íocaíocht déanach agus taispeántar rabhadh ag barr an phainéil riaracháin."
+        },
+        {
+          "label": "Féach conas íoc",
+          "detail": "Má scríobh an té a íocann tú nóta, taispeántar é faoi “Conas íoc”."
+        },
+        {
+          "label": "Cuir ceist",
+          "detail": "Má íocann tú an t-ardán, brúigh “Teachtaireacht chuig foireann an ardáin”. Má íocann tú le máthairphobal, déan teagmháil leis an bpobal sin."
+        }
+      ],
+      "tips": [
+        "Má íocann tú le cárta is féidir leat do phlean agus do chárta a athrú anseo. Seachas sin, socraíonn an té a íocann tú do phlean."
+      ]
     }
   }
 }

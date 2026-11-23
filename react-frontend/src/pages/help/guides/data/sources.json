@@ -1,5 +1,40 @@
 {
   "//": "Help Centre article -> the files its text depends on, and the commit it was last checked against. See scripts/check-help-staleness.mjs and docs/TESTING.md. Keys are <audience>/<section>/<article>; add entries as articles are checked.",
+  "admins/admin_billing/admin_billing_parent_community": {
+    "sources": [
+      "react-frontend/public/locales/en/admin_billing.json",
+      "react-frontend/public/locales/en/super_admin.json",
+      "react-frontend/src/admin/modules/billing/HowToPayEditor.tsx",
+      "react-frontend/src/admin/modules/billing/RecordPaymentDialog.tsx",
+      "react-frontend/src/admin/modules/billing/StillToSetUp.tsx",
+      "react-frontend/src/admin/modules/super/BranchPayments.tsx",
+      "react-frontend/src/admin/modules/super/BranchPlans.tsx"
+    ],
+    "verified": "8b82d333c93ea04dfa588d50949ec5eec1b881bc"
+  },
+  "admins/admin_billing/admin_billing_platform_team": {
+    "sources": [
+      "react-frontend/public/locales/en/admin_billing.json",
+      "react-frontend/src/admin/modules/billing/BillingAutomationCard.tsx",
+      "react-frontend/src/admin/modules/billing/BillingControl.tsx",
+      "react-frontend/src/admin/modules/billing/HowToPayEditor.tsx",
+      "react-frontend/src/admin/modules/billing/NewCommunityBilling.tsx",
+      "react-frontend/src/admin/modules/billing/PayerDialog.tsx",
+      "react-frontend/src/admin/modules/billing/RecordPaymentDialog.tsx",
+      "react-frontend/src/platform-team/components/PlatformTeamSidebar.tsx"
+    ],
+    "verified": "8b82d333c93ea04dfa588d50949ec5eec1b881bc"
+  },
+  "admins/admin_billing/admin_billing_your_community": {
+    "sources": [
+      "app/Http/Controllers/Api/AdminBillingController.php",
+      "react-frontend/public/locales/en/admin_billing.json",
+      "react-frontend/src/admin/components/AdminSidebar.tsx",
+      "react-frontend/src/admin/components/BillingPausedBanner.tsx",
+      "react-frontend/src/admin/modules/billing/BillingPage.tsx"
+    ],
+    "verified": "8b82d333c93ea04dfa588d50949ec5eec1b881bc"
+  },
   "admins/admin_records/admin_activity_log": {
     "sources": [
       "app/Http/Controllers/Api/AdminDashboardController.php",

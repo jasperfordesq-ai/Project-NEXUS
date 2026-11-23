@@ -1651,6 +1651,198 @@
           "path": "/admin/member-premium"
         }
       ]
+    },
+    "/platform-team/billing": {
+      "title": "Contrôle de la facturation",
+      "summary": "Le forfait, le prix et la situation de paiement de chaque communauté dans une seule liste. Commencez par les communautés qui restent à configurer, puis parcourez la liste.",
+      "steps": [
+        {
+          "label": "Terminer ce qui reste à configurer",
+          "detail": "Une communauté sans forfait n’a ni prix ni limite de membres. Sans date « payé jusqu’au », elle n’est jamais relancée, vérifiée ni mise en pause. Chaque ligne a un bouton qui règle la question."
+        },
+        {
+          "label": "Enregistrer un paiement",
+          "detail": "Cliquez sur “Enregistrer un paiement” sur la ligne de la communauté. Choisissez un mois ou un an de plus ; le montant est repris du forfait."
+        },
+        {
+          "label": "Dire comment payer",
+          "detail": "Cliquez sur “Note « Comment payer »” et indiquez vos coordonnées bancaires et un contact. Chaque communauté qui paie la plateforme sur facture la voit."
+        }
+      ],
+      "tips": [
+        "La limite de membres d’un forfait compte les membres actifs : ceux qui se sont connectés au cours des 90 derniers jours."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Vérifications automatiques",
+          "path": "/platform-team/billing/automatic-checks"
+        },
+        {
+          "label": "Revenus",
+          "path": "/platform-team/billing/revenue"
+        },
+        {
+          "label": "Forfaits et tarifs",
+          "path": "/platform-team/plans"
+        }
+      ]
+    },
+    "/platform-team/billing/automatic-checks": {
+      "title": "Vérifications automatiques",
+      "summary": "La vérification qui s’exécute chaque matin. Elle envoie des rappels et des avertissements, et met en pause une communauté qui n’a pas payé ou qui dépasse sa limite de membres depuis trop longtemps. Elle est désactivée tant que vous ne l’activez pas.",
+      "steps": [
+        {
+          "label": "Lire ce qui se passerait aujourd’hui",
+          "detail": "La liste en bas montre ce que la vérification ferait maintenant, même lorsqu’elle est désactivée. Lisez-la avant de l’activer."
+        },
+        {
+          "label": "Régler les jours et la règle",
+          "detail": "Les rappels partent avant la date « payé jusqu’au ». Le dernier avertissement et la pause interviennent un nombre de jours fixé après. La règle de dépassement dit ce qui arrive à une communauté qui a trop de membres actifs."
+        },
+        {
+          "label": "L’activer",
+          "detail": "Activez “Lancer les vérifications automatiques chaque matin” et cliquez sur “Enregistrer les réglages”."
+        }
+      ],
+      "tips": [
+        "Une communauté parente, ou une communauté seule, peut avoir sa propre règle de dépassement. Cette page fixe la règle pour toutes les autres."
+      ],
+      "caution": "Une fois la vérification activée, des communautés peuvent être mises en pause sans que personne ne clique sur un bouton. Une communauté sans date « payé jusqu’au » n’est jamais mise en pause pour impayé.",
+      "relatedPaths": [
+        {
+          "label": "Contrôle de la facturation",
+          "path": "/platform-team/billing"
+        }
+      ]
+    },
+    "/platform-team/billing/revenue": {
+      "title": "Revenus",
+      "summary": "Ce que la plateforme s’attend à recevoir chaque mois et chaque année, et les communautés qui demandent de l’attention.",
+      "steps": [
+        {
+          "label": "Lire les recettes attendues",
+          "detail": "Seules sont comptées les communautés qui paient la plateforme, ont un forfait et ne sont ni exemptées ni en pause. Les euros et les livres sont affichés séparément."
+        },
+        {
+          "label": "Suivre les chiffres",
+          "detail": "Les nombres de communautés sans forfait, au-dessus de leur limite ou en pause ouvrent “Contrôle de la facturation” avec ces seules communautés."
+        },
+        {
+          "label": "Vérifier les derniers changements",
+          "detail": "La liste en bas montre qui a modifié un forfait, une date ou une pause, et quand."
+        }
+      ],
+      "tips": [
+        "Ce sont des prix convenus, pas de l’argent reçu. Les paiements sont enregistrés sur “Contrôle de la facturation”."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Contrôle de la facturation",
+          "path": "/platform-team/billing"
+        }
+      ]
+    },
+    "/platform-team/plans": {
+      "title": "Forfaits et tarifs",
+      "summary": "Les forfaits qu’une communauté peut recevoir. Chacun a une limite de membres, un prix par mois et par an en euros et en livres, et des frais de mise en place uniques.",
+      "steps": [
+        {
+          "label": "Modifier un forfait",
+          "detail": "Ouvrez le forfait, modifiez sa limite de membres ou ses prix, puis enregistrez."
+        },
+        {
+          "label": "Envoyer les prix à Stripe",
+          "detail": "Cliquez sur “Synchroniser avec Stripe” après avoir modifié un prix, afin que les paiements par carte utilisent le nouveau prix."
+        },
+        {
+          "label": "Retirer un forfait",
+          "detail": "Désactivez un forfait pour ne plus le proposer. Une communauté qui l’a déjà le conserve."
+        }
+      ],
+      "tips": [
+        "La limite de membres d’un forfait compte les membres actifs, pas tous ceux qui ont un compte."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Contrôle de la facturation",
+          "path": "/platform-team/billing"
+        }
+      ]
+    },
+    "/super-admin/branch-payments": {
+      "title": "Paiements de la branche",
+      "summary": "Les communautés situées sous la vôtre et la situation de paiement de chacune. Vous pouvez agir sur celles qui paient votre communauté.",
+      "steps": [
+        {
+          "label": "Terminer ce qui reste à configurer",
+          "detail": "Les communautés sans forfait ou sans date « payé jusqu’au » sont listées en premier. Chacune a un bouton qui règle la question."
+        },
+        {
+          "label": "Enregistrer un paiement",
+          "detail": "Cliquez sur “Enregistrer un paiement” sur la ligne de la communauté. Choisissez un mois ou un an de plus, ou saisissez la date jusqu’à laquelle elle a désormais payé."
+        },
+        {
+          "label": "Mettre en pause ou rouvrir",
+          "detail": "Ouvrez le menu de la ligne. Une communauté en pause est fermée à ses membres. Ses administrateurs peuvent toujours se connecter, et rien n’est supprimé."
+        }
+      ],
+      "tips": [
+        "Une communauté qui paie la plateforme ne peut être modifiée que par l’équipe de la plateforme. Utilisez “Écrire à l’équipe de la plateforme” sur sa ligne."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Forfaits de la branche",
+          "path": "/super-admin/branch-plans"
+        }
+      ]
+    },
+    "/super-admin/branch-plans": {
+      "title": "Forfaits de la branche",
+      "summary": "Les forfaits que votre communauté propose aux communautés qui la paient, et la façon dont on leur dit de payer.",
+      "steps": [
+        {
+          "label": "Modifier un forfait pour vos communautés",
+          "detail": "Cliquez sur “Modifier” pour fixer votre propre nom, limite de membres ou prix. “Rétablir le standard” rétablit le forfait de la plateforme."
+        },
+        {
+          "label": "Ne plus proposer un forfait",
+          "detail": "Désactivez un forfait pour le masquer à vos communautés. Un forfait utilisé par l’une d’elles ne peut pas être masqué."
+        },
+        {
+          "label": "Rédiger votre note de paiement",
+          "detail": "Sous “Note « Comment payer »”, indiquez comment payer votre communauté et qui contacter. Les communautés qui vous paient le voient sur leur page “Facturation” et dans leurs e-mails de paiement."
+        }
+      ],
+      "tips": [
+        "Abaisser une limite de membres peut faire dépasser une communauté immédiatement. La page vous avertit d’abord."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Paiements de la branche",
+          "path": "/super-admin/branch-payments"
+        }
+      ]
+    },
+    "/admin/billing": {
+      "title": "Facturation",
+      "summary": "Le forfait de votre communauté, son prix, à qui elle paie, la date jusqu’à laquelle elle a payé et les paiements enregistrés pour elle.",
+      "steps": [
+        {
+          "label": "Vérifier la date jusqu’à laquelle vous avez payé",
+          "detail": "Si la date est passée, le paiement est en retard et un avertissement apparaît en haut du panneau d’administration."
+        },
+        {
+          "label": "Voir comment payer",
+          "detail": "Si celui que vous payez a rédigé une note, elle figure sous “Comment payer”."
+        },
+        {
+          "label": "Poser une question",
+          "detail": "Si vous payez la plateforme, cliquez sur “Écrire à l’équipe de la plateforme”. Si vous payez une communauté parente, contactez cette communauté."
+        }
+      ],
+      "tips": [
+        "Si vous payez par carte, vous pouvez changer de forfait et de carte ici. Sinon, votre forfait est fixé par celui que vous payez."
+      ]
     }
   }
 }

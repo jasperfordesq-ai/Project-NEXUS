@@ -4572,7 +4572,7 @@ export default interface Resources {
       "upgrade_modal_desc": "Ask about your plan, a payment or a pause. The platform team will reply by email.",
       "upgrade_sent": "Your message has been sent to the platform team.",
       "view_invoices": "View invoices",
-      "yearly": "Yearly",
+      "yearly": "Yearly"
     },
     "common": {
       "actions": "Actions",
@@ -18716,6 +18716,21 @@ export default interface Resources {
   },
   "admin_help": {
     "articles": {
+      "/admin/billing": {
+        "steps": [{
+  "detail": "If the date has passed, the payment is late and a warning appears at the top of the admin panel.",
+  "label": "Check the date you are paid up to"
+}, {
+  "detail": "If whoever you pay has written a note, it is shown under “How to pay”.",
+  "label": "See how to pay"
+}, {
+  "detail": "If you pay the platform, press “Message the platform team”. If you pay a parent community, contact that community.",
+  "label": "Ask a question"
+}],
+        "summary": "Your community's plan, what it costs, who it pays, the date it is paid up to and the payments recorded for it.",
+        "tips": ["If you pay by card you can change your plan and your card here. Otherwise your plan is set by whoever you pay."],
+        "title": "Billing"
+      },
       "/admin/ki-agents": {
         "caution": "Never raise the auto-apply threshold for agents that can initiate financial transfers, safeguarding escalations, or member tier changes. These must always require human review.",
         "relatedPaths": [{
@@ -19841,6 +19856,127 @@ export default interface Resources {
         "summary": "Manage the partner timebank connections between your cooperative and other Caring Community cooperatives. This page is for trusted cooperative-to-cooperative links, not generic API clients or third-party integrations.",
         "tips": ["Only connect with cooperatives you have verified in person or through the Caring Community national network — automated spam invitations can occur.", "When Isolated Node mode is active, all federation peer data sync is automatically paused. Re-enable individually after reviewing FADP compliance."],
         "title": "Partner Cooperatives - Caring Community Federation"
+      },
+      "/platform-team/billing": {
+        "relatedPaths": [{
+  "label": "Automatic checks",
+  "path": "/platform-team/billing/automatic-checks"
+}, {
+  "label": "Revenue",
+  "path": "/platform-team/billing/revenue"
+}, {
+  "label": "Plans and prices",
+  "path": "/platform-team/plans"
+}],
+        "steps": [{
+  "detail": "A community with no plan has no price and no member limit. One with no paid-until date is never reminded, checked or paused. Each line has one button that finishes it.",
+  "label": "Finish what is still to set up"
+}, {
+  "detail": "Press “Record a payment” on the community's row. Choose one month or one year on, and the amount is filled in from the plan.",
+  "label": "Record a payment"
+}, {
+  "detail": "Press “How to pay note” and write your bank details and a contact. Every community that pays the platform by invoice is shown it.",
+  "label": "Say how to pay"
+}],
+        "summary": "Every community's plan, price and payment standing in one list. Start with the communities still to set up, then work down the list.",
+        "tips": ["A plan's member limit counts active members: those who signed in during the last 90 days."],
+        "title": "Billing control"
+      },
+      "/platform-team/billing/automatic-checks": {
+        "caution": "Once it is on, communities can be paused without anyone pressing a button. A community with no paid-until date is never paused for payment.",
+        "relatedPaths": [{
+  "label": "Billing control",
+  "path": "/platform-team/billing"
+}],
+        "steps": [{
+  "detail": "The list at the bottom shows what the check would do now, even while it is switched off. Read it before you switch the check on.",
+  "label": "Read what would happen today"
+}, {
+  "detail": "Reminders go out before the paid-until date. The final warning and the pause come a set number of days after it. The over-limit rule says what happens to a community with too many active members.",
+  "label": "Set the days and the rule"
+}, {
+  "detail": "Turn on “Run the automatic checks every morning” and press “Save settings”.",
+  "label": "Switch it on"
+}],
+        "summary": "The check that runs every morning. It sends reminders and warnings, and pauses a community that has not paid or has been over its member limit for too long. It is off until you switch it on.",
+        "tips": ["A parent community, or a single community, can have its own over-limit rule. This page sets the rule for everyone else."],
+        "title": "Automatic checks"
+      },
+      "/platform-team/billing/revenue": {
+        "relatedPaths": [{
+  "label": "Billing control",
+  "path": "/platform-team/billing"
+}],
+        "steps": [{
+  "detail": "Only communities that pay the platform, are on a plan and are not exempt or paused are counted. Euro and pounds are shown separately.",
+  "label": "Read the expected income"
+}, {
+  "detail": "The counts of communities with no plan, over their limit or paused open “Billing control” showing just those communities.",
+  "label": "Follow the numbers"
+}, {
+  "detail": "The list at the bottom shows who changed a plan, a date or a pause, and when.",
+  "label": "Check the latest changes"
+}],
+        "summary": "What the platform expects to be paid each month and each year, and which communities need attention.",
+        "tips": ["These are prices agreed, not money received. Payments are recorded on “Billing control”."],
+        "title": "Revenue"
+      },
+      "/platform-team/plans": {
+        "relatedPaths": [{
+  "label": "Billing control",
+  "path": "/platform-team/billing"
+}],
+        "steps": [{
+  "detail": "Open the plan, change its member limit or its prices, and save.",
+  "label": "Change a plan"
+}, {
+  "detail": "Press “Sync to Stripe” after changing a price, so that card payments use the new price.",
+  "label": "Send the prices to Stripe"
+}, {
+  "detail": "Switch a plan off to stop it being offered. A community already on it keeps it.",
+  "label": "Retire a plan"
+}],
+        "summary": "The plans a community can be put on. Each has a member limit, a price per month and per year in euro and in pounds, and a one-off setup fee.",
+        "tips": ["A plan's member limit counts active members, not everyone with an account."],
+        "title": "Plans and prices"
+      },
+      "/super-admin/branch-payments": {
+        "relatedPaths": [{
+  "label": "Branch plans",
+  "path": "/super-admin/branch-plans"
+}],
+        "steps": [{
+  "detail": "Communities with no plan or no paid-until date are listed first. Each has one button that finishes it.",
+  "label": "Finish what is still to set up"
+}, {
+  "detail": "Press “Record a payment” on the community's row. Choose one month or one year on, or type the date it is now paid up to.",
+  "label": "Record a payment"
+}, {
+  "detail": "Open the row's menu. A paused community is closed to its members. Its admins can still sign in, and nothing is deleted.",
+  "label": "Pause or restore"
+}],
+        "summary": "The communities below yours and where each stands with its payment. You can act on the ones that pay your community.",
+        "tips": ["A community that pays the platform is the platform team's to change. Use “Message the platform team” on its row."],
+        "title": "Branch payments"
+      },
+      "/super-admin/branch-plans": {
+        "relatedPaths": [{
+  "label": "Branch payments",
+  "path": "/super-admin/branch-payments"
+}],
+        "steps": [{
+  "detail": "Press “Change” to set your own name, member limit or prices. “Back to standard” puts the plan back to the platform's.",
+  "label": "Change a plan for your communities"
+}, {
+  "detail": "Switch a plan off to hide it from your communities. A plan one of them is on cannot be hidden.",
+  "label": "Stop offering a plan"
+}, {
+  "detail": "Under “How to pay note”, say how to pay your community and who to contact. The communities that pay you see it on their “Billing” page and in their payment emails.",
+  "label": "Write your how-to-pay note"
+}],
+        "summary": "The plans your community offers to the communities that pay it, and how those communities are told to pay.",
+        "tips": ["Lowering a member limit can put a community over its limit at once. The page warns you first."],
+        "title": "Branch plans"
       },
       "/super-admin/national/kiss": {
         "relatedPaths": [{
@@ -50618,6 +50754,27 @@ export default interface Resources {
   },
   "help_admins": {
     "sections": {
+      "admin_billing": {
+        "articles": {
+          "admin_billing_parent_community": {
+            "body": "This is for a community that has other communities below it. If those communities pay yours, you manage their billing in the **Super Admin Panel**, on **Branch payments** and **Branch plans**.\n\n## See where each community stands\n\n1. Open **Branch payments**.\n2. Communities with no plan or no paid-until date are listed first. Each has one button that finishes it.\n3. For every community you see its plan, its active members and the date it is paid up to.\n\n## Record a payment\n\n1. Press **Record a payment** on the community's row.\n2. Enter the date you received it.\n3. Choose one month or one year on, or type the date the community is now paid up to.\n4. Press **Record payment**.\n\n## Your plans, and how to pay you\n\nOpen **Branch plans**. You can change the name, member limit and prices of each plan for the communities that pay you. Under **How to pay note**, write how to pay your community and who to contact. Those communities see it on their **Billing** page and in their payment emails.\n\n## Pausing a community\n\nOpen the menu on the community's row and choose **Pause community**. Its members see a paused page. Its admins can still sign in, and nothing is deleted. Choose **Restore community** to open it again.\n\n> A community that pays the platform is the platform team's to change. Use **Message the platform team** on its row.",
+            "summary": "For a community with others below it: record their payments, set their plans and tell them how to pay.",
+            "title": "Billing the communities below yours"
+          },
+          "admin_billing_platform_team": {
+            "body": "This is for the platform team, who bill every community that pays the platform. Everything is in the Platform team panel, under **Money**.\n\n## Set up a new community\n\nWhen you create a community you can set its plan, who it pays and the date it is paid up to. Anything you leave empty is listed first on **Billing control**, with one button that finishes it.\n\n## Day to day\n\n- **Record a payment**: when an invoice is paid. Choose one month or one year on, and the amount is filled in from the plan.\n- **Change plan or price**: shows what the community will pay before you save.\n- **Change how it pays**: by card, by invoice, to its parent community, or not billed.\n- **How to pay note**: your bank details and a contact. Every community that pays by invoice is shown it.\n\n## Automatic checks\n\nOpen **Automatic checks** in the **Money** menu. The check runs every morning. It sends reminders before a payment is due and warnings after, and pauses a community that stays unpaid. It is off until you switch it on. The list at the bottom of the page shows what it would do today.\n\n> A community with no paid-until date is never reminded or paused. Finish the list of communities still to set up first.",
+            "summary": "Set each community's plan, record payments, write the how-to-pay note and run the automatic checks.",
+            "title": "Billing for the platform team"
+          },
+          "admin_billing_your_community": {
+            "body": "Every community has a plan. The plan sets how many active members the community may have and what it costs. You see yours on the **Billing** page.\n\n1. In the admin menu, open **Financial** and press **Billing**.\n2. Read your plan, its price and the date you are paid up to.\n3. Further down, look at **Active members** and **Payments**.\n\n## Who you pay\n\nThe page says who your community pays:\n\n- **Platform, by card**: your card is charged. You can change your plan and your card on this page.\n- **Platform, by invoice**: the platform team sets your plan and records your payments.\n- A parent community: your plan and payments are arranged with that community.\n\nIf whoever you pay has written a note, you see it under **How to pay**.\n\n## The member limit\n\nA plan's limit counts active members. Those are members who signed in during the last 90 days, here and in any communities below yours.\n\n## If a payment is late\n\nA warning appears at the top of the admin panel. If the payment stays late, the community can be paused. Members then see a paused page. Admins can still sign in, and nothing is deleted.\n\n> To ask about your plan or a payment, press **Message the platform team** on the **Billing** page. If you pay a parent community, contact that community.",
+            "summary": "See your plan, what it costs, the date you are paid up to and how to pay.",
+            "title": "Your community's plan and payments"
+          }
+        },
+        "summary": "Plans, payments and what happens when a payment is late: for a community's own admins, for a community with others below it, and for the platform team.",
+        "title": "How billing works"
+      },
       "admin_communication": {
         "articles": {
           "admin_inactive_members": {

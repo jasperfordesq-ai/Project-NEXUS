@@ -1651,6 +1651,198 @@
           "path": "/admin/member-premium"
         }
       ]
+    },
+    "/platform-team/billing": {
+      "title": "Control de facturación",
+      "summary": "El plan, el precio y el estado de pago de cada comunidad en una sola lista. Empieza por las comunidades pendientes de configurar y luego recorre la lista.",
+      "steps": [
+        {
+          "label": "Terminar lo que queda por configurar",
+          "detail": "Una comunidad sin plan no tiene precio ni límite de miembros. Sin fecha de «pagado hasta», nunca se le recuerda, se comprueba ni se pausa. Cada línea tiene un botón que lo resuelve."
+        },
+        {
+          "label": "Registrar un pago",
+          "detail": "Pulsa “Registrar un pago” en la fila de la comunidad. Elige un mes o un año más y el importe se rellena con el del plan."
+        },
+        {
+          "label": "Decir cómo pagar",
+          "detail": "Pulsa “Nota «Cómo pagar»” y escribe tus datos bancarios y un contacto. Lo ve toda comunidad que paga a la plataforma por factura."
+        }
+      ],
+      "tips": [
+        "El límite de miembros de un plan cuenta los miembros activos: los que han iniciado sesión en los últimos 90 días."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Comprobaciones automáticas",
+          "path": "/platform-team/billing/automatic-checks"
+        },
+        {
+          "label": "Ingresos",
+          "path": "/platform-team/billing/revenue"
+        },
+        {
+          "label": "Planes y precios",
+          "path": "/platform-team/plans"
+        }
+      ]
+    },
+    "/platform-team/billing/automatic-checks": {
+      "title": "Comprobaciones automáticas",
+      "summary": "La comprobación que se ejecuta cada mañana. Envía recordatorios y avisos, y pausa una comunidad que no ha pagado o que lleva demasiado tiempo por encima de su límite de miembros. Está desactivada hasta que la actives.",
+      "steps": [
+        {
+          "label": "Leer lo que ocurriría hoy",
+          "detail": "La lista del final muestra lo que haría la comprobación ahora, incluso mientras está desactivada. Léela antes de activarla."
+        },
+        {
+          "label": "Fijar los días y la regla",
+          "detail": "Los recordatorios salen antes de la fecha de «pagado hasta». El último aviso y la pausa llegan un número fijo de días después. La regla de exceso dice qué ocurre con una comunidad que tiene demasiados miembros activos."
+        },
+        {
+          "label": "Activarla",
+          "detail": "Activa “Ejecutar las comprobaciones automáticas cada mañana” y pulsa “Guardar ajustes”."
+        }
+      ],
+      "tips": [
+        "Una comunidad principal, o una sola comunidad, puede tener su propia regla de exceso. Esta página fija la regla para todas las demás."
+      ],
+      "caution": "Una vez activada, las comunidades pueden pausarse sin que nadie pulse un botón. Una comunidad sin fecha de «pagado hasta» nunca se pausa por impago.",
+      "relatedPaths": [
+        {
+          "label": "Control de facturación",
+          "path": "/platform-team/billing"
+        }
+      ]
+    },
+    "/platform-team/billing/revenue": {
+      "title": "Ingresos",
+      "summary": "Lo que la plataforma espera cobrar cada mes y cada año, y las comunidades que requieren atención.",
+      "steps": [
+        {
+          "label": "Leer los ingresos previstos",
+          "detail": "Solo cuentan las comunidades que pagan a la plataforma, tienen un plan y no están exentas ni pausadas. Los euros y las libras se muestran por separado."
+        },
+        {
+          "label": "Seguir las cifras",
+          "detail": "Los números de comunidades sin plan, por encima de su límite o pausadas abren “Control de facturación” mostrando solo esas comunidades."
+        },
+        {
+          "label": "Revisar los últimos cambios",
+          "detail": "La lista del final muestra quién cambió un plan, una fecha o una pausa, y cuándo."
+        }
+      ],
+      "tips": [
+        "Son precios acordados, no dinero recibido. Los pagos se registran en “Control de facturación”."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Control de facturación",
+          "path": "/platform-team/billing"
+        }
+      ]
+    },
+    "/platform-team/plans": {
+      "title": "Planes y precios",
+      "summary": "Los planes que puede tener una comunidad. Cada uno tiene un límite de miembros, un precio al mes y al año en euros y en libras, y una cuota única de alta.",
+      "steps": [
+        {
+          "label": "Cambiar un plan",
+          "detail": "Abre el plan, cambia su límite de miembros o sus precios y guarda."
+        },
+        {
+          "label": "Enviar los precios a Stripe",
+          "detail": "Pulsa “Sincronizar con Stripe” después de cambiar un precio, para que los pagos con tarjeta usen el precio nuevo."
+        },
+        {
+          "label": "Retirar un plan",
+          "detail": "Desactiva un plan para dejar de ofrecerlo. La comunidad que ya lo tiene lo conserva."
+        }
+      ],
+      "tips": [
+        "El límite de miembros de un plan cuenta los miembros activos, no todos los que tienen cuenta."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Control de facturación",
+          "path": "/platform-team/billing"
+        }
+      ]
+    },
+    "/super-admin/branch-payments": {
+      "title": "Pagos de la rama",
+      "summary": "Las comunidades que están por debajo de la tuya y cómo va el pago de cada una. Puedes actuar sobre las que pagan a tu comunidad.",
+      "steps": [
+        {
+          "label": "Terminar lo que queda por configurar",
+          "detail": "Las comunidades sin plan o sin fecha de «pagado hasta» aparecen primero. Cada una tiene un botón que lo resuelve."
+        },
+        {
+          "label": "Registrar un pago",
+          "detail": "Pulsa “Registrar un pago” en la fila de la comunidad. Elige un mes o un año más, o escribe la fecha hasta la que ha pagado ahora."
+        },
+        {
+          "label": "Pausar o reabrir",
+          "detail": "Abre el menú de la fila. Una comunidad pausada está cerrada para sus miembros. Sus administradores pueden seguir entrando y no se borra nada."
+        }
+      ],
+      "tips": [
+        "Una comunidad que paga a la plataforma solo puede cambiarla el equipo de la plataforma. Usa “Escribir al equipo de la plataforma” en su fila."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Planes de la rama",
+          "path": "/super-admin/branch-plans"
+        }
+      ]
+    },
+    "/super-admin/branch-plans": {
+      "title": "Planes de la rama",
+      "summary": "Los planes que tu comunidad ofrece a las comunidades que le pagan, y cómo se les dice que paguen.",
+      "steps": [
+        {
+          "label": "Cambiar un plan para tus comunidades",
+          "detail": "Pulsa “Cambiar” para fijar tu propio nombre, límite de miembros o precios. “Volver al estándar” devuelve el plan al de la plataforma."
+        },
+        {
+          "label": "Dejar de ofrecer un plan",
+          "detail": "Desactiva un plan para ocultarlo a tus comunidades. No se puede ocultar un plan que tenga alguna de ellas."
+        },
+        {
+          "label": "Escribir tu nota de cómo pagar",
+          "detail": "En “Nota «Cómo pagar»”, indica cómo pagar a tu comunidad y a quién dirigirse. Las comunidades que te pagan lo ven en su página “Facturación” y en sus correos de pago."
+        }
+      ],
+      "tips": [
+        "Bajar un límite de miembros puede dejar a una comunidad por encima de su límite al instante. La página te avisa antes."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Pagos de la rama",
+          "path": "/super-admin/branch-payments"
+        }
+      ]
+    },
+    "/admin/billing": {
+      "title": "Facturación",
+      "summary": "El plan de tu comunidad, lo que cuesta, a quién paga, la fecha hasta la que ha pagado y los pagos registrados.",
+      "steps": [
+        {
+          "label": "Comprobar la fecha hasta la que has pagado",
+          "detail": "Si la fecha ya pasó, el pago va con retraso y aparece un aviso en la parte superior del panel de administración."
+        },
+        {
+          "label": "Ver cómo pagar",
+          "detail": "Si quien cobra ha escrito una nota, aparece en “Cómo pagar”."
+        },
+        {
+          "label": "Hacer una pregunta",
+          "detail": "Si pagas a la plataforma, pulsa “Escribir al equipo de la plataforma”. Si pagas a una comunidad principal, ponte en contacto con esa comunidad."
+        }
+      ],
+      "tips": [
+        "Si pagas con tarjeta, aquí puedes cambiar de plan y de tarjeta. Si no, tu plan lo fija quien cobra."
+      ]
     }
   }
 }

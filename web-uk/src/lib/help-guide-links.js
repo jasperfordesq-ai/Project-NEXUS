@@ -137,6 +137,7 @@ const HELP_LINK_TARGETS = Object.freeze({
   '/admin': null,
   '/admin/activity-log': null,
   '/admin/ai/module-docs': null,
+  '/admin/billing': null,
   '/admin/blog': null,
   '/admin/categories': null,
   '/admin/community-analytics': null,

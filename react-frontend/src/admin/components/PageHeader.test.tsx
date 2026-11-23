@@ -23,6 +23,14 @@ vi.mock('../data/helpContent', () => ({
       title: 'Dashboard Help',
       summary: 'Help for dashboard',
     },
+    '/platform-team/billing': {
+      title: 'Billing control Help',
+      summary: 'Help for Billing control',
+    },
+    '/super-admin/branch-payments': {
+      title: 'Branch payments Help',
+      summary: 'Help for Branch payments',
+    },
   }),
 }));
 
@@ -84,6 +92,35 @@ describe('PageHeader', () => {
     await waitFor(() => {
       expect(screen.getByTestId('help-drawer')).toHaveTextContent('Dashboard Help');
     });
+  });
+
+  // The address carries the community's name on a shared host
+  // ("/hour-timebank/platform-team/billing") and not on a community's own
+  // domain. The Platform team panel was missing from the list of panels whose
+  // address is trimmed, so none of its pages could show help on a shared host.
+  it.each([
+    ['a Platform team page, with the community in the address', '/hour-timebank/platform-team/billing', 'Billing control Help'],
+    ['a Platform team page, without it', '/platform-team/billing', 'Billing control Help'],
+    ['a super admin page, with the community in the address', '/hour-timebank/super-admin/branch-payments', 'Branch payments Help'],
+    ['an admin page, with the community in the address', '/hour-timebank/admin/dashboard', 'Dashboard Help'],
+  ])('finds the help for %s', async (_what, address, title) => {
+    window.history.pushState({}, '', address);
+    const user = userEvent.setup();
+
+    render(<PageHeader title="A page" />);
+
+    await user.click(await screen.findByRole('button', { name: /open page help/i }));
+    await waitFor(() => expect(screen.getByTestId('help-drawer')).toHaveTextContent(title));
+  });
+
+  it('does not mistake a community whose name starts like a panel for that panel', async () => {
+    // "/platform-team-fans/..." is a community's name, not the panel.
+    window.history.pushState({}, '', '/admin-club/platform-team-notes');
+
+    render(<PageHeader title="A page" />);
+
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(screen.queryByRole('button', { name: /open page help/i })).not.toBeInTheDocument();
   });
 
   describe('inside AdminEmbed (broker panel)', () => {

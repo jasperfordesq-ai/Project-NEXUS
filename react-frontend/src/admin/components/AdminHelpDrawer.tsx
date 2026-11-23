@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import LightbulbIcon from 'lucide-react/icons/lightbulb';
 import TriangleAlertIcon from 'lucide-react/icons/triangle-alert';
 import { useTranslation } from 'react-i18next';
+import { useTenant } from '@/contexts';
 
 import type { HelpArticle } from '../data/helpContent';
 import { Chip } from '@/components/ui/Chip';
@@ -27,8 +28,14 @@ interface AdminHelpDrawerProps {
 
 export function AdminHelpDrawer({ article, isOpen, onClose }: AdminHelpDrawerProps) {
   const { t: tNav } = useTranslation('admin_nav');
-  const { t: tHelp } = useTranslation('admin_help');
-  const articleTitle = tHelp(article.title);
+  const { tenantPath } = useTenant();
+  // The article arrives already in the reader's language: PageHeader reads it
+  // from the `admin_help` locale file (getHelpContent()). Its text used to be
+  // passed through the translator a second time, as if each sentence were a
+  // key. Nothing matched, so in development every line read "[missing]
+  // admin_help:…", and on the live site every line of every article was
+  // reported as a missing translation.
+  const articleTitle = article.title;
 
   return (
     <Drawer
@@ -54,7 +61,7 @@ export function AdminHelpDrawer({ article, isOpen, onClose }: AdminHelpDrawerPro
 
         <DrawerBody className="!m-0 space-y-5 px-5 py-4 pb-[calc(var(--safe-area-bottom)+1rem)]">
           <p className="text-sm leading-relaxed text-muted">
-            {tHelp(article.summary)}
+            {article.summary}
           </p>
 
           {article.steps && article.steps.length > 0 && (
@@ -72,11 +79,11 @@ export function AdminHelpDrawer({ article, isOpen, onClose }: AdminHelpDrawerPro
                       </span>
                       <div className="min-w-0">
                         <p className="text-sm font-medium leading-snug text-foreground">
-                          {tHelp(step.label)}
+                          {step.label}
                         </p>
                         {step.detail && (
                           <p className="mt-0.5 text-xs leading-relaxed text-muted">
-                            {tHelp(step.detail)}
+                            {step.detail}
                           </p>
                         )}
                       </div>
@@ -105,7 +112,7 @@ export function AdminHelpDrawer({ article, isOpen, onClose }: AdminHelpDrawerPro
                         className="mt-0.5 shrink-0 text-warning"
                         aria-hidden="true"
                       />
-                      <span>{tHelp(tip)}</span>
+                      <span>{tip}</span>
                     </li>
                   ))}
                 </ul>
@@ -122,7 +129,7 @@ export function AdminHelpDrawer({ article, isOpen, onClose }: AdminHelpDrawerPro
                   className="mt-0.5 shrink-0 text-danger"
                   aria-hidden="true"
                 />
-                <span>{tHelp(article.caution)}</span>
+                <span>{article.caution}</span>
               </div>
             </>
           )}
@@ -139,13 +146,15 @@ export function AdminHelpDrawer({ article, isOpen, onClose }: AdminHelpDrawerPro
                     <Chip
                       key={rel.path}
                       as={Link}
-                      to={rel.path}
+                      // With the community's name in the address where the
+                      // address carries one, like every other link in the app.
+                      to={tenantPath(rel.path)}
                       size="sm"
                       variant="secondary"
                       className="cursor-pointer"
                       onClick={onClose}
                     >
-                      {tHelp(rel.label)}
+                      {rel.label}
                     </Chip>
                   ))}
                 </div>

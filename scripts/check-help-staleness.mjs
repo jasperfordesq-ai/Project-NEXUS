@@ -65,8 +65,19 @@ function readJson(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8').replace(/^﻿/, ''));
 }
 
+// Node gives a child process 1 MB of output by default. The list of files
+// changed since an article was last checked passed that as the history grew
+// (1.5 MB by 23 Nov 2026), and the whole check died with `ENOBUFS` before it
+// reported anything.
+const GIT_OUTPUT_LIMIT = 256 * 1024 * 1024;
+
 function git(root, args) {
-  return execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+  return execFileSync('git', args, {
+    cwd: root,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+    maxBuffer: GIT_OUTPUT_LIMIT,
+  }).trim();
 }
 
 function gitOk(root, args) {

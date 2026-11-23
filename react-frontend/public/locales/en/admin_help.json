@@ -1651,6 +1651,198 @@
           "path": "/admin/member-premium"
         }
       ]
+    },
+    "/platform-team/billing": {
+      "title": "Billing control",
+      "summary": "Every community's plan, price and payment standing in one list. Start with the communities still to set up, then work down the list.",
+      "steps": [
+        {
+          "label": "Finish what is still to set up",
+          "detail": "A community with no plan has no price and no member limit. One with no paid-until date is never reminded, checked or paused. Each line has one button that finishes it."
+        },
+        {
+          "label": "Record a payment",
+          "detail": "Press “Record a payment” on the community's row. Choose one month or one year on, and the amount is filled in from the plan."
+        },
+        {
+          "label": "Say how to pay",
+          "detail": "Press “How to pay note” and write your bank details and a contact. Every community that pays the platform by invoice is shown it."
+        }
+      ],
+      "tips": [
+        "A plan's member limit counts active members: those who signed in during the last 90 days."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Automatic checks",
+          "path": "/platform-team/billing/automatic-checks"
+        },
+        {
+          "label": "Revenue",
+          "path": "/platform-team/billing/revenue"
+        },
+        {
+          "label": "Plans and prices",
+          "path": "/platform-team/plans"
+        }
+      ]
+    },
+    "/platform-team/billing/automatic-checks": {
+      "title": "Automatic checks",
+      "summary": "The check that runs every morning. It sends reminders and warnings, and pauses a community that has not paid or has been over its member limit for too long. It is off until you switch it on.",
+      "steps": [
+        {
+          "label": "Read what would happen today",
+          "detail": "The list at the bottom shows what the check would do now, even while it is switched off. Read it before you switch the check on."
+        },
+        {
+          "label": "Set the days and the rule",
+          "detail": "Reminders go out before the paid-until date. The final warning and the pause come a set number of days after it. The over-limit rule says what happens to a community with too many active members."
+        },
+        {
+          "label": "Switch it on",
+          "detail": "Turn on “Run the automatic checks every morning” and press “Save settings”."
+        }
+      ],
+      "tips": [
+        "A parent community, or a single community, can have its own over-limit rule. This page sets the rule for everyone else."
+      ],
+      "caution": "Once it is on, communities can be paused without anyone pressing a button. A community with no paid-until date is never paused for payment.",
+      "relatedPaths": [
+        {
+          "label": "Billing control",
+          "path": "/platform-team/billing"
+        }
+      ]
+    },
+    "/platform-team/billing/revenue": {
+      "title": "Revenue",
+      "summary": "What the platform expects to be paid each month and each year, and which communities need attention.",
+      "steps": [
+        {
+          "label": "Read the expected income",
+          "detail": "Only communities that pay the platform, are on a plan and are not exempt or paused are counted. Euro and pounds are shown separately."
+        },
+        {
+          "label": "Follow the numbers",
+          "detail": "The counts of communities with no plan, over their limit or paused open “Billing control” showing just those communities."
+        },
+        {
+          "label": "Check the latest changes",
+          "detail": "The list at the bottom shows who changed a plan, a date or a pause, and when."
+        }
+      ],
+      "tips": [
+        "These are prices agreed, not money received. Payments are recorded on “Billing control”."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Billing control",
+          "path": "/platform-team/billing"
+        }
+      ]
+    },
+    "/platform-team/plans": {
+      "title": "Plans and prices",
+      "summary": "The plans a community can be put on. Each has a member limit, a price per month and per year in euro and in pounds, and a one-off setup fee.",
+      "steps": [
+        {
+          "label": "Change a plan",
+          "detail": "Open the plan, change its member limit or its prices, and save."
+        },
+        {
+          "label": "Send the prices to Stripe",
+          "detail": "Press “Sync to Stripe” after changing a price, so that card payments use the new price."
+        },
+        {
+          "label": "Retire a plan",
+          "detail": "Switch a plan off to stop it being offered. A community already on it keeps it."
+        }
+      ],
+      "tips": [
+        "A plan's member limit counts active members, not everyone with an account."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Billing control",
+          "path": "/platform-team/billing"
+        }
+      ]
+    },
+    "/super-admin/branch-payments": {
+      "title": "Branch payments",
+      "summary": "The communities below yours and where each stands with its payment. You can act on the ones that pay your community.",
+      "steps": [
+        {
+          "label": "Finish what is still to set up",
+          "detail": "Communities with no plan or no paid-until date are listed first. Each has one button that finishes it."
+        },
+        {
+          "label": "Record a payment",
+          "detail": "Press “Record a payment” on the community's row. Choose one month or one year on, or type the date it is now paid up to."
+        },
+        {
+          "label": "Pause or restore",
+          "detail": "Open the row's menu. A paused community is closed to its members. Its admins can still sign in, and nothing is deleted."
+        }
+      ],
+      "tips": [
+        "A community that pays the platform is the platform team's to change. Use “Message the platform team” on its row."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Branch plans",
+          "path": "/super-admin/branch-plans"
+        }
+      ]
+    },
+    "/super-admin/branch-plans": {
+      "title": "Branch plans",
+      "summary": "The plans your community offers to the communities that pay it, and how those communities are told to pay.",
+      "steps": [
+        {
+          "label": "Change a plan for your communities",
+          "detail": "Press “Change” to set your own name, member limit or prices. “Back to standard” puts the plan back to the platform's."
+        },
+        {
+          "label": "Stop offering a plan",
+          "detail": "Switch a plan off to hide it from your communities. A plan one of them is on cannot be hidden."
+        },
+        {
+          "label": "Write your how-to-pay note",
+          "detail": "Under “How to pay note”, say how to pay your community and who to contact. The communities that pay you see it on their “Billing” page and in their payment emails."
+        }
+      ],
+      "tips": [
+        "Lowering a member limit can put a community over its limit at once. The page warns you first."
+      ],
+      "relatedPaths": [
+        {
+          "label": "Branch payments",
+          "path": "/super-admin/branch-payments"
+        }
+      ]
+    },
+    "/admin/billing": {
+      "title": "Billing",
+      "summary": "Your community's plan, what it costs, who it pays, the date it is paid up to and the payments recorded for it.",
+      "steps": [
+        {
+          "label": "Check the date you are paid up to",
+          "detail": "If the date has passed, the payment is late and a warning appears at the top of the admin panel."
+        },
+        {
+          "label": "See how to pay",
+          "detail": "If whoever you pay has written a note, it is shown under “How to pay”."
+        },
+        {
+          "label": "Ask a question",
+          "detail": "If you pay the platform, press “Message the platform team”. If you pay a parent community, contact that community."
+        }
+      ],
+      "tips": [
+        "If you pay by card you can change your plan and your card here. Otherwise your plan is set by whoever you pay."
+      ]
     }
   }
 }
