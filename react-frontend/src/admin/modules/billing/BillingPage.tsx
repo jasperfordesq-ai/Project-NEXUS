@@ -56,7 +56,6 @@ function statusColor(status: string): 'success' | 'warning' | 'danger' | 'defaul
     case 'active':
       return 'success';
     case 'trial':
-    case 'trialing':
       return 'warning';
     case 'cancelled':
     case 'expired':
@@ -66,13 +65,12 @@ function statusColor(status: string): 'success' | 'warning' | 'danger' | 'defaul
   }
 }
 
-/** The label key for a plan record's status. The record says `trial`; Stripe says `trialing`. */
+/** The label key for a plan record's status. The record says `trial` (Stripe's `trialing` is stored as that). */
 function statusLabelKey(status: string): string {
   switch (status) {
     case 'active':
       return 'billing.status_active';
     case 'trial':
-    case 'trialing':
       return 'billing.status_trialing';
     case 'cancelled':
       return 'billing.status_cancelled';

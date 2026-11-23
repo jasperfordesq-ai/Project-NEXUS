@@ -211,7 +211,7 @@ final class OverLimitRule
                 $sub->from('tenant_plan_assignments as tpa')
                     ->whereColumn('tpa.tenant_id', 'c.id')
                     ->where('tpa.pay_plan_id', $planId)
-                    ->whereIn('tpa.status', ['active', 'trial', 'trialing']);
+                    ->whereIn('tpa.status', ['active', 'trial']);
             });
         }
 

@@ -8458,19 +8458,6 @@
         ]
       }
     },
-    "/api/v2/admin/subscriptions": {
-      "get": {
-        "summary": "GET /api/v2/admin/subscriptions",
-        "tags": [
-          "Admin Subscriptions"
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful operation"
-          }
-        }
-      }
-    },
     "/api/v2/admin/tools/redirects": {
       "get": {
         "summary": "GET /api/v2/admin/tools/redirects",

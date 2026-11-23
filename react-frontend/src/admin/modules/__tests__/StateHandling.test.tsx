@@ -8,7 +8,6 @@ import { fireEvent, render, screen, waitFor } from '@/test/test-utils';
 
 const apiMocks = vi.hoisted(() => ({
   getPermissions: vi.fn(),
-  getSubscriptions: vi.fn(),
 }));
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
@@ -17,7 +16,6 @@ vi.mock('@/components/ui', async () => (await import('@/test/uiMock')).uiMock);
 
 vi.mock('../../api/adminApi', () => ({
   adminEnterprise: { getPermissions: apiMocks.getPermissions },
-  adminPlans: { getSubscriptions: apiMocks.getSubscriptions },
 }));
 
 vi.mock('../../components/PageHeader', () => ({
@@ -67,7 +65,6 @@ const backendDetail = 'SQLSTATE secret backend detail';
 beforeEach(() => {
   vi.clearAllMocks();
   apiMocks.getPermissions.mockResolvedValue({ success: true, data: {} });
-  apiMocks.getSubscriptions.mockResolvedValue({ success: true, data: [] });
 });
 
 describe('PermissionBrowser load states', () => {

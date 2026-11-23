@@ -34,7 +34,6 @@ final class AdminContentControllerPlatformTeamLockTest extends PlatformTeamLockT
             'plan update' => ['PUT', '/v2/admin/plans/999999'],
             'plan delete' => ['DELETE', '/v2/admin/plans/999999'],
             'plan sync to Stripe' => ['POST', '/v2/admin/plans/999999/sync-stripe', 'refusal-only'],
-            'subscriptions' => ['GET', '/v2/admin/subscriptions'],
         ];
     }
 

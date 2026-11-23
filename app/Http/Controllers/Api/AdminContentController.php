@@ -710,7 +710,7 @@ class AdminContentController extends BaseApiController
                     pp.created_at, pp.updated_at,
                     pp.is_standard, pp.price_monthly_gbp, pp.price_yearly_gbp, pp.setup_fee, pp.setup_fee_gbp,
                     pp.max_communities, pp.storage_gb, pp.emails_per_month,
-                    (SELECT COUNT(*) FROM tenant_plan_assignments tpa WHERE tpa.pay_plan_id = pp.id AND tpa.status IN (\'active\',\'trialing\',\'trial\')) AS tenant_count';
+                    (SELECT COUNT(*) FROM tenant_plan_assignments tpa WHERE tpa.pay_plan_id = pp.id AND tpa.status IN (\'active\',\'trial\')) AS tenant_count';
 
     /** Money fields: a number of 0 or more, or empty. */
     private const PLAN_MONEY_FIELDS = [
@@ -975,7 +975,7 @@ class AdminContentController extends BaseApiController
 
         $onPlan = DB::table('tenant_plan_assignments')
             ->where('pay_plan_id', $planId)
-            ->whereIn('status', ['active', 'trial', 'trialing'])
+            ->whereIn('status', ['active', 'trial'])
             ->distinct()
             ->pluck('tenant_id')
             ->map(static fn ($id): int => (int) $id)
@@ -1116,52 +1116,6 @@ class AdminContentController extends BaseApiController
         PlanTerms::flush();
 
         return $this->respondWithData(['deleted' => true]);
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Subscriptions
-    // ─────────────────────────────────────────────────────────────────────────
-
-    public function getSubscriptions(): JsonResponse
-    {
-        $adminId = $this->requireGodPlatformAdmin();
-        $tenantId = $this->getTenantId();
-
-        // Platform super-admins may view all subscriptions (cross-tenant).
-        // Tenant admins see only their own tenant's subscription.
-        $user = \Illuminate\Support\Facades\Auth::user();
-        $isPlatformSuperAdmin = in_array($user->role ?? '', ['super_admin', 'god'], true)
-            || ($user->is_super_admin ?? false);
-
-        if ($isPlatformSuperAdmin) {
-            $subscriptions = array_map(fn($r) => (array)$r, DB::select(
-                "SELECT tpa.id, tpa.tenant_id, tpa.pay_plan_id, tpa.status, tpa.starts_at, tpa.expires_at,
-                        tpa.trial_ends_at, tpa.stripe_subscription_id, tpa.stripe_current_period_end,
-                        tpa.created_at, tpa.updated_at,
-                        pp.name AS plan_name, pp.slug AS plan_slug, pp.tier_level AS plan_tier_level,
-                        t.name AS tenant_name
-                 FROM tenant_plan_assignments tpa
-                 JOIN pay_plans pp ON pp.id = tpa.pay_plan_id
-                 LEFT JOIN tenants t ON t.id = tpa.tenant_id
-                 ORDER BY tpa.created_at DESC"
-            ));
-        } else {
-            $subscriptions = array_map(fn($r) => (array)$r, DB::select(
-                "SELECT tpa.id, tpa.tenant_id, tpa.pay_plan_id, tpa.status, tpa.starts_at, tpa.expires_at,
-                        tpa.trial_ends_at, tpa.stripe_subscription_id, tpa.stripe_current_period_end,
-                        tpa.created_at, tpa.updated_at,
-                        pp.name AS plan_name, pp.slug AS plan_slug, pp.tier_level AS plan_tier_level,
-                        t.name AS tenant_name
-                 FROM tenant_plan_assignments tpa
-                 JOIN pay_plans pp ON pp.id = tpa.pay_plan_id
-                 LEFT JOIN tenants t ON t.id = tpa.tenant_id
-                 WHERE tpa.tenant_id = ?
-                 ORDER BY tpa.created_at DESC",
-                [$tenantId]
-            ));
-        }
-
-        return $this->respondWithData($subscriptions);
     }
 
     // ─────────────────────────────────────────────────────────────────────────

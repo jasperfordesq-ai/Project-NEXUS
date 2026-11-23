@@ -489,28 +489,6 @@ class AdminContentControllerTest extends TestCase
         $response->assertStatus(403);
     }
 
-    // ================================================================
-    // SUBSCRIPTIONS — GET /v2/admin/subscriptions
-    // ================================================================
-
-    public function test_get_subscriptions_returns_200_for_the_platform_team(): void
-    {
-        $admin = User::factory()->forTenant($this->testTenantId)->create(['is_god' => true, 'is_super_admin' => true, 'role' => 'super_admin']);
-        Sanctum::actingAs($admin);
-
-        $response = $this->apiGet('/v2/admin/subscriptions');
-
-        $response->assertStatus(200);
-        $response->assertJsonStructure(['data']);
-    }
-
-    public function test_get_subscriptions_returns_401_for_unauthenticated(): void
-    {
-        $response = $this->apiGet('/v2/admin/subscriptions');
-
-        $response->assertStatus(401);
-    }
-
     public function test_create_page_rejects_unknown_menu_location(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();

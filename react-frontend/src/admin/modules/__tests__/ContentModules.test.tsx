@@ -102,7 +102,6 @@ vi.mock('../../api/adminApi', () => ({
     create: vi.fn().mockResolvedValue({ success: true }),
     update: vi.fn().mockResolvedValue({ success: true }),
     delete: vi.fn().mockResolvedValue({ success: true }),
-    getSubscriptions: vi.fn().mockResolvedValue({ success: true, data: [] }),
   },
 }));
 

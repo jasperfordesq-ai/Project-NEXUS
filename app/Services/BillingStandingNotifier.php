@@ -140,37 +140,6 @@ final class BillingStandingNotifier
     }
 
     /**
-     * A payment comes due soon. The community's admins only.
-     *
-     * @param array<string, int|string|null> $facts paid_until
-     */
-    public static function paymentReminder(int $tenantId, array $facts): int
-    {
-        return self::paymentNotice($tenantId, $facts, 'reminder', false, 'default');
-    }
-
-    /**
-     * The paid-up date has passed. The admins and whoever the community pays.
-     *
-     * @param array<string, int|string|null> $facts paid_until
-     */
-    public static function paymentDue(int $tenantId, array $facts): int
-    {
-        return self::paymentNotice($tenantId, $facts, 'due', true, 'warning');
-    }
-
-    /**
-     * The last notice before an automatic pause. The admins and whoever the
-     * community pays.
-     *
-     * @param array<string, int|string|null> $facts paid_until, days_late, pause_date
-     */
-    public static function paymentFinalWarning(int $tenantId, array $facts): int
-    {
-        return self::paymentNotice($tenantId, $facts, 'final_warning', true, 'warning');
-    }
-
-    /**
      * Close to the limit. The admins and whoever the community pays (DESIGN
      * 6.5), with what its rule will do if it goes over.
      *

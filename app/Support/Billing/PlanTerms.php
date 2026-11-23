@@ -83,7 +83,7 @@ final class PlanTerms
     ];
 
     /** An assignment in one of these is the plan a community is on. */
-    private const CURRENT_STATUSES = ['active', 'trial', 'trialing'];
+    private const CURRENT_STATUSES = ['active', 'trial'];
 
     /** @var list<DefaultTerms>|null */
     private static ?array $defaults = null;

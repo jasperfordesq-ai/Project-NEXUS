@@ -353,7 +353,7 @@ class AdminBillingController extends BaseApiController
                 "SELECT tpa.id, pp.tier_level
                  FROM tenant_plan_assignments tpa
                  JOIN pay_plans pp ON pp.id = tpa.pay_plan_id
-                 WHERE tpa.tenant_id = ? AND tpa.status IN ('active','trialing','trial')
+                 WHERE tpa.tenant_id = ? AND tpa.status IN ('active','trial')
                  LIMIT 1",
                 [$tenantId]
             );

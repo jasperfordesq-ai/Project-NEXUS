@@ -449,7 +449,7 @@ exist.
 **What is in it.** The pages the owner had restricted to the platform team in
 the admin panel (menus, email settings and deliverability, performance, SEO
 audit and redirects, the prerender engine, 404 tracking, search analytics,
-plans and subscriptions, registration policy, cron jobs, the enterprise
+plans, registration policy, cron jobs, the enterprise
 dashboard, roles and permissions, monitoring, outbound webhooks, the matching
 diagnostics, the Tests page), and the platform-wide half of the super admin
 panel (the federation dashboard with its whitelist, partnerships and audit

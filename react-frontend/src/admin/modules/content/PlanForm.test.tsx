@@ -21,7 +21,6 @@ const { mockPlans, mockToast, mockNavigate, mockParams, mockLocation } = vi.hois
     delete: vi.fn(),
     syncStripe: vi.fn(),
     list: vi.fn(),
-    getSubscriptions: vi.fn(),
   },
   mockToast: { success: vi.fn(), error: vi.fn(), warning: vi.fn(), info: vi.fn() },
   mockNavigate: vi.fn(),
