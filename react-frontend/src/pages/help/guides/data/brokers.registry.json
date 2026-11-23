@@ -107,7 +107,7 @@
         "id": "broker_match_approvals",
         "link": "/broker/match-approvals",
         "gate": {
-          "feature": "exchange_workflow"
+          "module": "listings"
         }
       },
       {
@@ -210,14 +210,7 @@
     "id": "broker_group_activities",
     "icon": "calendar",
     "gate": {
-      "all": [
-        {
-          "feature": "group_exchanges"
-        },
-        {
-          "feature": "groups"
-        }
-      ]
+      "feature": "group_exchanges"
     },
     "articles": [
       {

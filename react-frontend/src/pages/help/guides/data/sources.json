@@ -42,7 +42,7 @@
       "react-frontend/src/admin/components/AdminSidebar.tsx",
       "react-frontend/src/admin/modules/system/ActivityLog.tsx"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "admins/admin_records/admin_consent_records": {
     "sources": [
@@ -52,7 +52,7 @@
       "react-frontend/src/admin/modules/enterprise/GdprConsents.tsx",
       "routes/api.php"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "admins/admin_records/admin_data_retention": {
     "sources": [
@@ -61,7 +61,7 @@
       "react-frontend/public/locales/en/admin_system.json",
       "react-frontend/src/admin/modules/system/RetentionPolicies.tsx"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "admins/admin_records/admin_gdpr_audit_log": {
     "sources": [
@@ -70,7 +70,7 @@
       "react-frontend/public/locales/en/admin_enterprise.json",
       "react-frontend/src/admin/modules/enterprise/GdprAuditLog.tsx"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "admins/admin_safeguarding/admin_wellbeing_alerts": {
     "sources": [
@@ -83,7 +83,7 @@
       "react-frontend/src/admin/modules/volunteering/WellbeingAlertsPanel.tsx",
       "react-frontend/src/admin/modules/volunteering/WellbeingSettingsCard.tsx"
     ],
-    "verified": "c445fefadcc86a547557b86ddc6ff8b8fb6f385c"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "brokers/broker_exchanges/broker_approve_exchange": {
     "sources": [
@@ -95,7 +95,7 @@
       "react-frontend/src/broker/pages/ExchangesPage.tsx",
       "react-frontend/src/pages/exchanges/ExchangeDetailPage.tsx"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "brokers/broker_exchanges/broker_insurance": {
     "sources": [
@@ -106,7 +106,7 @@
       "react-frontend/src/broker/pages/InsuranceCertificatesPage.tsx",
       "react-frontend/src/pages/settings/SettingsPage.tsx"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "brokers/broker_exchanges/broker_match_approvals": {
     "sources": [
@@ -123,7 +123,7 @@
       "react-frontend/src/broker/routes.tsx",
       "react-frontend/src/pages/settings/tabs/SafeguardingTab.tsx"
     ],
-    "verified": "8ec91047fee4a9dc8f4c40ba2f3496b41394b754"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "brokers/broker_group_activities/broker_group_exchange_basics": {
     "sources": [
@@ -135,7 +135,7 @@
       "react-frontend/src/routes/AppRoutes.tsx",
       "routes/api.php"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "brokers/broker_members/broker_approve_new_members": {
     "sources": [
@@ -145,7 +145,7 @@
       "react-frontend/src/broker/pages/MembersPage.tsx",
       "react-frontend/src/broker/pages/OnboardingPage.tsx"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "brokers/broker_moderation/broker_feed_posts": {
     "sources": [
@@ -155,7 +155,7 @@
       "react-frontend/src/admin/modules/moderation/FeedModeration.tsx",
       "react-frontend/src/broker/pages/FeedModerationPage.tsx"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "brokers/broker_role/broker_can_and_cannot": {
     "sources": [
@@ -172,7 +172,7 @@
       "react-frontend/src/broker/components/MemberDetailModal.tsx",
       "react-frontend/src/broker/pages/BrokerConfigurationPage.tsx"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "brokers/broker_role/broker_what_is_a_broker": {
     "sources": [
@@ -185,7 +185,7 @@
       "react-frontend/src/broker/pages/BrokerConfigurationPage.tsx",
       "react-frontend/src/lib/access.ts"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "brokers/broker_safeguarding/broker_message_review": {
     "sources": [
@@ -198,7 +198,7 @@
       "react-frontend/src/broker/pages/MessageReviewPage.tsx",
       "react-frontend/src/pages/messages/ConversationPage.tsx"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "brokers/broker_safeguarding/broker_review_message": {
     "sources": [
@@ -209,7 +209,7 @@
       "react-frontend/src/broker/pages/MessageDetailPage.tsx",
       "react-frontend/src/broker/pages/MessageReviewPage.tsx"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "brokers/broker_safeguarding/broker_wellbeing_alerts": {
     "sources": [
@@ -219,7 +219,7 @@
       "react-frontend/src/admin/modules/volunteering/WellbeingAlertsPanel.tsx",
       "react-frontend/src/broker/pages/SafeguardingVolunteeringPage.tsx"
     ],
-    "verified": "c445fefadcc86a547557b86ddc6ff8b8fb6f385c"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "members/account_profile/editing_your_profile": {
     "sources": [
@@ -229,7 +229,7 @@
       "react-frontend/src/pages/settings/SettingsPage.tsx",
       "routes/api.php"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "members/account_profile/saved_items": {
     "sources": [
@@ -237,7 +237,7 @@
       "react-frontend/public/locales/en/social.json",
       "react-frontend/src/pages/bookmarks/BookmarksPage.tsx"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "members/ai_assistant/ai_assistant_allowance": {
     "sources": [
@@ -251,21 +251,21 @@
     "sources": [
       "app/Http/Controllers/Api/CaringCommunityApiController.php"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "members/caring_community/caring_hour_transfer": {
     "sources": [
       "app/Support/SecurityBounds.php",
       "react-frontend/src/routes/AppRoutes.tsx"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "members/caring_community/caring_markt": {
     "sources": [
       "react-frontend/src/pages/caring-community/CaringCommunityPage.tsx",
       "react-frontend/src/routes/AppRoutes.tsx"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "members/caring_community/caring_trust_tier": {
     "sources": [
@@ -282,7 +282,7 @@
       "lang/en/api.php",
       "react-frontend/public/locales/en/events.json"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "members/finding_people/matches": {
     "sources": [
@@ -293,7 +293,7 @@
       "react-frontend/src/pages/matches/components/MatchCard.tsx",
       "react-frontend/src/pages/matches/types.ts"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "members/getting_started/joining_your_community": {
     "sources": [
@@ -304,21 +304,21 @@
       "react-frontend/src/pages/auth/RegisterPage.tsx",
       "routes/api.php"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "members/jobs/finding_jobs": {
     "sources": [
       "app/Services/JobVacancyService.php",
       "react-frontend/public/locales/en/jobs.json"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "members/jobs/job_posting_limits": {
     "sources": [
       "app/Services/JobConfigurationService.php",
       "app/Services/JobVacancyService.php"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "members/marketplace/buying_an_item": {
     "sources": [
@@ -328,14 +328,14 @@
       "react-frontend/src/components/marketplace/BuyNowButton.tsx",
       "react-frontend/src/pages/marketplace/MarketplaceListingPage.tsx"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "members/marketplace/marketplace_listing_limits": {
     "sources": [
       "app/Http/Controllers/Api/MarketplaceListingController.php",
       "app/Services/MarketplaceListingService.php"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "members/marketplace/marketplace_orders": {
     "sources": [
@@ -346,7 +346,7 @@
       "react-frontend/src/pages/marketplace/BuyerOrdersPage.tsx",
       "react-frontend/src/pages/marketplace/SellerOrdersPage.tsx"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "members/privacy_safety/contact_details_private": {
     "sources": [
@@ -356,7 +356,7 @@
       "react-frontend/src/broker/components/MemberDetailModal.tsx",
       "routes/api.php"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "members/privacy_safety/muting_members": {
     "sources": [
@@ -366,7 +366,7 @@
       "app/Services/NotificationDispatcher.php",
       "react-frontend/public/locales/en/feed.json"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "members/privacy_safety/safeguarding_preferences": {
     "sources": [
@@ -383,7 +383,7 @@
       "react-frontend/src/pages/onboarding/SafeguardingStep.tsx",
       "react-frontend/src/pages/settings/tabs/SafeguardingTab.tsx"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "members/recognition/recognition_badges": {
     "sources": [
@@ -392,14 +392,14 @@
       "react-frontend/src/pages/members/MembersPage.tsx",
       "react-frontend/src/pages/profile/ProfilePage.tsx"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "members/recognition/venue_visit_xp": {
     "sources": [
       "app/Services/GamificationService.php",
       "app/Services/PartnerVenueVisitService.php"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "members/security_signin/signing_in": {
     "sources": [
@@ -410,7 +410,7 @@
       "react-frontend/src/pages/auth/LoginPage.tsx",
       "react-frontend/src/pages/settings/tabs/ConnectedAccountsTab.tsx"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "members/volunteering/logging_volunteer_hours": {
     "sources": [
@@ -419,13 +419,13 @@
       "lang/en/api.php",
       "react-frontend/src/pages/volunteering/VolunteeringPage.tsx"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   },
   "members/volunteering/volunteer_training_and_incidents": {
     "sources": [
       "react-frontend/public/locales/en/volunteering.json",
       "react-frontend/src/pages/volunteering/SafeguardingTab.tsx"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "77e0f74c0fde9e8dde2ddb4e2495883cd313f322"
   }
 }
