@@ -21,6 +21,7 @@
  * movement), but each row is laid out as a grid: five aligned columns from the
  * `xl` breakpoint, and a stacked block with its own small labels below it. It
  * never needs to scroll sideways. Do not put `min-w-[…]` back on the table.
+ * The layout is shared with Billing control: `../billing/CommunityGrid`.
  *
  * 🔴 "Members" is two numbers. A plan's limit is on ACTIVE members (signed in
  * within `members.window_days`, the pricing page's definition); `members.total`
@@ -48,12 +49,16 @@ import Info from 'lucide-react/icons/info';
 import MoreVertical from 'lucide-react/icons/ellipsis-vertical';
 import TriangleAlert from 'lucide-react/icons/triangle-alert';
 import type { LucideIcon } from 'lucide-react';
-import { Alert, Button, Card, CardBody, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Input, Meter, MeterFill, MeterTrack, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Radio, RadioGroup, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@/components/ui';
+import { Alert, Button, Card, CardBody, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Radio, RadioGroup, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@/components/ui';
 import { usePageTitle } from '@/hooks';
 import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { formatCurrency, formatDate, formatNumber } from '@/lib/helpers';
 import { PageHeader } from '../../components/PageHeader';
+import {
+  ActiveMembersNote, COMMUNITY_GRID_CLASSES, COMMUNITY_GRID_LEAD_CELL, MemberNumbers, StackedLabel,
+  blockIndentFor, nameIndentFor, type MembersLevel,
+} from '../billing/CommunityGrid';
 import { OverLimitRuleDialog, OverLimitSummary, type OverLimitChoice, type OverLimitState } from '../billing/OverLimitRuleDialog';
 import { RecordPaymentDialog } from '../billing/RecordPaymentDialog';
 
@@ -140,52 +145,12 @@ function standingState(row: BranchRow): StandingState {
   return 'open';
 }
 
-// How far a community sits below the top of the list, as whole class names so
-// the stylesheet keeps them (inline styles are not allowed in new pages).
-// In columns (from `xl`) the name is indented; stacked, the whole block is, so
-// a community still sits visibly under the one above it. Shallower on a small
-// screen, where every 16px counts.
-const NAME_INDENT = ['xl:pl-0', 'xl:pl-4', 'xl:pl-8', 'xl:pl-12', 'xl:pl-16', 'xl:pl-20'] as const;
-const BLOCK_INDENT = ['max-xl:ml-0', 'max-xl:ml-4', 'max-xl:ml-8', 'max-xl:ml-10', 'max-xl:ml-12', 'max-xl:ml-12'] as const;
-
-function indentStep(depth: number): number {
-  return Math.min(NAME_INDENT.length - 1, Math.max(0, depth - 1));
-}
-
-function nameIndentFor(depth: number): string {
-  return NAME_INDENT[indentStep(depth)] ?? NAME_INDENT[0];
-}
-
-function blockIndentFor(depth: number): string {
-  return BLOCK_INDENT[indentStep(depth)] ?? BLOCK_INDENT[0];
-}
-
-type MembersLevel = 'ok' | 'near' | 'over';
-
 /** Near from 80% of the plan's limit, over from 100%. */
 function membersLevel(members: Members): MembersLevel {
   if (members.percent !== null && members.percent >= 100) return 'over';
   if (members.percent !== null && members.percent >= 80) return 'near';
   return 'ok';
 }
-
-const MEMBERS_TEXT: Record<MembersLevel, string> = {
-  ok: 'font-medium',
-  near: 'font-medium text-warning',
-  over: 'font-semibold text-danger',
-};
-
-const MEMBERS_METER: Record<MembersLevel, 'accent' | 'warning' | 'danger'> = {
-  ok: 'accent',
-  near: 'warning',
-  over: 'danger',
-};
-
-// One grid for the heading row and every community's row, so the columns line
-// up from `xl`. Written out in full twice: the stylesheet only keeps class
-// names it can read whole in the source.
-const ROW_COLUMNS = 'xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1.3fr)_minmax(0,1.1fr)_minmax(0,1.15fr)_12.5rem]';
-const HEAD_COLUMNS = 'xl:[&>tr]:grid-cols-[minmax(0,1.5fr)_minmax(0,1.3fr)_minmax(0,1.1fr)_minmax(0,1.15fr)_12.5rem]';
 
 type GlanceTone = 'accent' | 'warning' | 'danger' | 'quiet';
 
@@ -210,19 +175,6 @@ function Glance({ icon: Icon, label, value, tone }: { icon: LucideIcon; label: s
         </span>
       </CardBody>
     </Card>
-  );
-}
-
-/**
- * The column's name above a block when the rows are stacked (below `xl` the
- * heading row is off screen). Hidden from assistive technology: the table
- * already ties each cell to its column heading.
- */
-function StackedLabel({ children }: { children: string }) {
-  return (
-    <span aria-hidden="true" className="mb-1.5 block text-xs font-medium text-muted xl:hidden">
-      {children}
-    </span>
   );
 }
 
@@ -429,10 +381,7 @@ export function BranchPayments() {
           {/* What "active" means, said once: the plan's limit is on active
               members, not on everyone with an account. */}
           {windowDays !== null ? (
-            <p className="flex items-start gap-2 px-4 py-3 text-xs text-muted">
-              <Info size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
-              <span>{t('branch_payments.members_note', { days: formatNumber(windowDays) })}</span>
-            </p>
+            <ActiveMembersNote days={windowDays} icon={<Info size={14} className="mt-0.5 shrink-0" aria-hidden="true" />} />
           ) : null}
 
           {/* One table, laid out as a grid: five aligned columns from `xl`,
@@ -441,14 +390,7 @@ export function BranchPayments() {
           <Table
             aria-label={t('branch_payments.title')}
             removeWrapper
-            classNames={{
-              table: '!block',
-              thead: `block max-xl:sr-only [&>tr]:grid [&>tr]:gap-x-4 [&>tr]:px-4 ${HEAD_COLUMNS}`,
-              th: '!px-0 after:!hidden',
-              tbody: 'block',
-              tr: `grid grid-cols-1 gap-x-4 gap-y-4 px-4 py-4 sm:grid-cols-2 ${ROW_COLUMNS}`,
-              td: '!block !h-auto min-w-0 !border-0 !bg-transparent !p-0',
-            }}
+            classNames={COMMUNITY_GRID_CLASSES}
           >
             <TableHeader>
               <TableColumn>{t('branch_payments.col_community')}</TableColumn>
@@ -463,10 +405,7 @@ export function BranchPayments() {
                 const busy = busyId === row.id;
                 const paysParent = row.standing.payer === 'parent';
                 const canChangePlan = row.plan_change_refusal !== 'card_subscription';
-                const level = membersLevel(row.members);
-                const activeText = row.members.max === null
-                  ? formatNumber(row.members.active)
-                  : t('branch_payments.members_of_max', { active: formatNumber(row.members.active), max: formatNumber(row.members.max) });
+                const level: MembersLevel = membersLevel(row.members);
                 // Nobody is paid by a community that is not billed: it read "The platform".
                 const paysText = row.standing.payer === 'not_billed'
                   ? t('admin_billing:billing.payer_not_billed')
@@ -475,11 +414,11 @@ export function BranchPayments() {
                     : t('branch_payments.pays_the_platform');
 
                 return (
-                  <TableRow key={row.id} className={blockIndentFor(row.depth)}>
-                    <TableCell className="sm:col-span-2 xl:col-span-1">
+                  <TableRow key={row.id} className={blockIndentFor(row.depth - 1)}>
+                    <TableCell className={COMMUNITY_GRID_LEAD_CELL}>
                       {/* A block, so every line of a long name is indented and
                           the hierarchy shows; words wrap whole. */}
-                      <div className={`break-normal ${nameIndentFor(row.depth)}`}>
+                      <div className={`break-normal ${nameIndentFor(row.depth - 1)}`}>
                         <div className="text-sm font-semibold text-foreground">{row.name}</div>
                         <div className="mt-0.5 text-xs text-muted">{paysText}</div>
                       </div>
@@ -499,32 +438,14 @@ export function BranchPayments() {
                           <span className="text-sm text-muted">{t('branch_payments.no_plan')}</span>
                         )}
 
-                        {row.members.max !== null ? (
-                          <Meter
-                            aria-label={t('branch_payments.col_members')}
-                            value={Math.min(row.members.active, row.members.max)}
-                            maxValue={row.members.max}
-                            valueLabel={activeText}
-                            color={MEMBERS_METER[level]}
-                            size="sm"
-                            className="max-w-48"
-                          >
-                            <MeterTrack>
-                              <MeterFill />
-                            </MeterTrack>
-                          </Meter>
-                        ) : null}
-
-                        <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-0.5 text-xs">
-                          <dt className="text-muted">{t('branch_payments.col_members')}</dt>
-                          <dd data-testid={`members-active-${row.id}`} className={MEMBERS_TEXT[level]}>{activeText}</dd>
-                          {typeof row.members.total === 'number' ? (
-                            <>
-                              <dt className="text-muted">{t('branch_payments.members_all')}</dt>
-                              <dd data-testid={`members-total-${row.id}`}>{formatNumber(row.members.total)}</dd>
-                            </>
-                          ) : null}
-                        </dl>
+                        <MemberNumbers
+                          active={row.members.active}
+                          max={row.members.max}
+                          level={level}
+                          total={row.members.total}
+                          activeTestId={`members-active-${row.id}`}
+                          totalTestId={`members-total-${row.id}`}
+                        />
                       </div>
                     </TableCell>
 

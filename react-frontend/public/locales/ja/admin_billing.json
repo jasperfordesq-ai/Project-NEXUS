@@ -144,11 +144,8 @@
     "changed_by": "変更者",
     "checkout_cancelled": "チェックアウトがキャンセルされました",
     "col_actions": "アクション",
-    "col_current_plan": "現在の計画",
-    "col_effective_price": "実効価格",
     "col_status": "ステータス",
     "col_tenant": "コミュニティ",
-    "col_users": "ユーザー",
     "contact_support": "サポートに連絡する",
     "control_desc": "各コミュニティのプラン、料金、支払い状況と、メンバー数の上限を超えたときに何が起こるか。",
     "control_title": "請求管理",
@@ -247,7 +244,6 @@
     "done_exempted": "コミュニティを対象外にしました",
     "done_exemption_removed": "対象外を解除しました",
     "standing_failed": "実行できませんでした。変更はありません。",
-    "table_scrolls": "この表は画面より横に広いため、表の中を横にスクロールするとすべての列を表示できます。",
     "more_actions_for": "{{name}} のその他の操作"
   },
   "paused_banner": {
@@ -314,7 +310,7 @@
     "amount_invalid": "金額は小数点以下2桁までの数値で入力してください。",
     "amount_label": "金額（任意）",
     "change_payer": "支払い方法を変更",
-    "col_members": "メンバー",
+    "members_own": "このコミュニティのみ",
     "col_paid_until": "支払済み期限",
     "currency_label": "通貨",
     "currency_required": "金額の通貨を選択してください。",

@@ -144,11 +144,8 @@
     "changed_by": "Gewijzigd door",
     "checkout_cancelled": "Afrekenen geannuleerd",
     "col_actions": "Acties",
-    "col_current_plan": "Huidig abonnement",
-    "col_effective_price": "Effectieve prijs",
     "col_status": "Status",
     "col_tenant": "Community",
-    "col_users": "Gebruikers",
     "contact_support": "Neem contact op met ondersteuning",
     "control_desc": "Het plan, de prijs en de betaalstatus van elke community, en wat er gebeurt als een community haar ledenaantal overschrijdt.",
     "control_title": "Factuurbeheer",
@@ -247,7 +244,6 @@
     "done_exempted": "Gemeenschap vrijgesteld",
     "done_exemption_removed": "Vrijstelling opgeheven",
     "standing_failed": "Dat is niet gelukt. Er is niets gewijzigd.",
-    "table_scrolls": "Deze tabel is breder dan het scherm: scrol er zijwaarts in om alle kolommen te zien.",
     "more_actions_for": "Meer acties voor {{name}}"
   },
   "paused_banner": {
@@ -314,7 +310,7 @@
     "amount_invalid": "Voer het bedrag in als een gewoon getal met hoogstens twee decimalen.",
     "amount_label": "Bedrag (optioneel)",
     "change_payer": "Betaalwijze wijzigen",
-    "col_members": "Leden",
+    "members_own": "Alleen deze gemeenschap",
     "col_paid_until": "Betaald tot",
     "currency_label": "Valuta",
     "currency_required": "Kies de valuta van het bedrag.",

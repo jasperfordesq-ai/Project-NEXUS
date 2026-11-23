@@ -144,11 +144,8 @@
     "changed_by": "Modificato da",
     "checkout_cancelled": "Pagamento annullato",
     "col_actions": "Azioni",
-    "col_current_plan": "Piano attuale",
-    "col_effective_price": "Prezzo effettivo",
     "col_status": "Stato",
     "col_tenant": "Comunità",
-    "col_users": "Utenti",
     "contact_support": "Contatta l'assistenza",
     "control_desc": "Il piano, il prezzo e la situazione dei pagamenti di ogni comunità, e cosa succede quando una supera il suo numero di membri.",
     "control_title": "Controllo della fatturazione",
@@ -248,7 +245,6 @@
     "done_exempted": "Comunità esentata",
     "done_exemption_removed": "Esenzione rimossa",
     "standing_failed": "Non è stato possibile. Non è stato modificato nulla.",
-    "table_scrolls": "Questa tabella è più larga dello schermo: scorrila lateralmente per vedere tutte le colonne.",
     "more_actions_for": "Altre azioni per {{name}}"
   },
   "paused_banner": {
@@ -315,7 +311,7 @@
     "amount_invalid": "Inserisci l’importo come numero semplice con al massimo due decimali.",
     "amount_label": "Importo (facoltativo)",
     "change_payer": "Cambia come paga",
-    "col_members": "Membri",
+    "members_own": "Solo questa comunità",
     "col_paid_until": "Pagato fino al",
     "currency_label": "Valuta",
     "currency_required": "Scegli la valuta dell’importo.",

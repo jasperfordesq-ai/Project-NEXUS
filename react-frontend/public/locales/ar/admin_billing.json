@@ -144,11 +144,8 @@
     "changed_by": "تم التغيير بواسطة",
     "checkout_cancelled": "تم إلغاء الدفع",
     "col_actions": "الإجراءات",
-    "col_current_plan": "الخطة الحالية",
-    "col_effective_price": "السعر الفعال",
     "col_status": "حالة",
     "col_tenant": "المجتمع",
-    "col_users": "المستخدمين",
     "contact_support": "اتصل بالدعم",
     "control_desc": "خطة كل مجتمع وسعره ووضع دفعه، وما يحدث عندما يتجاوز أحدها عدد أعضائه.",
     "control_title": "التحكم في الفوترة",
@@ -251,7 +248,6 @@
     "done_exempted": "تم إعفاء المجتمع",
     "done_exemption_removed": "تمت إزالة الإعفاء",
     "standing_failed": "تعذّر تنفيذ ذلك. لم يتغيّر شيء.",
-    "table_scrolls": "هذا الجدول أعرض من الشاشة: مرّر أفقيًا داخله لرؤية كل الأعمدة.",
     "more_actions_for": "مزيد من الإجراءات لـ {{name}}"
   },
   "paused_banner": {
@@ -318,7 +314,7 @@
     "amount_invalid": "أدخل المبلغ رقمًا عاديًا بخانتين عشريتين على الأكثر.",
     "amount_label": "المبلغ (اختياري)",
     "change_payer": "تغيير طريقة الدفع",
-    "col_members": "الأعضاء",
+    "members_own": "هذا المجتمع وحده",
     "col_paid_until": "مدفوع حتى",
     "currency_label": "العملة",
     "currency_required": "اختر عملة المبلغ.",

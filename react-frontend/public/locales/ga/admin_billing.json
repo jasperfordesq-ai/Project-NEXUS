@@ -144,11 +144,8 @@
     "changed_by": "Athraithe ag",
     "checkout_cancelled": "Seiceáil Amach Cealaithe",
     "col_actions": "Gníomhartha",
-    "col_current_plan": "Plean Reatha",
-    "col_effective_price": "Praghas Éifeachtach",
     "col_status": "Stádas",
     "col_tenant": "Pobal",
-    "col_users": "Úsáideoirí",
     "contact_support": "Tacaíocht Teagmhála",
     "control_desc": "Plean, praghas agus staid íocaíochta gach pobail, agus cad a tharlaíonn nuair a théann pobal thar a líon ball.",
     "control_title": "Rialú billeála",
@@ -250,7 +247,6 @@
     "done_exempted": "Pobal díolmhaithe anois",
     "done_exemption_removed": "Díolúine bainte",
     "standing_failed": "Níorbh fhéidir é sin a dhéanamh. Níor athraíodh aon rud.",
-    "table_scrolls": "Tá an tábla seo níos leithne ná an scáileán: scrollaigh ó thaobh go taobh ann chun gach colún a fheiceáil.",
     "more_actions_for": "Tuilleadh gníomhartha do {{name}}"
   },
   "paused_banner": {
@@ -317,7 +313,7 @@
     "amount_invalid": "Cuir isteach an méid mar ghnáthuimhir le dhá ionad dheachúlacha ar a mhéad.",
     "amount_label": "Méid (roghnach)",
     "change_payer": "Athraigh an chaoi a n-íocann sé",
-    "col_members": "Baill",
+    "members_own": "An pobal seo amháin",
     "col_paid_until": "Íoctha go dtí",
     "currency_label": "Airgeadra",
     "currency_required": "Roghnaigh airgeadra an mhéid.",

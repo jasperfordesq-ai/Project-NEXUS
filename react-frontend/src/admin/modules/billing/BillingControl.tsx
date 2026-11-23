@@ -1,11 +1,11 @@
-import { Alert, Button, Card, CardBody, CardHeader, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Input, Spinner, Select, SelectItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Switch, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@/components/ui';
+import { Alert, Button, Card, CardBody, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Input, Spinner, Select, SelectItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Switch, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@/components/ui';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import CreditCard from 'lucide-react/icons/credit-card';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import Leaf from 'lucide-react/icons/leaf';
 import Download from 'lucide-react/icons/download';
+import Info from 'lucide-react/icons/info';
 import MoreVertical from 'lucide-react/icons/ellipsis-vertical';
 import { usePageTitle } from '@/hooks';
 import { useAuth, useToast } from '@/contexts';
@@ -19,6 +19,10 @@ import { planFactLines } from './planFactLines';
 import { RecordPaymentDialog, type PaymentMethod } from './RecordPaymentDialog';
 import { PayerDialog, type Payer } from './PayerDialog';
 import { OverLimitRuleDialog, OverLimitSummary, type OverLimitChoice, type OverLimitState } from './OverLimitRuleDialog';
+import {
+  ActiveMembersNote, COMMUNITY_GRID_CLASSES, COMMUNITY_GRID_LEAD_CELL, MemberNumbers, StackedLabel,
+  blockIndentFor, nameIndentFor, type MembersLevel,
+} from './CommunityGrid';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -39,6 +43,16 @@ import { OverLimitRuleDialog, OverLimitSummary, type OverLimitChoice, type OverL
  * plan and price was blank and every button posted `tenant_id: undefined`.
  * tests/Laravel/Feature/Billing/BillingSnapshotContractTest.php now pins every
  * key read here to a real response. Rename a key there and here together.
+ *
+ * 🔴 Layout (23 Nov 2026). This was a ten-column table 1,500px wide that
+ * scrolled sideways inside its card, with a line telling the reader to scroll.
+ * It is now the shared `CommunityGrid`: five aligned columns from `xl`, a
+ * stacked block per community below it, never wider than its card. The plan,
+ * its price and the member numbers share a column; the standing, the
+ * paid-until date and what is known of its payments share another; who it pays
+ * sits under its name. "Users" and "Members" were two unexplained columns:
+ * they are now "Active members" (what the plan's limit counts) and "All
+ * members", each labelled.
  *
  * "Pause billing" and "Set grace period" were removed from this screen on the
  * same day: they only ever wrote a note. Pausing a community for non-payment
@@ -125,8 +139,10 @@ interface TenantSnapshot {
   own_user_count: number;
   subtree_user_count: number;
   current_plan: CurrentPlan | null;
-  /** Active accounts that signed in within 90 days, the whole branch. */
+  /** Active accounts that signed in within `active_window_days`, the whole branch. */
   active_member_count: number;
+  /** How recently a member must have signed in to count as active. */
+  active_window_days?: number;
   /** Of the plan's member limit; null with no plan or no limit. */
   usage_percent: number | null;
   /** The currency the community is billed in (a special price typed for it is in this). */
@@ -213,41 +229,17 @@ function formatCount(value: number): string {
   return new Intl.NumberFormat(getFormattingLocale()).format(value);
 }
 
-// In the reader's number format ("1,043 (1,243)"), not raw digits.
-const formatUserCount = (row: TenantSnapshot): string => {
-  if (row.subtree_user_count !== row.own_user_count) {
-    return `${formatCount(row.own_user_count)} (${formatCount(row.subtree_user_count)})`;
-  }
-  return formatCount(row.own_user_count);
-};
-
-// How far a community sits below the top, as whole class names so the
-// stylesheet keeps them (no inline styles).
-const INDENT = ['pl-0', 'pl-4', 'pl-8', 'pl-12', 'pl-16', 'pl-20'] as const;
-
-function indentFor(depth: number): string {
-  return INDENT[Math.min(INDENT.length - 1, Math.max(0, depth))] ?? INDENT[0];
-}
-
-/** `820 / 1,000 (82%)`, or just the active count when nothing limits it. */
-function formatMembers(row: TenantSnapshot): string {
-  const max = row.current_plan?.max_users ?? null;
-  if (max === null || row.usage_percent === null) {
-    return formatCount(row.active_member_count);
-  }
-  return `${formatCount(row.active_member_count)} / ${formatCount(max)} (${row.usage_percent}%)`;
-}
-
 /**
- * The same thresholds the daily check uses: warning from its percent, danger
- * at or over the limit, as Branch payments colours it. `over_limit` is asked
- * too: the percent is rounded down, so 201 of 200 reads "100%" and is over.
+ * The same thresholds the daily check uses: near from its warning percent,
+ * over at or past the limit, as Branch payments colours it. `over_limit` is
+ * asked too: the percent is rounded down, so 201 of 200 reads "100%" and is
+ * over.
  */
-function membersColour(row: TenantSnapshot, warningPercent: number): string {
-  if (row.usage_percent === null) return 'text-muted';
-  if (row.over_limit || row.usage_percent >= 100) return 'font-semibold text-danger';
-  if (row.usage_percent >= warningPercent) return 'font-semibold text-warning';
-  return 'text-muted';
+function membersLevel(row: TenantSnapshot, warningPercent: number): MembersLevel {
+  if (row.usage_percent === null) return 'ok';
+  if (row.over_limit || row.usage_percent >= 100) return 'over';
+  if (row.usage_percent >= warningPercent) return 'near';
+  return 'ok';
 }
 
 /** Exempt wins: an exempt community is never paused, whatever is above it. */
@@ -577,6 +569,7 @@ export function BillingControl() {
   const selectedPlan = plans.find((p) => String(p.id) === selectedPlanId);
   const exemptNeedsReason = standingDialog?.kind === 'exempt' && standingText.trim() === '';
   const shownRows = snapshot.filter((row) => matchesFilter(row, filter));
+  const windowDays = snapshot[0]?.active_window_days ?? null;
   // A card is charged by Stripe for the plan on its subscription, at the
   // plan's own price: the server refuses a change of either made here.
   const selectedPaysByCard = selectedTenant?.standing.payer === 'platform_card';
@@ -618,15 +611,9 @@ export function BillingControl() {
       <BillingAutomationCard onWarningPercent={setWarningPercent} />
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-start gap-2 pb-0">
-          <CreditCard size={18} className="text-accent" />
-          <span className="font-semibold text-sm">{t('billing.control_title')}</span>
-        </CardHeader>
         <CardBody className="p-0">
-          {/* Wider than most screens: the table scrolls sideways inside this
-              card, never the page, and says so. */}
-          <div className="flex flex-wrap items-end justify-between gap-3 px-4 pt-3">
-            <div className="w-64">
+          <div className="flex flex-wrap items-end justify-between gap-3 px-4 pt-4">
+            <div className="w-64 max-w-full">
               <Select
                 label={t('control.filter_label')}
                 selectedKeys={new Set([filter])}
@@ -656,18 +643,23 @@ export function BillingControl() {
               </Alert>
             </div>
           ) : null}
-          <p className="px-4 pt-2 text-xs text-muted">{t('billing.table_scrolls')}</p>
-          <Table aria-label={t('billing.control_title')} removeWrapper classNames={{ table: 'min-w-[1500px]' }}>
+
+          {/* What "active" means, said once: a plan's limit is on active
+              members, not on everyone with an account. */}
+          {windowDays !== null ? (
+            <ActiveMembersNote days={windowDays} icon={<Info size={14} className="mt-0.5 shrink-0" aria-hidden="true" />} />
+          ) : null}
+
+          {/* One table, laid out as a grid (CommunityGrid): five aligned
+              columns from `xl`, a stacked block per community below it. It was
+              ten columns and 1,500px wide, scrolling sideways inside this
+              card. Do not put a `min-w-[…]` back on it. */}
+          <Table aria-label={t('billing.control_title')} removeWrapper classNames={COMMUNITY_GRID_CLASSES}>
             <TableHeader>
               <TableColumn>{t('billing.col_tenant')}</TableColumn>
-              <TableColumn>{t('billing.col_users')}</TableColumn>
-              <TableColumn>{t('control.col_members')}</TableColumn>
-              <TableColumn>{t('billing.col_current_plan')}</TableColumn>
-              <TableColumn>{t('billing.col_effective_price')}</TableColumn>
-              <TableColumn>{t('billing.col_pays')}</TableColumn>
-              <TableColumn>{t('control.col_paid_until')}</TableColumn>
-              <TableColumn>{t('billing.col_standing')}</TableColumn>
+              <TableColumn>{t('super_admin:branch_payments.col_plan_members')}</TableColumn>
               <TableColumn>{t('over_limit_rule.col_if_over')}</TableColumn>
+              <TableColumn>{t('super_admin:branch_payments.col_payment')}</TableColumn>
               {isGod
                 ? <TableColumn>{t('billing.col_actions')}</TableColumn>
                 : <TableColumn>{''}</TableColumn>
@@ -682,80 +674,76 @@ export function BillingControl() {
                 const state = standingState(row);
                 const busy = standingBusyId === row.id;
                 const suggested = suggestedPlanName(row);
+                const hasPlan = row.current_plan !== null;
 
                 return (
-                  <TableRow key={row.id}>
-                    {/* Community name with depth indent */}
-                    <TableCell>
-                      <div className={`block min-w-44 break-normal text-sm font-medium ${indentFor(row.depth)}`}>
-                        {row.over_limit && (
-                          <AlertTriangle size={14} className="inline mr-1 text-warning-soft-foreground" aria-hidden="true" />
-                        )}
-                        {row.name}
+                  <TableRow key={row.id} className={blockIndentFor(row.depth)}>
+                    {/* Community, and who it pays */}
+                    <TableCell className={COMMUNITY_GRID_LEAD_CELL}>
+                      <div className={`break-normal ${nameIndentFor(row.depth)}`}>
+                        <div className="text-sm font-semibold text-foreground">
+                          {row.over_limit && (
+                            <AlertTriangle size={14} className="inline mr-1 text-warning-soft-foreground" aria-hidden="true" />
+                          )}
+                          {row.name}
+                        </div>
+                        <div className="mt-0.5 text-xs text-muted">
+                          {row.standing.payer === 'not_billed' ? null : (
+                            <span className="mr-1">{t('billing.col_pays')}</span>
+                          )}
+                          <span data-testid="billing-payer" className="text-foreground">{t(`billing.payer_${row.standing.payer}`)}</span>
+                        </div>
                       </div>
                     </TableCell>
 
-                    {/* Users: own + subtree total */}
+                    {/* Plan, its price, and the members against its limit */}
                     <TableCell>
-                      <span className="text-sm text-muted whitespace-nowrap">
-                        {formatUserCount(row)}
-                      </span>
-                    </TableCell>
+                      <StackedLabel>{t('super_admin:branch_payments.col_plan_members')}</StackedLabel>
+                      <div className="flex flex-col gap-1.5 break-normal">
+                        <div>
+                          <div className="flex items-center gap-1 flex-wrap">
+                            <Chip
+                              size="sm"
+                              variant="soft"
+                              color={getPlanChipColor(row)}
+                            >
+                              {getPlanChipLabel(row)}
+                            </Chip>
+                            {row.over_limit ? (
+                              <Chip size="sm" variant="soft" color="warning">{t('billing.over_limit')}</Chip>
+                            ) : null}
+                            {row.current_plan && row.current_plan.assignment_status !== 'active' ? (
+                              <Chip
+                                size="sm"
+                                variant="soft"
+                                color={ASSIGNMENT_STATUS_COLOR[row.current_plan.assignment_status]}
+                              >
+                                {assignmentStatusLabel(row.current_plan.assignment_status)}
+                              </Chip>
+                            ) : null}
+                          </div>
+                          {/* The name and member number shown are its hub's version. */}
+                          {row.current_plan?.terms === 'hub' ? (
+                            <span className="mt-1 block text-xs text-muted">
+                              {t('super_admin:branch_payments.plan_hub_terms')}
+                            </span>
+                          ) : null}
+                          {suggested ? (
+                            <span className="mt-1 block text-xs text-muted">
+                              {t('control.suggested', { plan: suggested })}
+                            </span>
+                          ) : null}
+                          {row.current_plan?.expires_at ? (
+                            <span className="mt-1 block text-xs text-muted">
+                              {t('control.review_on', { date: formatDate(row.current_plan.expires_at) })}
+                            </span>
+                          ) : null}
+                        </div>
 
-                    {/* Active members against the package limit */}
-                    <TableCell>
-                      <span data-testid="billing-members" className={`text-sm whitespace-nowrap ${membersColour(row, warningPercent)}`}>
-                        {formatMembers(row)}
-                      </span>
-                    </TableCell>
-
-                    {/* Plan chip */}
-                    <TableCell>
-                      <div className="flex min-w-40 items-center gap-1 flex-wrap break-normal">
-                        <Chip
-                          size="sm"
-                          variant="soft"
-                          color={getPlanChipColor(row)}
-                        >
-                          {getPlanChipLabel(row)}
-                        </Chip>
-                        {row.over_limit ? (
-                          <Chip size="sm" variant="soft" color="warning">{t('billing.over_limit')}</Chip>
-                        ) : null}
-                        {row.current_plan && row.current_plan.assignment_status !== 'active' ? (
-                          <Chip
-                            size="sm"
-                            variant="soft"
-                            color={ASSIGNMENT_STATUS_COLOR[row.current_plan.assignment_status]}
-                          >
-                            {assignmentStatusLabel(row.current_plan.assignment_status)}
-                          </Chip>
-                        ) : null}
-                      </div>
-                      {/* The name and member number shown are its hub's version. */}
-                      {row.current_plan?.terms === 'hub' ? (
-                        <span className="mt-1 block text-xs text-muted">
-                          {t('super_admin:branch_payments.plan_hub_terms')}
-                        </span>
-                      ) : null}
-                      {suggested ? (
-                        <span className="mt-1 block text-xs text-muted">
-                          {t('control.suggested', { plan: suggested })}
-                        </span>
-                      ) : null}
-                      {row.current_plan?.expires_at ? (
-                        <span className="mt-1 block text-xs text-muted">
-                          {t('control.review_on', { date: formatDate(row.current_plan.expires_at) })}
-                        </span>
-                      ) : null}
-                    </TableCell>
-
-                    {/* Effective price */}
-                    <TableCell>
-                      <div className="flex items-center gap-1 flex-wrap">
-                        <span data-testid="billing-price" className="text-sm text-foreground whitespace-nowrap">
-                          {price && row.current_plan ? (
-                            <>
+                        {/* Effective price: nothing at all without a plan */}
+                        {price && row.current_plan ? (
+                          <div className="flex items-center gap-1 flex-wrap">
+                            <span data-testid="billing-price" className="text-sm text-foreground">
                               {row.current_plan.billing_interval !== 'yearly' ? (
                                 <span className="block">
                                   {t('billing.amount_per_month', { amount: money(price.monthly, row.current_plan.currency) })}
@@ -766,106 +754,117 @@ export function BillingControl() {
                                   {t('billing.amount_per_year', { amount: money(price.yearly, row.current_plan.currency) })}
                                 </span>
                               ) : null}
-                            </>
-                          ) : '—'}
-                        </span>
-                        {price && (price.has_custom || price.discount_pct > 0) ? (
-                          <Chip size="sm" variant="soft" className="text-xs">
-                            {t('billing.custom_badge')}
-                          </Chip>
+                            </span>
+                            {price.has_custom || price.discount_pct > 0 ? (
+                              <Chip size="sm" variant="soft" className="text-xs">
+                                {t('billing.custom_badge')}
+                              </Chip>
+                            ) : null}
+                            {price.nonprofit && (
+                              <Leaf size={12} className="text-success-soft-foreground" aria-label={t('billing.nonprofit_verified')} />
+                            )}
+                          </div>
                         ) : null}
-                        {price?.nonprofit && (
-                          <Leaf size={12} className="text-success-soft-foreground" aria-label={t('billing.nonprofit_verified')} />
-                        )}
+
+                        <MemberNumbers
+                          active={row.active_member_count}
+                          max={row.usage_percent === null ? null : (row.current_plan?.max_users ?? null)}
+                          percent={row.usage_percent}
+                          level={membersLevel(row, warningPercent)}
+                          total={row.subtree_user_count}
+                          activeTestId="billing-members"
+                          totalTestId="billing-members-all"
+                        >
+                          {/* A hub: how many of those are its own, not its branch's. */}
+                          {row.subtree_user_count !== row.own_user_count ? (
+                            <>
+                              <dt className="text-muted">{t('control.members_own')}</dt>
+                              <dd data-testid="billing-members-own">{formatCount(row.own_user_count)}</dd>
+                            </>
+                          ) : null}
+                        </MemberNumbers>
                       </div>
-                    </TableCell>
-
-                    {/* Who it pays */}
-                    <TableCell>
-                      <span className="inline-block min-w-24 text-sm text-muted">
-                        {t(`billing.payer_${row.standing.payer}`)}
-                      </span>
-                    </TableCell>
-
-                    {/* Paid until */}
-                    <TableCell>
-                      <span className="text-sm text-muted whitespace-nowrap">
-                        {row.standing.paid_until ? formatDate(row.standing.paid_until) : t('control.no_date')}
-                      </span>
-                      {row.last_payment ? (
-                        <span className="mt-1 block text-xs text-muted">
-                          {t('control.last_payment', {
-                            date: formatDate(row.last_payment.received_on),
-                            method: t(`control.method_${row.last_payment.method}`),
-                          })}
-                        </span>
-                      ) : null}
-                      {/* What Stripe has reported on a card payment. Optional
-                          chaining: a row cached from before these were sent. */}
-                      {row.payment_alerts?.refunded || row.payment_alerts?.disputed ? (
-                        <span className="mt-1 flex flex-wrap gap-1">
-                          {row.payment_alerts.disputed ? (
-                            <Chip size="sm" variant="soft" color="danger">{t('control.alert_disputed')}</Chip>
-                          ) : null}
-                          {row.payment_alerts.refunded ? (
-                            <Chip size="sm" variant="soft" color="warning">{t('control.alert_refunded')}</Chip>
-                          ) : null}
-                        </span>
-                      ) : null}
-                      {/* The earliest day the daily check would pause it */}
-                      {row.pause_on ? (
-                        <span data-testid="billing-pause-on" className="mt-1 block text-xs text-muted">
-                          {t('control.pause_on_line', { date: formatDate(row.pause_on) })}
-                        </span>
-                      ) : null}
-                    </TableCell>
-
-                    {/* Standing */}
-                    <TableCell>
-                      <Chip size="sm" variant="soft" color={STANDING_COLOR[state]}>
-                        {t(`billing.standing_${state}`)}
-                      </Chip>
                     </TableCell>
 
                     {/* What happens if it goes over its member number */}
                     <TableCell>
-                      {row.over_limit_rule ? <OverLimitSummary rule={row.over_limit_rule} /> : null}
+                      <StackedLabel>{t('over_limit_rule.col_if_over')}</StackedLabel>
+                      {row.over_limit_rule
+                        ? <OverLimitSummary rule={row.over_limit_rule} />
+                        : <span className="text-sm text-muted">—</span>}
+                    </TableCell>
+
+                    {/* Standing, the paid-until date and what is known of its payments */}
+                    <TableCell>
+                      <StackedLabel>{t('super_admin:branch_payments.col_payment')}</StackedLabel>
+                      <div className="flex flex-col items-start gap-1.5 break-normal">
+                        <Chip size="sm" variant="soft" color={STANDING_COLOR[state]}>
+                          {t(`billing.standing_${state}`)}
+                        </Chip>
+                        <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-0.5 text-xs">
+                          <dt className="text-muted">{t('control.col_paid_until')}</dt>
+                          <dd data-testid="billing-paid-until">
+                            {row.standing.paid_until ? formatDate(row.standing.paid_until) : t('control.no_date')}
+                          </dd>
+                        </dl>
+                        {row.last_payment ? (
+                          <span className="block text-xs text-muted">
+                            {t('control.last_payment', {
+                              date: formatDate(row.last_payment.received_on),
+                              method: t(`control.method_${row.last_payment.method}`),
+                            })}
+                          </span>
+                        ) : null}
+                        {/* What Stripe has reported on a card payment. Optional
+                            chaining: a row cached from before these were sent. */}
+                        {row.payment_alerts?.refunded || row.payment_alerts?.disputed ? (
+                          <span className="flex flex-wrap gap-1">
+                            {row.payment_alerts.disputed ? (
+                              <Chip size="sm" variant="soft" color="danger">{t('control.alert_disputed')}</Chip>
+                            ) : null}
+                            {row.payment_alerts.refunded ? (
+                              <Chip size="sm" variant="soft" color="warning">{t('control.alert_refunded')}</Chip>
+                            ) : null}
+                          </span>
+                        ) : null}
+                        {/* The earliest day the daily check would pause it */}
+                        {row.pause_on ? (
+                          <span data-testid="billing-pause-on" className="block text-xs text-warning">
+                            {t('control.pause_on_line', { date: formatDate(row.pause_on) })}
+                          </span>
+                        ) : null}
+                      </div>
                     </TableCell>
 
                     {/* Actions */}
                     <TableCell>
                       {isGod ? (
-                        // Three actions in view: the plan, a payment, and the
-                        // date on its own. Everything else is in the "More"
-                        // menu, as on Branch payments. Seven buttons a row
-                        // made the table very wide and were cut off at its
-                        // edge.
-                        <div className="flex min-w-72 items-center gap-1 flex-wrap">
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            onPress={() => handleOpenAssign(row)}
-                          >
-                            {t('billing.assign_plan')}
-                          </Button>
-
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            isDisabled={busy}
-                            onPress={() => setPaymentRow(row)}
-                          >
-                            {t('control.record_payment')}
-                          </Button>
-
-                          <Button
-                            size="sm"
-                            variant="tertiary"
-                            isDisabled={busy}
-                            onPress={() => openPaidUntil(row)}
-                          >
-                            {t('control.set_paid_until')}
-                          </Button>
+                        // One action in view and the rest in the "More" menu,
+                        // as on Branch payments: three buttons and a menu were
+                        // the widest thing on the row. The one in view is what
+                        // the community needs next: a plan when it has none,
+                        // otherwise a payment.
+                        <div className="flex items-center gap-1 flex-wrap">
+                          {hasPlan ? (
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              isDisabled={busy}
+                              onPress={() => setPaymentRow(row)}
+                              className="whitespace-nowrap"
+                            >
+                              {t('control.record_payment')}
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onPress={() => handleOpenAssign(row)}
+                              className="whitespace-nowrap"
+                            >
+                              {t('billing.assign_plan')}
+                            </Button>
+                          )}
 
                           <Dropdown>
                             <DropdownTrigger>
@@ -883,7 +882,10 @@ export function BillingControl() {
                             <DropdownMenu
                               aria-label={t('billing.more_actions_for', { name: row.name })}
                               onAction={(key) => {
-                                if (key === 'payer') setPayerRow(row);
+                                if (key === 'assign') handleOpenAssign(row);
+                                else if (key === 'payment') setPaymentRow(row);
+                                else if (key === 'paid_until') openPaidUntil(row);
+                                else if (key === 'payer') setPayerRow(row);
                                 else if (key === 'rule') setRuleRow(row);
                                 else if (key === 'pause') openStandingDialog(row, 'pause');
                                 else if (key === 'restore') void sendStanding(row, 'restore', {}, 'billing.done_restored');
@@ -892,6 +894,11 @@ export function BillingControl() {
                               }}
                             >
                               {[
+                                // Whichever of the two is not the button in view.
+                                hasPlan
+                                  ? <DropdownItem key="assign" id="assign">{t('billing.assign_plan')}</DropdownItem>
+                                  : <DropdownItem key="payment" id="payment">{t('control.record_payment')}</DropdownItem>,
+                                <DropdownItem key="paid_until" id="paid_until">{t('control.set_paid_until')}</DropdownItem>,
                                 <DropdownItem key="payer" id="payer">{t('control.change_payer')}</DropdownItem>,
                                 ...(row.over_limit_rule ? [
                                   <DropdownItem key="rule" id="rule">{t('over_limit_rule.open_dialog')}</DropdownItem>,

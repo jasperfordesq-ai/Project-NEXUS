@@ -157,11 +157,8 @@
     "changed_by": "Changed by",
     "checkout_cancelled": "Checkout Cancelled",
     "col_actions": "Actions",
-    "col_current_plan": "Current Plan",
-    "col_effective_price": "Effective Price",
     "col_status": "Status",
     "col_tenant": "Community",
-    "col_users": "Users",
     "contact_support": "Contact Support",
     "control_desc": "Every community’s plan, price and payment standing, and what happens when one goes over its member number.",
     "control_title": "Billing control",
@@ -247,7 +244,6 @@
     "done_exempted": "Community exempted",
     "done_exemption_removed": "Exemption removed",
     "standing_failed": "That could not be done. Nothing was changed.",
-    "table_scrolls": "This table is wider than the screen: scroll sideways inside it to see every column.",
     "more_actions_for": "More actions for {{name}}"
   },
   "paused_banner": {
@@ -314,7 +310,7 @@
     "amount_invalid": "Enter the amount as a plain number with at most two decimal places.",
     "amount_label": "Amount (optional)",
     "change_payer": "Change how it pays",
-    "col_members": "Members",
+    "members_own": "This community alone",
     "col_paid_until": "Paid until",
     "currency_label": "Currency",
     "currency_required": "Choose the currency of the amount.",

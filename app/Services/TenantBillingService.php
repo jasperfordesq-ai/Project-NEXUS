@@ -459,6 +459,10 @@ class TenantBillingService
                 'own_user_count'      => $ownCount,
                 'subtree_user_count'  => $subtreeCount,
                 'active_member_count' => $activeCount,
+                // How recently a member must have signed in to be counted in
+                // `active_member_count`, so the screen can say what "active"
+                // means without holding its own copy of the number.
+                'active_window_days'  => StandardPlans::ACTIVE_WINDOW_DAYS,
                 'usage_percent'       => $usagePercent,
                 // 'eur' | 'gbp': what a special price typed for it is in, when
                 // the plan chosen has a pound price.

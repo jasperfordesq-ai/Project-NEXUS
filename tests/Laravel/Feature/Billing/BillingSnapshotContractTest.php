@@ -54,6 +54,9 @@ final class BillingSnapshotContractTest extends TestCase
         'billing_currency',
         // 22 Nov 2026: a card payment refunded lately, or disputed.
         'payment_alerts',
+        // 23 Nov 2026: how recently a member must have signed in to count as
+        // active, so the screen can say what "active members" means.
+        'active_window_days',
     ];
 
     /** Read off `over_limit_rule`, key for key (same as a Branch payments row's `over_limit`). */

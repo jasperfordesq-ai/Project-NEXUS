@@ -361,7 +361,46 @@ describe('BillingControl', () => {
   it('writes the account counts in the reader’s number format', async () => {
     await renderWith([makeSnapshot({ own_user_count: 1043, subtree_user_count: 1243 })]);
 
-    expect(screen.getByText('1,043 (1,243)')).toBeInTheDocument();
+    // Everyone in its branch, then how many of those are its own.
+    expect(screen.getByTestId('billing-members-all')).toHaveTextContent('1,243');
+    expect(screen.getByTestId('billing-members-own')).toHaveTextContent('1,043');
+    expect(screen.getByText('This community alone')).toBeInTheDocument();
+  });
+
+  it('says nothing of "this community alone" for a community with none below it', async () => {
+    await renderWith([makeSnapshot({ own_user_count: 80, subtree_user_count: 80 })]);
+
+    expect(screen.getByTestId('billing-members-all')).toHaveTextContent('80');
+    expect(screen.queryByTestId('billing-members-own')).not.toBeInTheDocument();
+  });
+
+  it('has five columns, and none of the ten it had when it scrolled sideways', async () => {
+    await renderWith([makeSnapshot()]);
+
+    expect(screen.getAllByRole('columnheader').map((th) => th.textContent)).toEqual([
+      'Community', 'Plan and members', 'If over', 'Payment', 'Actions',
+    ]);
+    expect(screen.queryByText((text) => text.includes('scroll sideways'))).not.toBeInTheDocument();
+  });
+
+  it('says once what an active member is, with the number of days the server sends', async () => {
+    await renderWith([makeSnapshot({ active_window_days: 45 })]);
+
+    expect(screen.getByText(
+      'Active members are those who signed in during the last 45 days. Each number includes the communities below. A plan\'s limit counts active members, not everyone with an account.',
+    )).toBeInTheDocument();
+  });
+
+  it('labels the two member numbers: the active one the limit counts, and everyone', async () => {
+    // Owner, 23 Nov 2026: "Users 274" and "Members 35 / 50" side by side read as a fault.
+    await renderWith([makeSnapshot({ own_user_count: 274, subtree_user_count: 274, active_member_count: 35, usage_percent: 17 })]);
+
+    expect(screen.getByText('Active members')).toBeInTheDocument();
+    expect(screen.getByText('All members')).toBeInTheDocument();
+    expect(membersCell(0)).toHaveTextContent('35 of 200 (17%)');
+    expect(screen.getByTestId('billing-members-all')).toHaveTextContent('274');
+    // The total is information: never coloured, whatever the active number is.
+    expect(screen.getByTestId('billing-members-all').className).not.toMatch(/text-(warning|danger)/);
   });
 
   it('is titled Billing control and calls the first column Community', async () => {
@@ -509,7 +548,7 @@ describe('BillingControl', () => {
       makeSnapshot({ current_plan: makePlanOnRow({ notes: 'Agreed in March.', expires_at: '2027-03-01 00:00:00' }) }),
     ]);
 
-    fireEvent.click(button('Assign Plan')!);
+    fireEvent.click(more('Assign Plan')!);
 
     expect(await screen.findByLabelText('Review date')).toHaveValue('2027-03-01');
     expect(screen.getByLabelText('Notes')).toHaveValue('Agreed in March.');
@@ -545,7 +584,7 @@ describe('BillingControl', () => {
     render(<BillingControl />);
     await waitFor(() => expect(screen.queryAllByRole('row').length).toBeGreaterThan(1));
 
-    fireEvent.click(button('Assign Plan')!);
+    fireEvent.click(more('Assign Plan')!);
 
     const monthly = await screen.findByLabelText('Special price per month (GBP)');
     expect(monthly).toHaveAttribute('placeholder', '42.00');
@@ -557,7 +596,7 @@ describe('BillingControl', () => {
       makeSnapshot({ current_plan: makePlanOnRow({ id: 12, name: 'Old Starter', slug: 'legacy-starter-3', is_active: false }) }),
     ]);
 
-    fireEvent.click(button('Assign Plan')!);
+    fireEvent.click(more('Assign Plan')!);
 
     const select = await screen.findByLabelText('Select Plan') as HTMLSelectElement;
     expect(Array.from(select.options).map((option) => option.textContent)).toEqual(['Pro', 'Growth', 'Old Starter (retired)']);
@@ -567,7 +606,7 @@ describe('BillingControl', () => {
   it('tells the platform team a card payer changes plan on its own Billing page, and locks the plan and price', async () => {
     await renderWith([makeSnapshot({ standing: makeStanding({ payer: 'platform_card' }) })]);
 
-    fireEvent.click(button('Assign Plan')!);
+    fireEvent.click(more('Assign Plan')!);
 
     expect(await screen.findByText(/pays by card\. Its plan and price are changed from its own Billing page/)).toBeInTheDocument();
     expect(screen.getByLabelText('Select Plan')).toBeDisabled();
@@ -581,7 +620,7 @@ describe('BillingControl', () => {
     await renderWith([makeSnapshot()]);
     mockApi.post.mockResolvedValue({ success: false, error: 'This community pays by card, and its card is charged for the plan on its card payment.' });
 
-    fireEvent.click(button('Assign Plan')!);
+    fireEvent.click(more('Assign Plan')!);
     await screen.findByLabelText('Review date');
     fireEvent.click(screen.getAllByRole('button').filter((b) => b.textContent?.trim() === 'Assign Plan').pop()!);
 
@@ -603,14 +642,13 @@ describe('BillingControl', () => {
 
   // ── Pausing, restoring, exempting ─────────────────────────────────────────
 
-  it('keeps three actions in view and gathers the rest in the More menu', async () => {
+  it('keeps one action in view and gathers the rest in the More menu', async () => {
     await renderWith([makeSnapshot()]);
 
-    for (const label of ['Assign Plan', 'Record a payment', 'Set paid-until date']) {
-      expect(button(label)).toBeDefined();
-    }
+    // A community with a plan: the next thing it needs is a payment.
+    expect(button('Record a payment')).toBeDefined();
     // Not on screen until the menu is opened.
-    for (const label of ['Change how it pays', 'Over-limit rule', 'Pause community', 'Exempt']) {
+    for (const label of ['Assign Plan', 'Set paid-until date', 'Change how it pays', 'Over-limit rule', 'Pause community', 'Exempt']) {
       expect(button(label)).toBeUndefined();
       expect(screen.queryAllByRole('menuitem').filter((b) => b.textContent?.trim() === label)).toHaveLength(0);
     }
@@ -618,7 +656,20 @@ describe('BillingControl', () => {
     fireEvent.click(screen.getByRole('button', { name: 'More actions for Cork Timebank' }));
 
     expect(screen.getAllByRole('menuitem').map((b) => b.textContent?.trim())).toEqual([
-      'Change how it pays', 'Over-limit rule', 'Pause community', 'Exempt',
+      'Assign Plan', 'Set paid-until date', 'Change how it pays', 'Over-limit rule', 'Pause community', 'Exempt',
+    ]);
+  });
+
+  it('puts Assign plan in view for a community with no plan, and the payment in the menu', async () => {
+    await renderWith([makeSnapshot({ current_plan: null, usage_percent: null })]);
+
+    expect(button('Assign Plan')).toBeDefined();
+    expect(button('Record a payment')).toBeUndefined();
+
+    fireEvent.click(screen.getByRole('button', { name: 'More actions for Cork Timebank' }));
+
+    expect(screen.getAllByRole('menuitem').map((b) => b.textContent?.trim()).slice(0, 2)).toEqual([
+      'Record a payment', 'Set paid-until date',
     ]);
   });
 
@@ -743,10 +794,10 @@ describe('BillingControl', () => {
   it('shows active members against the package limit', async () => {
     await renderWith([makeSnapshot({ active_member_count: 60, usage_percent: 30 })]);
 
-    expect(membersCell(0)).toHaveTextContent('60 / 200 (30%)');
+    expect(membersCell(0)).toHaveTextContent('60 of 200 (30%)');
     expect(membersCell(0).className).not.toMatch(/text-(warning|danger)/);
-    // The registered count stays in its own column.
-    expect(screen.getByText('80')).toBeInTheDocument();
+    // Everyone with an account is shown beside it, on its own line.
+    expect(screen.getByTestId('billing-members-all')).toHaveTextContent('80');
   });
 
   it('colours the members from the warning percent, and as danger over the limit', async () => {
@@ -755,9 +806,9 @@ describe('BillingControl', () => {
       makeSnapshot({ id: 6, name: 'Galway Timebank', active_member_count: 210, usage_percent: 105, over_limit: true, standing: makeStanding({ tenant_id: 6 }) }),
     ]);
 
-    expect(membersCell(0)).toHaveTextContent('170 / 200 (85%)');
+    expect(membersCell(0)).toHaveTextContent('170 of 200 (85%)');
     expect(membersCell(0).className).toMatch(/text-warning/);
-    expect(membersCell(1)).toHaveTextContent('210 / 200 (105%)');
+    expect(membersCell(1)).toHaveTextContent('210 of 200 (105%)');
     expect(membersCell(1).className).toMatch(/text-danger/);
   });
 
@@ -795,7 +846,7 @@ describe('BillingControl', () => {
     const user = userEvent.setup();
     await renderWith([makeSnapshot()]);
 
-    await user.click(button('Set paid-until date')!);
+    await user.click(more('Set paid-until date')!);
     fireEvent.change(screen.getByLabelText('Paid up to and including'), { target: { value: '2027-01-31' } });
     await user.click(screen.getByRole('button', { name: 'Save' }));
 
@@ -809,7 +860,7 @@ describe('BillingControl', () => {
     const user = userEvent.setup();
     await renderWith([makeSnapshot({ standing: makeStanding({ paid_until: '2026-12-31' }) })]);
 
-    await user.click(button('Set paid-until date')!);
+    await user.click(more('Set paid-until date')!);
     const field = screen.getByLabelText('Paid up to and including') as HTMLInputElement;
     expect(field.value).toBe('2026-12-31');
 
@@ -826,7 +877,7 @@ describe('BillingControl', () => {
     mockApi.post.mockResolvedValue({ success: false, error: 'Enter the date as year-month-day, for example 2027-01-31.' });
     await renderWith([makeSnapshot()]);
 
-    await user.click(button('Set paid-until date')!);
+    await user.click(more('Set paid-until date')!);
     await user.click(screen.getByRole('button', { name: 'Save' }));
 
     await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Enter the date as year-month-day, for example 2027-01-31.'));
@@ -909,11 +960,11 @@ describe('BillingControl', () => {
     await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('Saved how this community pays'));
   });
 
-  it('keeps setting the paid-until date beside the new actions', async () => {
+  it('keeps setting the paid-until date, in the menu beside the other actions', async () => {
     await renderWith([makeSnapshot()]);
 
-    expect(button('Set paid-until date')).toBeDefined();
     expect(button('Record a payment')).toBeDefined();
+    expect(more('Set paid-until date')).toBeDefined();
     expect(more('Change how it pays')).toBeDefined();
   });
 

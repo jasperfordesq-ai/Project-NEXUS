@@ -144,11 +144,8 @@
     "changed_by": "Zmieniony przez",
     "checkout_cancelled": "Zamówienie anulowane",
     "col_actions": "Działania",
-    "col_current_plan": "Aktualny plan",
-    "col_effective_price": "Efektywna cena",
     "col_status": "Stan",
     "col_tenant": "Społeczność",
-    "col_users": "Użytkownicy",
     "contact_support": "Skontaktuj się z pomocą techniczną",
     "control_desc": "Plan, cena i stan płatności każdej społeczności oraz to, co się dzieje, gdy któraś przekroczy swoją liczbę członków.",
     "control_title": "Kontrola rozliczeń",
@@ -249,7 +246,6 @@
     "done_exempted": "Społeczność zwolniona",
     "done_exemption_removed": "Zwolnienie usunięte",
     "standing_failed": "Nie udało się tego zrobić. Nic nie zostało zmienione.",
-    "table_scrolls": "Ta tabela jest szersza niż ekran: przewiń ją w bok, aby zobaczyć wszystkie kolumny.",
     "more_actions_for": "Więcej działań dla {{name}}"
   },
   "paused_banner": {
@@ -316,7 +312,7 @@
     "amount_invalid": "Wpisz kwotę jako zwykłą liczbę z najwyżej dwoma miejscami po przecinku.",
     "amount_label": "Kwota (opcjonalnie)",
     "change_payer": "Zmień sposób płatności",
-    "col_members": "Członkowie",
+    "members_own": "Tylko ta społeczność",
     "col_paid_until": "Opłacono do",
     "currency_label": "Waluta",
     "currency_required": "Wybierz walutę kwoty.",

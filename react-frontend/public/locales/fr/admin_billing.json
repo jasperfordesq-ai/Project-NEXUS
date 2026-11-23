@@ -144,11 +144,8 @@
     "changed_by": "Modifié par",
     "checkout_cancelled": "Paiement annulé",
     "col_actions": "Actions",
-    "col_current_plan": "Forfait actuel",
-    "col_effective_price": "Prix effectif",
     "col_status": "Statut",
     "col_tenant": "Communauté",
-    "col_users": "Utilisateurs",
     "contact_support": "Contacter l'assistance",
     "control_desc": "La formule, le prix et la situation de paiement de chaque communauté, et ce qui se passe quand l’une dépasse son nombre de membres.",
     "control_title": "Contrôle de la facturation",
@@ -248,7 +245,6 @@
     "done_exempted": "Communauté exemptée",
     "done_exemption_removed": "Exemption retirée",
     "standing_failed": "Cela n’a pas pu être fait. Rien n’a été modifié.",
-    "table_scrolls": "Ce tableau est plus large que l’écran : faites-le défiler latéralement pour voir toutes les colonnes.",
     "more_actions_for": "Autres actions pour {{name}}"
   },
   "paused_banner": {
@@ -315,7 +311,7 @@
     "amount_invalid": "Saisissez le montant sous forme de nombre simple, avec deux décimales au maximum.",
     "amount_label": "Montant (facultatif)",
     "change_payer": "Changer le mode de paiement",
-    "col_members": "Membres",
+    "members_own": "Cette communauté seule",
     "col_paid_until": "Payé jusqu’au",
     "currency_label": "Devise",
     "currency_required": "Choisissez la devise du montant.",

@@ -349,8 +349,8 @@ describe('BranchPlans', () => {
     const cells = screen.getAllByRole('row')[1]!.querySelectorAll('td');
     // The monthly price leads each cell; the yearly price and the one-off
     // setup fee sit under it in the same currency (21 Nov 2026).
-    expect(cells[2]!.querySelector('span')!.textContent).toBe('€149');
-    expect(cells[3]!.querySelector('span')!.textContent).toBe('£129');
+    expect(cells[2]!.querySelector('[data-testid="plan-monthly"]')!.textContent).toBe('€149');
+    expect(cells[3]!.querySelector('[data-testid="plan-monthly"]')!.textContent).toBe('£129');
   });
 
   it('shows the yearly price and the setup fee in the table, not only in the Change dialog', async () => {
@@ -360,8 +360,29 @@ describe('BranchPlans', () => {
     }));
 
     const cells = screen.getAllByRole('row')[1]!.querySelectorAll('td');
-    expect(cells[2]!.textContent).toBe('£129Yearly (£): £1,290Setup (£): £645');
-    expect(cells[3]!.textContent).toBe('€149Yearly (€): €1,490Setup (€): €750');
+    // Each cell opens with its column's name, shown when the rows are stacked.
+    expect(cells[2]!.textContent).toBe('Monthly (£)£129Yearly (£): £1,290Setup (£): £645');
+    expect(cells[3]!.textContent).toBe('Monthly (€)€149Yearly (€): €1,490Setup (€): €750');
+  });
+
+  it('has six columns, with "standard or changed" beside the plan\'s name, and no hint to scroll sideways', async () => {
+    await renderWith(makeResponse({ hub_currency: 'eur' }));
+
+    expect(columnHeaders()).toEqual(['Plan', 'Members up to', 'Monthly (€)', 'Monthly (£)', 'Offered', 'Actions']);
+    const cells = screen.getAllByRole('row')[1]!.querySelectorAll('td');
+    expect(cells).toHaveLength(6);
+    expect(cells[0]!.textContent).toMatch(/Standard|Changed/);
+    expect(screen.queryByText((text) => text.includes('scroll sideways'))).not.toBeInTheDocument();
+  });
+
+  it('says how many communities are on a plan, and nothing for a plan nobody is on', async () => {
+    await renderWith(makeResponse({
+      plans: [makePlan({ communities_on_plan: 3 }), makePlan({ plan_id: 99, slug: 'other', communities_on_plan: 0 })],
+    }));
+
+    const inUse = screen.getAllByTestId(/^plan-in-use-/);
+    expect(inUse).toHaveLength(1);
+    expect(inUse[0]).toHaveTextContent('Communities on this plan: 3');
   });
 
   it('leads with the pound price for a hub that bills in pounds, and still shows both', async () => {
@@ -370,8 +391,8 @@ describe('BranchPlans', () => {
     const headers = columnHeaders();
     expect(headers.indexOf('Monthly (£)')).toBeLessThan(headers.indexOf('Monthly (€)'));
     const cells = screen.getAllByRole('row')[1]!.querySelectorAll('td');
-    expect(cells[2]!.querySelector('span')!.textContent).toBe('£129');
-    expect(cells[3]!.querySelector('span')!.textContent).toBe('€149');
+    expect(cells[2]!.querySelector('[data-testid="plan-monthly"]')!.textContent).toBe('£129');
+    expect(cells[3]!.querySelector('[data-testid="plan-monthly"]')!.textContent).toBe('€149');
   });
 
   it('keeps the picker and the last good table when a reload fails, and says so', async () => {

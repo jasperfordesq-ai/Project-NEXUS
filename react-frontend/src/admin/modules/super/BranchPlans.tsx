@@ -11,6 +11,12 @@
  * prices of each, and whether it is offered at all. A value left empty follows
  * the platform's standard, so a later change to the standard reaches the hub.
  *
+ * 🔴 Layout (23 Nov 2026). The table had a fixed minimum width of 860px and
+ * scrolled sideways inside its card on a tablet or phone. It is now laid out
+ * as a grid (`../billing/CommunityGrid`): six aligned columns from `xl`, a
+ * stacked block per plan below it, never wider than its card. "Standard or
+ * changed" was a column of its own; it now sits beside the plan's name.
+ *
  * 🔴 The screen decides nothing about who may act. The server lists only the
  * hubs the caller may edit (App\Support\Billing\BranchPlans::hubs()) and
  * refuses everything else with its own words, which are shown as sent.
@@ -29,6 +35,7 @@ import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { formatCurrency, formatNumber } from '@/lib/helpers';
 import { PageHeader } from '../../components/PageHeader';
+import { COMMUNITY_GRID_LEAD_CELL, PLAN_GRID_CLASSES, StackedLabel } from '../billing/CommunityGrid';
 import {
   OverLimitRuleFields,
   isOverLimitAction,
@@ -465,10 +472,9 @@ export function BranchPlans() {
           </span>
         </CardHeader>
         <CardBody className="p-0">
-          {/* Wider than a phone: the table scrolls sideways inside this card,
-              never the page, and says so. */}
-          <p className="px-4 pt-2 text-xs text-muted lg:hidden">{t('admin_billing:billing.table_scrolls')}</p>
-          <Table aria-label={t('branch_plans.title')} removeWrapper classNames={{ table: 'min-w-[860px]' }}>
+          {/* One table, laid out as a grid: six aligned columns from `xl`, a
+              stacked block per plan below it. Never wider than its card. */}
+          <Table aria-label={t('branch_plans.title')} removeWrapper classNames={PLAN_GRID_CLASSES}>
             <TableHeader>
               <TableColumn>{t('branch_plans.col_plan')}</TableColumn>
               <TableColumn>{t('branch_plans.col_members')}</TableColumn>
@@ -476,7 +482,6 @@ export function BranchPlans() {
                 <TableColumn key={field}>{t(FIELD_LABEL[field])}</TableColumn>
               ))}
               <TableColumn>{t('branch_plans.col_offered')}</TableColumn>
-              <TableColumn>{t('branch_plans.col_terms')}</TableColumn>
               <TableColumn>{t('admin_billing:billing.col_actions')}</TableColumn>
             </TableHeader>
             <TableBody emptyContent={t('branch_plans.empty')} items={data.plans.map((plan) => ({ ...plan, id: plan.plan_id }))}>
@@ -488,18 +493,30 @@ export function BranchPlans() {
 
                 return (
                   <TableRow key={plan.plan_id}>
-                    <TableCell>
+                    <TableCell className={COMMUNITY_GRID_LEAD_CELL}>
                       {/* Words wrap whole: a plan name never breaks letter by letter. */}
-                      <div className="flex min-w-48 flex-col break-normal">
-                        <span className="text-sm font-medium">{plan.name}</span>
+                      <div className="flex flex-col gap-1 break-normal">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-sm font-semibold text-foreground">{plan.name}</span>
+                          {/* Whether the hub has its own version of this plan. */}
+                          <Chip size="sm" variant="soft" color={plan.changed ? 'warning' : 'default'}>
+                            {plan.changed ? t('branch_plans.changed') : t('branch_plans.standard')}
+                          </Chip>
+                        </div>
                         {plan.description ? (
                           <span className="text-xs text-muted line-clamp-2">{plan.description}</span>
+                        ) : null}
+                        {plan.communities_on_plan > 0 ? (
+                          <span data-testid={`plan-in-use-${plan.plan_id}`} className="text-xs text-muted">
+                            {t('branch_plans.on_plan_label')}: <span className="font-medium text-foreground">{formatNumber(plan.communities_on_plan)}</span>
+                          </span>
                         ) : null}
                       </div>
                     </TableCell>
 
                     <TableCell>
-                      <span className="text-sm whitespace-nowrap">{members === null ? t('branch_plans.no_limit') : formatNumber(members)}</span>
+                      <StackedLabel>{t('branch_plans.col_members')}</StackedLabel>
+                      <span className="text-sm">{members === null ? t('branch_plans.no_limit') : formatNumber(members)}</span>
                     </TableCell>
 
                     {monthlyOrder.map((field) => {
@@ -513,8 +530,9 @@ export function BranchPlans() {
                       const setup = money(plan[setupField], currencyOf(setupField));
                       return (
                         <TableCell key={field}>
-                          <div className="flex flex-col gap-0.5 whitespace-nowrap">
-                            <span className="text-sm">{money(plan[field], currencyOf(field)) ?? '—'}</span>
+                          <StackedLabel>{t(FIELD_LABEL[field])}</StackedLabel>
+                          <div className="flex flex-col gap-0.5 break-normal">
+                            <span data-testid="plan-monthly" className="text-sm font-medium">{money(plan[field], currencyOf(field)) ?? '—'}</span>
                             {yearly !== null ? (
                               <span className="text-xs text-muted">{t(FIELD_LABEL[yearlyField])}: {yearly}</span>
                             ) : null}
@@ -527,7 +545,8 @@ export function BranchPlans() {
                     })}
 
                     <TableCell>
-                      <div className="flex min-w-32 flex-col items-start gap-1 break-normal">
+                      <StackedLabel>{t('branch_plans.col_offered')}</StackedLabel>
+                      <div className="flex flex-col items-start gap-1 break-normal">
                         <Switch
                           size="sm"
                           aria-label={t('branch_plans.offered_aria', { plan: plan.name })}
@@ -547,13 +566,7 @@ export function BranchPlans() {
                     </TableCell>
 
                     <TableCell>
-                      <Chip size="sm" variant="soft" color={plan.changed ? 'warning' : 'default'}>
-                        {plan.changed ? t('branch_plans.changed') : t('branch_plans.standard')}
-                      </Chip>
-                    </TableCell>
-
-                    <TableCell>
-                      <div className="flex min-w-40 items-center gap-1 flex-wrap">
+                      <div className="flex items-center gap-1 flex-wrap">
                         <Button size="sm" variant="secondary" isDisabled={busy} onPress={() => openDialog(plan)}>
                           {t('branch_plans.change')}
                         </Button>

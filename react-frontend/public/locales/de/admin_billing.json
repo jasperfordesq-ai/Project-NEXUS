@@ -144,11 +144,8 @@
     "changed_by": "Geändert von",
     "checkout_cancelled": "Kasse abgebrochen",
     "col_actions": "Aktionen",
-    "col_current_plan": "Aktueller Plan",
-    "col_effective_price": "Effektiver Preis",
     "col_status": "Status",
     "col_tenant": "Community",
-    "col_users": "Benutzer",
     "contact_support": "Kontaktieren Sie den Support",
     "control_desc": "Plan, Preis und Zahlungsstand jeder Community und was geschieht, wenn eine ihre Mitgliederzahl überschreitet.",
     "control_title": "Abrechnungssteuerung",
@@ -247,7 +244,6 @@
     "done_exempted": "Community ausgenommen",
     "done_exemption_removed": "Ausnahme aufgehoben",
     "standing_failed": "Das war nicht möglich. Es wurde nichts geändert.",
-    "table_scrolls": "Diese Tabelle ist breiter als der Bildschirm: Scrollen Sie darin seitlich, um alle Spalten zu sehen.",
     "more_actions_for": "Weitere Aktionen für {{name}}"
   },
   "paused_banner": {
@@ -314,7 +310,7 @@
     "amount_invalid": "Geben Sie den Betrag als einfache Zahl mit höchstens zwei Nachkommastellen ein.",
     "amount_label": "Betrag (optional)",
     "change_payer": "Zahlungsweise ändern",
-    "col_members": "Mitglieder",
+    "members_own": "Nur diese Gemeinschaft",
     "col_paid_until": "Bezahlt bis",
     "currency_label": "Währung",
     "currency_required": "Wählen Sie die Währung des Betrags.",
