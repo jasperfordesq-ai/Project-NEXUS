@@ -4615,6 +4615,7 @@ export default interface Resources {
     "control": {
       "alert_disputed": "Card payment disputed",
       "alert_refunded": "Card payment refunded",
+      "amount_from_plan": "Filled in from the plan's price. Change it if a different amount was paid.",
       "amount_invalid": "Enter the amount as a plain number with at most two decimal places.",
       "amount_label": "Amount (optional)",
       "card_payer_note": "This community pays by card. Its plan and price are changed from its own Billing page. Only the notes and the review date can be changed here.",
@@ -4677,6 +4678,8 @@ export default interface Resources {
       "payer_help_platform_invoice": "Pays the platform by invoice or bank transfer. Record its payments here by hand.",
       "payer_label": "How this community pays",
       "payment_paid_until_label": "Now paid up to and including",
+      "quick_month": "Add one month: {{date}}",
+      "quick_year": "Add one year: {{date}}",
       "received_on_label": "Received on",
       "record_payment": "Record a payment",
       "record_payment_help": "For a payment that did not come through Stripe, such as a bank transfer. Saving it sets the paid-until date to the date below and keeps the payment in the history.",

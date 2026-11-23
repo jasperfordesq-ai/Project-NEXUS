@@ -340,7 +340,10 @@
     "none_yet": "Er zijn nog geen gemeenschappen.",
     "none_match": "Geen gemeenschap past bij dit filter.",
     "load_failed": "De lijst kon niet worden geladen.",
-    "try_again": "Opnieuw proberen"
+    "try_again": "Opnieuw proberen",
+    "quick_month": "Eén maand erbij: {{date}}",
+    "quick_year": "Eén jaar erbij: {{date}}",
+    "amount_from_plan": "Ingevuld vanuit de prijs van het abonnement. Pas het aan als er een ander bedrag is betaald."
   },
   "over_limit_rule": {
     "automation_off_note": "De automatische controles van het platform staan uit, dus hier gebeurt niets tot het platformteam ze aanzet. U kunt de regel nu al instellen.",

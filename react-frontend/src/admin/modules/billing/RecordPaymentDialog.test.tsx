@@ -149,8 +149,91 @@ describe('RecordPaymentDialog', () => {
     expect(screen.getByLabelText('Bank transfer')).toBeChecked();
     expect(screen.getByLabelText('Cheque')).toBeInTheDocument();
     expect(screen.getByLabelText('Cash')).toBeInTheDocument();
-    expect(screen.getByLabelText('Card')).toBeInTheDocument();
     expect(screen.getByLabelText('Other')).toBeInTheDocument();
+    // Not "Card": Stripe reports a card payment by itself, and one typed in
+    // here would be counted twice.
+    expect(screen.queryByLabelText('Card')).not.toBeInTheDocument();
+  });
+
+  // ── The dialog does the arithmetic (23 Nov 2026) ─────────────────────────
+
+  it('works out one month and one year on, keeping to the end of a short month', async () => {
+    const { laterDate } = await import('./RecordPaymentDialog');
+
+    expect(laterDate('2026-12-31', 'month')).toBe('2027-01-31');
+    expect(laterDate('2027-01-31', 'month')).toBe('2027-02-28');
+    expect(laterDate('2026-12-31', 'year')).toBe('2027-12-31');
+    // 29 February, a year on, in a year that has none.
+    expect(laterDate('2028-02-29', 'year')).toBe('2029-02-28');
+    expect(laterDate('not a date', 'month')).toBe('');
+  });
+
+  it('offers the date one month and one year on, and one press fills it in', async () => {
+    await renderDialog();
+
+    fireEvent.click(button(`Add one year: ${formatDate('2027-12-31')}`)!);
+
+    expect((screen.getByLabelText('Now paid up to and including') as HTMLInputElement).value).toBe('2027-12-31');
+    expect(button('Record payment')).not.toBeDisabled();
+    expect(button(`Add one month: ${formatDate('2027-01-31')}`)).toBeDefined();
+  });
+
+  it('counts on from the day the payment was received when there is no date yet', async () => {
+    await renderDialog(null);
+
+    const received = (screen.getByLabelText('Received on') as HTMLInputElement).value;
+    const { laterDate } = await import('./RecordPaymentDialog');
+    fireEvent.click(button(`Add one month: ${formatDate(laterDate(received, 'month'))}`)!);
+
+    expect((screen.getByLabelText('Now paid up to and including') as HTMLInputElement).value).toBe(laterDate(received, 'month'));
+  });
+
+  it('fills in the amount and currency from the plan with the date, and says where they came from', async () => {
+    const { RecordPaymentDialog } = await import('./RecordPaymentDialog');
+    render(
+      <RecordPaymentDialog
+        community={{ id: 5, name: 'Cork Timebank', paidUntil: '2026-12-31', plan: { monthly: 49, yearly: 490, currency: 'eur' } }}
+        onClose={onClose}
+        onRecorded={onRecorded}
+      />,
+    );
+    await waitFor(() => expect(mockApi.get).toHaveBeenCalledWith(PAYMENTS_URL));
+
+    // The community's own currency is chosen before anything is typed.
+    expect(screen.getByLabelText('EUR')).toBeChecked();
+    expect((screen.getByLabelText('Amount (optional)') as HTMLInputElement).value).toBe('');
+
+    fireEvent.click(button(`Add one year: ${formatDate('2027-12-31')}`)!);
+    expect((screen.getByLabelText('Amount (optional)') as HTMLInputElement).value).toBe('490');
+    expect(screen.getByText("Filled in from the plan's price. Change it if a different amount was paid.")).toBeInTheDocument();
+
+    // The other period swaps the offered amount; an amount the person typed is theirs.
+    fireEvent.click(button(`Add one month: ${formatDate('2027-01-31')}`)!);
+    expect((screen.getByLabelText('Amount (optional)') as HTMLInputElement).value).toBe('49');
+
+    fireEvent.change(screen.getByLabelText('Amount (optional)'), { target: { value: '120' } });
+    fireEvent.click(button(`Add one year: ${formatDate('2027-12-31')}`)!);
+    expect((screen.getByLabelText('Amount (optional)') as HTMLInputElement).value).toBe('120');
+    expect(screen.queryByText("Filled in from the plan's price. Change it if a different amount was paid.")).not.toBeInTheDocument();
+  });
+
+  it('shows the payment history alone, with no form, when opened for the history', async () => {
+    const { RecordPaymentDialog } = await import('./RecordPaymentDialog');
+    render(
+      <RecordPaymentDialog
+        mode="history"
+        community={{ id: 5, name: 'Cork Timebank', paidUntil: '2026-12-31' }}
+        onClose={onClose}
+        onRecorded={onRecorded}
+      />,
+    );
+    await waitFor(() => expect(mockApi.get).toHaveBeenCalledWith(PAYMENTS_URL));
+
+    expect(screen.queryByLabelText('Received on')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Now paid up to and including')).not.toBeInTheDocument();
+    expect(button('Record payment')).toBeUndefined();
+    expect(button('Close')).toBeDefined();
+    expect(await screen.findByText('No payments have been recorded yet.')).toBeInTheDocument();
   });
 
   it('cannot be sent without a paid-until date', async () => {

@@ -340,7 +340,10 @@
     "none_yet": "Non ci sono ancora comunità.",
     "none_match": "Nessuna comunità corrisponde a questo filtro.",
     "load_failed": "Impossibile caricare l’elenco.",
-    "try_again": "Riprova"
+    "try_again": "Riprova",
+    "quick_month": "Un mese in più: {{date}}",
+    "quick_year": "Un anno in più: {{date}}",
+    "amount_from_plan": "Compilato dal prezzo del piano. Modificalo se è stato pagato un importo diverso."
   },
   "over_limit_rule": {
     "automation_off_note": "I controlli automatici della piattaforma sono disattivati, quindi qui non succede nulla finché il team della piattaforma non li attiva. Puoi comunque impostare la regola adesso.",

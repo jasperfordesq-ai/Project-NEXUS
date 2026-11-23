@@ -340,7 +340,10 @@
     "none_yet": "Il n’y a pas encore de communauté.",
     "none_match": "Aucune communauté ne correspond à ce filtre.",
     "load_failed": "La liste n’a pas pu être chargée.",
-    "try_again": "Réessayer"
+    "try_again": "Réessayer",
+    "quick_month": "Un mois de plus : {{date}}",
+    "quick_year": "Un an de plus : {{date}}",
+    "amount_from_plan": "Rempli d'après le prix du forfait. Modifiez-le si un autre montant a été payé."
   },
   "over_limit_rule": {
     "automation_off_note": "Les vérifications automatiques de la plateforme sont désactivées : rien ici ne s’applique tant que l’équipe de la plateforme ne les a pas activées. Vous pouvez quand même définir la règle dès maintenant.",

@@ -313,6 +313,8 @@ export function BillingControl() {
 
   // ---- record a payment / change how it pays ----
   const [paymentRow, setPaymentRow] = useState<TenantSnapshot | null>(null);
+  // The same dialog showing the payment history alone.
+  const [historyRow, setHistoryRow] = useState<TenantSnapshot | null>(null);
   const [payerRow, setPayerRow] = useState<TenantSnapshot | null>(null);
 
   // ---- one community's own over-limit rule ----
@@ -894,6 +896,7 @@ export function BillingControl() {
                               onAction={(key) => {
                                 if (key === 'assign') handleOpenAssign(row);
                                 else if (key === 'payment') setPaymentRow(row);
+                                else if (key === 'history') setHistoryRow(row);
                                 else if (key === 'paid_until') openPaidUntil(row);
                                 else if (key === 'payer') setPayerRow(row);
                                 else if (key === 'rule') setRuleRow(row);
@@ -909,6 +912,7 @@ export function BillingControl() {
                                   ? <DropdownItem key="assign" id="assign">{t('billing.assign_plan')}</DropdownItem>
                                   : <DropdownItem key="payment" id="payment">{t('control.record_payment')}</DropdownItem>,
                                 <DropdownItem key="paid_until" id="paid_until">{t('control.set_paid_until')}</DropdownItem>,
+                                <DropdownItem key="history" id="history">{t('control.history_title')}</DropdownItem>,
                                 <DropdownItem key="payer" id="payer">{t('control.change_payer')}</DropdownItem>,
                                 ...(row.over_limit_rule ? [
                                   <DropdownItem key="rule" id="rule">{t('over_limit_rule.open_dialog')}</DropdownItem>,
@@ -1173,12 +1177,32 @@ export function BillingControl() {
       </Modal>
 
       <RecordPaymentDialog
-        community={paymentRow ? { id: paymentRow.id, name: paymentRow.name, paidUntil: paymentRow.standing.paid_until } : null}
+        community={paymentRow ? {
+          id: paymentRow.id,
+          name: paymentRow.name,
+          paidUntil: paymentRow.standing.paid_until,
+          // What it is charged, after any agreed price or discount.
+          plan: paymentRow.current_plan ? {
+            monthly: paymentRow.current_plan.effective_price.monthly,
+            yearly: paymentRow.current_plan.effective_price.yearly,
+            currency: paymentRow.current_plan.currency,
+          } : null,
+        } : null}
         onClose={() => setPaymentRow(null)}
         onRecorded={() => {
           setPaymentRow(null);
           void fetchSnapshot();
         }}
+        onVoided={() => void fetchSnapshot()}
+      />
+
+      {/* The payment history alone: nobody should open a form for a new
+          payment to look at the old ones. */}
+      <RecordPaymentDialog
+        mode="history"
+        community={historyRow ? { id: historyRow.id, name: historyRow.name, paidUntil: historyRow.standing.paid_until } : null}
+        onClose={() => setHistoryRow(null)}
+        onRecorded={() => setHistoryRow(null)}
         onVoided={() => void fetchSnapshot()}
       />
 

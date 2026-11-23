@@ -678,7 +678,7 @@ describe('BillingControl', () => {
     // A community with a plan: the next thing it needs is a payment.
     expect(button('Record a payment')).toBeDefined();
     // Not on screen until the menu is opened.
-    for (const label of ['Assign plan', 'Set paid-until date', 'Change how it pays', 'Over-limit rule', 'Pause community', 'Exempt']) {
+    for (const label of ['Assign plan', 'Set paid-until date', 'Payment history', 'Change how it pays', 'Over-limit rule', 'Pause community', 'Exempt']) {
       expect(button(label)).toBeUndefined();
       expect(screen.queryAllByRole('menuitem').filter((b) => b.textContent?.trim() === label)).toHaveLength(0);
     }
@@ -686,7 +686,7 @@ describe('BillingControl', () => {
     fireEvent.click(screen.getByRole('button', { name: 'More actions for Cork Timebank' }));
 
     expect(screen.getAllByRole('menuitem').map((b) => b.textContent?.trim())).toEqual([
-      'Assign plan', 'Set paid-until date', 'Change how it pays', 'Over-limit rule', 'Pause community', 'Exempt',
+      'Assign plan', 'Set paid-until date', 'Payment history', 'Change how it pays', 'Over-limit rule', 'Pause community', 'Exempt',
     ]);
   });
 

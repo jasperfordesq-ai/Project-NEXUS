@@ -15,6 +15,13 @@
  * A parent community's manager uses the same dialog from Branch payments
  * (`via="branch"`) for a community that pays it.
  *
+ * 23 Nov 2026 (ease of use). The dialog does the arithmetic: two buttons offer
+ * the paid-until date one month or one year on, and fill in the amount and
+ * currency from the community's plan (still the person's to change). "Card" is
+ * no longer offered: card payments arrive from Stripe by themselves. With
+ * `mode="history"` the dialog shows the payment history alone, so past
+ * payments can be looked at without opening a form for a new one.
+ *
  * 🔴 The body and the history rows are the SERVER's shape
  * (POST /v2/admin/super/billing/standing/record-payment and
  * BillingStandingService::payments(); for a manager,
@@ -43,6 +50,13 @@ import { formatDate, getFormattingLocale } from '@/lib/helpers';
 
 export const PAYMENT_METHODS = ['bank_transfer', 'cheque', 'cash', 'card', 'other'] as const;
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
+
+/**
+ * What a person may record. Not `card`: Stripe reports a card payment by
+ * itself, and one typed in here would be counted twice. A card payment still
+ * appears in the history under that name.
+ */
+export const RECORDABLE_METHODS = PAYMENT_METHODS.filter((m) => m !== 'card');
 
 const CURRENCIES = ['GBP', 'EUR'] as const;
 
@@ -86,6 +100,8 @@ export interface RecordPaymentCommunity {
   id: number;
   name: string;
   paidUntil: string | null;
+  /** What its plan costs, so the amount can be offered. Left out or null when it has no plan. */
+  plan?: { monthly: number | null; yearly: number | null; currency: 'eur' | 'gbp' } | null;
 }
 
 interface RecordPaymentDialogProps {
@@ -108,6 +124,8 @@ interface RecordPaymentDialogProps {
    * reloads its list, because the paid-until date may have been set with it.
    */
   onVoided?: () => void;
+  /** `history`: the payment history alone, with no form for a new payment. */
+  mode?: 'record' | 'history';
 }
 
 /** The two endpoints for one community, by who is asking. */
@@ -137,6 +155,21 @@ function todayYmd(): string {
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 }
 
+/**
+ * A Y-m-d date one month or one year later. A day that the later month does
+ * not have (31 January + one month) becomes that month's last day, not a day
+ * in the month after.
+ */
+export function laterDate(ymd: string, step: 'month' | 'year'): string {
+  const [y, m, d] = ymd.split('-').map(Number);
+  if (!y || !m || !d) return '';
+  const months = step === 'year' ? 12 : 1;
+  const target = new Date(Date.UTC(y, m - 1 + months, 1));
+  const lastDay = new Date(Date.UTC(target.getUTCFullYear(), target.getUTCMonth() + 1, 0)).getUTCDate();
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${target.getUTCFullYear()}-${pad(target.getUTCMonth() + 1)}-${pad(Math.min(d, lastDay))}`;
+}
+
 function formatAmount(amount: string, currency: string | null): string {
   const value = Number(amount);
   if (!currency || Number.isNaN(value)) return amount;
@@ -148,7 +181,7 @@ function formatAmount(amount: string, currency: string | null): string {
   }
 }
 
-export function RecordPaymentDialog({ community, onClose, onRecorded, via = 'platform', payeeName = null, onVoided }: RecordPaymentDialogProps) {
+export function RecordPaymentDialog({ community, onClose, onRecorded, via = 'platform', payeeName = null, onVoided, mode = 'record' }: RecordPaymentDialogProps) {
   const { t } = useTranslation('admin_billing');
   const toast = useToast();
 
@@ -159,6 +192,8 @@ export function RecordPaymentDialog({ community, onClose, onRecorded, via = 'pla
   const [currency, setCurrency] = useState('');
   const [paidUntil, setPaidUntil] = useState('');
   const [saving, setSaving] = useState(false);
+  // True while the amount on screen is the one offered from the plan.
+  const [amountFromPlan, setAmountFromPlan] = useState(false);
 
   const [history, setHistory] = useState<ManualPayment[] | null>(null);
   const [historyFailed, setHistoryFailed] = useState(false);
@@ -173,6 +208,9 @@ export function RecordPaymentDialog({ community, onClose, onRecorded, via = 'pla
   const [paidUntilAfterVoid, setPaidUntilAfterVoid] = useState<string | null | undefined>(undefined);
 
   const communityId = community?.id ?? null;
+  // The currency of its plan, when it has one: a plain word, so the form is
+  // reset only when it really changes.
+  const planCurrency = community?.plan ? community.plan.currency.toUpperCase() : '';
   const communityPaidUntil = paidUntilAfterVoid !== undefined ? paidUntilAfterVoid : (community?.paidUntil ?? null);
 
   const loadHistory = useCallback(async (tenantId: number) => {
@@ -193,14 +231,17 @@ export function RecordPaymentDialog({ community, onClose, onRecorded, via = 'pla
     setMethod('bank_transfer');
     setReference('');
     setAmount('');
-    setCurrency('');
+    setAmountFromPlan(false);
+    // The community's own currency when its plan is known; the amount is
+    // offered with the date, below.
+    setCurrency(planCurrency);
     // Left empty on purpose. Prefilled with the current date it was sent back
     // unchanged, and a payment that does not move the date changes nothing.
     setPaidUntil('');
     setVoiding(null);
     setPaidUntilAfterVoid(undefined);
     void loadHistory(communityId);
-  }, [communityId, loadHistory]);
+  }, [communityId, loadHistory, planCurrency]);
 
   const startVoiding = (payment: ManualPayment) => {
     setVoidReason('');
@@ -233,6 +274,23 @@ export function RecordPaymentDialog({ community, onClose, onRecorded, via = 'pla
 
     // admin-i18n-ignore: localized server message — AdminSuperController void-payment refusals (lang/*/api.php)
     toast.error(response.error || t('billing.standing_failed'));
+  };
+
+  // One month or one year on from the date it is paid up to now, or from the
+  // day the payment was received when it has no date yet.
+  const dateBase = communityPaidUntil ?? receivedOn;
+  const offers = (['month', 'year'] as const).map((step) => ({ step, date: dateBase ? laterDate(dateBase, step) : '' }))
+    .filter((offer) => offer.date !== '');
+
+  const takeOffer = (step: 'month' | 'year', date: string) => {
+    setPaidUntil(date);
+    // The plan's price for that period, unless the person has typed their own.
+    const price = step === 'year' ? community?.plan?.yearly : community?.plan?.monthly;
+    if (community?.plan && typeof price === 'number' && price > 0 && (amount.trim() === '' || amountFromPlan)) {
+      setAmount(String(price));
+      setCurrency(community.plan.currency.toUpperCase());
+      setAmountFromPlan(true);
+    }
   };
 
   const hasAmount = amount.trim() !== '';
@@ -277,7 +335,7 @@ export function RecordPaymentDialog({ community, onClose, onRecorded, via = 'pla
     <Modal isOpen={community !== null} onClose={onClose} size="2xl" scrollBehavior="inside">
       <ModalContent>
         <ModalHeader>
-          {voiding ? t('control.void_title') : t('control.record_payment')}
+          {voiding ? t('control.void_title') : mode === 'history' ? t('control.history_title') : t('control.record_payment')}
           {community && (
             <span className="text-muted text-sm font-normal ml-2">
               — {community.name}
@@ -321,6 +379,8 @@ export function RecordPaymentDialog({ community, onClose, onRecorded, via = 'pla
             </div>
           ) : (
           <div className="flex flex-col gap-4">
+            {mode === 'history' ? null : (
+            <>
             <p className="text-sm text-muted">
               {via === 'branch' && payeeName
                 ? t('control.record_payment_help_branch', { payee: payeeName })
@@ -340,11 +400,11 @@ export function RecordPaymentDialog({ community, onClose, onRecorded, via = 'pla
               orientation="horizontal"
               value={method}
               onValueChange={(value) => {
-                const found = PAYMENT_METHODS.find((m) => m === value);
+                const found = RECORDABLE_METHODS.find((m) => m === value);
                 if (found) setMethod(found);
               }}
             >
-              {PAYMENT_METHODS.map((m) => (
+              {RECORDABLE_METHODS.map((m) => (
                 <Radio key={m} value={m}>{t(`control.method_${m}`)}</Radio>
               ))}
             </RadioGroup>
@@ -366,7 +426,11 @@ export function RecordPaymentDialog({ community, onClose, onRecorded, via = 'pla
                 inputMode="decimal"
                 isInvalid={amountInvalid}
                 value={amount}
-                onValueChange={setAmount}
+                onValueChange={(value: string) => {
+                  setAmount(value);
+                  setAmountFromPlan(false);
+                }}
+                description={amountFromPlan ? t('control.amount_from_plan') : undefined}
               />
               <RadioGroup
                 label={t('control.currency_label')}
@@ -398,6 +462,24 @@ export function RecordPaymentDialog({ community, onClose, onRecorded, via = 'pla
                 ? t('control.currently_paid_until', { date: formatDate(communityPaidUntil) })
                 : undefined}
             />
+            {/* The usual answers, one press each: nobody should have to work
+                out a date in their head. */}
+            {offers.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {offers.map((offer) => (
+                  <Button
+                    key={offer.step}
+                    size="sm"
+                    variant={paidUntil === offer.date ? 'secondary' : 'tertiary'}
+                    onPress={() => takeOffer(offer.step, offer.date)}
+                  >
+                    {t(offer.step === 'year' ? 'control.quick_year' : 'control.quick_month', { date: formatDate(offer.date) })}
+                  </Button>
+                ))}
+              </div>
+            ) : null}
+            </>
+            )}
 
             <section className="flex flex-col gap-2" aria-labelledby="record-payment-history-title">
               <h3 id="record-payment-history-title" className="text-sm font-semibold">
@@ -513,11 +595,13 @@ export function RecordPaymentDialog({ community, onClose, onRecorded, via = 'pla
         ) : (
           <ModalFooter>
             <Button variant="tertiary" onPress={onClose} isDisabled={saving}>
-              {t('billing.cancel')}
+              {mode === 'history' ? t('common.close') : t('billing.cancel')}
             </Button>
-            <Button onPress={() => void save()} isLoading={saving} isDisabled={!canSave}>
-              {t('control.record_payment_save')}
-            </Button>
+            {mode === 'history' ? null : (
+              <Button onPress={() => void save()} isLoading={saving} isDisabled={!canSave}>
+                {t('control.record_payment_save')}
+              </Button>
+            )}
           </ModalFooter>
         )}
       </ModalContent>

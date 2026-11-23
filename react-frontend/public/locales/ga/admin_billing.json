@@ -340,7 +340,10 @@
     "none_yet": "Níl aon phobal ann fós.",
     "none_match": "Níl aon phobal ag teacht leis an scagaire seo.",
     "load_failed": "Níorbh fhéidir an liosta a lódáil.",
-    "try_again": "Bain triail eile as"
+    "try_again": "Bain triail eile as",
+    "quick_month": "Mí amháin eile: {{date}}",
+    "quick_year": "Bliain amháin eile: {{date}}",
+    "amount_from_plan": "Líonta ó phraghas an phlean. Athraigh é má íocadh suim eile."
   },
   "over_limit_rule": {
     "automation_off_note": "Tá seiceálacha uathoibríocha an ardáin múchta, mar sin ní ghníomhaíonn aon rud anseo go dtí go gcasann foireann an ardáin air iad. Is féidir leat an riail a shocrú anois fós.",

@@ -195,6 +195,8 @@ export function BranchPayments() {
   const [savingPlan, setSavingPlan] = useState(false);
   const [ruleRow, setRuleRow] = useState<BranchRow | null>(null);
   const [paymentRow, setPaymentRow] = useState<BranchRow | null>(null);
+  // The same dialog showing the payment history alone.
+  const [historyRow, setHistoryRow] = useState<BranchRow | null>(null);
   // The community the plan dialog is open on now: a late reply for another is dropped.
   const planFor = useRef<number | null>(null);
 
@@ -484,6 +486,7 @@ export function BranchPayments() {
                                 aria-label={t('admin_billing:billing.more_actions_for', { name: row.name })}
                                 onAction={(key) => {
                                   if (key === 'date') openDialog(row, 'date');
+                                  else if (key === 'history') setHistoryRow(row);
                                   else if (key === 'plan') void openPlanDialog(row);
                                   else if (key === 'rule') setRuleRow(row);
                                   else if (key === 'pause') openDialog(row, 'pause');
@@ -492,6 +495,7 @@ export function BranchPayments() {
                               >
                                 {[
                                   <DropdownItem key="date" id="date">{t('branch_payments.set_date')}</DropdownItem>,
+                                  <DropdownItem key="history" id="history">{t('admin_billing:control.history_title')}</DropdownItem>,
                                   ...(canChangePlan ? [
                                     <DropdownItem key="plan" id="plan">{t('branch_payments.change_plan')}</DropdownItem>,
                                   ] : []),
@@ -576,13 +580,34 @@ export function BranchPayments() {
 
       <RecordPaymentDialog
         via="branch"
-        community={paymentRow ? { id: paymentRow.id, name: paymentRow.name, paidUntil: paymentRow.standing.paid_until } : null}
+        community={paymentRow ? {
+          id: paymentRow.id,
+          name: paymentRow.name,
+          paidUntil: paymentRow.standing.paid_until,
+          // The plan on its parent community's terms: what it is asked to pay.
+          plan: paymentRow.plan ? {
+            monthly: amount(paymentRow.plan.price_monthly),
+            yearly: amount(paymentRow.plan.price_yearly),
+            currency: paymentRow.plan.currency,
+          } : null,
+        } : null}
         payeeName={paymentRow?.parent_name ?? null}
         onClose={() => setPaymentRow(null)}
         onRecorded={() => {
           setPaymentRow(null);
           void load();
         }}
+        onVoided={() => void load()}
+      />
+
+      {/* The payment history alone, from the row's menu. */}
+      <RecordPaymentDialog
+        via="branch"
+        mode="history"
+        community={historyRow ? { id: historyRow.id, name: historyRow.name, paidUntil: historyRow.standing.paid_until } : null}
+        payeeName={historyRow?.parent_name ?? null}
+        onClose={() => setHistoryRow(null)}
+        onRecorded={() => setHistoryRow(null)}
         onVoided={() => void load()}
       />
 

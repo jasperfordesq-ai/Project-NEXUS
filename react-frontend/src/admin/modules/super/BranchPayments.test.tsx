@@ -813,7 +813,7 @@ describe('BranchPayments', () => {
     // were the widest thing on the row.
     expect(screen.queryByRole('button', { name: 'Set paid-until date' })).not.toBeInTheDocument();
     const items = screen.getAllByRole('menuitem').map((b) => b.textContent?.trim());
-    expect(items).toEqual(['Set paid-until date', 'Change plan', 'Over-limit rule', 'Restore community']);
+    expect(items).toEqual(['Set paid-until date', 'Payment history', 'Change plan', 'Over-limit rule', 'Restore community']);
   });
 
   it('opens on the community’s own rule and posts the choice', async () => {

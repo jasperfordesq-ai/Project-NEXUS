@@ -340,7 +340,10 @@
     "none_yet": "Nie ma jeszcze żadnych społeczności.",
     "none_match": "Żadna społeczność nie pasuje do tego filtra.",
     "load_failed": "Nie udało się wczytać listy.",
-    "try_again": "Spróbuj ponownie"
+    "try_again": "Spróbuj ponownie",
+    "quick_month": "Jeden miesiąc dalej: {{date}}",
+    "quick_year": "Jeden rok dalej: {{date}}",
+    "amount_from_plan": "Uzupełniono na podstawie ceny planu. Zmień, jeśli zapłacono inną kwotę."
   },
   "over_limit_rule": {
     "automation_off_note": "Automatyczne kontrole platformy są wyłączone, więc nic tutaj nie działa, dopóki zespół platformy ich nie włączy. Regułę można jednak ustawić już teraz.",

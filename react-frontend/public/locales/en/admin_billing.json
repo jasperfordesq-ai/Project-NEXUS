@@ -340,7 +340,10 @@
     "none_yet": "There are no communities yet.",
     "none_match": "No community matches this filter.",
     "load_failed": "The list could not be loaded.",
-    "try_again": "Try again"
+    "try_again": "Try again",
+    "quick_month": "Add one month: {{date}}",
+    "quick_year": "Add one year: {{date}}",
+    "amount_from_plan": "Filled in from the plan's price. Change it if a different amount was paid."
   },
   "over_limit_rule": {
     "automation_off_note": "The platform’s automatic checks are switched off, so nothing here acts until the platform team switches them on. You can still set the rule now.",
