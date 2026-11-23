@@ -52,18 +52,31 @@ final class BranchPayments
 
         // A platform-wide super admin "can manage" any id, including one that
         // does not exist.
-        if (!DB::table('tenants')->where('id', $tenantId)->exists()) {
+        $tenant = DB::table('tenants')->where('id', $tenantId)->first(['parent_id']);
+        if ($tenant === null) {
             return self::NOT_IN_REACH;
         }
 
-        // Decided from where the community sits as well as from its record:
-        // anything directly under the platform's own community pays the
-        // platform whatever a stored value says, so a wrong or changed
-        // `payer` can never hand it to a manager.
-        $parentId = DB::table('tenants')->where('id', $tenantId)->value('parent_id');
-        $standing = BillingStandingService::get($tenantId);
+        return self::refusalFrom(
+            $tenant->parent_id !== null ? (int) $tenant->parent_id : null,
+            BillingStandingService::get($tenantId)
+        );
+    }
 
-        if ($parentId === null || (int) $parentId <= 1 || $standing['payer'] !== 'parent') {
+    /**
+     * refusalFor() for a community the caller is known to reach, from its
+     * parent and standing already in hand (the list has both for every row).
+     *
+     * Decided from where the community sits as well as from its record:
+     * anything directly under the platform's own community pays the platform
+     * whatever a stored value says, so a wrong or changed `payer` can never
+     * hand it to a manager.
+     *
+     * @param array<string, mixed> $standing BillingStandingService::get()
+     */
+    private static function refusalFrom(?int $parentId, array $standing): ?string
+    {
+        if ($parentId === null || $parentId <= 1 || $standing['payer'] !== 'parent') {
             return self::PAYS_PLATFORM;
         }
 
@@ -152,10 +165,22 @@ final class BranchPayments
         $today = now()->startOfDay();
         $rows = [];
 
-        foreach (DB::select($sql, $params) as $tenant) {
+        $tenants = DB::select($sql, $params);
+        // Both member figures for every row, counted once (four queries in
+        // all) instead of four queries per row. The same figures members()
+        // gives for one community.
+        $ids = array_map(static fn (object $tenant): int => (int) $tenant->id, $tenants);
+        $activeCounts = TenantBillingService::activeMemberCountsForBranches($ids);
+        $totalCounts = TenantBillingService::allMemberCountsForBranches($ids);
+
+        foreach ($tenants as $tenant) {
             $id = (int) $tenant->id;
             $standing = BillingStandingService::get($id);
-            $refusal = self::refusalFor($id);
+            // refusalFor(), without reading the community and its standing a
+            // second time: both are in hand. Reach is still asked per row.
+            $refusal = SuperPanelAccess::canManageTenant($id)
+                ? self::refusalFrom($tenant->parent_id !== null ? (int) $tenant->parent_id : null, $standing)
+                : self::NOT_IN_REACH;
 
             $daysLate = null;
             if ($standing['paid_until'] !== null) {
@@ -176,7 +201,7 @@ final class BranchPayments
             // when it pays its parent. Never the assignment's custom price or
             // discount, which are the platform team's.
             $plan = PlanTerms::forCommunity($id);
-            $members = self::members($id, $plan['max_users'] ?? null);
+            $members = self::membersFrom($activeCounts[$id] ?? 0, $totalCounts[$id] ?? 0, $plan['max_users'] ?? null);
 
             $rows[] = [
                 'id' => $id,
@@ -193,7 +218,11 @@ final class BranchPayments
                 'members' => $members,
                 // Only the plan-specific reason: a row the caller cannot act
                 // on at all already says why in `cannot_act_reason`.
-                'plan_change_refusal' => $refusal === null ? self::planChangeRefusalFor($id) : null,
+                // planChangeRefusalFor(), without asking refusalFor() a
+                // second time: it was answered just above.
+                'plan_change_refusal' => $refusal === null && TenantBillingService::hasLiveCardSubscription($id)
+                    ? self::CARD_SUBSCRIPTION
+                    : null,
                 // The rule for going over the member number, where it comes
                 // from, what is stored on the community itself, and the day
                 // the daily check would pause it.
@@ -231,12 +260,26 @@ final class BranchPayments
      */
     public static function members(int $tenantId, ?int $maxUsers): array
     {
-        $active = TenantBillingService::getSubtreeActiveMemberCount($tenantId);
+        return self::membersFrom(
+            TenantBillingService::getSubtreeActiveMemberCount($tenantId),
+            TenantBillingService::getSubtreeUserCount($tenantId),
+            $maxUsers
+        );
+    }
+
+    /**
+     * members(), from figures already counted (the list counts every row's at
+     * once).
+     *
+     * @return array{active: int, total: int, window_days: int, max: ?int, percent: ?int, level: 'ok'|'near'|'full'|'over', over: bool}
+     */
+    public static function membersFrom(int $active, int $total, ?int $maxUsers): array
+    {
         $max = $maxUsers !== null && $maxUsers > 0 ? $maxUsers : null;
 
         return [
             'active' => $active,
-            'total' => TenantBillingService::getSubtreeUserCount($tenantId),
+            'total' => $total,
             'window_days' => StandardPlans::ACTIVE_WINDOW_DAYS,
             'max' => $max,
             'percent' => $max !== null ? intdiv($active * 100, $max) : null,

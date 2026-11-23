@@ -172,22 +172,52 @@ class TenantBillingService
      * @param  list<int> $tenantIds
      * @return array<int, int> tenant id => active members in its branch
      */
-    private static function activeMemberCountsForBranches(array $tenantIds, int $days = StandardPlans::ACTIVE_WINDOW_DAYS): array
+    public static function activeMemberCountsForBranches(array $tenantIds, int $days = StandardPlans::ACTIVE_WINDOW_DAYS): array
+    {
+        return self::memberCountsForBranches($tenantIds, now()->subDays($days));
+    }
+
+    /**
+     * getSubtreeUserCount() for many tenants in two queries: every account in
+     * good standing in each branch, signed in lately or not. The same figure,
+     * by the same path-prefix rule, for the lists that show "All members"
+     * beside the active number and must not add two queries per row for it.
+     *
+     * @param  list<int> $tenantIds
+     * @return array<int, int> tenant id => members in its branch
+     */
+    public static function allMemberCountsForBranches(array $tenantIds): array
+    {
+        return self::memberCountsForBranches($tenantIds, null);
+    }
+
+    /**
+     * @param  list<int> $tenantIds
+     * @param  ?\DateTimeInterface $since only members who signed in at or after this; null = everyone
+     * @return array<int, int>
+     */
+    private static function memberCountsForBranches(array $tenantIds, ?\DateTimeInterface $since): array
     {
         if ($tenantIds === []) {
             return [];
         }
 
-        $since = now()->subDays($days);
-
         $perTenant = [];
-        foreach (DB::select(
-            "SELECT tenant_id, COUNT(*) AS cnt
-             FROM users
-             WHERE status = 'active' AND last_login_at >= ?
-             GROUP BY tenant_id",
-            [$since]
-        ) as $row) {
+        $counted = $since !== null
+            ? DB::select(
+                "SELECT tenant_id, COUNT(*) AS cnt
+                 FROM users
+                 WHERE status = 'active' AND last_login_at >= ?
+                 GROUP BY tenant_id",
+                [$since]
+            )
+            : DB::select(
+                "SELECT tenant_id, COUNT(*) AS cnt
+                 FROM users
+                 WHERE status = 'active'
+                 GROUP BY tenant_id"
+            );
+        foreach ($counted as $row) {
             $perTenant[(int) $row->tenant_id] = (int) $row->cnt;
         }
 
@@ -398,6 +428,8 @@ class TenantBillingService
         }
 
         $activeCountMap = self::activeMemberCountsForBranches($tenantIds);
+        // "All members" for every row in two queries, not two per row.
+        $subtreeCountMap = self::allMemberCountsForBranches($tenantIds);
 
         // The newest payment recorded by hand per community, in one query.
         // Newest = latest received, then latest recorded, as the history.
@@ -428,7 +460,7 @@ class TenantBillingService
         foreach ($tenants as $tenant) {
             $id           = (int) $tenant->id;
             $ownCount     = $ownCountMap[$id] ?? 0;
-            $subtreeCount = self::getSubtreeUserCount($id);
+            $subtreeCount = $subtreeCountMap[$id] ?? 0;
             $activeCount  = $activeCountMap[$id] ?? 0;
             $currentPlan  = $planMap[$id] ?? null;
 
