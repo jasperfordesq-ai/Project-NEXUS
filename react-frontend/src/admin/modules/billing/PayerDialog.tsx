@@ -6,9 +6,13 @@
 /**
  * PayerDialog
  * The platform team sets how a community pays: by card, by invoice or bank
- * transfer, through its parent, or not at all. "Use the default" sends
+ * transfer, through its parent, or not at all. "The usual way" sends
  * `payer: null`, which hands the choice back to the server's own rule
  * (BillingStandingService::defaultPayer()).
+ *
+ * The usual choice comes first and says what it means for this community. A
+ * choice that cannot be made says why, and "by card" says that choosing it
+ * does not set a card up (23 Nov 2026).
  */
 
 import { useEffect, useState } from 'react';
@@ -102,20 +106,36 @@ export function PayerDialog({ community, onClose, onSaved }: PayerDialogProps) {
             value={choice}
             onValueChange={setChoice}
           >
-            {PAYERS.map((payer) => (
-              <Radio
-                key={payer}
-                value={payer}
-                description={t(`control.payer_help_${payer}`)}
-                isDisabled={payer === 'parent' && community !== null && !community.canPayParent}
-              >
-                {t(`billing.payer_${payer}`)}
-              </Radio>
-            ))}
-            <Radio value={DEFAULT_CHOICE} description={t('control.payer_help_default')}>
+            {/* The usual choice first. When it is the one in force, it says
+                what the platform's rule comes to for this community. */}
+            <Radio
+              value={DEFAULT_CHOICE}
+              description={[
+                t('control.payer_help_default'),
+                community?.payerIsDefault
+                  ? t('control.payer_default_now', { payer: t(`billing.payer_${community.payer}`) })
+                  : null,
+              ].filter((part) => part !== null).join(' ')}
+            >
               {t('control.payer_default')}
             </Radio>
+            {PAYERS.map((payer) => {
+              const noParent = payer === 'parent' && community !== null && !community.canPayParent;
+              return (
+                <Radio
+                  key={payer}
+                  value={payer}
+                  // A greyed-out choice says why, in place of what it would do.
+                  description={noParent ? t('control.payer_parent_unavailable') : t(`control.payer_help_${payer}`)}
+                  isDisabled={noParent}
+                >
+                  {t(`billing.payer_${payer}`)}
+                </Radio>
+              );
+            })}
           </RadioGroup>
+          {/* BillingStandingService::setPayer() restarts the payment warnings. */}
+          <p className="mt-4 border-t border-divider pt-3 text-xs text-muted">{t('control.payer_change_note')}</p>
         </ModalBody>
         <ModalFooter>
           <Button variant="tertiary" onPress={onClose} isDisabled={saving}>

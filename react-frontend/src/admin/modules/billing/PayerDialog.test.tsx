@@ -96,13 +96,13 @@ describe('PayerDialog', () => {
     expect(screen.getByLabelText('Platform, by invoice')).toBeInTheDocument();
     expect(screen.getByLabelText('Its parent community')).toBeInTheDocument();
     expect(screen.getByLabelText('Not billed')).toBeInTheDocument();
-    expect(screen.getByLabelText('Use the default')).toBeInTheDocument();
+    expect(screen.getByLabelText('The usual way (recommended)')).toBeInTheDocument();
     expect(screen.getByText((text) => text.startsWith('Pays the platform by invoice or bank transfer.'))).toBeInTheDocument();
   });
 
   it('opens on the default when nothing has been chosen, and on the stored choice otherwise', async () => {
     await renderDialog();
-    expect(screen.getByLabelText('Use the default')).toBeChecked();
+    expect(screen.getByLabelText('The usual way (recommended)')).toBeChecked();
   });
 
   it('opens on a stored choice', async () => {
@@ -126,15 +126,58 @@ describe('PayerDialog', () => {
     const user = userEvent.setup();
     await renderDialog({ payer: 'not_billed', payerIsDefault: false });
 
-    await user.click(screen.getByLabelText('Use the default'));
+    await user.click(screen.getByLabelText('The usual way (recommended)'));
     await user.click(button('Save')!);
 
     await waitFor(() => expect(mockApi.post).toHaveBeenCalledWith(PAYER_URL, { tenant_id: 5, payer: null }));
   });
 
-  it('does not offer "its parent" to a community with no parent below the platform', async () => {
+  it('does not offer "its parent" to a community with no parent below the platform, and says why', async () => {
     await renderDialog({ canPayParent: false });
     expect(screen.getByLabelText('Its parent community')).toBeDisabled();
+    expect(screen.getByText(
+      'Not available. This community sits directly under the platform, so it has no parent community to pay.',
+    )).toBeInTheDocument();
+    // The reason stands in place of what the choice would do.
+    expect(screen.queryByText('Pays its parent community, not the platform.')).not.toBeInTheDocument();
+  });
+
+  it('says what the choice does when "its parent" can be chosen', async () => {
+    await renderDialog({ canPayParent: true });
+    expect(screen.getByLabelText('Its parent community')).not.toBeDisabled();
+    expect(screen.getByText('Pays its parent community, not the platform.')).toBeInTheDocument();
+    expect(screen.queryByText(/^Not available\./)).not.toBeInTheDocument();
+  });
+
+  // ── The box explains itself (23 Nov 2026) ────────────────────────────────
+
+  it('puts the usual way first', async () => {
+    await renderDialog();
+
+    const radios = screen.getAllByRole('radio');
+    expect(radios).toHaveLength(5);
+    expect(radios[0]).toBe(screen.getByLabelText('The usual way (recommended)'));
+    expect(radios[1]).toBe(screen.getByLabelText('Platform, by card'));
+    expect(radios[4]).toBe(screen.getByLabelText('Not billed'));
+  });
+
+  it('says what the usual way comes to for this community while it is in force', async () => {
+    await renderDialog({ payer: 'platform_invoice', payerIsDefault: true });
+
+    expect(screen.getByText((text) => text.endsWith('For this community that is now: Platform, by invoice.'))).toBeInTheDocument();
+  });
+
+  it('does not guess what the usual way would come to while another choice is stored', async () => {
+    await renderDialog({ payer: 'not_billed', payerIsDefault: false });
+
+    expect(screen.queryByText((text) => text.includes('For this community that is now'))).not.toBeInTheDocument();
+  });
+
+  it('says that choosing "by card" does not set a card up, and that a change restarts the warnings', async () => {
+    await renderDialog();
+
+    expect(screen.getByText((text) => text.includes("Choosing this does not set up a card: the community's own admin does that from its Billing page."))).toBeInTheDocument();
+    expect(screen.getByText('Changing this starts the payment warnings again, so the community is never paused without a fresh warning.')).toBeInTheDocument();
   });
 
   it('shows the server’s own refusal', async () => {
