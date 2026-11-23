@@ -341,6 +341,25 @@ describe('BranchPlans', () => {
     expect(screen.queryByText((text) => text.includes('on this plan.'))).not.toBeInTheDocument();
   });
 
+  // ── "How to pay", written once by whoever is paid (23 Nov 2026) ─────────
+
+  it('lets the parent community write its how-to-pay note, and warns while there is none', async () => {
+    await renderWith(makeResponse());
+
+    const card = screen.getByTestId('branch-how-to-pay');
+    expect(card).toHaveTextContent('How to pay note');
+    expect(card).toHaveTextContent('Shown to every community that pays this community:');
+    expect(card).toHaveTextContent('No note is written yet, so these communities are not told how to pay.');
+  });
+
+  it('does not warn once the parent community has written its note', async () => {
+    await renderWith(makeResponse({ how_to_pay: 'Pay by cheque to Timebanking UK.', how_to_pay_max: 600 }));
+
+    const card = screen.getByTestId('branch-how-to-pay');
+    expect(card).not.toHaveTextContent('No note is written yet');
+    expect(card).toHaveTextContent('32 of 600 characters');
+  });
+
   it('leads with the euro price for a hub that bills in euro', async () => {
     await renderWith(makeResponse({ hub_currency: 'eur' }));
 

@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent, within } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 
 // ── Stable mock refs (hoisted so they're available inside vi.mock factories) ──
@@ -13,6 +13,7 @@ const { mockToast, mockBillingApi, mockApi } = vi.hoisted(() => ({
   mockBillingApi: {
     getSubscription: vi.fn(),
     getStanding: vi.fn(),
+    getPayments: vi.fn(),
     createPortal: vi.fn(),
     getPlans: vi.fn(),
     createCheckout: vi.fn(),
@@ -95,14 +96,31 @@ const standing = (over: Record<string, unknown> = {}) => ({
   ...over,
 });
 
-function serve(sub: unknown, stand: unknown) {
+/** A row of GET /v2/admin/billing/payments (pinned by HowToPayNoteTest). */
+const payment = (over: Record<string, unknown> = {}) => ({
+  id: 3,
+  received_on: '2026-11-02',
+  method: 'bank_transfer',
+  amount: '480.00',
+  currency: 'EUR',
+  paid_until_after: '2027-10-31',
+  source: 'manual',
+  paid_to: 'platform',
+  voided: false,
+  refunded_amount: null,
+  ...over,
+});
+
+function serve(sub: unknown, stand: unknown, payments: unknown[] = []) {
   mockBillingApi.getSubscription.mockResolvedValue({ success: true, data: sub });
   mockBillingApi.getStanding.mockResolvedValue({ success: true, data: stand });
+  mockBillingApi.getPayments.mockResolvedValue({ success: true, data: payments });
 }
 
 describe('BillingPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockBillingApi.getPayments.mockResolvedValue({ success: true, data: [] });
   });
 
   it('shows loading spinner while the page is fetching', () => {
@@ -198,13 +216,152 @@ describe('BillingPage', () => {
     expect(screen.queryByText('Next billing date')).not.toBeInTheDocument();
   });
 
-  it('says so, and offers "Choose plan", when the community has no plan', async () => {
+  // ── Read-only for everyone but a card payer (owner, 23 Nov 2026) ─────────
+
+  it('is read-only for a community that pays by invoice: no plan picker, no card invoices, and a way to ask', async () => {
+    serve(
+      subscription({ stripe_subscription_id: null, stripe_status: null, billing_interval: null, current_period_end: null, has_card_subscription: false }),
+      standing({ payer: 'platform_invoice' }),
+    );
+
+    render(<BillingPage />);
+
+    await waitFor(() => expect(screen.getByText('Local')).toBeInTheDocument());
+    expect(screen.getByText(/This community pays the platform by invoice\./)).toBeInTheDocument();
+    // Changing a plan here goes through card checkout: not for an invoice payer.
+    expect(screen.queryByRole('link', { name: /change plan/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /view invoices/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Message the platform team' })).toBeInTheDocument();
+  });
+
+  it('says so when the community has no plan, and tells an invoice payer who to ask', async () => {
     serve(null, standing({ payer: 'platform_invoice', paid_until: null, member_limit: null, plan: null }));
 
     render(<BillingPage />);
 
     await waitFor(() => expect(screen.getByText('This community has no plan yet.')).toBeInTheDocument());
+    expect(screen.queryByRole('link', { name: /choose plan/i })).not.toBeInTheDocument();
+    expect(screen.getByText(/The platform team sets this community's plan\./)).toBeInTheDocument();
+  });
+
+  it('offers "Choose plan" to a card payer with no plan', async () => {
+    serve(null, standing({ payer: 'platform_card', paid_until: null, member_limit: null, plan: null }));
+
+    render(<BillingPage />);
+
+    await waitFor(() => expect(screen.getByText('This community has no plan yet.')).toBeInTheDocument());
     expect(screen.getAllByRole('link', { name: /choose plan/i }).length).toBeGreaterThan(0);
+  });
+
+  it('says "No date set" when a billed community has no paid-until date, and nothing for one nobody bills', async () => {
+    serve(
+      subscription({ stripe_subscription_id: null, stripe_status: null, has_card_subscription: false }),
+      standing({ payer: 'platform_invoice', paid_until: null }),
+    );
+    const first = render(<BillingPage />);
+    expect(await screen.findByTestId('own-paid-until')).toHaveTextContent('No date set');
+    first.unmount();
+
+    serve(
+      subscription({ stripe_subscription_id: null, stripe_status: null, has_card_subscription: false }),
+      standing({ payer: 'not_billed', paid_until: null }),
+    );
+    render(<BillingPage />);
+    await waitFor(() => expect(screen.getByText('Not billed')).toBeInTheDocument());
+    expect(screen.queryByTestId('own-paid-until')).not.toBeInTheDocument();
+  });
+
+  // ── How to pay, in the payee's own words ─────────────────────────────────
+
+  it('shows the platform team\'s how-to-pay note to an invoice payer, as plain text', async () => {
+    serve(
+      subscription({ stripe_subscription_id: null, stripe_status: null, has_card_subscription: false }),
+      standing({ payer: 'platform_invoice', how_to_pay: 'Pay by bank transfer.\nIBAN IE00 TEST 0000\n<b>not markup</b>' }),
+    );
+
+    render(<BillingPage />);
+
+    const card = within(await screen.findByTestId('how-to-pay'));
+    expect(card.getByText('How to pay')).toBeInTheDocument();
+    expect(card.getByText('From the platform team')).toBeInTheDocument();
+    expect(card.getByText(/IBAN IE00 TEST 0000/)).toBeInTheDocument();
+    // Another community's words are text, never markup.
+    expect(card.getByText(/<b>not markup<\/b>/)).toBeInTheDocument();
+    expect(card.queryByText('not markup')).not.toBeInTheDocument();
+  });
+
+  it('names the parent community it pays, and says the note is from that community', async () => {
+    serve(
+      subscription({ stripe_subscription_id: null, stripe_status: null, has_card_subscription: false }),
+      standing({ payer: 'parent', payee_name: 'Cork Timebank', how_to_pay: 'Pay Cork by cheque.' }),
+    );
+
+    render(<BillingPage />);
+
+    expect(await screen.findByTestId('own-payer')).toHaveTextContent('Cork Timebank, its parent community');
+    const card = within(screen.getByTestId('how-to-pay'));
+    expect(card.getByText('From Cork Timebank')).toBeInTheDocument();
+    expect(card.getByText('Pay Cork by cheque.')).toBeInTheDocument();
+  });
+
+  it('shows no how-to-pay card when nobody has written a note', async () => {
+    serve(subscription(), standing({ how_to_pay: null }));
+
+    render(<BillingPage />);
+
+    await waitFor(() => expect(screen.getByText('Local')).toBeInTheDocument());
+    expect(screen.queryByTestId('how-to-pay')).not.toBeInTheDocument();
+  });
+
+  // ── The community's own payments ─────────────────────────────────────────
+
+  it('lists the payments recorded for the community', async () => {
+    serve(subscription(), standing(), [
+      payment(),
+      payment({ id: 4, received_on: '2025-11-01', method: 'cash', amount: null, currency: null, paid_until_after: '2026-10-31' }),
+    ]);
+
+    render(<BillingPage />);
+
+    const first = within(await screen.findByTestId('own-payment-3'));
+    expect(first.getByText('Bank transfer')).toBeInTheDocument();
+    expect(first.getByText(/480/)).toBeInTheDocument();
+    const second = within(screen.getByTestId('own-payment-4'));
+    expect(second.getByText('Cash')).toBeInTheDocument();
+    expect(second.getByText('Not recorded')).toBeInTheDocument();
+  });
+
+  it('keeps a voided payment in the list and says it is not counted', async () => {
+    serve(subscription(), standing(), [payment({ voided: true })]);
+
+    render(<BillingPage />);
+
+    const row = within(await screen.findByTestId('own-payment-3'));
+    expect(row.getByText('Voided: it was recorded by mistake and is not counted.')).toBeInTheDocument();
+    expect(row.getByText('Bank transfer').className).toMatch(/line-through/);
+  });
+
+  it('shows a way of paying it does not know as "Other", not as a raw word', async () => {
+    serve(subscription(), standing(), [payment({ method: 'direct_debit_2027' })]);
+
+    render(<BillingPage />);
+
+    const row = within(await screen.findByTestId('own-payment-3'));
+    expect(row.getByText('Other')).toBeInTheDocument();
+    expect(row.queryByText('direct_debit_2027')).not.toBeInTheDocument();
+  });
+
+  it('says so when there are no payments, or when they cannot be loaded, and still shows the plan', async () => {
+    serve(subscription(), standing(), []);
+    const first = render(<BillingPage />);
+    expect(await screen.findByText('No payments are recorded yet.')).toBeInTheDocument();
+    first.unmount();
+
+    serve(subscription(), standing());
+    mockBillingApi.getPayments.mockResolvedValue({ success: false, error: 'nope' });
+    render(<BillingPage />);
+    expect(await screen.findByText('The payments could not be loaded.')).toBeInTheDocument();
+    expect(screen.getByText('Local')).toBeInTheDocument();
   });
 
   it('tells a community that pays its parent community that nothing is arranged here', async () => {
@@ -217,10 +374,12 @@ describe('BillingPage', () => {
 
     await waitFor(() => expect(screen.getByText(/pays its parent community/i)).toBeInTheDocument());
     expect(screen.getByText('Local')).toBeInTheDocument();
-    // Its plan and payments are its hub's: no platform plan picker, invoices or upgrade request.
+    // Its plan and payments are its parent's: no platform plan picker, no
+    // card invoices, no message to the platform team, and so no Actions box.
     expect(screen.queryByRole('link', { name: /change plan/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /view invoices/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /request upgrade/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /message the platform team/i })).not.toBeInTheDocument();
+    expect(screen.queryByText('Actions')).not.toBeInTheDocument();
   });
 
   // F-640: a manager visiting from a community above is refused every billing

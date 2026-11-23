@@ -753,9 +753,10 @@ describe('AdminSidebar', () => {
     expect(screen.queryByRole('button', { name: 'Integrations' })).not.toBeInTheDocument();
   });
 
-  // Owner, 15 Nov 2026: these stay in the admin panel, hidden from community
-  // admins exactly as before.
-  it('keeps the Impact report and Billing links for the platform team, hidden from a community admin', async () => {
+  // Owner, 15 Nov 2026: the Impact report stays in the admin panel, hidden
+  // from community admins exactly as before. (Billing was hidden with it until
+  // 23 Nov 2026; see the Billing tests below.)
+  it('keeps the Impact report link for the platform team, hidden from a community admin', async () => {
     authState.user = { ...PLATFORM_TEAM };
     const { AdminSidebar } = await import('./AdminSidebar');
     const first = render(<AdminSidebar collapsed={false} />);
@@ -764,13 +765,12 @@ describe('AdminSidebar', () => {
 
     authState.user = { ...ADMIN_USER };
     const second = render(<AdminSidebar collapsed={false} />);
-    const hrefs = everyHref(second.container);
-    expect(hrefs).not.toContain('/test/admin/impact-report');
-    expect(hrefs).not.toContain('/test/admin/billing');
+    expect(everyHref(second.container)).not.toContain('/test/admin/impact-report');
   });
 
-  // Stage 5 (DESIGN §6.6): a community that pays the platform by card gets its
-  // own billing page back, so its admins can pay. Nobody else does.
+  // Owner, 23 Nov 2026: every community's own admins have a Billing page,
+  // whoever the community pays (it was a card payer's alone). The one reader
+  // it is not offered to is a manager visiting from a community above.
   const standingSays = (payer: string | null, success = true) => {
     mockApi.get.mockImplementation((url: string) => Promise.resolve(
       url === '/v2/admin/billing/standing'
@@ -818,15 +818,25 @@ describe('AdminSidebar', () => {
     ['pays the platform by invoice', 'platform_invoice', true],
     ['pays its parent', 'parent', true],
     ['is not billed', 'not_billed', true],
+    // The page itself says it could not load; no link at all would be worse.
     ['cannot be read', null, false],
-  ])('hides the Billing link from an admin of a community that %s', async (_why, payer, success) => {
+  ])('shows the Billing link to an admin of a community that %s', async (_why, payer, success) => {
     standingSays(payer, success);
     const { AdminSidebar } = await import('./AdminSidebar');
     const { container } = render(<AdminSidebar collapsed={false} />);
 
+    await waitFor(() => expect(everyHref(container)).toContain('/test/admin/billing'));
+    expect(mockApi.get.mock.calls.filter(([url]) => url === '/v2/admin/billing/standing')).toHaveLength(1);
+  });
+
+  it('does not show the Billing link before the answer arrives, so a visitor never sees it flash', async () => {
+    mockApi.get.mockImplementation((url: string) => (
+      url === '/v2/admin/billing/standing' ? new Promise(() => {}) : Promise.resolve({ success: true, data: {} })
+    ));
+    const { AdminSidebar } = await import('./AdminSidebar');
+    const { container } = render(<AdminSidebar collapsed={false} />);
+
     await waitFor(() => expect(mockApi.get).toHaveBeenCalledWith('/v2/admin/billing/standing'));
-    // Let the answer land before looking.
-    await new Promise((resolve) => setTimeout(resolve, 0));
     expect(everyHref(container)).not.toContain('/test/admin/billing');
     // Control: the same query does reach links inside collapsed panels.
     expect(everyHref(container)).toContain('/test/admin/settings');

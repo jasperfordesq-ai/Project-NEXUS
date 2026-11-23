@@ -77,29 +77,53 @@ describe('BillingPausedBanner', () => {
     expect(link).toHaveTextContent('paused_banner.open_billing');
   });
 
-  it('offers no Billing link to a community that pays by invoice: that page is not shown to its admins', async () => {
-    // Owner, 15 Nov 2026: the community's own Billing page is for the
-    // platform team and for a community that pays by card.
-    apiGet.mockResolvedValue(standing({ payee: 'platform', payee_name: null, payer: 'platform_invoice' }));
+  // Owner, 23 Nov 2026: every community's admins have a Billing page, so
+  // every paused line has something to click. It was a card payer's alone.
+  it.each([
+    ['pays by invoice', { payee: 'platform', payee_name: null, payer: 'platform_invoice' }],
+    ['pays its parent', { payer: 'parent' }],
+    ['is paused from above', { own: false, payee: null, payee_name: null, payer: 'parent' }],
+  ])('links a paused community that %s to its Billing page', async (_why, over) => {
+    apiGet.mockResolvedValue(standing(over));
+    render(<BillingPausedBanner />);
+
+    const link = await screen.findByTestId('billing-paused-link');
+    expect(link).toHaveAttribute('href', '/riverside/admin/billing');
+    // Not the card payer's wording: there is no card to check.
+    expect(link).toHaveTextContent('paused_banner.open_billing_page');
+  });
+
+  it('offers a visiting manager no Billing link: that page refuses them', async () => {
+    apiGet.mockResolvedValue(standing({ payer: 'platform_card', payee: 'platform', payee_name: null, visiting: true }));
     render(<BillingPausedBanner />);
 
     await screen.findByRole('alert');
     expect(screen.queryByTestId('billing-paused-link')).not.toBeInTheDocument();
   });
 
-  it('offers no Billing link when the pause is settled with the community above', async () => {
-    // Pays its parent: nothing on its own Billing page would lift the pause.
-    apiGet.mockResolvedValue(standing());
+  it('says how to pay, in the payee\'s own words, when the community is paused for its own payment', async () => {
+    apiGet.mockResolvedValue(standing({ payer: 'parent', how_to_pay: 'Pay by cheque.\n<b>not markup</b>' }));
+    render(<BillingPausedBanner />);
+
+    const note = await screen.findByTestId('billing-banner-how-to-pay');
+    expect(note).toHaveTextContent('own_billing.how_to_pay_title');
+    expect(note).toHaveTextContent('Pay by cheque.');
+    // Text, never markup.
+    expect(note).toHaveTextContent('<b>not markup</b>');
+    expect(note.querySelector('b')).toBeNull();
+  });
+
+  it('shows no note when none is written, or when the pause comes from above', async () => {
+    apiGet.mockResolvedValue(standing({ payer: 'parent', how_to_pay: null }));
     const first = render(<BillingPausedBanner />);
     await screen.findByRole('alert');
-    expect(screen.queryByTestId('billing-paused-link')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('billing-banner-how-to-pay')).not.toBeInTheDocument();
     first.unmount();
 
-    // Paused from above: the community above is the one that is paused.
-    apiGet.mockResolvedValue(standing({ own: false, payee: null, payee_name: null }));
+    apiGet.mockResolvedValue(standing({ own: false, payee: null, payee_name: null, how_to_pay: 'Should not be shown.' }));
     render(<BillingPausedBanner />);
     await screen.findByRole('alert');
-    expect(screen.queryByTestId('billing-paused-link')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('billing-banner-how-to-pay')).not.toBeInTheDocument();
   });
 
   it('uses the inherited wording when the lock comes from above', async () => {
@@ -151,6 +175,33 @@ describe('BillingPausedBanner', () => {
     expect(line).toHaveTextContent('paused_banner.overdue');
     expect(line).toHaveTextContent('"days":"10"');
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('gives every warning something to click, and says how to pay a late payment', async () => {
+    notPaused();
+    apiGet.mockResolvedValue(open({ overdue_days: 10, how_to_pay: 'Pay by bank transfer.' }));
+    const first = render(<BillingPausedBanner />);
+
+    const link = await screen.findByTestId('billing-warning-link');
+    expect(link).toHaveAttribute('href', '/riverside/admin/billing');
+    expect(link).toHaveTextContent('paused_banner.open_billing_page');
+    expect(screen.getByTestId('billing-banner-how-to-pay')).toHaveTextContent('Pay by bank transfer.');
+    first.unmount();
+
+    // A member-limit warning is not about a payment: the link, not the note.
+    apiGet.mockResolvedValue(open({ member_limit: { used: 85, max: 100, percent: 85, stage: 'approaching' }, how_to_pay: 'Pay by bank transfer.' }));
+    render(<BillingPausedBanner />);
+    await screen.findByTestId('billing-warning-link');
+    expect(screen.queryByTestId('billing-banner-how-to-pay')).not.toBeInTheDocument();
+  });
+
+  it('offers a visiting manager no link on a warning', async () => {
+    notPaused();
+    apiGet.mockResolvedValue(open({ overdue_days: 10, visiting: true }));
+    render(<BillingPausedBanner />);
+
+    await screen.findByRole('status');
+    expect(screen.queryByTestId('billing-warning-link')).not.toBeInTheDocument();
   });
 
   it.each([

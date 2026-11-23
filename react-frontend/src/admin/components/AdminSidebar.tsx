@@ -181,38 +181,41 @@ interface OwnPayer {
 }
 
 /**
- * Whether this community pays the platform by card. Asked once while the admin
- * panel is open (the sidebar stays mounted across admin pages), and only when
- * the answer can change what is shown. Any failure keeps the billing link
- * hidden: it is the state every community admin had before.
+ * Whether to offer this community's own Billing page. Every community's own
+ * admins have it since 23 Nov 2026, whoever the community pays; the one
+ * reader it is not for is a manager visiting from a community above, whom the
+ * server refuses there (F-640).
+ *
+ * Asked once while the admin panel is open (the sidebar stays mounted across
+ * admin pages). The link waits for the answer, so a visitor never sees it
+ * flash. When the question itself fails the link is shown: the page says
+ * plainly that it could not load, which is better than no way to reach it.
  */
-function usePaysPlatformByCard(ask: boolean): boolean {
+function useOffersOwnBilling(ask: boolean): boolean {
   const { tenant } = useTenant();
   const tenantId = tenant?.id;
-  const [paysByCard, setPaysByCard] = useState(false);
+  const [offered, setOffered] = useState(false);
 
   useEffect(() => {
-    setPaysByCard(false);
+    setOffered(false);
     if (!ask || tenantId == null) return;
 
     let alive = true;
     api
       .get<OwnPayer>('/v2/admin/billing/standing')
       .then((response) => {
-        if (alive) {
-          setPaysByCard(
-            response.success === true && response.data?.payer === 'platform_card' && response.data?.visiting !== true,
-          );
-        }
+        if (alive) setOffered(!(response.success === true && response.data?.visiting === true));
       })
-      .catch(() => undefined);
+      .catch(() => {
+        if (alive) setOffered(true);
+      });
 
     return () => {
       alive = false;
     };
   }, [ask, tenantId]);
 
-  return paysByCard;
+  return offered;
 }
 
 function useAdminNav(): NavSection[] {
@@ -244,11 +247,11 @@ function useAdminNav(): NavSection[] {
   // Server-resolved: covers both a platform super-admin and the super-admin of a
   // community that has communities beneath it. See the super-admin entry below.
   const canSeeSuperPanel = canAccessSuperPanel(user);
-  const paysByCard = usePaysPlatformByCard(!isGod && user != null);
-  // The community's own billing page. Owner, 15 Nov 2026: hidden from
-  // community admins, kept for the platform team. DESIGN §6.6 reverses that for
-  // a community that pays the platform by card only: its admins pay there.
-  const canSeeOwnBilling = isGod || paysByCard;
+  const offersOwnBilling = useOffersOwnBilling(!isGod && user != null);
+  // The community's own billing page. Owner, 23 Nov 2026: every community's
+  // admins have it (read-only unless it pays by card). That replaces the
+  // 15 Nov decision that hid it from everyone but a card payer.
+  const canSeeOwnBilling = isGod || offersOwnBilling;
 
   return useMemo(() => {
     // 🔴 Activity categories. A coordinator reported searching the admin panel

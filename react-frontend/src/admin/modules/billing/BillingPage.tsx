@@ -9,6 +9,12 @@
  * and costs, how many active members it has against it, who it pays, and the
  * dates that matter.
  *
+ * Every community's admins have this page since 23 Nov 2026 (owner decision:
+ * it was shown to card payers only). For a community that pays by invoice, or
+ * pays its parent community, it is read-only: the card buttons are for a card
+ * payer alone. It also shows the payments recorded for the community and the
+ * "how to pay" note written by whoever it pays.
+ *
  * 🔴 The types are the server's shape, key for key, and are pinned from the
  * other end by tests/Laravel/Feature/Billing/CommunityBillingPageContractTest.php.
  * Until 21 November 2026 this page read fields the server never sent
@@ -21,12 +27,15 @@
  *  - GET /v2/admin/billing/standing: the plan as it applies to the community
  *    in its own currency, its active members, who it pays and its dates
  *    (AdminBillingController::getStanding()).
+ *  - GET /v2/admin/billing/payments: its own payments, newest first
+ *    (AdminBillingController::getPayments()).
  */
 
 import { useEffect, useState, useCallback } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import CreditCard from 'lucide-react/icons/credit-card';
 import ArrowRight from 'lucide-react/icons/arrow-right';
+import Landmark from 'lucide-react/icons/landmark';
 import Receipt from 'lucide-react/icons/receipt';
 import Settings from 'lucide-react/icons/settings';
 import Users from 'lucide-react/icons/users';
@@ -36,7 +45,7 @@ import { usePageTitle } from '@/hooks';
 import { useToast, useTenant } from '@/contexts';
 import { api } from '@/lib/api';
 import { formatCurrency, formatDate, formatNumber, formatPercentValue } from '@/lib/helpers';
-import { billingApi, type OwnStanding, type SubscriptionDetails } from '../../api/billingApi';
+import { billingApi, type OwnPayment, type OwnStanding, type SubscriptionDetails } from '../../api/billingApi';
 import { PageHeader } from '../../components/PageHeader';
 
 /** Stripe's words for a card subscription whose last payment did not go through. */
@@ -82,6 +91,14 @@ function money(amount: number, currency: 'eur' | 'gbp'): string {
     : formatCurrency(amount, code);
 }
 
+/** The ways a payment is recorded; anything else is shown as "Other". */
+const METHODS = ['bank_transfer', 'card', 'cash', 'cheque', 'other'] as const;
+type Method = typeof METHODS[number];
+
+function methodOf(value: string): Method {
+  return METHODS.find((method) => method === value) ?? 'other';
+}
+
 function positive(value: number | string | null | undefined): number | null {
   const n = Number(value ?? 0);
   return Number.isFinite(n) && n > 0 ? n : null;
@@ -113,6 +130,8 @@ export function BillingPage() {
 
   const [subscription, setSubscription] = useState<SubscriptionDetails | null>(null);
   const [standing, setStanding] = useState<OwnStanding | null>(null);
+  // The community's own payments; 'failed' when they could not be read.
+  const [payments, setPayments] = useState<OwnPayment[] | 'failed'>([]);
   const [loading, setLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
@@ -121,13 +140,15 @@ export function BillingPage() {
     setLoading(true);
     // The API client answers "not successful" instead of throwing, so a
     // refused or failed load is told apart from "nothing there" by `success`.
-    const [subRes, standingRes] = await Promise.all([
+    const [subRes, standingRes, paymentsRes] = await Promise.all([
       billingApi.getSubscription().catch(() => null),
       billingApi.getStanding().catch(() => null),
+      billingApi.getPayments().catch(() => null),
     ]);
 
     setSubscription(subRes?.success && subRes.data ? subRes.data : null);
     setStanding(standingRes?.success && standingRes.data ? standingRes.data : null);
+    setPayments(paymentsRes?.success && Array.isArray(paymentsRes.data) ? paymentsRes.data : 'failed');
     // "No plan record" is a successful answer with no data; only a failed
     // request for the standing means the page has nothing reliable to show.
     setLoadFailed(!standingRes?.success);
@@ -177,6 +198,12 @@ export function BillingPage() {
   const plan = standing?.plan ?? null;
   const payer = standing?.payer ?? null;
   const paysParent = payer === 'parent';
+  // The card buttons (choose or change a plan, the card itself, Stripe's
+  // invoices) are a card payer's alone. Everyone else's plan is set by
+  // whoever they pay, so for them this page is read-only.
+  const paysByCard = payer === 'platform_card';
+  const paysByInvoice = payer === 'platform_invoice';
+  const howToPay = standing?.how_to_pay ?? null;
   // Stripe still has a card subscription open (paying, on trial, or with a
   // failed card): the card can be managed in Stripe's own pages.
   const hasCard = subscription?.has_card_subscription === true;
@@ -192,6 +219,8 @@ export function BillingPage() {
   const yearly = plan ? positive(plan.price_yearly) : null;
   const setupFee = plan ? positive(plan.setup_fee) : null;
   const interval = subscription?.billing_interval ?? null;
+  // A community that pays its parent has nothing to do here but read.
+  const showActions = !paysParent || hasCard;
 
   const header = <PageHeader title={t('billing.title')} description={t('billing.description')} />;
 
@@ -244,13 +273,17 @@ export function BillingPage() {
         <Alert color="default" className="mb-6" title={t('own_billing.pays_parent_note')} />
       ) : null}
 
+      {paysByInvoice ? (
+        <Alert color="default" className="mb-6" title={t('own_billing.pays_invoice_note')} />
+      ) : null}
+
       {cardNeedsAttention ? (
         <Alert color="danger" className="mb-6" title={t('own_billing.card_failed')} />
       ) : null}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* ─── The plan ─── */}
-        <Card className="lg:col-span-2">
+        <Card className={showActions ? 'lg:col-span-2' : 'lg:col-span-3'}>
           <CardHeader className="flex gap-3">
             <CreditCard aria-hidden="true" className="w-5 h-5 text-accent" />
             <h3 className="text-lg font-semibold">{t('billing.current_plan')}</h3>
@@ -304,14 +337,23 @@ export function BillingPage() {
                   {payer ? (
                     <div>
                       <p className="text-sm text-muted">{t('control.payer_label')}</p>
-                      <p className="font-medium">{t(`billing.payer_${payer}`)}</p>
+                      <p data-testid="own-payer" className="font-medium">
+                        {paysParent && standing?.payee_name
+                          ? t('own_billing.pays_parent_named', { name: standing.payee_name })
+                          : t(`billing.payer_${payer}`)}
+                      </p>
                     </div>
                   ) : null}
 
-                  {standing?.paid_until ? (
+                  {/* Said even when there is none: "no date" is a fact the
+                      admins should know, not a blank. Nobody bills a
+                      community that is not billed, so it has no date. */}
+                  {payer && payer !== 'not_billed' ? (
                     <div>
                       <p className="text-sm text-muted">{t('control.paid_until_label')}</p>
-                      <p className="font-medium">{formatDate(standing.paid_until)}</p>
+                      <p data-testid="own-paid-until" className="font-medium">
+                        {standing?.paid_until ? formatDate(standing.paid_until) : t('control.no_date')}
+                      </p>
                     </div>
                   ) : null}
 
@@ -341,7 +383,7 @@ export function BillingPage() {
               <div className="text-center py-6">
                 <CreditCard aria-hidden="true" className="w-12 h-12 text-muted mx-auto mb-3" />
                 <p className="text-muted mb-4">{t('own_billing.no_plan')}</p>
-                {!paysParent ? (
+                {paysByCard ? (
                   <Button
                     as={Link}
                     to={tenantPath('/admin/billing/plans')}
@@ -349,6 +391,8 @@ export function BillingPage() {
                   >
                     {t('billing.choose_plan')}
                   </Button>
+                ) : !paysParent ? (
+                  <p className="text-sm text-muted">{t('own_billing.no_plan_ask')}</p>
                 ) : null}
               </div>
             )}
@@ -356,15 +400,16 @@ export function BillingPage() {
         </Card>
 
         {/* ─── Actions ─── */}
+        {showActions ? (
         <Card>
           <CardHeader>
             <h3 className="text-lg font-semibold">{t('billing.actions')}</h3>
           </CardHeader>
           <Separator />
           <CardBody className="gap-3">
-            {/* A community that pays the community above it arranges its
-                plan and payments there: nothing here would apply to it. */}
-            {!paysParent ? (
+            {/* Choosing or changing a plan here goes through card checkout,
+                so it is offered to a card payer only. */}
+            {paysByCard ? (
               <Button
                 as={Link}
                 to={tenantPath('/admin/billing/plans')}
@@ -392,7 +437,7 @@ export function BillingPage() {
               </Button>
             ) : null}
 
-            {!paysParent ? (
+            {paysByCard ? (
               <Button
                 as={Link}
                 to={tenantPath('/admin/billing/invoices')}
@@ -413,7 +458,30 @@ export function BillingPage() {
             ) : null}
           </CardBody>
         </Card>
+        ) : null}
       </div>
+
+      {/* ─── How to pay, in the words of whoever is paid ─── */}
+      {howToPay ? (
+        <Card className="mt-6" data-testid="how-to-pay">
+          <CardHeader className="flex gap-3">
+            <Landmark aria-hidden="true" className="w-5 h-5 shrink-0 text-accent" />
+            <div>
+              <h3 className="text-lg font-semibold">{t('own_billing.how_to_pay_title')}</h3>
+              <p className="text-xs text-muted">
+                {paysParent && standing?.payee_name
+                  ? t('own_billing.how_to_pay_from_parent', { name: standing.payee_name })
+                  : t('own_billing.how_to_pay_from_platform')}
+              </p>
+            </div>
+          </CardHeader>
+          <Separator />
+          <CardBody>
+            {/* Another community's words: shown as text, line breaks kept. */}
+            <p className="whitespace-pre-line break-words text-sm">{howToPay}</p>
+          </CardBody>
+        </Card>
+      ) : null}
 
       {/* ─── Active members against the plan ─── */}
       {members ? (
@@ -455,6 +523,68 @@ export function BillingPage() {
           </CardBody>
         </Card>
       ) : null}
+
+      {/* ─── The payments recorded for this community ─── */}
+      <Card className="mt-6" data-testid="own-payments">
+        <CardHeader className="flex gap-3">
+          <Receipt aria-hidden="true" className="w-5 h-5 shrink-0 text-accent" />
+          <div>
+            <h3 className="text-lg font-semibold">{t('own_billing.payments_title')}</h3>
+            <p className="text-xs text-muted">{t('own_billing.payments_help')}</p>
+          </div>
+        </CardHeader>
+        <Separator />
+        <CardBody className="gap-2">
+          {payments === 'failed' ? (
+            <p role="alert" className="text-sm text-danger">{t('own_billing.payments_failed')}</p>
+          ) : payments.length === 0 ? (
+            <p className="text-sm text-muted">{t('own_billing.payments_none')}</p>
+          ) : (
+            <ul className="divide-y divide-divider">
+              {payments.map((payment) => {
+                // A voided payment stays, struck through.
+                const value = payment.voided ? 'font-medium text-muted line-through' : 'font-medium';
+                return (
+                  <li
+                    key={payment.id}
+                    data-testid={`own-payment-${payment.id}`}
+                    className="grid grid-cols-2 gap-x-4 gap-y-2 py-3 text-sm sm:grid-cols-4"
+                  >
+                    <div>
+                      <span className="block text-xs text-muted">{t('control.received_on_label')}</span>
+                      <span className={value}>{formatDate(payment.received_on)}</span>
+                    </div>
+                    <div>
+                      <span className="block text-xs text-muted">{t('control.method_label')}</span>
+                      <span className={value}>{t(`control.method_${methodOf(payment.method)}`)}</span>
+                    </div>
+                    <div>
+                      <span className="block text-xs text-muted">{t('own_billing.payments_amount')}</span>
+                      <span className={value}>
+                        {payment.amount !== null && payment.currency
+                          ? formatCurrency(Number(payment.amount), payment.currency)
+                          : t('own_billing.payment_no_amount')}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="block text-xs text-muted">{t('own_billing.payments_paid_until')}</span>
+                      <span className={value}>{formatDate(payment.paid_until_after)}</span>
+                    </div>
+                    {payment.voided ? (
+                      <p className="col-span-full text-xs text-muted">{t('own_billing.payment_voided')}</p>
+                    ) : null}
+                    {payment.refunded_amount !== null && payment.currency ? (
+                      <p className="col-span-full text-xs text-warning">
+                        {t('own_billing.payment_refunded', { amount: formatCurrency(Number(payment.refunded_amount), payment.currency) })}
+                      </p>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </CardBody>
+      </Card>
 
       {/* ─── Upgrade request ─── */}
       <Modal isOpen={isUpgradeOpen} onClose={onUpgradeClose} size="md">

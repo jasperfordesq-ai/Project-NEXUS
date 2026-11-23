@@ -36,6 +36,7 @@ import { api } from '@/lib/api';
 import { formatCurrency, formatNumber } from '@/lib/helpers';
 import { PageHeader } from '../../components/PageHeader';
 import { COMMUNITY_GRID_LEAD_CELL, PLAN_GRID_CLASSES, StackedLabel } from '../billing/CommunityGrid';
+import { HowToPayEditor } from '../billing/HowToPayEditor';
 import { LoadFailed } from '../billing/LoadFailed';
 import {
   OverLimitRuleFields,
@@ -98,6 +99,9 @@ interface BranchPlansResponse {
   hub_currency: 'eur' | 'gbp' | null;
   plans: HubPlan[];
   over_limit: HubOverLimit | null;
+  /** What this community tells the communities that pay it about paying; null = nothing written. */
+  how_to_pay?: string | null;
+  how_to_pay_max?: number;
 }
 
 const MONEY_FIELDS = ['price_monthly', 'price_yearly', 'setup_fee', 'price_monthly_gbp', 'price_yearly_gbp', 'setup_fee_gbp'] as const;
@@ -617,6 +621,23 @@ export function BranchPlans() {
       </Card>
 
       {ruleCard}
+
+      {/* How the communities that pay this one are told to pay it. */}
+      {data.hub_id !== null ? (
+        <Card data-testid="branch-how-to-pay">
+          <CardHeader className="flex flex-col items-start gap-1 pb-0">
+            <span className="font-semibold text-sm">{t('admin_billing:control.how_to_pay_edit_title')}</span>
+          </CardHeader>
+          <CardBody>
+            <HowToPayEditor
+              audience="parent"
+              note={data.how_to_pay ?? null}
+              max={data.how_to_pay_max ?? 600}
+              saveUrl={`/v2/admin/super/branch-plans/${data.hub_id}/how-to-pay`}
+            />
+          </CardBody>
+        </Card>
+      ) : null}
 
       <Modal isOpen={dialog !== null} onClose={closeDialog} size="lg" scrollBehavior="inside">
         <ModalContent>

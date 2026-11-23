@@ -72,6 +72,8 @@ interface BillingStanding {
   member_limit?: MemberLimit | null;
   /** Null with no plan assigned. Named only beside a member-limit warning. */
   plan?: StandingPlan | null;
+  /** "How to pay", in the words of whoever this community pays by hand; plain text. */
+  how_to_pay?: string | null;
 }
 
 type Loaded = BillingStanding | 'unknown' | null;
@@ -124,20 +126,27 @@ export function BillingPausedBanner() {
         <TriangleAlert size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
         <div className="min-w-0 flex-1">
           <p className="break-words font-medium">{pausedWording(standing, t)}</p>
-          {/* Where to put the card right and write to the people who can
-              lift the pause. Only for a community that pays the platform BY
-              CARD and is paused itself: that is the one community admin the
-              Billing page is shown to (owner, 15 Nov 2026; the sidebar's
-              canSeeOwnBilling). One that pays by invoice was told by email;
-              one paused from above, or that pays its parent, settles it with
-              the community above, which the line above names. */}
-          {standing !== 'unknown' && standing.own !== false && standing.payer === 'platform_card' && standing.visiting !== true ? (
+          {/* How to pay, in the payee's own words, when this community is
+              paused for its own payment. Text only, line breaks kept. */}
+          {standing !== 'unknown' && standing.own !== false && standing.how_to_pay ? (
+            <p data-testid="billing-banner-how-to-pay" className="mt-1 whitespace-pre-line break-words">
+              <span className="font-semibold">{t('own_billing.how_to_pay_title')}</span>{'\n'}
+              {standing.how_to_pay}
+            </p>
+          ) : null}
+          {/* Something to click, always: the community's own Billing page,
+              which every community's admins have since 23 Nov 2026. A card
+              payer is told what it will find there. Not for a visiting
+              manager, whom that page refuses. */}
+          {standing !== 'unknown' && standing.visiting !== true ? (
             <Link
               to={tenantPath('/admin/billing')}
               data-testid="billing-paused-link"
               className="mt-1 inline-block font-semibold underline underline-offset-2"
             >
-              {t('paused_banner.open_billing')}
+              {standing.own !== false && standing.payer === 'platform_card'
+                ? t('paused_banner.open_billing')
+                : t('paused_banner.open_billing_page')}
             </Link>
           ) : null}
         </div>
@@ -157,11 +166,29 @@ export function BillingPausedBanner() {
       className="mb-3 flex items-start gap-3 rounded-xl bg-warning-soft px-4 py-3 text-sm text-warning-soft-foreground"
     >
       <TriangleAlert size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
-      <p className="min-w-0 flex-1 break-words font-medium">
-        <span className="block">{warning.line}</span>
-        {warning.plan ? <span className="block">{warning.plan}</span> : null}
-        {warning.rule ? <span className="block">{warning.rule}</span> : null}
-      </p>
+      <div className="min-w-0 flex-1">
+        <p className="break-words font-medium">
+          <span className="block">{warning.line}</span>
+          {warning.plan ? <span className="block">{warning.plan}</span> : null}
+          {warning.rule ? <span className="block">{warning.rule}</span> : null}
+        </p>
+        {/* A late payment: how to pay it, in the payee's own words. */}
+        {warning.overdue && standing.how_to_pay ? (
+          <p data-testid="billing-banner-how-to-pay" className="mt-1 whitespace-pre-line break-words">
+            <span className="font-semibold">{t('own_billing.how_to_pay_title')}</span>{'\n'}
+            {standing.how_to_pay}
+          </p>
+        ) : null}
+        {standing.visiting !== true ? (
+          <Link
+            to={tenantPath('/admin/billing')}
+            data-testid="billing-warning-link"
+            className="mt-1 inline-block font-semibold underline underline-offset-2"
+          >
+            {t('paused_banner.open_billing_page')}
+          </Link>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -186,6 +213,8 @@ function pausedWording(standing: BillingStanding | 'unknown', t: Translate): str
 
 interface Warning {
   line: string;
+  /** The warning is about a late payment, not the member limit. */
+  overdue: boolean;
   /** Its own element, never joined to the line with a space: sentence spacing differs by language. */
   plan: string | null;
   /** What the over-limit rule will do; its own element for the same reason. */
@@ -197,7 +226,7 @@ function warningWording(standing: BillingStanding, t: Translate): Warning | null
   const number = (value: number) => value.toLocaleString(getFormattingLocale());
 
   if (typeof standing.overdue_days === 'number' && standing.overdue_days > 0) {
-    return { line: t('paused_banner.overdue', { days: number(standing.overdue_days) }), plan: null, rule: null };
+    return { line: t('paused_banner.overdue', { days: number(standing.overdue_days) }), overdue: true, plan: null, rule: null };
   }
 
   const limit = standing.member_limit;
@@ -214,6 +243,7 @@ function warningWording(standing: BillingStanding, t: Translate): Warning | null
   // sentence, so every locale keeps a grammatical line.
   return {
     line,
+    overdue: false,
     plan: standing.plan ? t('paused_banner.limit_plan', { plan: standing.plan.name }) : null,
     rule: ruleWording(limit, t),
   };

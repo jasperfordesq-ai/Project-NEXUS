@@ -125,11 +125,41 @@ export interface OwnStanding {
     terms: 'default' | 'hub';
   } | null;
   /**
+   * "How to pay", in the words of whoever this community pays by hand: its
+   * parent community's note, or the platform team's for an invoice payer.
+   * Null when none is written, for a card payer, and for a visitor.
+   * Plain text: shown as written, never as markup.
+   */
+  how_to_pay?: string | null;
+  /**
    * The reader is a manager of a community above, looking in. Every other
    * billing request from them is refused (403 VISITING_MANAGER_NO_BILLING):
    * a community's card and plan are its own admins' and the platform team's.
    */
   visiting?: boolean;
+}
+
+/**
+ * A row of GET /v2/admin/billing/payments, key for key
+ * (AdminBillingController::getPayments(), pinned by HowToPayNoteTest). The
+ * community's own payments, newest first. Never who recorded one.
+ */
+export interface OwnPayment {
+  id: number;
+  /** YYYY-MM-DD. */
+  received_on: string;
+  method: string;
+  /** "480.00", or null when no amount was recorded. */
+  amount: string | null;
+  /** Upper-case ISO code, or null. */
+  currency: string | null;
+  /** YYYY-MM-DD: the date the community was then paid up to. */
+  paid_until_after: string;
+  source: 'card' | 'manual';
+  paid_to: 'platform' | 'parent';
+  /** Recorded by mistake and struck through; it stays in the list. */
+  voided: boolean;
+  refunded_amount: string | null;
 }
 
 /**
@@ -168,6 +198,10 @@ export const billingApi = {
   /** The plan as it applies, active members, who the community pays and its dates. */
   getStanding: () =>
     api.get<OwnStanding>('/v2/admin/billing/standing'),
+
+  /** The payments recorded for this community, newest first. */
+  getPayments: () =>
+    api.get<OwnPayment[]>('/v2/admin/billing/payments'),
 
   /** Create a Stripe Checkout session, returns a redirect URL (or activated:true for free plans) */
   createCheckout: (data: { plan_id: number; billing_interval: 'monthly' | 'yearly' }) =>

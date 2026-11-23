@@ -42,6 +42,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import Building2 from 'lucide-react/icons/building-2';
 import CirclePause from 'lucide-react/icons/circle-pause';
 import Clock from 'lucide-react/icons/clock';
@@ -50,7 +51,7 @@ import MoreVertical from 'lucide-react/icons/ellipsis-vertical';
 import TriangleAlert from 'lucide-react/icons/triangle-alert';
 import { Alert, Button, Card, CardBody, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Radio, RadioGroup, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@/components/ui';
 import { usePageTitle } from '@/hooks';
-import { useToast } from '@/contexts';
+import { useTenant, useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { formatCurrency, formatDate, formatNumber } from '@/lib/helpers';
 import { PageHeader } from '../../components/PageHeader';
@@ -183,6 +184,7 @@ export function BranchPayments() {
   const { t } = useTranslation(['super_admin', 'admin_billing']);
   usePageTitle(t('branch_payments.title'));
   const toast = useToast();
+  const { tenantPath } = useTenant();
 
   const [rows, setRows] = useState<BranchRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -555,6 +557,16 @@ export function BranchPayments() {
                           {row.cannot_act_reason === 'exempt'
                             ? t('branch_payments.cannot_exempt')
                             : t('branch_payments.cannot_pays_platform')}
+                          {/* "Only the platform team can change this" was a
+                              dead end: this is how to ask them. It opens the
+                              message box on this manager's own Billing page. */}
+                          <Link
+                            to={tenantPath('/admin/billing?message=1')}
+                            data-testid={`ask-platform-team-${row.id}`}
+                            className="mt-1 block font-medium text-accent underline underline-offset-2"
+                          >
+                            {t('admin_billing:billing.request_upgrade')}
+                          </Link>
                         </span>
                       )}
                     </TableCell>

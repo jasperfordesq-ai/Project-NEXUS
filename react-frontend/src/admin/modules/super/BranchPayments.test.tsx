@@ -683,6 +683,20 @@ describe('BranchPayments', () => {
     expect(screen.queryByLabelText('Paid up to and including')).not.toBeInTheDocument();
   });
 
+  it('says how to ask, where only the platform team can change a community', async () => {
+    await renderWith([
+      makeRow({ id: 8, name: 'Kinsale Timebank', can_act: false, cannot_act_reason: 'pays_platform' }),
+      makeRow({ id: 9, name: 'Clonakilty Timebank', can_act: false, cannot_act_reason: 'exempt' }),
+    ]);
+
+    for (const id of [8, 9]) {
+      const link = screen.getByTestId(`ask-platform-team-${id}`);
+      expect(link).toHaveTextContent('Message the platform team');
+      // The message box on the manager's own Billing page.
+      expect(link.getAttribute('href')).toMatch(/\/admin\/billing\?message=1$/);
+    }
+  });
+
   it('offers to change the plan only where the manager may act', async () => {
     await renderWith([
       makeRow(),

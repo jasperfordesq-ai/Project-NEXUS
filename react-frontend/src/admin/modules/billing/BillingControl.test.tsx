@@ -297,6 +297,9 @@ const serveGets = (rows: unknown[]) => {
         },
       });
     }
+    if (url === '/v2/admin/super/billing/how-to-pay') {
+      return Promise.resolve({ success: true, data: { how_to_pay: 'Pay by bank transfer.', how_to_pay_max: 600 } });
+    }
     if (url === '/v2/admin/super/billing/standing/last-run') {
       return Promise.resolve({ success: true, data: { at: null, result: null, actions: 0 } });
     }
@@ -1168,6 +1171,17 @@ describe('BillingControl', () => {
     expect(button('Record a payment')).toBeDefined();
     expect(more('Set paid-until date')).toBeDefined();
     expect(more('Change how it pays')).toBeDefined();
+  });
+
+  it('lets the platform team write the platform\'s how-to-pay note, and asks for it only when opened', async () => {
+    await renderWith([makeSnapshot()]);
+
+    expect(mockApi.get).not.toHaveBeenCalledWith('/v2/admin/super/billing/how-to-pay');
+
+    fireEvent.click(button('How to pay note')!);
+
+    await waitFor(() => expect(mockApi.get).toHaveBeenCalledWith('/v2/admin/super/billing/how-to-pay'));
+    expect(await screen.findByTestId('how-to-pay-editor')).toHaveTextContent('Shown to every community that pays the platform by invoice:');
   });
 
   it('keeps one line about the automatic checks, and a link to their own page', async () => {

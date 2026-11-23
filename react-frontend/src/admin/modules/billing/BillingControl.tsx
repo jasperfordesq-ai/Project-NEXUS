@@ -18,6 +18,7 @@ import { BillingAutomationSummary } from './BillingAutomationSummary';
 import { assignablePlans } from './assignablePlans';
 import { planFactLines } from './planFactLines';
 import { RecordPaymentDialog, type PaymentMethod } from './RecordPaymentDialog';
+import { PlatformHowToPayDialog } from './HowToPayEditor';
 import { PayerDialog, type Payer } from './PayerDialog';
 import { StillToSetUp, type SetupItem } from './StillToSetUp';
 import { OverLimitRuleDialog, OverLimitSummary, type OverLimitChoice, type OverLimitState } from './OverLimitRuleDialog';
@@ -309,6 +310,8 @@ export function BillingControl() {
   const [plansFailed, setPlansFailed] = useState(false);
   // Set when the paid-until dialog was opened straight after a plan was saved.
   const [paidUntilAfterPlan, setPaidUntilAfterPlan] = useState(false);
+  // The platform's own "how to pay" note, written once for every invoice payer.
+  const [howToPayOpen, setHowToPayOpen] = useState(false);
 
   // ---- pause / exempt dialog, and the row an action is running on ----
   const [standingDialog, setStandingDialog] = useState<StandingDialog>(null);
@@ -651,18 +654,25 @@ export function BillingControl() {
         title={t('billing.control_title')}
         description={t('billing.control_desc')}
         actions={
-          <Button
-            size="sm"
-            variant="tertiary"
-            startContent={<Download size={14} />}
-            onPress={() => {
-              void api
-                .download('/v2/admin/super/billing/export', { filename: 'billing-export.csv' })
-                .catch(() => toast.error(t('billing.failed_to_load')));
-            }}
-          >
-            {t('billing.export_csv')}
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            {isGod ? (
+              <Button size="sm" variant="secondary" onPress={() => setHowToPayOpen(true)}>
+                {t('control.how_to_pay_edit_title')}
+              </Button>
+            ) : null}
+            <Button
+              size="sm"
+              variant="tertiary"
+              startContent={<Download size={14} />}
+              onPress={() => {
+                void api
+                  .download('/v2/admin/super/billing/export', { filename: 'billing-export.csv' })
+                  .catch(() => toast.error(t('billing.failed_to_load')));
+              }}
+            >
+              {t('billing.export_csv')}
+            </Button>
+          </div>
         }
       />
 
@@ -1338,6 +1348,8 @@ export function BillingControl() {
         onClose={() => setRuleRow(null)}
         onSave={saveRule}
       />
+
+      <PlatformHowToPayDialog isOpen={howToPayOpen} onClose={() => setHowToPayOpen(false)} />
 
       <PayerDialog
         community={payerRow ? {
