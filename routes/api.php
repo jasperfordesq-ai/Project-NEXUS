@@ -3133,6 +3133,7 @@ Route::get('/v2/admin/billing/invoices', [\App\Http\Controllers\Api\AdminBilling
 Route::post('/v2/admin/billing/upgrade-request', [\App\Http\Controllers\Api\AdminBillingController::class, 'requestUpgrade']);
 // Whether this community is paused for non-payment, and who it pays. Own community only.
 Route::get('/v2/admin/billing/standing', [\App\Http\Controllers\Api\AdminBillingController::class, 'getStanding']);
+Route::get('/v2/admin/billing/payments', [\App\Http\Controllers\Api\AdminBillingController::class, 'getPayments']);
 Route::get('/v2/admin/tools/redirects', [\App\Http\Controllers\Api\AdminToolsController::class, 'getRedirects']);
 Route::post('/v2/admin/tools/redirects', [\App\Http\Controllers\Api\AdminToolsController::class, 'createRedirect']);
 Route::delete('/v2/admin/tools/redirects/{id}', [\App\Http\Controllers\Api\AdminToolsController::class, 'deleteRedirect']);
@@ -3341,6 +3342,7 @@ Route::get('/v2/admin/super/branch-plans', [\App\Http\Controllers\Api\AdminSuper
 Route::put('/v2/admin/super/branch-plans/{hubId}/plans/{planId}', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPlansUpdate'])->whereNumber(['hubId', 'planId']);
 Route::delete('/v2/admin/super/branch-plans/{hubId}/plans/{planId}', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPlansReset'])->whereNumber(['hubId', 'planId']);
 Route::put('/v2/admin/super/branch-plans/{hubId}/over-limit', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPlansSetOverLimit'])->whereNumber('hubId');
+Route::put('/v2/admin/super/branch-plans/{hubId}/how-to-pay', [\App\Http\Controllers\Api\AdminSuperController::class, 'branchPlansSetHowToPay'])->whereNumber('hubId');
 Route::post('/v2/admin/super/tenants/{id}/toggle-hub', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantToggleHub']);
 Route::post('/v2/admin/super/tenants/{id}/move', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantMove']);
 
@@ -3507,6 +3509,8 @@ Route::post('/v2/admin/super/billing/standing/record-payment', [\App\Http\Contro
 Route::get('/v2/admin/super/billing/standing/payments', [\App\Http\Controllers\Api\AdminSuperController::class, 'communityPayments']);
 Route::post('/v2/admin/super/billing/standing/void-payment', [\App\Http\Controllers\Api\AdminSuperController::class, 'voidCommunityPayment']);
 Route::post('/v2/admin/super/billing/standing/payer', [\App\Http\Controllers\Api\AdminSuperController::class, 'setCommunityPayer']);
+Route::get('/v2/admin/super/billing/how-to-pay', [\App\Http\Controllers\Api\AdminSuperController::class, 'getPlatformHowToPay']);
+Route::put('/v2/admin/super/billing/how-to-pay', [\App\Http\Controllers\Api\AdminSuperController::class, 'setPlatformHowToPay']);
 Route::post('/v2/admin/super/billing/standing/over-limit', [\App\Http\Controllers\Api\AdminSuperController::class, 'setCommunityOverLimitRule']);
 Route::get('/v2/admin/super/billing/standing/preview', [\App\Http\Controllers\Api\AdminSuperController::class, 'previewBillingAutomation']);
 Route::get('/v2/admin/super/billing/standing/last-run', [\App\Http\Controllers\Api\AdminSuperController::class, 'lastBillingAutomationRun']);

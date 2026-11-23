@@ -1003,6 +1003,8 @@
     "joining_opened_again_title": "Les nouveaux membres peuvent de nouveau adhérer",
     "joining_opened_again_body": "<strong>{{above}}</strong> est revenue dans le nombre de membres de son forfait, ou sa règle a changé : les nouveaux membres peuvent de nouveau rejoindre <strong>{{community}}</strong>.",
     "cta": "Ouvrir le panneau d’administration",
+    "cta_billing": "Ouvrir la page Facturation",
+    "how_to_pay": "<strong>Comment payer</strong><br>{{note}}",
     "reminder_subject": "Le paiement de {{community}} est dû le {{date}}",
     "reminder_title": "Un paiement arrive bientôt à échéance",
     "reminder_body": "<strong>{{community}}</strong> est payée jusqu’au <strong>{{date}}</strong>. Merci de prévoir le prochain paiement avant cette date, afin que rien ne change pour ses membres.",

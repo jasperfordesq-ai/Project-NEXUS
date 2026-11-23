@@ -1003,6 +1003,8 @@
     "joining_opened_again_title": "يمكن لأعضاء جدد الانضمام مجددًا",
     "joining_opened_again_body": "عادت <strong>{{above}}</strong> ضمن عدد الأعضاء المسموح به في خطتها، أو تغيّرت قاعدتها، لذلك يمكن لأعضاء جدد الانضمام إلى <strong>{{community}}</strong> مجددًا.",
     "cta": "فتح لوحة الإدارة",
+    "cta_billing": "افتح صفحة الفوترة",
+    "how_to_pay": "<strong>طريقة الدفع</strong><br>{{note}}",
     "reminder_subject": "يستحق دفع {{community}} في {{date}}",
     "reminder_title": "دفعة مستحقة قريبًا",
     "reminder_body": "<strong>{{community}}</strong> مدفوع حتى <strong>{{date}}</strong>. يُرجى ترتيب الدفعة التالية قبل ذلك التاريخ حتى لا يتغير شيء لأعضائه.",

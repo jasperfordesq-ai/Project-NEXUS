@@ -1003,6 +1003,8 @@
     "joining_opened_again_title": "Is féidir le baill nua dul isteach arís",
     "joining_opened_again_body": "Tá <strong>{{above}}</strong> laistigh de líon na mball ina phlean arís, nó athraíodh a riail, mar sin is féidir le baill nua dul isteach i <strong>{{community}}</strong> arís.",
     "cta": "Oscail an painéal riaracháin",
+    "cta_billing": "Oscail an leathanach Billeála",
+    "how_to_pay": "<strong>Conas íoc</strong><br>{{note}}",
     "reminder_subject": "Tá íocaíocht {{community}} dlite ar {{date}}",
     "reminder_title": "Beidh íocaíocht dlite go luath",
     "reminder_body": "Tá <strong>{{community}}</strong> íoctha go dtí <strong>{{date}}</strong>. Socraigh an chéad íocaíocht eile roimhe sin, le do thoil, ionas nach n-athróidh aon rud dá baill.",

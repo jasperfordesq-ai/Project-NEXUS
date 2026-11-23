@@ -3159,4 +3159,6 @@ KANDIDATEN::candidates',
     'plan_field_description' => 'Beschreibung',
     'plan_value_too_large' => ':field: Geben Sie eine Zahl ein, die nicht größer als :max ist.',
     'plan_text_too_long' => ':field: Geben Sie höchstens :max Zeichen ein.',
+    'billing_how_to_pay_too_long' => 'Der Hinweis ist zu lang. Bitte höchstens :max Zeichen.',
+    'billing_how_to_pay_not_text' => 'Bitte den Hinweis als einfachen Text schreiben.',
 ];

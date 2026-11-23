@@ -243,6 +243,7 @@ final class VisitingManagerBillingTest extends TestCase
         return [
             'the subscription' => ['GET', '/v2/admin/billing/subscription'],
             'the invoices' => ['GET', '/v2/admin/billing/invoices'],
+            'its payments' => ['GET', '/v2/admin/billing/payments'],
             'a message to the platform team in its name' => ['POST', '/v2/admin/billing/upgrade-request'],
         ];
     }

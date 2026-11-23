@@ -1003,6 +1003,8 @@
     "joining_opened_again_title": "New members can join again",
     "joining_opened_again_body": "<strong>{{above}}</strong> is back within its plan's member number, or its rule has changed, so new members can join <strong>{{community}}</strong> again.",
     "cta": "Open the admin panel",
+    "cta_billing": "Open the Billing page",
+    "how_to_pay": "<strong>How to pay</strong><br>{{note}}",
     "reminder_subject": "Payment for {{community}} is due on {{date}}",
     "reminder_title": "A payment is due soon",
     "reminder_body": "<strong>{{community}}</strong> is paid up to <strong>{{date}}</strong>. Please arrange the next payment before then, so that nothing changes for its members.",

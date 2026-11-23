@@ -1003,6 +1003,8 @@
     "joining_opened_again_title": "Nieuwe leden kunnen zich weer aansluiten",
     "joining_opened_again_body": "<strong>{{above}}</strong> zit weer binnen het ledenaantal van zijn plan, of de regel is gewijzigd, dus nieuwe leden kunnen zich weer bij <strong>{{community}}</strong> aansluiten.",
     "cta": "Beheerpaneel openen",
+    "cta_billing": "Facturering openen",
+    "how_to_pay": "<strong>Zo betaal je</strong><br>{{note}}",
     "reminder_subject": "De betaling voor {{community}} vervalt op {{date}}",
     "reminder_title": "Er vervalt binnenkort een betaling",
     "reminder_body": "<strong>{{community}}</strong> is betaald tot en met <strong>{{date}}</strong>. Regel de volgende betaling vóór die datum, zodat er voor de leden niets verandert.",

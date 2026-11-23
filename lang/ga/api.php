@@ -3159,4 +3159,6 @@ IARRTHÓIRÍ: :candidates',
     'plan_field_description' => 'Cur síos',
     'plan_value_too_large' => ':field: cuir isteach uimhir nach mó ná :max.',
     'plan_text_too_long' => ':field: cuir isteach suas le :max carachtar.',
+    'billing_how_to_pay_too_long' => 'Tá an nóta rófhada. Coinnigh é faoi :max carachtar.',
+    'billing_how_to_pay_not_text' => 'Scríobh an nóta mar ghnáth-théacs.',
 ];

@@ -3668,4 +3668,6 @@ return [
     'plan_field_description' => 'Description',
     'plan_value_too_large' => ':field: enter a number no larger than :max.',
     'plan_text_too_long' => ':field: enter up to :max characters.',
+    'billing_how_to_pay_too_long' => 'The note is too long. Keep it to :max characters or fewer.',
+    'billing_how_to_pay_not_text' => 'Write the note as plain text.',
 ];

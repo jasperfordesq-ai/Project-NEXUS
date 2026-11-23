@@ -3159,4 +3159,6 @@ XP: :xp | المستوى: :level | التبادلات المكتملة: :complet
     'plan_field_description' => 'الوصف',
     'plan_value_too_large' => ':field: أدخل رقمًا لا يزيد على :max.',
     'plan_text_too_long' => ':field: أدخل ما يصل إلى :max حرفًا.',
+    'billing_how_to_pay_too_long' => 'الملاحظة طويلة جدًا. اجعلها :max حرفًا أو أقل.',
+    'billing_how_to_pay_not_text' => 'اكتب الملاحظة كنص عادي.',
 ];

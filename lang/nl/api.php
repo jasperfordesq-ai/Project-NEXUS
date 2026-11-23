@@ -3159,4 +3159,6 @@ KANDIDATEN::candidates',
     'plan_field_description' => 'Beschrijving',
     'plan_value_too_large' => ':field: vul een getal in dat niet groter is dan :max.',
     'plan_text_too_long' => ':field: vul maximaal :max tekens in.',
+    'billing_how_to_pay_too_long' => 'De notitie is te lang. Gebruik hoogstens :max tekens.',
+    'billing_how_to_pay_not_text' => 'Schrijf de notitie als platte tekst.',
 ];

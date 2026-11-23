@@ -439,7 +439,7 @@ final class BranchPlansEndpointsTest extends TestCase
         $response = $this->apiGet('/v2/admin/super/branch-plans');
         $response->assertStatus(200);
 
-        $this->assertSame(['hubs', 'hub_id', 'hub_currency', 'plans', 'over_limit'], array_keys($response->json('data')));
+        $this->assertSame(['hubs', 'hub_id', 'hub_currency', 'plans', 'over_limit', 'how_to_pay', 'how_to_pay_max'], array_keys($response->json('data')));
         $this->assertSame($this->hub, $response->json('data.hub_id'), 'With no hub_id: the caller\'s own community.');
         $this->assertSame('eur', $response->json('data.hub_currency'));
 

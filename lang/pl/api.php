@@ -3159,4 +3159,6 @@ KANDYDACI::candidates',
     'plan_field_description' => 'Opis',
     'plan_value_too_large' => ':field: wpisz liczbę nie większą niż :max.',
     'plan_text_too_long' => ':field: wpisz maksymalnie :max znaków.',
+    'billing_how_to_pay_too_long' => 'Notatka jest za długa. Użyj najwyżej :max znaków.',
+    'billing_how_to_pay_not_text' => 'Wpisz notatkę jako zwykły tekst.',
 ];

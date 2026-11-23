@@ -3159,4 +3159,6 @@ CANDIDATI::candidates',
     'plan_field_description' => 'Descrizione',
     'plan_value_too_large' => ':field: inserisci un numero non superiore a :max.',
     'plan_text_too_long' => ':field: inserisci al massimo :max caratteri.',
+    'billing_how_to_pay_too_long' => 'La nota è troppo lunga. Usa al massimo :max caratteri.',
+    'billing_how_to_pay_not_text' => 'Scrivi la nota come testo semplice.',
 ];

@@ -174,12 +174,16 @@ final class BillingPausedFlagTest extends TestCase
         $response->assertStatus(200);
         $this->assertSame(
             [
-                'paused' => false, 'own' => null, 'since' => null, 'payee' => null, 'payee_name' => null, 'payer' => 'parent',
+                // Who it pays is named whether or not it is paused (23 Nov 2026):
+                // its Billing page says so.
+                'paused' => false, 'own' => null, 'since' => null, 'payee' => null, 'payee_name' => $this->parentName, 'payer' => 'parent',
                 // Stage 3c: the warnings an open community's admins see before
                 // anything is paused. Nothing to say here: no date, no package.
                 'paid_until' => null, 'overdue_days' => null, 'member_limit' => null,
                 // Stage 3: the plan the community is on, as it applies to it.
                 'plan' => null,
+                // The note of whoever it pays; none has been written.
+                'how_to_pay' => null,
                 // F-640: the reader is this community's own admin, not a
                 // manager looking in from a community above.
                 'visiting' => false,
@@ -270,7 +274,7 @@ final class BillingPausedFlagTest extends TestCase
 
         $response = $this->apiGet('/v2/admin/billing/standing');
 
-        $this->assertSame(['paused', 'own', 'since', 'payee', 'payee_name', 'payer', 'paid_until', 'overdue_days', 'member_limit', 'plan', 'visiting'], array_keys($response->json('data')));
+        $this->assertSame(['paused', 'own', 'since', 'payee', 'payee_name', 'payer', 'paid_until', 'overdue_days', 'member_limit', 'plan', 'how_to_pay', 'visiting'], array_keys($response->json('data')));
         $this->assertStringNotContainsString('private note', $response->getContent());
     }
 

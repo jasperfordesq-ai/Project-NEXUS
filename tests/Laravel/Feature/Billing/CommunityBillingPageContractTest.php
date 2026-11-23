@@ -193,7 +193,7 @@ final class CommunityBillingPageContractTest extends TestCase
         $data = $this->apiGet('/v2/admin/billing/standing')->assertOk()->json('data');
 
         $this->assertSame(
-            ['paused', 'own', 'since', 'payee', 'payee_name', 'payer', 'paid_until', 'overdue_days', 'member_limit', 'plan', 'visiting'],
+            ['paused', 'own', 'since', 'payee', 'payee_name', 'payer', 'paid_until', 'overdue_days', 'member_limit', 'plan', 'how_to_pay', 'visiting'],
             array_keys($data)
         );
         $this->assertSame('2026-12-01', $data['paid_until']);

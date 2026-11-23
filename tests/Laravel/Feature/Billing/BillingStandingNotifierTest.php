@@ -332,6 +332,95 @@ final class BillingStandingNotifierTest extends TestCase
         $this->assertMatchesRegularExpression('/€\s?490(\.00)?\b/u', html_entity_decode($toAdmin['body']));
     }
 
+    // ── "How to pay", in the payee's own words (23 November 2026) ──────────
+
+    public function test_a_payment_notice_tells_the_admins_how_to_pay_and_opens_the_billing_page(): void
+    {
+        $community = $this->makeCommunity('Notice direct', 1, '/1/');
+        $admin = $this->person($community, ['role' => 'admin']);
+        DB::table('billing_how_to_pay_notes')->delete();
+        \App\Support\Billing\HowToPay::set(1, "Pay by bank transfer.\nIBAN IE00 TEST 0000", 7);
+        $mail = $this->captureMail();
+
+        BillingStandingNotifier::paymentNoticeCounted($community, ['paid_until' => '2026-12-01'], 'due');
+
+        $toAdmin = collect($mail->sent)->firstWhere('to', $admin);
+        $this->assertNotNull($toAdmin);
+        $this->assertStringContainsString('How to pay', $toAdmin['body']);
+        // The line break is kept.
+        $this->assertStringContainsString('Pay by bank transfer.<br>', $toAdmin['body']);
+        $this->assertStringContainsString('IBAN IE00 TEST 0000', $toAdmin['body']);
+        // Every community's admins have a Billing page now: the button goes there.
+        $this->assertStringContainsString('/admin/billing', $toAdmin['body']);
+        $this->assertStringContainsString('Open the Billing page', $toAdmin['body']);
+    }
+
+    public function test_a_note_can_never_become_markup_in_an_email(): void
+    {
+        $community = $this->makeCommunity('Notice direct', 1, '/1/');
+        $admin = $this->person($community, ['role' => 'admin']);
+        DB::table('billing_how_to_pay_notes')->delete();
+        \App\Support\Billing\HowToPay::set(1, '<script>alert(1)</script> <a href="https://evil.example">pay here</a>', 7);
+        $mail = $this->captureMail();
+
+        BillingStandingNotifier::paymentNoticeCounted($community, ['paid_until' => '2026-12-01'], 'due');
+
+        $body = collect($mail->sent)->firstWhere('to', $admin)['body'];
+        $this->assertStringNotContainsString('<script>alert(1)</script>', $body);
+        $this->assertStringNotContainsString('<a href="https://evil.example">', $body);
+        $this->assertStringContainsString('&lt;script&gt;alert(1)&lt;/script&gt;', $body);
+    }
+
+    public function test_a_community_that_pays_its_parent_is_told_its_parents_note_and_the_parent_is_not_read_it_back(): void
+    {
+        $admin = $this->person($this->child, ['role' => 'admin']);
+        $manager = $this->person($this->hub, ['role' => 'admin', 'is_tenant_super_admin' => true]);
+        DB::table('billing_how_to_pay_notes')->delete();
+        \App\Support\Billing\HowToPay::set(1, 'The platform: pay by bank transfer.', 7);
+        \App\Support\Billing\HowToPay::set($this->hub, 'The hub: pay by cheque.', 7);
+        $mail = $this->captureMail();
+
+        BillingStandingNotifier::paymentNoticeCounted($this->child, ['paid_until' => '2026-12-01'], 'due');
+
+        $toAdmin = collect($mail->sent)->firstWhere('to', $admin);
+        $this->assertStringContainsString('The hub: pay by cheque.', $toAdmin['body']);
+        $this->assertStringNotContainsString('The platform: pay by bank transfer.', $toAdmin['body']);
+
+        // Whoever is paid wrote the note; their copy does not carry it.
+        $toManager = collect($mail->sent)->firstWhere('to', $manager);
+        $this->assertNotNull($toManager);
+        $this->assertStringNotContainsString('The hub: pay by cheque.', $toManager['body']);
+    }
+
+    public function test_a_notice_with_no_note_written_says_nothing_about_how_to_pay(): void
+    {
+        $community = $this->makeCommunity('Notice direct', 1, '/1/');
+        $admin = $this->person($community, ['role' => 'admin']);
+        DB::table('billing_how_to_pay_notes')->delete();
+        $mail = $this->captureMail();
+
+        BillingStandingNotifier::paymentNoticeCounted($community, ['paid_until' => '2026-12-01'], 'due');
+
+        $this->assertStringNotContainsString('How to pay', collect($mail->sent)->firstWhere('to', $admin)['body']);
+    }
+
+    public function test_a_community_paused_for_non_payment_is_told_how_to_pay(): void
+    {
+        $community = $this->makeCommunity('Notice direct', 1, '/1/');
+        $admin = $this->person($community, ['role' => 'admin']);
+        DB::table('billing_how_to_pay_notes')->delete();
+        \App\Support\Billing\HowToPay::set(1, 'The platform: pay by bank transfer.', 7);
+        \App\Services\BillingStandingService::suspend($community, null, 'auto');
+        $mail = $this->captureMail();
+
+        BillingStandingNotifier::paused($community, true, ['paid_until' => '2026-10-01', 'days_late' => 20]);
+
+        $toAdmin = collect($mail->sent)->firstWhere('to', $admin);
+        $this->assertNotNull($toAdmin);
+        $this->assertStringContainsString('The platform: pay by bank transfer.', $toAdmin['body']);
+        $this->assertStringContainsString('/admin/billing', $toAdmin['body']);
+    }
+
     public function test_a_payment_notice_for_a_community_with_no_plan_states_no_amount(): void
     {
         $community = $this->makeCommunity('Notice planless', 1, '/1/');

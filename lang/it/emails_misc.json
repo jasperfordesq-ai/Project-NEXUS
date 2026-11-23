@@ -1003,6 +1003,8 @@
     "joining_opened_again_title": "Nuovi membri possono di nuovo unirsi",
     "joining_opened_again_body": "<strong>{{above}}</strong> è tornata entro il numero di membri del suo piano, oppure la sua regola è cambiata, quindi nuovi membri possono di nuovo unirsi a <strong>{{community}}</strong>.",
     "cta": "Apri il pannello di amministrazione",
+    "cta_billing": "Apri la pagina Fatturazione",
+    "how_to_pay": "<strong>Come pagare</strong><br>{{note}}",
     "reminder_subject": "Il pagamento di {{community}} scade il {{date}}",
     "reminder_title": "Un pagamento scade a breve",
     "reminder_body": "<strong>{{community}}</strong> è pagata fino al <strong>{{date}}</strong>. Organizza il prossimo pagamento prima di quella data, così per i suoi membri non cambia nulla.",

@@ -14,6 +14,7 @@ use App\Services\StripeSubscriptionService;
 use App\Services\TenantBillingService;
 use App\Support\Authorization\CrossTenantEntry;
 use App\Support\Billing\BillingLock;
+use App\Support\Billing\HowToPay;
 use App\Support\Billing\PlanTerms;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -46,7 +47,8 @@ class AdminBillingController extends BaseApiController
      * page was the way round both refusals.
      *
      * Asked first in every method except getStanding(), before anything is
-     * read or sent. Not refused: the community's own admins, and a
+     * read or sent (getPayments() included: a parent's manager reads the
+     * payments made to it on Branch payments, and no others). Not refused: the community's own admins, and a
      * platform-wide account, which is never a visitor.
      */
     private function refuseVisitingManager(): ?JsonResponse
@@ -107,6 +109,11 @@ class AdminBillingController extends BaseApiController
      * And `paid_until` (`YYYY-MM-DD` or null): the date the community is paid
      * up to, its own date, so its billing page can show it.
      *
+     * And `payee_name` whenever the community pays its parent (it was sent
+     * only while paused), and `how_to_pay`: the note written by whoever this
+     * community pays by hand (HowToPay), or null. A visitor is not sent the
+     * note: it is addressed to the community's own admins.
+     *
      * And `visiting` (bool): the reader is a manager of a community above,
      * looking in. Every other endpoint here refuses them
      * (refuseVisitingManager()); this one stays readable so the admin panel
@@ -147,6 +154,24 @@ class AdminBillingController extends BaseApiController
             'terms' => $terms['terms'],
         ];
 
+        $visiting = CrossTenantEntry::isVisitingNow();
+
+        // The name of the parent community it pays, paused or not: its
+        // billing page says who it pays. Nothing else about that community.
+        $payeeName = null;
+        if ($payer === 'parent') {
+            $parentId = DB::table('tenants')->where('id', $tenantId)->value('parent_id');
+            $payeeName = $parentId !== null
+                ? DB::table('tenants')->where('id', (int) $parentId)->value('name')
+                : null;
+        }
+
+        $tail = [
+            'plan' => $plan,
+            'how_to_pay' => $visiting ? null : HowToPay::forCommunity($tenantId),
+            'visiting' => $visiting,
+        ];
+
         $reason = BillingLock::reasonFor($tenantId);
         if ($reason === null) {
             return $this->respondWithData([
@@ -154,23 +179,18 @@ class AdminBillingController extends BaseApiController
                 'own' => null,
                 'since' => null,
                 'payee' => null,
-                'payee_name' => null,
+                'payee_name' => $payeeName,
                 'payer' => $payer,
-            ] + $warnings + ['plan' => $plan, 'visiting' => CrossTenantEntry::isVisitingNow()]);
+            ] + $warnings + $tail);
         }
 
+        // When the lock comes from a community above, nobody is named.
         $payee = null;
-        $payeeName = null;
-
         if ($reason['own']) {
             $payee = $payer === 'parent' ? 'parent' : 'platform';
-
-            if ($payee === 'parent') {
-                $parentId = DB::table('tenants')->where('id', $tenantId)->value('parent_id');
-                $payeeName = $parentId !== null
-                    ? DB::table('tenants')->where('id', (int) $parentId)->value('name')
-                    : null;
-            }
+        } else {
+            $payeeName = null;
+            $tail['how_to_pay'] = null;
         }
 
         return $this->respondWithData([
@@ -180,7 +200,48 @@ class AdminBillingController extends BaseApiController
             'payee' => $payee,
             'payee_name' => $payeeName,
             'payer' => $payer,
-        ] + $warnings + ['plan' => $plan, 'visiting' => CrossTenantEntry::isVisitingNow()]);
+        ] + $warnings + $tail);
+    }
+
+    /**
+     * GET /v2/admin/billing/payments
+     *
+     * The payments recorded for this community, newest first, for its own
+     * admins: by hand (a bank transfer, a cheque) and by card. It could not
+     * see them anywhere: only whoever recorded them could.
+     *
+     * Deliberately narrow, as getStanding() is. Each payment is `{id,
+     * received_on, method, amount, currency, paid_until_after, source, paid_to,
+     * voided, refunded_amount}`. Never who recorded or voided it, the
+     * recorder's reference, or the reason for a void: those are the
+     * recorder's own notes, and the recorder belongs to another community.
+     * `paid_to` is `platform` or `parent`, never a name.
+     */
+    public function getPayments(): JsonResponse
+    {
+        $this->requireAdmin();
+        if (($refusal = $this->refuseVisitingManager()) !== null) {
+            return $refusal;
+        }
+        $tenantId = (int) TenantContext::getId();
+
+        $payments = [];
+        foreach (BillingStandingService::payments($tenantId, 24) as $payment) {
+            $payments[] = [
+                'id' => $payment['id'],
+                'received_on' => $payment['received_on'],
+                'method' => $payment['method'],
+                'amount' => $payment['amount'],
+                'currency' => $payment['currency'],
+                'paid_until_after' => $payment['paid_until_after'],
+                'source' => $payment['source'],
+                'paid_to' => $payment['payee_tenant_id'] === null ? 'platform' : 'parent',
+                'voided' => $payment['voided_at'] !== null,
+                'refunded_amount' => $payment['refunded_amount'],
+            ];
+        }
+
+        return $this->respondWithData($payments);
     }
 
     /**

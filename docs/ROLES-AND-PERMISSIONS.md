@@ -1001,6 +1001,39 @@ that pays the platform. A plan a paying community is on cannot be hidden
 (`hub_plan_terms_changed`). Pinned in
 `tests/Laravel/Feature/Billing/BranchPlansEndpointsTest.php`.
 
+**The "how to pay" note (23 November 2026).** Whoever is paid writes one
+plain-text note (600 characters at most) saying how to pay them, and every
+community that pays them by hand is shown it: on its own Billing page, on its
+admin warning line and in its payment emails
+(`App\Support\Billing\HowToPay`, table `billing_how_to_pay_notes`, keyed by the
+payee's community id; `1` is the platform itself).
+
+- The platform's note is the platform team's alone:
+  `GET`/`PUT /v2/admin/super/billing/how-to-pay`, each starting with
+  `requireGodPlatformAdmin()` and pinned in
+  `AdminSuperControllerPlatformTeamLockTest`.
+- A parent community's note is written with
+  `PUT /v2/admin/super/branch-plans/{hubId}/how-to-pay`, under the same reach
+  rule as the plans above (`BranchPlans::refusalForHub()`): its own community
+  or one below, never above or beside, never tenant 1.
+- A community is told only the note of the payee it pays: its direct parent's
+  when it pays its parent, the platform's when it pays the platform by invoice,
+  none when it pays by card or is not billed. It is never handed the note of a
+  community further up. A manager visiting from above is not sent it, and a
+  community paused from above is told nobody's name and nobody's note.
+- The note is another community's text. It is stored as written, never
+  rendered as markup, and escaped before it goes into an email. Every change is
+  in the payee's billing audit log (`how_to_pay_note_set`).
+
+**A community's own payments (23 November 2026).** A community's own admins may
+read the payments recorded for it (`GET /v2/admin/billing/payments`): the date,
+the method, the amount, the date it is then paid up to, and whether it was paid
+to the platform or to its parent. They are not sent who recorded or voided a
+payment, the recorder's reference, or the reason for a void. A manager visiting
+from a community above is refused, as on the rest of that community's own
+billing (F-640); it reads the payments made to it on Branch payments. Both are
+pinned in `tests/Laravel/Feature/Billing/HowToPayNoteTest.php`.
+
 **The rule for going over the member number (21 November 2026).** Each
 community has a rule for what happens when it goes over its plan's member
 number (warn only, stop new members joining, pause, move up to the next plan)

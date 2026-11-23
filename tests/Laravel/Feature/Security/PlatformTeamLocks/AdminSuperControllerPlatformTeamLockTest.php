@@ -88,6 +88,8 @@ final class AdminSuperControllerPlatformTeamLockTest extends PlatformTeamLockTes
             // its success path marks a payment and may move a date.
             'void a payment' => ['POST', '/v2/admin/super/billing/standing/void-payment', 'refusal-only'],
             'set how a community pays' => ['POST', '/v2/admin/super/billing/standing/payer', 'refusal-only'],
+            'read the platform\'s how-to-pay note' => ['GET', '/v2/admin/super/billing/how-to-pay', 'refusal-only'],
+            'write the platform\'s how-to-pay note' => ['PUT', '/v2/admin/super/billing/how-to-pay', 'refusal-only'],
             // A community's own rule for going over its member number (hub
             // plans Stage 4). Refusal-only: its success path restarts that
             // community's days-over count.

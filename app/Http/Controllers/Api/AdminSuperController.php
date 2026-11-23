@@ -23,6 +23,7 @@ use App\Services\BillingStandingService;
 use App\Support\Billing\BillingSettings;
 use App\Support\Billing\BranchPayments;
 use App\Support\Billing\BranchPlans;
+use App\Support\Billing\HowToPay;
 use App\Support\Billing\JoiningClosed;
 use App\Support\Billing\JoiningGate;
 use App\Support\Billing\OverLimitRule;
@@ -3835,7 +3836,79 @@ class AdminSuperController extends BaseApiController
             'hub_currency' => $hubId !== null ? StripeSubscriptionService::billingCurrencyFor($hubId) : null,
             'plans' => $hubId !== null ? PlanTerms::offeredBy($hubId) : [],
             'over_limit' => $hubId !== null ? $this->hubOverLimit($hubId) : null,
+            // What this hub tells the communities that pay it about paying.
+            'how_to_pay' => $hubId !== null ? HowToPay::forPayee($hubId) : null,
+            'how_to_pay_max' => HowToPay::MAX,
         ]);
+    }
+
+    /**
+     * PUT /api/v2/admin/super/branch-plans/{hubId}/how-to-pay  {note}
+     *
+     * The note a parent community writes for the communities that pay it:
+     * its bank details, who to contact. Shown on their Billing page, on their
+     * admin warning line and in their payment emails. Null or empty removes
+     * it. Plain text, HowToPay::MAX characters at most.
+     *
+     * Reach is the Branch plans rule: its own community or one below.
+     */
+    public function branchPlansSetHowToPay(int $hubId): JsonResponse
+    {
+        $userId = $this->requireSuperAdmin();
+        if (BranchPlans::refusalForHub($hubId) !== null) {
+            return $this->branchPlansNotInReach();
+        }
+
+        return $this->saveHowToPay($hubId, $userId);
+    }
+
+    /**
+     * GET /api/v2/admin/super/billing/how-to-pay
+     *
+     * The platform's own note, for the communities that pay the platform by
+     * invoice. Platform team only.
+     */
+    public function getPlatformHowToPay(): JsonResponse
+    {
+        $this->requireGodPlatformAdmin();
+
+        return $this->respondWithData([
+            'how_to_pay' => HowToPay::forPayee(HowToPay::PLATFORM),
+            'how_to_pay_max' => HowToPay::MAX,
+        ]);
+    }
+
+    /** PUT /api/v2/admin/super/billing/how-to-pay  {note}. Platform team only. */
+    public function setPlatformHowToPay(): JsonResponse
+    {
+        $userId = $this->requireGodPlatformAdmin();
+
+        return $this->saveHowToPay(HowToPay::PLATFORM, $userId);
+    }
+
+    /** The caller has decided the reader may write this payee's note. */
+    private function saveHowToPay(int $payeeTenantId, int $userId): JsonResponse
+    {
+        $input = $this->getAllInput();
+        // Only an explicit null (or an empty note) removes it. A request that
+        // does not say `note` at all is a mistake, not an instruction.
+        if (!array_key_exists('note', $input)) {
+            return $this->respondWithError('HOW_TO_PAY_NOT_TEXT', __('api.billing_how_to_pay_not_text'), 'note', 422);
+        }
+
+        try {
+            $note = HowToPay::set($payeeTenantId, $input['note'], $userId);
+        } catch (\DomainException $e) {
+            if ($e->getMessage() === HowToPay::TOO_LONG) {
+                return $this->respondWithError('HOW_TO_PAY_TOO_LONG', __('api.billing_how_to_pay_too_long', ['max' => HowToPay::MAX]), 'note', 422);
+            }
+            if ($e->getMessage() === HowToPay::NOT_TEXT) {
+                return $this->respondWithError('HOW_TO_PAY_NOT_TEXT', __('api.billing_how_to_pay_not_text'), 'note', 422);
+            }
+            throw $e;
+        }
+
+        return $this->respondWithData(['how_to_pay' => $note, 'how_to_pay_max' => HowToPay::MAX]);
     }
 
     /**

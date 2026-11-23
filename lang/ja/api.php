@@ -3159,4 +3159,6 @@ XP: :xp |レベル: :level |完了した交換: :completed_exchanges
     'plan_field_description' => '説明',
     'plan_value_too_large' => ':field：:max以下の数値を入力してください。',
     'plan_text_too_long' => ':field：:max文字以内で入力してください。',
+    'billing_how_to_pay_too_long' => 'メモが長すぎます。:max 文字以内にしてください。',
+    'billing_how_to_pay_not_text' => 'メモは通常のテキストで入力してください。',
 ];

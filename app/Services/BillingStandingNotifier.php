@@ -12,6 +12,7 @@ use App\Core\EmailTemplateBuilder;
 use App\Core\TenantContext;
 use App\I18n\FormattingLocale;
 use App\I18n\LocaleContext;
+use App\Support\Billing\HowToPay;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -47,6 +48,13 @@ final class BillingStandingNotifier
     private const KEY = 'emails_misc.billing_standing.';
 
     /**
+     * The community's own Billing page. Every community's admins have one
+     * since 23 November 2026, so a notice about its payment, its plan or its
+     * member limit opens there, not on the admin panel's front page.
+     */
+    private const BILLING_PAGE = '/admin/billing';
+
+    /**
      * The community has been paused. `$automatic` (the daily check paused it)
      * also tells whoever the community pays and the platform team; a person
      * who paused it by hand already knows.
@@ -72,8 +80,11 @@ final class BillingStandingNotifier
             $adminBody = [self::KEY . 'paused_body_platform', ['community' => $about['name']]];
         }
 
+        // Paused for non-payment: how to pay, in the payee's own words.
+        $adminParagraphs = $overLimit ? [$adminBody] : [$adminBody, ...self::howToPay($tenantId)];
+
         $admins = self::admins($tenantId);
-        $sent = self::deliver($admins, $about['name'], self::KEY . 'paused_subject', self::KEY . 'paused_title', [$adminBody], 'warning', '/admin');
+        $sent = self::deliver($admins, $about['name'], self::KEY . 'paused_subject', self::KEY . 'paused_title', $adminParagraphs, 'warning', self::BILLING_PAGE);
 
         if ($automatic) {
             $payeeBody = $overLimit
@@ -746,7 +757,11 @@ final class BillingStandingNotifier
         $admins = self::admins($tenantId);
         $subjectParams = ['date' => $params['date'], 'pause_date' => $params['pause_date']];
 
-        $adminCounts = self::deliverCounted($admins, $about['name'], self::KEY . "{$stage}_subject", self::KEY . "{$stage}_title", [$body, ...$amount, $payTo], $theme, '/admin', $subjectParams);
+        // How to pay, for the community's own admins only: whoever it pays
+        // wrote the note and does not need it read back.
+        $adminParagraphs = [$body, ...$amount, $payTo, ...self::howToPay($tenantId)];
+
+        $adminCounts = self::deliverCounted($admins, $about['name'], self::KEY . "{$stage}_subject", self::KEY . "{$stage}_title", $adminParagraphs, $theme, self::BILLING_PAGE, $subjectParams);
         $sent = $adminCounts['tried'];
 
         if ($tellPayee) {
@@ -754,6 +769,32 @@ final class BillingStandingNotifier
         }
 
         return $sent;
+    }
+
+    /**
+     * "How to pay: …", the note written by whoever this community pays by
+     * hand (HowToPay); empty when there is none, or nobody is paid by hand.
+     *
+     * The third element names the values whose line breaks are kept. The note
+     * is escaped like every other value: it is another community's text.
+     *
+     * @return list<array{0:string, 1:array<string, string>, 2:list<string>}>
+     */
+    private static function howToPay(int $tenantId): array
+    {
+        try {
+            $note = HowToPay::forCommunity($tenantId);
+        } catch (\Throwable $e) {
+            // The notice matters more than the note: it is still sent.
+            Log::error('[BillingStandingNotifier] the how-to-pay note could not be read', [
+                'tenant_id' => $tenantId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [];
+        }
+
+        return $note === null ? [] : [[self::KEY . 'how_to_pay', ['note' => $note], ['note']]];
     }
 
     /**
@@ -819,7 +860,7 @@ final class BillingStandingNotifier
         }
 
         $admins = self::admins($tenantId);
-        $counts = self::deliverCounted($admins, $about['name'], self::KEY . "{$stage}_subject", self::KEY . "{$stage}_title", $paragraphs, $theme, '/admin');
+        $counts = self::deliverCounted($admins, $about['name'], self::KEY . "{$stage}_subject", self::KEY . "{$stage}_title", $paragraphs, $theme, self::BILLING_PAGE);
 
         if ($tellPayee) {
             $counts = self::add($counts, self::toPayeesCounted($tenantId, $about, $admins, self::KEY . "{$stage}_subject", self::KEY . "{$stage}_title", $paragraphs, $theme));
@@ -1023,11 +1064,17 @@ final class BillingStandingNotifier
         // reader's locale, so it is written the way that reader writes it.
         $safeParagraphs = static function () use ($paragraphs): array {
             $out = [];
-            foreach ($paragraphs as [$key, $params]) {
+            foreach ($paragraphs as $paragraph) {
+                [$key, $params] = $paragraph;
+                // Values whose line breaks are kept (a how-to-pay note).
+                // Escaped first, like every value; only then is a line break
+                // written, so nothing in the text can become markup.
+                $multiline = $paragraph[2] ?? [];
                 $safe = [];
                 foreach ($params as $name => $value) {
                     $text = $value instanceof \Closure ? (string) $value() : (string) $value;
-                    $safe[$name] = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+                    $escaped = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+                    $safe[$name] = in_array($name, $multiline, true) ? nl2br($escaped, false) : $escaped;
                 }
                 $out[] = [$key, $safe];
             }
@@ -1035,18 +1082,20 @@ final class BillingStandingNotifier
             return $out;
         };
         $subjectParams = ['community' => $communityName] + $subjectParams;
+        // The button says where it goes.
+        $billingPage = $path === self::BILLING_PAGE;
 
         $tried = 0;
         $accepted = 0;
         foreach ($people->groupBy('tenant_id') as $contextTenantId => $group) {
             /** @var array{tried:int, accepted:int} $counts */
-            $counts = TenantContext::runForTenant((int) $contextTenantId, static function () use ($group, $subjectKey, $subjectParams, $titleKey, $safeParagraphs, $theme, $path): array {
+            $counts = TenantContext::runForTenant((int) $contextTenantId, static function () use ($group, $subjectKey, $subjectParams, $titleKey, $safeParagraphs, $theme, $path, $billingPage): array {
                 $url = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . $path;
                 $count = 0;
                 $ok = 0;
 
                 foreach ($group as $person) {
-                    $took = LocaleContext::withLocale($person, static function () use ($person, $subjectKey, $subjectParams, $titleKey, $safeParagraphs, $theme, $url): bool {
+                    $took = LocaleContext::withLocale($person, static function () use ($person, $subjectKey, $subjectParams, $titleKey, $safeParagraphs, $theme, $url, $billingPage): bool {
                         $builder = EmailTemplateBuilder::make();
                         if ($theme !== 'default') {
                             $builder->theme($theme);
@@ -1062,7 +1111,7 @@ final class BillingStandingNotifier
                         return EmailDispatchService::sendRaw(
                             (string) $person->email,
                             __($subjectKey, $subjectParams),
-                            $builder->button(__('emails_misc.billing_standing.cta'), $url)->render(),
+                            $builder->button(__($billingPage ? 'emails_misc.billing_standing.cta_billing' : 'emails_misc.billing_standing.cta'), $url)->render(),
                             null,
                             null,
                             null,

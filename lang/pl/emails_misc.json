@@ -1003,6 +1003,8 @@
     "joining_opened_again_title": "Nowi członkowie mogą znowu dołączać",
     "joining_opened_again_body": "<strong>{{above}}</strong> znów mieści się w liczbie członków swojego planu albo zmieniła się jej zasada, więc nowi członkowie mogą znowu dołączać do <strong>{{community}}</strong>.",
     "cta": "Otwórz panel administracyjny",
+    "cta_billing": "Otwórz stronę Rozliczenia",
+    "how_to_pay": "<strong>Jak zapłacić</strong><br>{{note}}",
     "reminder_subject": "Płatność za społeczność {{community}} przypada na {{date}}",
     "reminder_title": "Wkrótce przypada termin płatności",
     "reminder_body": "Społeczność <strong>{{community}}</strong> jest opłacona do <strong>{{date}}</strong>. Prosimy o zorganizowanie kolejnej płatności przed tym terminem, aby nic się nie zmieniło dla jej członków.",

@@ -1003,6 +1003,8 @@
     "joining_opened_again_title": "再び新しいメンバーが参加できます",
     "joining_opened_again_body": "<strong>{{above}}</strong>がプランのメンバー数の範囲内に戻ったか、ルールが変更されたため、<strong>{{community}}</strong>に再び新しいメンバーが参加できるようになりました。",
     "cta": "管理パネルを開く",
+    "cta_billing": "請求ページを開く",
+    "how_to_pay": "<strong>お支払い方法</strong><br>{{note}}",
     "reminder_subject": "{{community}}のお支払い期日は{{date}}です",
     "reminder_title": "まもなくお支払い期日です",
     "reminder_body": "<strong>{{community}}</strong>は<strong>{{date}}</strong>まで支払い済みです。メンバーに影響が出ないよう、それまでに次回のお支払いをご手配ください。",

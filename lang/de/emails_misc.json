@@ -1003,6 +1003,8 @@
     "joining_opened_again_title": "Neue Mitglieder können wieder beitreten",
     "joining_opened_again_body": "<strong>{{above}}</strong> liegt wieder innerhalb der Mitgliederzahl seines Plans, oder seine Regel wurde geändert. Deshalb können neue Mitglieder <strong>{{community}}</strong> wieder beitreten.",
     "cta": "Adminbereich öffnen",
+    "cta_billing": "Abrechnung öffnen",
+    "how_to_pay": "<strong>So zahlen Sie</strong><br>{{note}}",
     "reminder_subject": "Die Zahlung für {{community}} ist am {{date}} fällig",
     "reminder_title": "Eine Zahlung wird bald fällig",
     "reminder_body": "<strong>{{community}}</strong> ist bis zum <strong>{{date}}</strong> bezahlt. Bitte veranlassen Sie die nächste Zahlung vorher, damit sich für die Mitglieder nichts ändert.",

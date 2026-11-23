@@ -2,11 +2,11 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2917,
-  "api_route_rows": 2882,
-  "distinct_api_paths": 2409,
+  "total_registered_routes": 2921,
+  "api_route_rows": 2886,
+  "distinct_api_paths": 2412,
   "route_source_fingerprint": {
-    "digest": "0b96785a2f1dfdba09fbd5d2c058061132f3a51a4d4a2a6d4ed6d67af96a8702",
+    "digest": "f922cc3b0a0f4c37a0d3bd09df0f40a867a0c60d60a1fb1bb45df8fad89b00ae",
     "files": [
       {
         "file": "routes/api-marketplace-admin.php",
@@ -18,7 +18,7 @@
       },
       {
         "file": "routes/api.php",
-        "sha256": "64b1d55a78d1367d42185eb9cdd4f19a2e9cea4bc20b8a82ae6855323a14c81d"
+        "sha256": "15e1854da6b716c41c1bc24cc742732cef31b48baf9c30b1631a1017200819c0"
       },
       {
         "file": "routes/channels.php",
@@ -633,6 +633,9 @@
       "POST"
     ],
     "/api/v2/admin/billing/invoices": [
+      "GET"
+    ],
+    "/api/v2/admin/billing/payments": [
       "GET"
     ],
     "/api/v2/admin/billing/portal": [
@@ -3082,6 +3085,10 @@
     "/api/v2/admin/super/billing/grace-period": [
       "POST"
     ],
+    "/api/v2/admin/super/billing/how-to-pay": [
+      "GET",
+      "PUT"
+    ],
     "/api/v2/admin/super/billing/pause": [
       "POST"
     ],
@@ -3163,6 +3170,9 @@
     ],
     "/api/v2/admin/super/branch-plans": [
       "GET"
+    ],
+    "/api/v2/admin/super/branch-plans/{hubId}/how-to-pay": [
+      "PUT"
     ],
     "/api/v2/admin/super/branch-plans/{hubId}/over-limit": [
       "PUT"
