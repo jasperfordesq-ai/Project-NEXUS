@@ -105,6 +105,12 @@ export function BillingPage() {
   const [upgradeMessage, setUpgradeMessage] = useState('');
   const [upgradeSending, setUpgradeSending] = useState(false);
 
+  // `?message=1` opens the page with the message box already open: the plan
+  // picker sends people here from a plan they cannot choose themselves.
+  useEffect(() => {
+    if (searchParams.get('message') === '1') onUpgradeOpen();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const [subscription, setSubscription] = useState<SubscriptionDetails | null>(null);
   const [standing, setStanding] = useState<OwnStanding | null>(null);
   const [loading, setLoading] = useState(true);
@@ -468,7 +474,8 @@ export function BillingPage() {
             <Button variant="tertiary" onPress={onUpgradeClose}>
               {t('billing.cancel')}
             </Button>
-            <Button isLoading={upgradeSending} onPress={handleUpgradeRequest}>
+            {/* An empty message tells the platform team nothing. */}
+            <Button isLoading={upgradeSending} isDisabled={upgradeMessage.trim() === ''} onPress={handleUpgradeRequest}>
               {t('billing.send_request')}
             </Button>
           </ModalFooter>

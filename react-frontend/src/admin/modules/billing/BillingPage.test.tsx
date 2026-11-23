@@ -337,4 +337,19 @@ describe('BillingPage', () => {
     const links = screen.getAllByRole('link');
     expect(links.some((l) => (l.getAttribute('href') ?? '').endsWith('/admin/billing/plans'))).toBe(true);
   });
+  it('opens the message box when the address asks for it, and will not send an empty message', async () => {
+    // The plan picker sends people here from a plan they cannot take themselves.
+    window.history.pushState({}, '', '/?message=1');
+    try {
+      render(<BillingPage />);
+
+      const send = await screen.findByRole('button', { name: 'Send message' });
+      expect(send).toBeDisabled();
+
+      fireEvent.change(screen.getByLabelText('Your message'), { target: { value: 'We have paid our invoice.' } });
+      expect(screen.getByRole('button', { name: 'Send message' })).not.toBeDisabled();
+    } finally {
+      window.history.pushState({}, '', '/');
+    }
+  });
 });

@@ -567,6 +567,8 @@ describe('BillingControl', () => {
     expect(await screen.findByText('The list could not be loaded.')).toBeInTheDocument();
     expect(button('Try again')).toBeDefined();
     expect(screen.queryByText('Failed to load')).not.toBeInTheDocument();
+    // A failed load is not an empty platform.
+    expect(screen.queryByText('There are no communities yet.')).not.toBeInTheDocument();
   });
 
   // ── Assign plan: the dialog ───────────────────────────────────────────────

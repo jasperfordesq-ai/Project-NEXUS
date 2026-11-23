@@ -16,7 +16,7 @@ import { Alert, Card, CardBody, CardHeader, CardFooter, Button, Chip, Spinner, M
  */
 
 import { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ButtonGroup } from '@/components/ui';
 import { Separator } from '@/components/ui';
 import Check from 'lucide-react/icons/check';
@@ -330,22 +330,35 @@ export function PlanSelector() {
                     </ul>
                   </CardBody>
                   <CardFooter>
-                    <Button
-                      color={isCurrent || isDowngradeBlocked ? 'default' : 'primary'}
-                      variant={isCurrent || isDowngradeBlocked ? 'flat' : 'solid'}
-                      isDisabled={!!isCurrent || isDowngradeBlocked}
-                      isLoading={checkoutLoading === plan.id}
-                      onPress={() => (paysByCard ? setChangeTo(plan) : handleSubscribe(plan.id))}
-                      fullWidth
-                    >
-                      {isCurrent
-                        ? t('billing.current')
-                        : isDowngradeBlocked
-                          ? t('billing.contact_support')
+                    {isDowngradeBlocked && !isCurrent ? (
+                      // A plan this community cannot move to by itself. This
+                      // was a greyed-out "Contact Support" button that led
+                      // nowhere; it now opens the message box on Billing.
+                      <Button
+                        as={Link}
+                        to={tenantPath('/admin/billing?message=1')}
+                        color="default"
+                        variant="flat"
+                        fullWidth
+                      >
+                        {t('billing.request_upgrade')}
+                      </Button>
+                    ) : (
+                      <Button
+                        color={isCurrent ? 'default' : 'primary'}
+                        variant={isCurrent ? 'flat' : 'solid'}
+                        isDisabled={!!isCurrent}
+                        isLoading={checkoutLoading === plan.id}
+                        onPress={() => (paysByCard ? setChangeTo(plan) : handleSubscribe(plan.id))}
+                        fullWidth
+                      >
+                        {isCurrent
+                          ? t('billing.current')
                           : paysByCard
                             ? t('plan_facts.change_to_plan')
                             : t('billing.subscribe')}
-                    </Button>
+                      </Button>
+                    )}
                   </CardFooter>
                 </Card>
               );

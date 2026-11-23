@@ -669,7 +669,14 @@ export function BillingControl() {
               }
             </TableHeader>
             <TableBody
-              emptyContent={snapshot.length === 0 ? t('control.none_yet') : t('control.none_match')}
+              // A list that could not be loaded is not an empty platform: the
+              // alert above says what happened, and nothing here says "There
+              // are no communities yet."
+              emptyContent={
+                loadFailed && snapshot.length === 0
+                  ? null
+                  : snapshot.length === 0 ? t('control.none_yet') : t('control.none_match')
+              }
               items={shownRows}
             >
               {(row) => {

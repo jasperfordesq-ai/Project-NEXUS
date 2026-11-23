@@ -103,6 +103,18 @@ describe('RevenueDashboard — platform team', () => {
     await waitFor(() => expect(document.querySelector('[role="alert"]')).toBeTruthy());
   });
 
+  it('offers to try again when the figures cannot be loaded, and loads them when pressed', async () => {
+    mockApi.get.mockResolvedValueOnce({ success: false });
+    render(<RevenueDashboard />);
+    const retry = await screen.findByRole('button', { name: 'Try again' });
+
+    mockApi.get.mockResolvedValue({ success: true, data: REVENUE_DATA });
+    retry.click();
+
+    expect(await screen.findByRole('heading', { name: 'Expected income' })).toBeInTheDocument();
+    expect(document.querySelector('[role="alert"]')).toBeNull();
+  });
+
   it('calls the revenue API endpoint', async () => {
     render(<RevenueDashboard />);
     await waitFor(() => expect(mockApi.get).toHaveBeenCalled());

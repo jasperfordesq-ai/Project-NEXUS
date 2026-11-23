@@ -396,6 +396,11 @@ describe('PlanSelector', () => {
     expect(screen.getAllByRole('button', { name: /^current$/i })).toHaveLength(1);
     expect(screen.queryByRole('button', { name: /^subscribe$/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Change to this plan' })).not.toBeInTheDocument();
+    // A plan it cannot take by itself leads somewhere: the message box on
+    // Billing. It was a greyed-out "Contact Support" button that did nothing.
+    const ask = screen.getByRole('link', { name: 'Message the platform team' });
+    expect(ask.getAttribute('href')).toContain('/admin/billing?message=1');
+    expect(screen.queryByText('Contact Support')).not.toBeInTheDocument();
   });
 
   it('says nothing about card payments to a community with no card subscription', async () => {

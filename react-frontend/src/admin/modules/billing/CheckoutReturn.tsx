@@ -126,20 +126,22 @@ export function CheckoutReturn() {
                 {t('billing.checkout_failed')}
               </h2>
               <p className="text-muted">{t('billing.checkout_failed_desc')}</p>
-              <div className="flex gap-3 justify-center mt-4">
+              {/* Billing first: the payment may well have gone through, and
+                  the plan shows there once it has. "Try again" came first and
+                  invited paying twice. */}
+              <div className="flex flex-wrap gap-3 justify-center mt-4">
+                <Button
+                  as={Link}
+                  to={tenantPath('/admin/billing')}
+                >
+                  {t('billing.go_to_billing')}
+                </Button>
                 <Button
                   as={Link}
                   to={tenantPath('/admin/billing/plans')}
                   variant="tertiary"
                 >
                   {t('billing.try_again')}
-                </Button>
-                <Button
-                  as={Link}
-                  to={tenantPath('/admin/billing')}
-                  variant="secondary"
-                >
-                  {t('billing.go_to_billing')}
                 </Button>
               </div>
             </>

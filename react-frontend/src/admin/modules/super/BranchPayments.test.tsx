@@ -303,6 +303,20 @@ describe('BranchPayments', () => {
     expect(await screen.findByText('The communities could not be loaded.')).toBeInTheDocument();
   });
 
+  it('offers to try again when the list cannot be loaded, and loads it when pressed', async () => {
+    const user = userEvent.setup();
+    mockApi.get.mockResolvedValueOnce({ success: false, error: 'nope' });
+    const { BranchPayments } = await import('./BranchPayments');
+    render(<BranchPayments />);
+    await screen.findByText('The communities could not be loaded.');
+
+    mockApi.get.mockResolvedValue({ success: true, data: [makeRow()] });
+    await user.click(screen.getByRole('button', { name: 'Try again' }));
+
+    expect(await screen.findByText('Bandon Timebank')).toBeInTheDocument();
+    expect(screen.queryByText('The communities could not be loaded.')).not.toBeInTheDocument();
+  });
+
   it('posts the community id and the date when recording payment', async () => {
     const user = userEvent.setup();
     await renderWith([makeRow()]);

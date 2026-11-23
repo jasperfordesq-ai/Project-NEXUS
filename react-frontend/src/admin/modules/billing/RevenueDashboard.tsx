@@ -39,6 +39,7 @@ import { api } from '@/lib/api';
 import { formatCurrency, formatDate, getFormattingLocale } from '@/lib/helpers';
 import { PageHeader } from '../../components/PageHeader';
 import { Glance } from './Glance';
+import { LoadFailed } from './LoadFailed';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -141,6 +142,8 @@ export function RevenueDashboard() {
   const [data, setData] = useState<RevenueDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Raised by "Try again": the request below runs once more.
+  const [attempt, setAttempt] = useState(0);
 
   // Redirect non-god users silently
   useEffect(() => {
@@ -153,6 +156,7 @@ export function RevenueDashboard() {
     if (!user?.is_god) return;
 
     setLoading(true);
+    setError(null);
     api
       .get<RevenueDashboardData>('/v2/admin/super/billing/revenue')
       .then((res) => {
@@ -164,7 +168,7 @@ export function RevenueDashboard() {
       })
       .catch(() => setError(t('billing.failed_to_load')))
       .finally(() => setLoading(false));
-  }, [user, t]);
+  }, [user, t, attempt]);
 
   if (!user?.is_god) return null;
 
@@ -195,11 +199,7 @@ export function RevenueDashboard() {
           <Spinner size="lg" />
         </div>
       ) : error ? (
-        <Card role="alert">
-          <CardBody>
-            <p className="text-danger text-center py-8">{error}</p>
-          </CardBody>
-        </Card>
+        <LoadFailed message={error} onRetry={() => setAttempt((n) => n + 1)} />
       ) : data ? (
         <>
           {/* ── What the platform expects: one card per currency, never added together ── */}

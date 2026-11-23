@@ -36,6 +36,7 @@ import { api } from '@/lib/api';
 import { formatCurrency, formatNumber } from '@/lib/helpers';
 import { PageHeader } from '../../components/PageHeader';
 import { COMMUNITY_GRID_LEAD_CELL, PLAN_GRID_CLASSES, StackedLabel } from '../billing/CommunityGrid';
+import { LoadFailed } from '../billing/LoadFailed';
 import {
   OverLimitRuleFields,
   isOverLimitAction,
@@ -374,7 +375,13 @@ export function BranchPlans() {
     return (
       <div className="space-y-6">
         {header}
-        <p role="alert" className="text-sm text-danger">{t('branch_plans.load_failed')}</p>
+        <LoadFailed
+          message={t('branch_plans.load_failed')}
+          onRetry={() => {
+            setLoading(true);
+            void load(lastAsked.current);
+          }}
+        />
       </div>
     );
   }

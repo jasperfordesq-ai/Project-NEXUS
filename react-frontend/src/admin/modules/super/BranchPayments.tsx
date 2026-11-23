@@ -60,6 +60,7 @@ import {
 } from '../billing/CommunityGrid';
 import { OverLimitRuleDialog, OverLimitSummary, type OverLimitChoice, type OverLimitState } from '../billing/OverLimitRuleDialog';
 import { Glance } from '../billing/Glance';
+import { LoadFailed } from '../billing/LoadFailed';
 import { RecordPaymentDialog } from '../billing/RecordPaymentDialog';
 
 /**
@@ -319,7 +320,13 @@ export function BranchPayments() {
     return (
       <div className="space-y-6">
         {header}
-        <p role="alert" className="text-sm text-danger">{t('branch_payments.load_failed')}</p>
+        <LoadFailed
+          message={t('branch_payments.load_failed')}
+          onRetry={() => {
+            setLoading(true);
+            void load();
+          }}
+        />
       </div>
     );
   }
