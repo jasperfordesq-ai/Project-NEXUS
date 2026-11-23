@@ -354,7 +354,7 @@ describe('BillingControl', () => {
       makeSnapshot({ id: 6, name: 'Galway Timebank', current_plan: makePlanOnRow({ terms: 'default' }), standing: makeStanding({ tenant_id: 6 }) }),
     ]);
 
-    expect(screen.getAllByText('On its hub\'s terms')).toHaveLength(1);
+    expect(screen.getAllByText("On its parent community's terms")).toHaveLength(1);
   });
 
   it('writes the account counts in the reader’s number format', async () => {
@@ -410,18 +410,18 @@ describe('BillingControl', () => {
     expect(screen.queryByText('Tenant')).not.toBeInTheDocument();
   });
 
-  it('shows "No Plan" only when current_plan is null', async () => {
+  it('shows "No plan" only when current_plan is null', async () => {
     await renderWith([
       makeSnapshot(),
       makeSnapshot({ id: 6, name: 'Galway Timebank', current_plan: null, standing: makeStanding({ tenant_id: 6 }) }),
     ]);
 
-    expect(screen.getAllByText('No Plan')).toHaveLength(1);
+    expect(screen.getAllByText('No plan')).toHaveLength(1);
     expect(screen.getByText('Pro')).toBeInTheDocument();
   });
 
   // Stage 5: a failed card payment leaves the plan `expired`. Until then the
-  // snapshot read only active plans, so such a community showed "No Plan".
+  // snapshot read only active plans, so such a community showed "No plan".
   it('shows the plan with its status when it is not active', async () => {
     await renderWith([
       makeSnapshot({ current_plan: makePlanOnRow({ assignment_status: 'expired' }) }),
@@ -435,7 +435,7 @@ describe('BillingControl', () => {
     expect(screen.getByText('Trial')).toBeInTheDocument();
     expect(screen.getByText('Spark')).toBeInTheDocument();
     expect(screen.getByText('Cancelled')).toBeInTheDocument();
-    expect(screen.queryByText('No Plan')).not.toBeInTheDocument();
+    expect(screen.queryByText('No plan')).not.toBeInTheDocument();
   });
 
   it('adds no status chip beside an active plan', async () => {
@@ -450,8 +450,8 @@ describe('BillingControl', () => {
   it('marks a community over its member limit, and still says which plan it is on', async () => {
     await renderWith([makeSnapshot({ over_limit: true })]);
 
-    expect(screen.getByText('Over Limit')).toBeInTheDocument();
-    // "Over Limit" used to REPLACE the plan's name on the one row that
+    expect(screen.getByText('Over its member limit')).toBeInTheDocument();
+    // "Over its member limit" used to REPLACE the plan's name on the one row that
     // needed a decision about its plan.
     expect(screen.getByText('Pro')).toBeInTheDocument();
   });
@@ -492,7 +492,7 @@ describe('BillingControl', () => {
     expect(screen.getByTestId('billing-filter-count')).toHaveTextContent('Showing 3 of 3 communities');
     // Each choice says how many it would show.
     expect(Array.from(filter.options).map((option) => option.textContent)).toEqual([
-      'All communities (3)', 'No plan (1)', 'No paid-until date (1)', 'Paused (0)', 'Over their member number (0)',
+      'All communities (3)', 'No plan (1)', 'No paid-until date (1)', 'Paused (0)', 'Over their member limit (0)',
     ]);
 
     fireEvent.change(filter, { target: { value: 'no_plan' } });
@@ -578,14 +578,14 @@ describe('BillingControl', () => {
       makeSnapshot({ current_plan: makePlanOnRow({ notes: 'Agreed in March.', expires_at: '2027-03-01 00:00:00' }) }),
     ]);
 
-    fireEvent.click(more('Assign Plan')!);
+    fireEvent.click(more('Assign plan')!);
 
     expect(await screen.findByLabelText('Review date')).toHaveValue('2027-03-01');
     expect(screen.getByLabelText('Notes')).toHaveValue('Agreed in March.');
     expect(screen.getByText('A reminder for the platform team. Nothing happens automatically on this date.')).toBeInTheDocument();
 
     await userEvent.type(screen.getByLabelText('Special price per month (EUR)'), '30');
-    fireEvent.click(screen.getAllByRole('button').filter((b) => b.textContent?.trim() === 'Assign Plan').pop()!);
+    fireEvent.click(screen.getAllByRole('button').filter((b) => b.textContent?.trim() === 'Assign plan').pop()!);
 
     await waitFor(() => {
       expect(mockApi.post).toHaveBeenCalledWith('/v2/admin/super/billing/assign-plan', expect.objectContaining({
@@ -614,7 +614,7 @@ describe('BillingControl', () => {
     render(<BillingControl />);
     await waitFor(() => expect(screen.queryAllByRole('row').length).toBeGreaterThan(1));
 
-    fireEvent.click(more('Assign Plan')!);
+    fireEvent.click(more('Assign plan')!);
 
     const monthly = await screen.findByLabelText('Special price per month (GBP)');
     expect(monthly).toHaveAttribute('placeholder', '42.00');
@@ -626,9 +626,9 @@ describe('BillingControl', () => {
       makeSnapshot({ current_plan: makePlanOnRow({ id: 12, name: 'Old Starter', slug: 'legacy-starter-3', is_active: false }) }),
     ]);
 
-    fireEvent.click(more('Assign Plan')!);
+    fireEvent.click(more('Assign plan')!);
 
-    const select = await screen.findByLabelText('Select Plan') as HTMLSelectElement;
+    const select = await screen.findByLabelText('Select plan') as HTMLSelectElement;
     expect(Array.from(select.options).map((option) => option.textContent)).toEqual(['Pro', 'Growth', 'Old Starter (retired)']);
     expect(select.value).toBe('12');
   });
@@ -636,10 +636,10 @@ describe('BillingControl', () => {
   it('tells the platform team a card payer changes plan on its own Billing page, and locks the plan and price', async () => {
     await renderWith([makeSnapshot({ standing: makeStanding({ payer: 'platform_card' }) })]);
 
-    fireEvent.click(more('Assign Plan')!);
+    fireEvent.click(more('Assign plan')!);
 
     expect(await screen.findByText(/pays by card\. Its plan and price are changed from its own Billing page/)).toBeInTheDocument();
-    expect(screen.getByLabelText('Select Plan')).toBeDisabled();
+    expect(screen.getByLabelText('Select plan')).toBeDisabled();
     // The price fields are disabled too; the shared input stand-in does not
     // carry `isDisabled`, so that is not asserted here. The server refuses
     // either change for a card payer (BillingControlEditingTest).
@@ -650,9 +650,9 @@ describe('BillingControl', () => {
     await renderWith([makeSnapshot()]);
     mockApi.post.mockResolvedValue({ success: false, error: 'This community pays by card, and its card is charged for the plan on its card payment.' });
 
-    fireEvent.click(more('Assign Plan')!);
+    fireEvent.click(more('Assign plan')!);
     await screen.findByLabelText('Review date');
-    fireEvent.click(screen.getAllByRole('button').filter((b) => b.textContent?.trim() === 'Assign Plan').pop()!);
+    fireEvent.click(screen.getAllByRole('button').filter((b) => b.textContent?.trim() === 'Assign plan').pop()!);
 
     await waitFor(() => {
       expect(mockToast.error).toHaveBeenCalledWith('This community pays by card, and its card is charged for the plan on its card payment.');
@@ -666,7 +666,7 @@ describe('BillingControl', () => {
     ]);
 
     expect(screen.getByText('Platform, by invoice')).toBeInTheDocument();
-    expect(screen.getByText('Its parent')).toBeInTheDocument();
+    expect(screen.getByText('Its parent community')).toBeInTheDocument();
   });
 
 
@@ -678,7 +678,7 @@ describe('BillingControl', () => {
     // A community with a plan: the next thing it needs is a payment.
     expect(button('Record a payment')).toBeDefined();
     // Not on screen until the menu is opened.
-    for (const label of ['Assign Plan', 'Set paid-until date', 'Change how it pays', 'Over-limit rule', 'Pause community', 'Exempt']) {
+    for (const label of ['Assign plan', 'Set paid-until date', 'Change how it pays', 'Over-limit rule', 'Pause community', 'Exempt']) {
       expect(button(label)).toBeUndefined();
       expect(screen.queryAllByRole('menuitem').filter((b) => b.textContent?.trim() === label)).toHaveLength(0);
     }
@@ -686,14 +686,14 @@ describe('BillingControl', () => {
     fireEvent.click(screen.getByRole('button', { name: 'More actions for Cork Timebank' }));
 
     expect(screen.getAllByRole('menuitem').map((b) => b.textContent?.trim())).toEqual([
-      'Assign Plan', 'Set paid-until date', 'Change how it pays', 'Over-limit rule', 'Pause community', 'Exempt',
+      'Assign plan', 'Set paid-until date', 'Change how it pays', 'Over-limit rule', 'Pause community', 'Exempt',
     ]);
   });
 
   it('puts Assign plan in view for a community with no plan, and the payment in the menu', async () => {
     await renderWith([makeSnapshot({ current_plan: null, usage_percent: null })]);
 
-    expect(button('Assign Plan')).toBeDefined();
+    expect(button('Assign plan')).toBeDefined();
     expect(button('Record a payment')).toBeUndefined();
 
     fireEvent.click(screen.getByRole('button', { name: 'More actions for Cork Timebank' }));
@@ -1067,7 +1067,7 @@ describe('BillingControl', () => {
 
     expect(screen.getByRole('columnheader', { name: 'If over' })).toBeInTheDocument();
     expect(screen.getByText('Pause after 30 days')).toBeInTheDocument();
-    expect(screen.getByText('hub default')).toBeInTheDocument();
+    expect(screen.getByText("parent community's default")).toBeInTheDocument();
     expect(screen.getByText(`Pause on ${formatDate('2026-12-21')}`)).toBeInTheDocument();
     expect(screen.getByText('Move up (platform team does this one by hand)')).toBeInTheDocument();
   });

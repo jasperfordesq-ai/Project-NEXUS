@@ -94,7 +94,7 @@ describe('PayerDialog', () => {
 
     expect(screen.getByLabelText('Platform, by card')).toBeInTheDocument();
     expect(screen.getByLabelText('Platform, by invoice')).toBeInTheDocument();
-    expect(screen.getByLabelText('Its parent')).toBeInTheDocument();
+    expect(screen.getByLabelText('Its parent community')).toBeInTheDocument();
     expect(screen.getByLabelText('Not billed')).toBeInTheDocument();
     expect(screen.getByLabelText('Use the default')).toBeInTheDocument();
     expect(screen.getByText((text) => text.startsWith('Pays the platform by invoice or bank transfer.'))).toBeInTheDocument();
@@ -134,7 +134,7 @@ describe('PayerDialog', () => {
 
   it('does not offer "its parent" to a community with no parent below the platform', async () => {
     await renderDialog({ canPayParent: false });
-    expect(screen.getByLabelText('Its parent')).toBeDisabled();
+    expect(screen.getByLabelText('Its parent community')).toBeDisabled();
   });
 
   it('shows the server’s own refusal', async () => {
@@ -142,7 +142,7 @@ describe('PayerDialog', () => {
     mockApi.post.mockResolvedValue({ success: false, error: 'Only a community with a parent community can pay its parent.', code: 'PAYER_NEEDS_PARENT' });
     await renderDialog({ canPayParent: true });
 
-    await user.click(screen.getByLabelText('Its parent'));
+    await user.click(screen.getByLabelText('Its parent community'));
     await user.click(button('Save')!);
 
     await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Only a community with a parent community can pay its parent.'));

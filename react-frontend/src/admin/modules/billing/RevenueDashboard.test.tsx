@@ -165,7 +165,7 @@ describe('RevenueDashboard — platform team', () => {
 
     const link = async (label: string) => (await screen.findByText(label)).closest('a');
     expect((await link('No plan'))?.getAttribute('href')).toContain('/platform-team/billing?show=no_plan');
-    expect((await link('Over their member number'))?.getAttribute('href')).toContain('/platform-team/billing?show=over_limit');
+    expect((await link('Over their member limit'))?.getAttribute('href')).toContain('/platform-team/billing?show=over_limit');
     expect((await link('Paused'))?.getAttribute('href')).toContain('/platform-team/billing?show=paused');
     // The plain counts lead nowhere.
     expect(await link('Not billed')).toBeNull();
@@ -188,10 +188,10 @@ describe('RevenueDashboard — platform team', () => {
       return heading.closest('div')?.parentElement?.textContent ?? '';
     };
     expect(await card('Pay the platform')).toContain('12');
-    expect(await card('Pay the community above them')).toContain('6');
+    expect(await card('Pay their parent community')).toContain('6');
     expect(await card('Not billed')).toContain('3');
     expect(await card('No plan')).toContain('4');
-    expect(await card('Over their member number')).toContain('2');
+    expect(await card('Over their member limit')).toContain('2');
     expect(await card('Paused')).toContain('1');
     expect(await card('Active members')).toMatch(/1[,.]?500/);
   });

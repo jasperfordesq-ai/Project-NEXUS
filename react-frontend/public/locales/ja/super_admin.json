@@ -830,7 +830,7 @@
     "plan_choice_label": "このコミュニティに設定できるプラン",
     "plan_current": "現在のプラン",
     "plan_help": "変更されるのはプランだけです。このコミュニティに合意済みの価格、割引、メモはそのまま残ります。",
-    "plan_hub_terms": "ハブの条件による",
+    "plan_hub_terms": "親コミュニティの条件を適用",
     "plan_no_limit": "メンバー数の上限なし",
     "plan_no_price": "価格未設定",
     "plan_price_monthly": "月額 {{price}}",

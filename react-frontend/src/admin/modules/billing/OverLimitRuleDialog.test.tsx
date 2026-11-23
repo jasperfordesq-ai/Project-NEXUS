@@ -64,7 +64,7 @@ describe('OverLimitSummary', () => {
     render(<OverLimitSummary rule={makeState({ action_source: 'hub' })} />);
 
     expect(screen.getByText('Pause after 30 days')).toBeInTheDocument();
-    expect(screen.getByText('hub default')).toBeInTheDocument();
+    expect(screen.getByText("parent community's default")).toBeInTheDocument();
   });
 
   it('says one day, not one days', () => {
@@ -80,7 +80,7 @@ describe('OverLimitSummary', () => {
     render(<OverLimitSummary rule={makeState({ action: 'block_joining', effective_action: 'block_joining', action_source: 'community' })} />);
 
     expect(screen.getByText('Stop joining')).toBeInTheDocument();
-    expect(screen.queryByText('hub default')).not.toBeInTheDocument();
+    expect(screen.queryByText("parent community's default")).not.toBeInTheDocument();
     expect(screen.queryByText('platform default')).not.toBeInTheDocument();
   });
 

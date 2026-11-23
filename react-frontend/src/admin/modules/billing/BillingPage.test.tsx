@@ -138,7 +138,7 @@ describe('BillingPage', () => {
     expect(screen.getByText('Platform, by card')).toBeInTheDocument();
     expect(screen.getByText('Paid up to and including')).toBeInTheDocument();
     expect(screen.getByText('Monthly')).toBeInTheDocument();
-    expect(screen.getByText('Next Billing Date')).toBeInTheDocument();
+    expect(screen.getByText('Next billing date')).toBeInTheDocument();
     // No "--" and no "Unknown interval" anywhere.
     expect(screen.queryByText('--')).not.toBeInTheDocument();
     expect(screen.queryByText(/unknown interval/i)).not.toBeInTheDocument();
@@ -150,7 +150,7 @@ describe('BillingPage', () => {
     render(<BillingPage />);
 
     await waitFor(() => expect(screen.getByText('Local')).toBeInTheDocument());
-    expect(screen.queryByText('Billing Interval')).not.toBeInTheDocument();
+    expect(screen.queryByText('Billing interval')).not.toBeInTheDocument();
     expect(screen.queryByText(/unknown interval/i)).not.toBeInTheDocument();
   });
 
@@ -195,10 +195,10 @@ describe('BillingPage', () => {
     await waitFor(() => expect(screen.getByText('Local')).toBeInTheDocument());
     expect(screen.getByText('Platform, by invoice')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /manage payment/i })).not.toBeInTheDocument();
-    expect(screen.queryByText('Next Billing Date')).not.toBeInTheDocument();
+    expect(screen.queryByText('Next billing date')).not.toBeInTheDocument();
   });
 
-  it('says so, and offers "Choose Plan", when the community has no plan', async () => {
+  it('says so, and offers "Choose plan", when the community has no plan', async () => {
     serve(null, standing({ payer: 'platform_invoice', paid_until: null, member_limit: null, plan: null }));
 
     render(<BillingPage />);
@@ -207,7 +207,7 @@ describe('BillingPage', () => {
     expect(screen.getAllByRole('link', { name: /choose plan/i }).length).toBeGreaterThan(0);
   });
 
-  it('tells a community that pays the community above it that nothing is arranged here', async () => {
+  it('tells a community that pays its parent community that nothing is arranged here', async () => {
     serve(
       subscription({ stripe_subscription_id: null, stripe_status: null, has_card_subscription: false }),
       standing({ payer: 'parent', plan: { ...standing().plan, terms: 'hub' } }),
@@ -215,7 +215,7 @@ describe('BillingPage', () => {
 
     render(<BillingPage />);
 
-    await waitFor(() => expect(screen.getByText(/pays the community above it/i)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/pays its parent community/i)).toBeInTheDocument());
     expect(screen.getByText('Local')).toBeInTheDocument();
     // Its plan and payments are its hub's: no platform plan picker, invoices or upgrade request.
     expect(screen.queryByRole('link', { name: /change plan/i })).not.toBeInTheDocument();
@@ -239,7 +239,7 @@ describe('BillingPage', () => {
     expect(screen.queryByRole('button', { name: /request upgrade/i })).not.toBeInTheDocument();
   });
 
-  it('keeps the plan and "Manage Payment" on screen for a card payer whose card has failed, and says what to do', async () => {
+  it('keeps the plan and "Manage payment" on screen for a card payer whose card has failed, and says what to do', async () => {
     // Stripe "past due" is recorded as `expired`. The page then said "No
     // subscription" and hid the only way to update the card.
     serve(subscription({ status: 'expired', stripe_status: 'past_due' }), standing({ overdue_days: 3 }));
@@ -249,15 +249,15 @@ describe('BillingPage', () => {
     await waitFor(() => expect(screen.getByText('Local')).toBeInTheDocument());
     expect(screen.getByText(/last card payment did not go through/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /manage payment/i })).toBeInTheDocument();
-    // "Past Due", not "Expired": the plan has not ended. The days overdue are
+    // "Payment overdue", not "Expired": the plan has not ended. The days overdue are
     // on the admin banner above every admin page, not repeated here.
-    expect(screen.getByText('Past Due')).toBeInTheDocument();
+    expect(screen.getByText('Payment overdue')).toBeInTheDocument();
     expect(screen.queryByText('Expired')).not.toBeInTheDocument();
     expect(screen.queryByText(/days overdue/i)).not.toBeInTheDocument();
     expect(screen.queryByText('This community has no plan yet.')).not.toBeInTheDocument();
   });
 
-  it('shows no "Manage Payment" once the card subscription is over', async () => {
+  it('shows no "Manage payment" once the card subscription is over', async () => {
     serve(
       subscription({ status: 'cancelled', stripe_status: 'canceled', has_card_subscription: false }),
       standing({ payer: 'platform_invoice', plan: null, member_limit: null }),

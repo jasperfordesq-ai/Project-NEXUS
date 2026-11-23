@@ -830,7 +830,7 @@
     "plan_choice_label": "Forfaits possibles pour cette communauté",
     "plan_current": "Forfait actuel",
     "plan_help": "Seul le forfait change. Tout prix convenu, remise ou note pour cette communauté reste inchangé.",
-    "plan_hub_terms": "Aux conditions de son hub",
+    "plan_hub_terms": "Aux conditions de sa communauté parente",
     "plan_no_limit": "Aucune limite de membres",
     "plan_no_price": "Aucun prix défini",
     "plan_price_monthly": "{{price}} par mois",

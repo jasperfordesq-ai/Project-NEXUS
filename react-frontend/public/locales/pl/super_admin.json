@@ -830,7 +830,7 @@
     "plan_choice_label": "Plany dostępne dla tej społeczności",
     "plan_current": "Obecny plan",
     "plan_help": "Zmienia się tylko plan. Uzgodnione ceny, rabaty i notatki dla tej społeczności pozostają bez zmian.",
-    "plan_hub_terms": "Na warunkach swojego hubu",
+    "plan_hub_terms": "Na warunkach społeczności nadrzędnej",
     "plan_no_limit": "Bez limitu członków",
     "plan_no_price": "Nie ustalono ceny",
     "plan_price_monthly": "{{price}} miesięcznie",

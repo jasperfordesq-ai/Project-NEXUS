@@ -498,7 +498,7 @@ describe('BranchPlans', () => {
   it('offers the platform default, naming it, and the four rules', async () => {
     await renderWith(makeResponse({ over_limit: OVER_LIMIT }));
 
-    expect(screen.getByText('When a community goes over its member number')).toBeInTheDocument();
+    expect(screen.getByText('When a community goes over its member limit')).toBeInTheDocument();
     expect(Array.from(ruleSelect().options).map((o) => o.textContent)).toEqual([
       'Follow the platform default (currently: Pause the community)',
       'Warn only',

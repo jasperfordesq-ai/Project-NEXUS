@@ -541,7 +541,7 @@ describe('BranchPayments', () => {
 
     expect(screen.getByRole('columnheader', { name: 'Plan and members' })).toBeInTheDocument();
     expect(screen.getByText('Local')).toBeInTheDocument();
-    expect(screen.getByText('On its hub\'s terms')).toBeInTheDocument();
+    expect(screen.getByText("On its parent community's terms")).toBeInTheDocument();
     expect(screen.getByText('No plan')).toBeInTheDocument();
   });
 
@@ -549,7 +549,7 @@ describe('BranchPayments', () => {
     await renderWith([makeRow({ plan: makePlan() })]);
 
     expect(screen.getByText('Local')).toBeInTheDocument();
-    expect(screen.queryByText('On its hub\'s terms')).not.toBeInTheDocument();
+    expect(screen.queryByText("On its parent community's terms")).not.toBeInTheDocument();
   });
 
   it('shows the member number against the plan\'s limit, coloured as it fills', async () => {
@@ -753,7 +753,7 @@ describe('BranchPayments', () => {
 
     expect(screen.getByRole('columnheader', { name: 'If over' })).toBeInTheDocument();
     expect(screen.getByText('Pause after 30 days')).toBeInTheDocument();
-    expect(screen.getByText('hub default')).toBeInTheDocument();
+    expect(screen.getByText("parent community's default")).toBeInTheDocument();
     expect(screen.getByText('Stop joining')).toBeInTheDocument();
   });
 
