@@ -57,7 +57,7 @@ import { formatCurrency, formatDate, formatNumber } from '@/lib/helpers';
 import { PageHeader } from '../../components/PageHeader';
 import {
   ActiveMembersNote, COMMUNITY_GRID_CLASSES, COMMUNITY_GRID_LEAD_CELL, MemberNumbers, StackedLabel,
-  blockIndentFor, nameIndentFor, type MembersLevel,
+  blockIndentFor, nameIndentFor, standingStateOf, STANDING_COLOR, type MembersLevel,
 } from '../billing/CommunityGrid';
 import { OverLimitRuleDialog, OverLimitSummary, type OverLimitChoice, type OverLimitState } from '../billing/OverLimitRuleDialog';
 import { Glance } from '../billing/Glance';
@@ -112,6 +112,10 @@ interface Members {
   window_days: number;
   max: number | null;
   percent: number | null;
+  /** Worked out by the server from the platform's warning percent. */
+  level?: MembersLevel;
+  /** Past the plan's number. Exactly at it is `full`, and is not over. */
+  over?: boolean;
 }
 
 interface BranchRow {
@@ -137,23 +141,7 @@ interface BranchRow {
 
 type PlanList = Terms[] | 'loading' | 'failed';
 
-type StandingState = 'open' | 'paused' | 'paused_from_above' | 'exempt';
 type Dialog = { row: BranchRow; kind: 'date' | 'pause'; afterPlan?: boolean } | null;
-type ChipColor = 'success' | 'warning' | 'danger' | 'default';
-
-function standingState(row: BranchRow): StandingState {
-  if (row.standing.exempt) return 'exempt';
-  if (row.standing.suspended_at !== null) return 'paused';
-  if (row.standing.locked) return 'paused_from_above';
-  return 'open';
-}
-
-/** Near from 80% of the plan's limit, over from 100%. */
-function membersLevel(members: Members): MembersLevel {
-  if (members.percent !== null && members.percent >= 100) return 'over';
-  if (members.percent !== null && members.percent >= 80) return 'near';
-  return 'ok';
-}
 
 /** Money may arrive as a numeric string from a decimal column. */
 function amount(value: number | string | null): number | null {
@@ -169,14 +157,6 @@ function money(value: number, currency: 'eur' | 'gbp'): string {
     ? formatCurrency(value, code, { minimumFractionDigits: 0, maximumFractionDigits: 0 })
     : formatCurrency(value, code);
 }
-
-const STANDING_COLOR: Record<StandingState, ChipColor> = {
-  open: 'success',
-  paused: 'danger',
-  paused_from_above: 'warning',
-  // Neutral: an exemption is not a warning, and the brand colour read as one.
-  exempt: 'default',
-};
 
 export function BranchPayments() {
   // Chips, the pause dialog and its messages are shared with the Platform
@@ -347,7 +327,8 @@ export function BranchPayments() {
   const automationOff = rows[0]?.over_limit?.automation_enabled === false;
 
   // At a glance, above the list: how many need a look, and for what.
-  const overCount = rows.filter((row) => membersLevel(row.members) === 'over').length;
+  // Past the number only: a community exactly at it has not gone over its plan.
+  const overCount = rows.filter((row) => row.members.over === true).length;
   const lateCount = rows.filter((row) => (row.days_late ?? 0) > 0).length;
   const pausedCount = rows.filter((row) => row.standing.suspended_at !== null || row.standing.locked).length;
   const windowDays = rows[0]?.members.window_days ?? null;
@@ -419,11 +400,11 @@ export function BranchPayments() {
             </TableHeader>
             <TableBody emptyContent={t('branch_payments.empty')} items={rows}>
               {(row) => {
-                const state = standingState(row);
+                const state = standingStateOf(row.standing);
                 const busy = busyId === row.id;
                 const paysParent = row.standing.payer === 'parent';
                 const canChangePlan = row.plan_change_refusal !== 'card_subscription';
-                const level: MembersLevel = membersLevel(row.members);
+                const level: MembersLevel = row.members.level ?? 'ok';
                 // Nobody is paid by a community that is not billed: it read "The platform".
                 const paysText = row.standing.payer === 'not_billed'
                   ? t('admin_billing:billing.payer_not_billed')

@@ -276,8 +276,9 @@ describe('BranchPayments', () => {
   it('counts, above the list, the communities that need a look', async () => {
     await renderWith([
       makeRow(),
-      makeRow({ id: 8, name: 'Kinsale Timebank', days_late: 4, members: { active: 104, total: 300, window_days: 90, max: 100, percent: 104 } }),
-      makeRow({ id: 9, name: 'Clonakilty Timebank', standing: makeStanding({ suspended_at: '2026-11-20 10:00:00', locked: true, locked_by_tenant_id: 9 }) }),
+      makeRow({ id: 8, name: 'Kinsale Timebank', days_late: 4, members: { active: 104, total: 300, window_days: 90, max: 100, percent: 104, level: 'over', over: true } }),
+      // Exactly at its number: full, and not "over their plan".
+      makeRow({ id: 9, name: 'Clonakilty Timebank', members: { active: 100, total: 120, window_days: 90, max: 100, percent: 100, level: 'full', over: false }, standing: makeStanding({ suspended_at: '2026-11-20 10:00:00', locked: true, locked_by_tenant_id: 9 }) }),
       makeRow({ id: 10, name: 'Skibbereen Timebank', paused_from_above: true, standing: makeStanding({ locked: true, locked_by_tenant_id: 9 }) }),
     ]);
 
@@ -290,6 +291,15 @@ describe('BranchPayments', () => {
     expect(figure('Payment late')).toBe('1');
     // Paused itself, and paused because the community above it is.
     expect(figure('Paused')).toBe('2');
+  });
+
+  it('does not work the level out itself: 84% is not "near" unless the server says so', async () => {
+    // The page had 80 written into it; the platform's warning percent may be 90.
+    await renderWith([
+      makeRow({ id: 8, name: 'Kinsale Timebank', members: { active: 212, total: 230, window_days: 90, max: 250, percent: 84, level: 'ok', over: false } }),
+    ]);
+
+    expect(screen.getByTestId('members-active-8').className).not.toMatch(/text-(warning|danger)/);
   });
 
   it('shows no summary when there is nothing below', async () => {
@@ -563,10 +573,10 @@ describe('BranchPayments', () => {
 
   it('shows the member number against the plan\'s limit, coloured as it fills', async () => {
     await renderWith([
-      makeRow({ id: 7, members: { active: 120, total: 400, window_days: 90, max: 250, percent: 48 } }),
-      makeRow({ id: 8, name: 'Kinsale Timebank', members: { active: 212, total: 230, window_days: 90, max: 250, percent: 84 } }),
-      makeRow({ id: 9, name: 'Clonakilty Timebank', members: { active: 104, total: 190, window_days: 90, max: 100, percent: 104 } }),
-      makeRow({ id: 10, name: 'Skibbereen Timebank', members: { active: 61, total: 75, window_days: 90, max: null, percent: null } }),
+      makeRow({ id: 7, members: { active: 120, total: 400, window_days: 90, max: 250, percent: 48, level: 'ok', over: false } }),
+      makeRow({ id: 8, name: 'Kinsale Timebank', members: { active: 212, total: 230, window_days: 90, max: 250, percent: 84, level: 'near', over: false } }),
+      makeRow({ id: 9, name: 'Clonakilty Timebank', members: { active: 104, total: 190, window_days: 90, max: 100, percent: 104, level: 'over', over: true } }),
+      makeRow({ id: 10, name: 'Skibbereen Timebank', members: { active: 61, total: 75, window_days: 90, max: null, percent: null, level: 'ok', over: false } }),
     ]);
 
     // The number against the limit is the ACTIVE one, and it is labelled so.

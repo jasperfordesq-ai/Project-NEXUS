@@ -37,9 +37,9 @@ const settings = (overrides: Record<string, unknown> = {}) => ({
   data: { automation_enabled: false, limit_warning_percent: 80, ...overrides },
 });
 
-const renderSummary = async (onWarningPercent?: (percent: number) => void) => {
+const renderSummary = async () => {
   const { BillingAutomationSummary } = await import('./BillingAutomationSummary');
-  render(<BillingAutomationSummary onWarningPercent={onWarningPercent} />);
+  render(<BillingAutomationSummary />);
 };
 
 describe('BillingAutomationSummary', () => {
@@ -95,24 +95,14 @@ describe('BillingAutomationSummary', () => {
     expect(line).toHaveTextContent('failed');
   });
 
-  it('tells the page the saved warning percent, so the list is coloured by it', async () => {
-    serve(settings({ limit_warning_percent: 70 }));
-    const onWarningPercent = vi.fn();
-    await renderSummary(onWarningPercent);
-
-    await waitFor(() => expect(onWarningPercent).toHaveBeenCalledWith(70));
-  });
-
   it('says so when the settings cannot be loaded, and still links to the page', async () => {
     serve({ success: false, error: 'nope' });
-    const onWarningPercent = vi.fn();
-    await renderSummary(onWarningPercent);
+    await renderSummary();
 
     expect(await screen.findByText('The settings could not be loaded.')).toBeInTheDocument();
     // Not "off": the truth is that it is not known.
     expect(screen.queryByText('Automatic checks are off. Nothing is sent and no community is paused.')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Open automatic checks' })).toBeInTheDocument();
-    expect(onWarningPercent).not.toHaveBeenCalled();
   });
 
   it('asks only for the settings and the last run, not the list of what would happen today', async () => {

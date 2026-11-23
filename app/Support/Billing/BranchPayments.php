@@ -222,7 +222,12 @@ final class BranchPayments
      * member must have signed in to count as active, so the screen can say
      * so without holding its own copy of the number.
      *
-     * @return array{active: int, total: int, window_days: int, max: ?int, percent: ?int}
+     * `level` is where `active` stands against `max` (MemberLevel: ok, near,
+     * full, over), worked out here from the platform's one warning percent so
+     * no screen holds a copy of it. `over` is true only past the number: a
+     * community exactly at it is `full`, and is not "over their plan".
+     *
+     * @return array{active: int, total: int, window_days: int, max: ?int, percent: ?int, level: 'ok'|'near'|'full'|'over', over: bool}
      */
     public static function members(int $tenantId, ?int $maxUsers): array
     {
@@ -235,6 +240,8 @@ final class BranchPayments
             'window_days' => StandardPlans::ACTIVE_WINDOW_DAYS,
             'max' => $max,
             'percent' => $max !== null ? intdiv($active * 100, $max) : null,
+            'level' => MemberLevel::of($active, $max),
+            'over' => $max !== null && $active > $max,
         ];
     }
 }

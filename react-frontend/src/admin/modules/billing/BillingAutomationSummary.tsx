@@ -40,11 +40,7 @@ interface LastRun {
   actions: number;
 }
 
-interface BillingAutomationSummaryProps {
-  onWarningPercent?: (percent: number) => void;
-}
-
-export function BillingAutomationSummary({ onWarningPercent }: BillingAutomationSummaryProps = {}) {
+export function BillingAutomationSummary() {
   const { t } = useTranslation('admin_billing');
   const { tenantPath } = useTenant();
 
@@ -73,11 +69,6 @@ export function BillingAutomationSummary({ onWarningPercent }: BillingAutomation
       alive = false;
     };
   }, []);
-
-  const warningPercent = settings?.limit_warning_percent;
-  useEffect(() => {
-    if (typeof warningPercent === 'number') onWarningPercent?.(warningPercent);
-  }, [warningPercent, onWarningPercent]);
 
   const failed = lastRun?.result === 'failed';
 

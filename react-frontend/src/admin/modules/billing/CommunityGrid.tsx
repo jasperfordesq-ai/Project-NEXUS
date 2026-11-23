@@ -97,17 +97,47 @@ export function StackedLabel({ children }: { children: string }) {
   );
 }
 
-export type MembersLevel = 'ok' | 'near' | 'over';
+/**
+ * A community's payment standing as one word, for the chip both billing lists
+ * show. One copy: Billing control and Branch payments each had their own.
+ * Exempt wins: an exempt community is never paused, whatever is above it.
+ */
+export type StandingState = 'open' | 'paused' | 'paused_from_above' | 'exempt';
+
+export function standingStateOf(standing: { exempt: boolean; suspended_at: string | null; locked: boolean }): StandingState {
+  if (standing.exempt) return 'exempt';
+  if (standing.suspended_at !== null) return 'paused';
+  if (standing.locked) return 'paused_from_above';
+  return 'open';
+}
+
+export const STANDING_COLOR: Record<StandingState, 'success' | 'warning' | 'danger' | 'default'> = {
+  open: 'success',
+  paused: 'danger',
+  paused_from_above: 'warning',
+  // Neutral: an exemption is not a warning, and the brand colour read as one.
+  exempt: 'default',
+};
+
+/**
+ * Where the active members stand against the plan's member number, as the
+ * server worked it out (MemberLevel, from the platform's one warning percent).
+ * No screen works this out itself: `full` is exactly at the number, `over` is
+ * past it.
+ */
+export type MembersLevel = 'ok' | 'near' | 'full' | 'over';
 
 const MEMBERS_TEXT: Record<MembersLevel, string> = {
   ok: 'font-medium',
   near: 'font-medium text-warning',
+  full: 'font-semibold text-danger',
   over: 'font-semibold text-danger',
 };
 
 const MEMBERS_METER: Record<MembersLevel, 'accent' | 'warning' | 'danger'> = {
   ok: 'accent',
   near: 'warning',
+  full: 'danger',
   over: 'danger',
 };
 

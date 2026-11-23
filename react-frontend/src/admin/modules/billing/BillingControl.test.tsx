@@ -1005,16 +1005,25 @@ describe('BillingControl', () => {
     expect(screen.getByTestId('billing-members-all')).toHaveTextContent('80');
   });
 
-  it('colours the members from the warning percent, and as danger over the limit', async () => {
+  it('colours the members by the level the server sends: warning when near, danger when over', async () => {
     await renderWith([
-      makeSnapshot({ active_member_count: 170, usage_percent: 85 }),
-      makeSnapshot({ id: 6, name: 'Galway Timebank', active_member_count: 210, usage_percent: 105, over_limit: true, standing: makeStanding({ tenant_id: 6 }) }),
+      makeSnapshot({ active_member_count: 170, usage_percent: 85, members_level: 'near' }),
+      makeSnapshot({ id: 6, name: 'Galway Timebank', active_member_count: 210, usage_percent: 105, members_level: 'over', over_limit: true, standing: makeStanding({ tenant_id: 6 }) }),
     ]);
 
     expect(membersCell(0)).toHaveTextContent('170 of 200 (85%)');
     expect(membersCell(0).className).toMatch(/text-warning/);
     expect(membersCell(1)).toHaveTextContent('210 of 200 (105%)');
     expect(membersCell(1).className).toMatch(/text-danger/);
+  });
+
+  it('does not work the level out itself: the server knows the warning percent, the page does not', async () => {
+    // 85% is not "near" on a platform that warns from 90%. The page used to
+    // hold its own copy of the percent (80 until told otherwise).
+    await renderWith([makeSnapshot({ active_member_count: 170, usage_percent: 85, members_level: 'ok' })]);
+
+    expect(membersCell(0)).toHaveTextContent('170 of 200 (85%)');
+    expect(membersCell(0).className).not.toMatch(/text-(warning|danger)/);
   });
 
   it('shows only the active count when there is no plan or no limit', async () => {
@@ -1237,9 +1246,9 @@ describe('BillingControl', () => {
 
   it('colours exactly at the limit as danger, as Branch payments does', async () => {
     await renderWith([
-      makeSnapshot({ active_member_count: 200, usage_percent: 100 }),
+      makeSnapshot({ active_member_count: 200, usage_percent: 100, members_level: 'full' }),
       // 201 of 200 is rounded down to "100%" and is over.
-      makeSnapshot({ id: 6, name: 'Galway Timebank', active_member_count: 201, usage_percent: 100, over_limit: true, standing: makeStanding({ tenant_id: 6 }) }),
+      makeSnapshot({ id: 6, name: 'Galway Timebank', active_member_count: 201, usage_percent: 100, members_level: 'over', over_limit: true, standing: makeStanding({ tenant_id: 6 }) }),
     ]);
 
     expect(membersCell(0).className).toMatch(/text-danger/);

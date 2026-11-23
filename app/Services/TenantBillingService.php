@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use App\Core\Mailer;
 use App\Support\Billing\JoiningGate;
+use App\Support\Billing\MemberLevel;
 use App\Support\Billing\OverLimitRule;
 use App\Support\Billing\PlanTerms;
 use App\Support\Billing\StandardPlans;
@@ -464,6 +465,11 @@ class TenantBillingService
                 // means without holding its own copy of the number.
                 'active_window_days'  => StandardPlans::ACTIVE_WINDOW_DAYS,
                 'usage_percent'       => $usagePercent,
+                // ok | near | full | over: where the active members stand
+                // against the plan's number, from the platform's one warning
+                // percent (MemberLevel). The same answer Branch payments and
+                // the daily check give; the screen only colours it.
+                'members_level'       => MemberLevel::of($activeCount, $currentPlan['max_users'] ?? null),
                 // 'eur' | 'gbp': what a special price typed for it is in, when
                 // the plan chosen has a pound price.
                 'billing_currency'    => $currencyOf[$id] ?? 'eur',

@@ -212,7 +212,7 @@ final class BranchPaymentsPlanEndpointsTest extends TestCase
         $response->assertStatus(200);
         $this->assertSame($this->local, $this->planOf($this->child));
         $this->assertSame($this->local, $response->json('data.plan.plan_id'));
-        $this->assertSame(['active', 'total', 'window_days', 'max', 'percent'], array_keys($response->json('data.members')));
+        $this->assertSame(['active', 'total', 'window_days', 'max', 'percent', 'level', 'over'], array_keys($response->json('data.members')));
 
         $row = DB::table('tenant_plan_assignments')->where('tenant_id', $this->child)->first();
         $this->assertNull($row->custom_price_monthly);
@@ -530,7 +530,7 @@ final class BranchPaymentsPlanEndpointsTest extends TestCase
         // branch, signed in lately or not: the figure a manager thinks of as
         // "our members". The plan's number is checked against `active` only.
         $this->assertSame(
-            ['active' => 5, 'total' => 7, 'window_days' => StandardPlans::ACTIVE_WINDOW_DAYS, 'max' => 200, 'percent' => 2],
+            ['active' => 5, 'total' => 7, 'window_days' => StandardPlans::ACTIVE_WINDOW_DAYS, 'max' => 200, 'percent' => 2, 'level' => 'ok', 'over' => false],
             $child['members']
         );
         $this->assertSame(TenantBillingService::getSubtreeUserCount($this->child), $child['members']['total']);
@@ -538,7 +538,7 @@ final class BranchPaymentsPlanEndpointsTest extends TestCase
         $grandchild = $rows->firstWhere('id', $this->grandchild);
         $this->assertNull($grandchild['plan']);
         $this->assertSame(
-            ['active' => 2, 'total' => 3, 'window_days' => StandardPlans::ACTIVE_WINDOW_DAYS, 'max' => null, 'percent' => null],
+            ['active' => 2, 'total' => 3, 'window_days' => StandardPlans::ACTIVE_WINDOW_DAYS, 'max' => null, 'percent' => null, 'level' => 'ok', 'over' => false],
             $grandchild['members']
         );
     }

@@ -11,6 +11,7 @@ namespace App\Services;
 use App\Support\Billing\BillingLock;
 use App\Support\Billing\BillingSettings;
 use App\Support\Billing\JoiningGate;
+use App\Support\Billing\MemberLevel;
 use App\Support\Billing\OverLimitRule;
 use App\Support\Billing\PlanTerms;
 use App\Support\Billing\StandardPlans;
@@ -96,11 +97,41 @@ final class BillingAutomationService
      */
     public static function run(?CarbonInterface $today = null): array
     {
+        self::$failures = [];
         if (!BillingSettings::get('automation_enabled')) {
             return [];
         }
 
         return self::evaluate(self::day($today), true);
+    }
+
+    /**
+     * The communities the latest check (run or preview) could not finish, and
+     * why. The check carries on past a community that throws, so that one
+     * broken record does not leave every other community unreminded; this is
+     * what stops that from being reported as a clean run.
+     *
+     * @var list<array{tenant_id:int, step:string, error:string}>
+     */
+    private static array $failures = [];
+
+    /**
+     * What the latest check could not finish: empty after a clean one.
+     *
+     * A run with anything here is a FAILED run for whoever reports on it
+     * (`billing:apply-standing` records it as failed, exits non-zero and
+     * emails the platform team), even though it returned what it did do.
+     *
+     * @return list<array{tenant_id:int, step:string, error:string}>
+     */
+    public static function failures(): array
+    {
+        return self::$failures;
+    }
+
+    private static function failed(int $tenantId, string $step, \Throwable $e): void
+    {
+        self::$failures[] = ['tenant_id' => $tenantId, 'step' => $step, 'error' => $e->getMessage()];
     }
 
     /** The rows of `platform_billing_settings` that hold the last run. Not settings: never in BillingSettings. */
@@ -332,20 +363,14 @@ final class BillingAutomationService
         return self::later(($warnedOn ?? $day)->addDays((int) $rule['grace_days']), $day)->toDateString();
     }
 
-    /** `approaching` from the warning percent, `reached` at 100%, `over` above it; else null. */
+    /**
+     * `approaching` from the warning percent, `reached` at 100%, `over` above
+     * it; else null. The arithmetic is MemberLevel's, the same the billing
+     * lists show, so a screen and a warning email never disagree.
+     */
     private static function limitStage(int $active, int $max, int $warningPercent): ?string
     {
-        if ($active > $max) {
-            return 'over';
-        }
-        if ($active >= $max) {
-            return 'reached';
-        }
-        if ($active * 100 >= $warningPercent * $max) {
-            return 'approaching';
-        }
-
-        return null;
+        return MemberLevel::stage(MemberLevel::of($active, $max, $warningPercent));
     }
 
     private static function day(?CarbonInterface $today): CarbonImmutable
@@ -358,6 +383,7 @@ final class BillingAutomationService
      */
     private static function evaluate(CarbonImmutable $today, bool $act): array
     {
+        self::$failures = [];
         $settings = BillingSettings::all();
         $standing = [];
         foreach (DB::table('tenant_billing_standing')->get() as $row) {
@@ -424,6 +450,7 @@ final class BillingAutomationService
                             'limit_notice_at' => null,
                         ]);
                     } catch (\Throwable $e) {
+                        self::failed($id, 'clear_deactivated', $e);
                         Log::error('[BillingAutomation] could not clear the member-limit count of a deactivated community', [
                             'tenant_id' => $id,
                             'error' => $e->getMessage(),
@@ -461,6 +488,8 @@ final class BillingAutomationService
                 }
             } catch (\Throwable $e) {
                 // One broken community must not stop the check for the rest.
+                // It is counted, so the run is not reported as a clean one.
+                self::failed($id, 'clocks', $e);
                 Log::error('[BillingAutomation] the daily check failed for a community', [
                     'tenant_id' => $id,
                     'error' => $e->getMessage(),
@@ -657,6 +686,7 @@ final class BillingAutomationService
                 }
                 $out[] = self::entry($id, (string) $tenant->name, 'member_limit', 'joining_opened_again', self::closedByDetail($facts));
             } catch (\Throwable $e) {
+                self::failed($id, 'joining_notice', $e);
                 Log::error('[BillingAutomation] the check for a door shut from above failed for a community', [
                     'tenant_id' => $id,
                     'error' => $e->getMessage(),

@@ -31,7 +31,8 @@ use Illuminate\Support\Facades\Log;
  * Each real run leaves a "last ran" record (BillingAutomationService::lastRun())
  * that the Automatic checks card shows. A failure is logged as an error, is
  * recorded, is reported to error tracking, emails the platform team and
- * exits non-zero.
+ * exits non-zero. A run that finished but could not check every community
+ * (BillingAutomationService::failures()) is a failure too.
  */
 class BillingApplyStanding extends Command
 {
@@ -65,19 +66,29 @@ class BillingApplyStanding extends Command
                 'exception' => $e::class,
             ]);
             $this->error('The daily billing check failed: ' . $e->getMessage());
+            $this->tellSomebody($e);
 
-            // Reaches error tracking whatever the log is set to, and the
-            // platform team by email: a failed run does none of what was due
-            // after it stopped, and the "last ran" line on Billing control
-            // only says so to somebody who opens that page.
-            report($e);
-            try {
-                BillingStandingNotifier::dailyCheckFailed();
-            } catch (\Throwable $mailFailure) {
-                Log::warning('[billing:apply-standing] the platform team could not be told the check failed', [
-                    'error' => $mailFailure->getMessage(),
-                ]);
-            }
+            return self::FAILURE;
+        }
+
+        // The check carries on past a community it cannot check, so the rest
+        // are still reminded. That is not a clean run: for that community
+        // nothing that was due was done. It was recorded "ok", exited 0 and
+        // told nobody.
+        $failures = BillingAutomationService::failures();
+        if ($failures !== []) {
+            $ids = array_values(array_unique(array_column($failures, 'tenant_id')));
+            BillingAutomationService::recordRun('failed', count($actions));
+            Log::error('[billing:apply-standing] the daily billing check could not finish for some communities', [
+                'tenant_ids' => $ids,
+                'failures' => $failures,
+            ]);
+            $this->printActions($actions);
+            $this->error('The daily billing check could not finish for ' . count($ids) . ' communit' . (count($ids) === 1 ? 'y' : 'ies')
+                . ' (#' . implode(', #', $ids) . '). The rest were checked. The errors are in the log.');
+            $this->tellSomebody(new \RuntimeException(
+                'The daily billing check could not finish for communities #' . implode(', #', $ids) . ': ' . $failures[0]['error']
+            ));
 
             return self::FAILURE;
         }
@@ -86,6 +97,24 @@ class BillingApplyStanding extends Command
         $this->printActions($actions);
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Reaches error tracking whatever the log is set to, and the platform team
+     * by email: a failed run does not do everything that was due, and the
+     * "last ran" line on Billing control only says so to somebody who opens
+     * that page.
+     */
+    private function tellSomebody(\Throwable $e): void
+    {
+        report($e);
+        try {
+            BillingStandingNotifier::dailyCheckFailed();
+        } catch (\Throwable $mailFailure) {
+            Log::warning('[billing:apply-standing] the platform team could not be told the check failed', [
+                'error' => $mailFailure->getMessage(),
+            ]);
+        }
     }
 
     /** @param list<array{tenant_id:int, tenant_name:string, clock:string, action:string, detail:array<string, mixed>}> $actions */

@@ -124,17 +124,11 @@ const DECISION_REASONS: readonly string[] = ['no_plan_fits', 'custom_price', 'ca
 const dateText = (value: unknown): string => (typeof value === 'string' && value !== '' ? formatDate(value) : '');
 
 interface BillingAutomationCardProps {
-  /**
-   * Told the saved member-limit warning percent, on load and after each save,
-   * so the Billing control table colours usage by the same number the daily
-   * check warns at.
-   */
-  onWarningPercent?: (percent: number) => void;
   /** False on the page of its own, whose header already carries the title. */
   showTitle?: boolean;
 }
 
-export function BillingAutomationCard({ onWarningPercent, showTitle = true }: BillingAutomationCardProps = {}) {
+export function BillingAutomationCard({ showTitle = true }: BillingAutomationCardProps = {}) {
   const { t } = useTranslation('admin_billing');
   const toast = useToast();
 
@@ -180,12 +174,6 @@ export function BillingAutomationCard({ onWarningPercent, showTitle = true }: Bi
       alive = false;
     };
   }, [loadPreview]);
-
-  useEffect(() => {
-    if (saved && typeof saved.limit_warning_percent === 'number') {
-      onWarningPercent?.(saved.limit_warning_percent);
-    }
-  }, [saved, onWarningPercent]);
 
   const pending = useMemo(() => (saved && draft ? changes(saved, draft) : {}), [saved, draft]);
   const hasChanges = Object.keys(pending).length > 0;

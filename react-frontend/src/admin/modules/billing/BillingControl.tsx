@@ -24,7 +24,7 @@ import { StillToSetUp, type SetupItem } from './StillToSetUp';
 import { OverLimitRuleDialog, OverLimitSummary, type OverLimitChoice, type OverLimitState } from './OverLimitRuleDialog';
 import {
   ActiveMembersNote, COMMUNITY_GRID_CLASSES, COMMUNITY_GRID_LEAD_CELL, MemberNumbers, StackedLabel,
-  blockIndentFor, nameIndentFor, type MembersLevel,
+  blockIndentFor, nameIndentFor, standingStateOf, STANDING_COLOR, type MembersLevel,
 } from './CommunityGrid';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
@@ -148,6 +148,8 @@ interface TenantSnapshot {
   active_window_days?: number;
   /** Of the plan's member limit; null with no plan or no limit. */
   usage_percent: number | null;
+  /** Worked out by the server from the platform's warning percent. */
+  members_level?: MembersLevel;
   /** The currency the community is billed in (a special price typed for it is in this). */
   billing_currency: Currency;
   /** Slug of the smallest standard package that fits; null above the largest. */
@@ -190,7 +192,6 @@ interface PlanItem {
   is_active: number | boolean;
 }
 
-type StandingState = 'open' | 'paused' | 'paused_from_above' | 'exempt';
 type StandingDialog = { row: TenantSnapshot; kind: 'pause' | 'exempt' } | null;
 type ChipColor = 'success' | 'warning' | 'danger' | 'default' | 'primary';
 
@@ -231,35 +232,6 @@ function matchesFilter(row: TenantSnapshot, filter: RowFilter): boolean {
 function formatCount(value: number): string {
   return new Intl.NumberFormat(getFormattingLocale()).format(value);
 }
-
-/**
- * The same thresholds the daily check uses: near from its warning percent,
- * over at or past the limit, as Branch payments colours it. `over_limit` is
- * asked too: the percent is rounded down, so 201 of 200 reads "100%" and is
- * over.
- */
-function membersLevel(row: TenantSnapshot, warningPercent: number): MembersLevel {
-  if (row.usage_percent === null) return 'ok';
-  if (row.over_limit || row.usage_percent >= 100) return 'over';
-  if (row.usage_percent >= warningPercent) return 'near';
-  return 'ok';
-}
-
-/** Exempt wins: an exempt community is never paused, whatever is above it. */
-function standingState(row: TenantSnapshot): StandingState {
-  if (row.standing.exempt) return 'exempt';
-  if (row.standing.suspended_at !== null) return 'paused';
-  if (row.standing.locked) return 'paused_from_above';
-  return 'open';
-}
-
-const STANDING_COLOR: Record<StandingState, ChipColor> = {
-  open: 'success',
-  paused: 'danger',
-  paused_from_above: 'warning',
-  // Neutral: an exemption is not a warning, and the brand colour read as one.
-  exempt: 'default',
-};
 
 // ---------------------------------------------------------------------------
 // Component
@@ -330,9 +302,6 @@ export function BillingControl() {
 
   // ---- one community's own over-limit rule ----
   const [ruleRow, setRuleRow] = useState<TenantSnapshot | null>(null);
-
-  // The daily check's warning percent, from its settings card; 80 until known.
-  const [warningPercent, setWarningPercent] = useState(80);
 
   // ---------------------------------------------------------------------------
   // Data fetching
@@ -693,7 +662,7 @@ export function BillingControl() {
 
       {/* The settings have their own page in the Money menu. What stays here
           is whether the checks are on and when they last ran. */}
-      <BillingAutomationSummary onWarningPercent={setWarningPercent} />
+      <BillingAutomationSummary />
 
       <Card>
         <CardBody className="p-0">
@@ -763,7 +732,7 @@ export function BillingControl() {
             >
               {(row) => {
                 const price = row.current_plan?.effective_price ?? null;
-                const state = standingState(row);
+                const state = standingStateOf(row.standing);
                 const busy = standingBusyId === row.id;
                 const suggested = suggestedPlanName(row);
                 const hasPlan = row.current_plan !== null;
@@ -862,7 +831,7 @@ export function BillingControl() {
                           active={row.active_member_count}
                           max={row.usage_percent === null ? null : (row.current_plan?.max_users ?? null)}
                           percent={row.usage_percent}
-                          level={membersLevel(row, warningPercent)}
+                          level={row.members_level ?? 'ok'}
                           total={row.subtree_user_count}
                           activeTestId="billing-members"
                           totalTestId="billing-members-all"

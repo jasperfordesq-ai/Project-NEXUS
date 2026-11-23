@@ -42,7 +42,7 @@ final class BillingSnapshotContractTest extends TestCase
         'id', 'name', 'depth', 'own_user_count', 'subtree_user_count',
         'current_plan', 'over_limit', 'standing',
         // Sized by active members (DESIGN §11), not registered ones.
-        'active_member_count', 'usage_percent', 'suggested_plan',
+        'active_member_count', 'usage_percent', 'members_level', 'suggested_plan',
         // Stage 6: the earliest automatic pause date and the newest payment
         // recorded by hand.
         'pause_on', 'last_payment',
