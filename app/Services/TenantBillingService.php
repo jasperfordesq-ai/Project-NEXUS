@@ -759,15 +759,10 @@ class TenantBillingService
         // record after a failed renewal (`expired`, Stripe still collecting).
         // Only `active` was looked for, so for those a SECOND record was
         // inserted beside the one the card is charged on.
-        $existing = DB::selectOne(
-            "SELECT tpa.id, tpa.pay_plan_id, tpa.custom_price_monthly, tpa.custom_price_yearly,
-                    tpa.discount_percentage, tpa.discount_reason, tpa.nonprofit_verified, tpa.expires_at, tpa.notes
-             FROM tenant_plan_assignments tpa
-             WHERE tpa.tenant_id = ? AND " . self::PLAN_IN_FORCE_SQL . "
-             ORDER BY (tpa.status = 'active') DESC, (tpa.status = 'trial') DESC, tpa.id DESC
-             LIMIT 1",
-            [$tenantId]
-        );
+        $existing = PlanTerms::assignmentInForce($tenantId, [
+            'id', 'pay_plan_id', 'custom_price_monthly', 'custom_price_yearly',
+            'discount_percentage', 'discount_reason', 'nonprofit_verified', 'expires_at', 'notes',
+        ]);
 
         $oldValue = $existing ? (array) $existing : null;
 
@@ -892,14 +887,12 @@ class TenantBillingService
         }
 
         DB::transaction(static function () use ($tenantId, $planId, $actedBy, $source): void {
-            // The newest active record (highest id) is the plan in force:
-            // the same row PlanTerms::forCommunity() and planChangedFacts() read.
-            $existing = DB::table('tenant_plan_assignments')
-                ->where('tenant_id', $tenantId)
-                ->where('status', 'active')
-                ->orderByDesc('id')
-                ->lockForUpdate()
-                ->first(['id', 'pay_plan_id']);
+            // The record in force, locked: the same row PlanTerms::forCommunity()
+            // and planChangedFacts() read. It asked for `status = 'active'`
+            // under a comment saying exactly that, so a community on a trial,
+            // or a card payer whose renewal had failed, got a SECOND, active
+            // record beside the one it was really on.
+            $existing = PlanTerms::assignmentInForce($tenantId, ['id', 'pay_plan_id'], true);
 
             if ($source !== 'platform' && self::hasLiveCardSubscription($tenantId)) {
                 throw new \DomainException('billing_card_subscription');
@@ -991,23 +984,35 @@ class TenantBillingService
      */
     public static function hasLiveCardSubscription(int $tenantId): bool
     {
-        return DB::table('tenant_plan_assignments')
-            ->where('tenant_id', $tenantId)
-            ->whereNotNull('stripe_subscription_id')
-            ->where('stripe_subscription_id', '<>', '')
-            ->where('status', '<>', 'cancelled')
-            ->where(static function ($query): void {
-                $query
-                    ->where(static function ($said): void {
-                        $said->whereNotNull('stripe_status')
-                            ->whereNotIn('stripe_status', self::STRIPE_SUBSCRIPTION_ENDED);
-                    })
-                    ->orWhere(static function ($silent): void {
-                        $silent->whereNull('stripe_status')
-                            ->whereIn('status', ['active', 'trial', 'trialing']);
-                    });
-            })
+        return DB::table('tenant_plan_assignments as lc')
+            ->where('lc.tenant_id', $tenantId)
+            ->whereRaw(self::LIVE_CARD_SUBSCRIPTION_SQL)
             ->exists();
+    }
+
+    /**
+     * hasLiveCardSubscription() as SQL, for a plan record aliased `lc`: the
+     * rule is written once, here. STRIPE_SUBSCRIPTION_ENDED is spelled out
+     * because this is raw SQL. (`trialing` is Stripe's word; the column
+     * stores `trial`.)
+     */
+    public const LIVE_CARD_SUBSCRIPTION_SQL = "(lc.stripe_subscription_id IS NOT NULL AND lc.stripe_subscription_id <> ''
+        AND lc.status <> 'cancelled'
+        AND ((lc.stripe_status IS NOT NULL AND lc.stripe_status NOT IN ('canceled', 'incomplete_expired'))
+            OR (lc.stripe_status IS NULL AND lc.status IN ('active', 'trial'))))";
+
+    /**
+     * "This community is a card payer", as an EXISTS(...) to put in a query
+     * over many communities. `$tenantColumn` is the column holding the
+     * community's id there, for example `c.id`.
+     */
+    public static function liveCardSubscriptionExistsSql(string $tenantColumn): string
+    {
+        if (preg_match('/^[a-z_][a-z0-9_]*\.[a-z_][a-z0-9_]*$/', $tenantColumn) !== 1) {
+            throw new \InvalidArgumentException('liveCardSubscriptionExistsSql(): not a qualified column');
+        }
+
+        return "EXISTS (SELECT 1 FROM tenant_plan_assignments lc WHERE lc.tenant_id = {$tenantColumn} AND " . self::LIVE_CARD_SUBSCRIPTION_SQL . ')';
     }
 
     /**
@@ -1038,12 +1043,12 @@ class TenantBillingService
         if ($hubId !== null) {
             $payeeName = DB::table('tenants')->where('id', $hubId)->value('name');
         } else {
-            // The newest active record, as PlanTerms::forCommunity() reads it.
-            $assignment = DB::table('tenant_plan_assignments')
-                ->where('tenant_id', $tenantId)
-                ->where('status', 'active')
-                ->orderByDesc('id')
-                ->first(['custom_price_monthly', 'custom_price_yearly', 'discount_percentage', 'nonprofit_verified']);
+            // The record in force, as PlanTerms::forCommunity() reads it: a
+            // trial or a failed-card record carries the agreed price too.
+            $assignment = PlanTerms::assignmentInForce(
+                $tenantId,
+                ['custom_price_monthly', 'custom_price_yearly', 'discount_percentage', 'nonprofit_verified']
+            );
 
             if ($assignment !== null) {
                 $effective = self::getEffectivePrice([

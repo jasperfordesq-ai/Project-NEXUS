@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace App\Support\Billing;
 
 use App\Core\SuperPanelAccess;
+use App\Services\BillingStandingService;
 use App\Services\TenantBillingService;
 use Illuminate\Support\Facades\DB;
 
@@ -71,14 +72,14 @@ final class BranchPlans
     {
         $scope = SuperPanelAccess::getScopeClause('t');
 
-        // A child of a hub above tenant 1 with no stored payer pays that hub
-        // (BillingStandingService::defaultPayer()).
+        // "Pays that hub": stored as paying its parent, or nothing stored and
+        // no card (BillingStandingService::paysParentSql()).
         $rows = DB::select(
             "SELECT t.id, t.name, t.depth, t.allows_subtenants,
                     (SELECT COUNT(*)
                        FROM tenants c
                        LEFT JOIN tenant_billing_standing s ON s.tenant_id = c.id
-                      WHERE c.parent_id = t.id AND COALESCE(s.payer, 'parent') = 'parent') AS children_paying,
+                      WHERE c.parent_id = t.id AND " . BillingStandingService::paysParentSql('c.id', 's') . ") AS children_paying,
                     (SELECT COUNT(*) FROM tenants k WHERE k.parent_id = t.id) AS children
              FROM tenants t
              WHERE t.id > 1 AND {$scope['sql']}

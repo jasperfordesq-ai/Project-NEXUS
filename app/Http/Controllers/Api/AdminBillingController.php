@@ -477,13 +477,9 @@ class AdminBillingController extends BaseApiController
      */
     private function hasSpecialPrice(int $tenantId): bool
     {
-        $record = DB::selectOne(
-            "SELECT tpa.custom_price_monthly, tpa.custom_price_yearly, tpa.discount_percentage, tpa.nonprofit_verified
-             FROM tenant_plan_assignments tpa
-             WHERE tpa.tenant_id = ? AND " . TenantBillingService::PLAN_IN_FORCE_SQL . "
-             ORDER BY (tpa.status = 'active') DESC, (tpa.status = 'trial') DESC, tpa.id DESC
-             LIMIT 1",
-            [$tenantId]
+        $record = PlanTerms::assignmentInForce(
+            $tenantId,
+            ['custom_price_monthly', 'custom_price_yearly', 'discount_percentage', 'nonprofit_verified']
         );
 
         return $record !== null && (

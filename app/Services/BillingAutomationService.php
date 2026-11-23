@@ -1510,8 +1510,8 @@ final class BillingAutomationService
      * move or a "needs a decision" mail only ever follows a notice that
      * named exactly that outcome.
      *
-     * `price` is what the notice names (movePrice()); `assignment` the newest
-     * active assignment's price fields.
+     * `price` is what the notice names (movePrice()); `assignment` the price
+     * fields of the record in force (PlanTerms::assignmentInForce()).
      *
      * @param array{plan_id:int, plan_name:string, max_users:int} $limit
      * @param array{action?:string, effective_action:string, grace_days:int} $rule
@@ -1523,11 +1523,13 @@ final class BillingAutomationService
             return ['target' => null, 'reason' => 'card_subscription', 'assignment' => null, 'price' => null];
         }
 
-        $assignment = DB::table('tenant_plan_assignments')
-            ->where('tenant_id', $id)
-            ->where('status', 'active')
-            ->orderByDesc('id')
-            ->first(['custom_price_monthly', 'custom_price_yearly', 'discount_percentage', 'nonprofit_verified']);
+        // The record in force (a trial counts): `status = 'active'` missed an
+        // agreed price on a trial record, and the check would have moved a
+        // community a person must decide for.
+        $assignment = PlanTerms::assignmentInForce(
+            $id,
+            ['custom_price_monthly', 'custom_price_yearly', 'discount_percentage', 'nonprofit_verified']
+        );
 
         $target = PlanTerms::smallestFitting($id, max($active, $limit['max_users'] + 1));
         if (

@@ -2951,13 +2951,7 @@ class AdminSuperController extends BaseApiController
             return $this->respondWithError('NOT_FOUND', __('api.tenant_not_found'), null, 404);
         }
         // The plan it is on now, if any (the record in force).
-        $current = DB::selectOne(
-            "SELECT tpa.pay_plan_id FROM tenant_plan_assignments tpa
-             WHERE tpa.tenant_id = ? AND " . TenantBillingService::PLAN_IN_FORCE_SQL . "
-             ORDER BY (tpa.status = 'active') DESC, (tpa.status = 'trial') DESC, tpa.id DESC
-             LIMIT 1",
-            [$tenantId]
-        );
+        $current = PlanTerms::assignmentInForce($tenantId, ['pay_plan_id']);
         $currentPlanId = $current !== null ? (int) $current->pay_plan_id : null;
 
         // Nobody new is put on a retired plan, but a community already on one

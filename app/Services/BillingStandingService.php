@@ -110,6 +110,28 @@ final class BillingStandingService
      * its notices named the hub as payee, and Stripe's retries were not
      * waited for.
      */
+    /**
+     * defaultPayer()'s answer "it pays its parent", as SQL for a query over
+     * the children of a hub above tenant 1: stored as paying its parent, or
+     * nothing stored and no card. Written once, here.
+     *
+     * Three counts of "the communities that pay this hub" read a missing
+     * payer as "its parent" on their own, and so still counted a child that
+     * pays the platform by card after defaultPayer() stopped doing so.
+     *
+     * @param string $tenantColumn   the column holding the child's id, e.g. `c.id`
+     * @param string $standingAlias  the alias of its LEFT JOINed `tenant_billing_standing` row
+     */
+    public static function paysParentSql(string $tenantColumn, string $standingAlias): string
+    {
+        if (preg_match('/^[a-z_][a-z0-9_]*$/', $standingAlias) !== 1) {
+            throw new \InvalidArgumentException('paysParentSql(): not an alias');
+        }
+
+        return "({$standingAlias}.payer = 'parent' OR ({$standingAlias}.payer IS NULL AND NOT "
+            . TenantBillingService::liveCardSubscriptionExistsSql($tenantColumn) . '))';
+    }
+
     public static function defaultPayer(int $tenantId): string
     {
         if ($tenantId === 1) {

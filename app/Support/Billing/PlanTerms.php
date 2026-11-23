@@ -154,6 +154,48 @@ final class PlanTerms
     }
 
     /**
+     * Which of a community's plan records is the one in force, when more than
+     * one qualifies (alias `tpa`): an active record, then a trial, then the
+     * newest. Always used with TenantBillingService::PLAN_IN_FORCE_SQL.
+     */
+    public const IN_FORCE_ORDER_SQL = "(tpa.status = 'active') DESC, (tpa.status = 'trial') DESC, tpa.id DESC";
+
+    /**
+     * The plan record in force for a community: the row of
+     * `tenant_plan_assignments` every reader and writer must agree on. Null
+     * when it is on no plan (never assigned, or only cancelled or ended
+     * records).
+     *
+     * This is the ONE place that picks it. Code that asked for
+     * `status = 'active'` instead missed a trial and a card payer's record
+     * after a failed renewal: a plan change then put a second, active record
+     * beside it, and prices were quoted without the agreed one.
+     *
+     * @param list<string> $columns columns of the record to read
+     * @param bool $lock `FOR UPDATE`: for a caller, inside a transaction, about to write the record
+     */
+    public static function assignmentInForce(int $tenantId, array $columns = ['id', 'pay_plan_id'], bool $lock = false): ?object
+    {
+        if ($columns === []) {
+            throw new \InvalidArgumentException('assignmentInForce() needs at least one column');
+        }
+        foreach ($columns as $column) {
+            if (!is_string($column) || preg_match('/^[a-z][a-z0-9_]*$/', $column) !== 1) {
+                throw new \InvalidArgumentException('assignmentInForce(): not a column name');
+            }
+        }
+
+        return DB::selectOne(
+            'SELECT ' . implode(', ', array_map(static fn (string $c): string => "tpa.`{$c}`", $columns)) . '
+             FROM tenant_plan_assignments tpa
+             WHERE tpa.tenant_id = ? AND ' . \App\Services\TenantBillingService::PLAN_IN_FORCE_SQL . '
+             ORDER BY ' . self::IN_FORCE_ORDER_SQL . '
+             LIMIT 1' . ($lock ? ' FOR UPDATE' : ''),
+            [$tenantId]
+        );
+    }
+
+    /**
      * The plan a community is on, as it applies to it, in its own billing
      * currency. Null with no current assignment.
      *
@@ -172,7 +214,7 @@ final class PlanTerms
              FROM tenant_plan_assignments tpa
              INNER JOIN pay_plans pp ON pp.id = tpa.pay_plan_id
              WHERE tpa.tenant_id = ? AND " . \App\Services\TenantBillingService::PLAN_IN_FORCE_SQL . "
-             ORDER BY (tpa.status = 'active') DESC, (tpa.status = 'trial') DESC, tpa.id DESC
+             ORDER BY " . self::IN_FORCE_ORDER_SQL . "
              LIMIT 1",
             [$tenantId]
         );
@@ -410,8 +452,9 @@ final class PlanTerms
     /**
      * How many communities that pay this hub are on each plan now.
      *
-     * The hub is above tenant 1, so a child with no stored payer pays it
-     * (BillingStandingService::defaultPayer()).
+     * "Pays this hub" is BillingStandingService::paysParentSql(): stored as
+     * paying its parent, or nothing stored and no card (a child with a card
+     * pays the platform, as defaultPayer() answers).
      *
      * @return array<int, int> plan id => communities
      */
@@ -423,7 +466,7 @@ final class PlanTerms
              FROM tenants c
              LEFT JOIN tenant_billing_standing s ON s.tenant_id = c.id
              INNER JOIN tenant_plan_assignments tpa ON tpa.tenant_id = c.id AND tpa.status IN ({$statuses})
-             WHERE c.parent_id = ? AND COALESCE(s.payer, 'parent') = 'parent'
+             WHERE c.parent_id = ? AND " . BillingStandingService::paysParentSql('c.id', 's') . "
              GROUP BY tpa.pay_plan_id",
             array_merge(self::CURRENT_STATUSES, [$hubTenantId])
         );

@@ -199,12 +199,12 @@ final class OverLimitRule
             return [];
         }
 
-        // The hub is above tenant 1, so a child with no stored payer pays it
-        // (BillingStandingService::defaultPayer()).
+        // "Pays this hub": stored as paying its parent, or nothing stored
+        // and no card (BillingStandingService::paysParentSql()).
         $query = DB::table('tenants as c')
             ->leftJoin('tenant_billing_standing as s', 's.tenant_id', '=', 'c.id')
             ->where('c.parent_id', $hubTenantId)
-            ->whereRaw("COALESCE(s.payer, 'parent') = 'parent'");
+            ->whereRaw(BillingStandingService::paysParentSql('c.id', 's'));
 
         if ($planId !== null) {
             $query->whereExists(static function ($sub) use ($planId): void {
