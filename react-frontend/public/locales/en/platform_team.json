@@ -17,6 +17,7 @@
   "nav": {
     "brand": "Platform team",
     "back_to_admin": "Back to the admin panel",
+    "automatic_checks": "Automatic checks",
     "regional_analytics_subscriptions": "Regional analytics customers",
     "tests": "Tests"
   },

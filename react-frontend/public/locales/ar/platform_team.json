@@ -17,6 +17,7 @@
   "nav": {
     "brand": "فريق المنصة",
     "back_to_admin": "العودة إلى لوحة الإدارة",
+    "automatic_checks": "الفحوصات التلقائية",
     "regional_analytics_subscriptions": "عملاء التحليلات الإقليمية",
     "tests": "الاختبارات"
   },

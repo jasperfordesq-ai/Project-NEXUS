@@ -130,9 +130,11 @@ interface BillingAutomationCardProps {
    * check warns at.
    */
   onWarningPercent?: (percent: number) => void;
+  /** False on the page of its own, whose header already carries the title. */
+  showTitle?: boolean;
 }
 
-export function BillingAutomationCard({ onWarningPercent }: BillingAutomationCardProps = {}) {
+export function BillingAutomationCard({ onWarningPercent, showTitle = true }: BillingAutomationCardProps = {}) {
   const { t } = useTranslation('admin_billing');
   const toast = useToast();
 
@@ -236,10 +238,12 @@ export function BillingAutomationCard({ onWarningPercent }: BillingAutomationCar
 
   return (
     <Card>
-      <CardHeader className="flex items-center gap-2 pb-0">
-        <CalendarClock size={18} className="text-accent" aria-hidden="true" />
-        <span className="font-semibold text-sm">{t('automation.title')}</span>
-      </CardHeader>
+      {showTitle ? (
+        <CardHeader className="flex items-center gap-2 pb-0">
+          <CalendarClock size={18} className="text-accent" aria-hidden="true" />
+          <span className="font-semibold text-sm">{t('automation.title')}</span>
+        </CardHeader>
+      ) : null}
       <CardBody className="flex flex-col gap-6">
         {loadFailed ? (
           <p role="alert" className="text-sm text-danger">{t('automation.load_failed')}</p>
@@ -292,6 +296,7 @@ export function BillingAutomationCard({ onWarningPercent }: BillingAutomationCar
               />
               <Input
                 label={t('automation.final_warning_days_late')}
+                description={t('automation.final_warning_help')}
                 type="number"
                 min={1}
                 max={180}
@@ -300,6 +305,7 @@ export function BillingAutomationCard({ onWarningPercent }: BillingAutomationCar
               />
               <Input
                 label={t('automation.suspend_days_late')}
+                description={t('automation.suspend_help')}
                 type="number"
                 min={1}
                 max={365}
@@ -317,18 +323,20 @@ export function BillingAutomationCard({ onWarningPercent }: BillingAutomationCar
               />
               <Input
                 label={t('automation.limit_warning_percent')}
+                description={t('automation.limit_warning_help')}
                 type="number"
                 min={50}
                 max={99}
                 value={draft.limit_warning_percent}
                 onValueChange={setNumber('limit_warning_percent')}
-                endContent={<span className="text-muted text-sm">%</span>}
               />
             </div>
 
-            {/* The platform default: a hub's default or a community's own rule wins over it. */}
+            {/* The platform default: a hub's default or a community's own rule
+                wins over it. Said on screen, once, where the rule is chosen. */}
             <RadioGroup
               label={t('automation.over_limit_label')}
+              description={t('automation.over_limit_help')}
               value={draft.over_limit_action}
               onValueChange={(value) => {
                 if (isOverLimitAction(value)) setDraft({ ...draft, over_limit_action: value });
@@ -345,6 +353,7 @@ export function BillingAutomationCard({ onWarningPercent }: BillingAutomationCar
               <Input
                 className="sm:max-w-xs"
                 label={t('automation.over_limit_days')}
+                description={t('automation.over_limit_days_help')}
                 type="number"
                 min={1}
                 max={365}

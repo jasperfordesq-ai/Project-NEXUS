@@ -102,6 +102,7 @@ const SuperPartnerships = lazy(() => import('@/admin/modules/super/SuperPartners
 const FederationAuditLog = lazy(() => import('@/admin/modules/super/FederationAuditLog'));
 const BillingControl = lazy(() => import('@/admin/modules/billing/BillingControl'));
 const RevenueDashboard = lazy(() => import('@/admin/modules/billing/RevenueDashboard'));
+const BillingAutomationPage = lazy(() => import('@/admin/modules/billing/BillingAutomationPage'));
 const PilotInquiryAdminPage = lazy(() => import('@/admin/modules/super/PilotInquiryAdminPage'));
 const PlatformTranslationKeyPage = lazy(() => import('@/admin/modules/super/PlatformTranslationKeyPage'));
 const ProvisioningRequestsPage = lazy(() => import('@/admin/modules/provisioning/ProvisioningRequestsPage'));
@@ -200,6 +201,9 @@ export function PlatformTeamRoutes() {
       <Route path="federation/audit" element={<Lazy><FederationAuditLog /></Lazy>} />
       <Route path="billing" element={<Lazy><BillingControl /></Lazy>} />
       <Route path="billing/revenue" element={<Lazy><RevenueDashboard /></Lazy>} />
+      {/* The daily check's settings, off Billing control and onto a page of
+          their own (23 Nov 2026). */}
+      <Route path="billing/automatic-checks" element={<Lazy><BillingAutomationPage /></Lazy>} />
       <Route path="platform/pilot-inquiries" element={<Lazy><PilotInquiryAdminPage /></Lazy>} />
       <Route path="platform/translation" element={<Lazy><PlatformTranslationKeyPage /></Lazy>} />
       <Route path="provisioning-requests" element={<Lazy><ProvisioningRequestsPage /></Lazy>} />

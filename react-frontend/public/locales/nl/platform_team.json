@@ -17,6 +17,7 @@
   "nav": {
     "brand": "Platformteam",
     "back_to_admin": "Terug naar het beheerpaneel",
+    "automatic_checks": "Automatische controles",
     "regional_analytics_subscriptions": "Klanten regionale analyse",
     "tests": "Tests"
   },

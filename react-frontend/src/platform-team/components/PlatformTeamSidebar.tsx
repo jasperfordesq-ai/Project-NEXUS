@@ -62,6 +62,7 @@ import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
 import BarChart3 from 'lucide-react/icons/chart-column';
+import CalendarClock from 'lucide-react/icons/calendar-clock';
 import BellRing from 'lucide-react/icons/bell-ring';
 import Bug from 'lucide-react/icons/bug';
 import Building2 from 'lucide-react/icons/building-2';
@@ -256,6 +257,7 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
           icon: Wallet,
           items: [
             { label: tSuper('nav.billing_control'), icon: Wallet, path: `${P}/billing` },
+            { label: t('nav.automatic_checks'), icon: CalendarClock, path: `${P}/billing/automatic-checks` },
             { label: tSuper('nav.revenue_dashboard'), icon: BarChart3, path: `${P}/billing/revenue` },
             { label: tNav('plans_pricing'), icon: CreditCard, path: `${P}/plans` },
             { label: t('nav.regional_analytics_subscriptions'), icon: BarChart3, path: `${P}/regional-analytics/subscriptions` },

@@ -39,6 +39,7 @@ function at(json: Json, keys: string[]): unknown {
 const PAIRS: Array<[string, string, string[], string, string[]]> = [
   ['Billing control', 'super_admin.json', ['nav', 'billing_control'], 'admin_billing.json', ['billing', 'control_title']],
   ['Revenue', 'super_admin.json', ['nav', 'revenue_dashboard'], 'admin_billing.json', ['billing', 'revenue_title']],
+  ['Automatic checks', 'platform_team.json', ['nav', 'automatic_checks'], 'admin_billing.json', ['automation', 'title']],
   ['Plans and prices', 'admin_nav.json', ['plans_pricing'], 'admin_content.json', ['content', 'plans_admin_title']],
 ];
 

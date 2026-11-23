@@ -220,6 +220,7 @@ const SEGMENT_LABEL_KEYS: Record<string, string> = {
   billing: 'breadcrumbs.billing',
   invoices: 'breadcrumbs.invoices',
   revenue: 'breadcrumbs.revenue',
+  'automatic-checks': 'breadcrumbs.automatic_checks',
   'checkout-return': 'breadcrumbs.checkout_return',
 
   // Caring Community legacy admin redirects

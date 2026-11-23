@@ -43,7 +43,7 @@ const PLATFORM_ZONE = [
   'seo/prerender', 'failed-jobs', '404-errors', 'tests', 'plans', 'integrations/webhooks',
   'security', 'senior-accounts', 'accounts', 'access-review', 'enterprise', 'enterprise/permissions',
   // Moved in from the super admin panel's platform-wide half (phase 2).
-  'billing', 'billing/revenue',
+  'billing', 'billing/automatic-checks', 'billing/revenue',
   'communities', 'notices', 'provisioning-requests', 'platform/pilot-inquiries', 'platform-capabilities', 'phone-app',
   'federation', 'federation/whitelist', 'federation/partnerships', 'federation/audit',
   'regional-analytics/subscriptions', 'national/kiss',
@@ -146,7 +146,7 @@ describe('PlatformTeamSidebar', () => {
     ['data', ['data-requests', 'legal-documents', 'clean-up-jobs', 'assurance']],
     [
       'money',
-      ['billing', 'billing/revenue', 'plans', 'regional-analytics/subscriptions', 'agreements'],
+      ['billing', 'billing/automatic-checks', 'billing/revenue', 'plans', 'regional-analytics/subscriptions', 'agreements'],
     ],
     ['jobs', ['cron-jobs', 'cron-jobs/logs', 'cron-jobs/setup', 'cron-jobs/settings', 'search-rebuild', 'seo/prerender']],
     ['connections', ['connections', 'integrations/webhooks', 'platform/translation', 'translations']],

@@ -17,6 +17,7 @@
   "nav": {
     "brand": "Equipe da plataforma",
     "back_to_admin": "Voltar para o painel de administração",
+    "automatic_checks": "Verificações automáticas",
     "regional_analytics_subscriptions": "Clientes de análise regional",
     "tests": "Testes"
   },

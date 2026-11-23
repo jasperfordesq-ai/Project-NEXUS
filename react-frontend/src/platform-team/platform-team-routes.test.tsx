@@ -121,6 +121,7 @@ vi.mock('@/admin/modules/super/SuperPartnerships', () => ({ default: () => <div>
 vi.mock('@/admin/modules/super/FederationAuditLog', () => ({ default: () => <div>page:FederationAuditLog</div> }));
 vi.mock('@/admin/modules/billing/BillingControl', () => ({ default: () => <div>page:BillingControl</div> }));
 vi.mock('@/admin/modules/billing/RevenueDashboard', () => ({ default: () => <div>page:RevenueDashboard</div> }));
+vi.mock('@/admin/modules/billing/BillingAutomationPage', () => ({ default: () => <div>page:BillingAutomationPage</div> }));
 vi.mock('@/admin/modules/super/PilotInquiryAdminPage', () => ({ default: () => <div>page:PilotInquiryAdminPage</div> }));
 vi.mock('@/admin/modules/super/PlatformTranslationKeyPage', () => ({ default: () => <div>page:PlatformTranslationKeyPage</div> }));
 vi.mock('@/admin/modules/provisioning/ProvisioningRequestsPage', () => ({ default: () => <div>page:ProvisioningRequestsPage</div> }));
@@ -254,6 +255,11 @@ describe('the Platform team panel mounts every moved page', () => {
   it('opens Failed background jobs, a page of the panel\'s own', async () => {
     renderAt('/test/platform-team/failed-jobs');
     expect(await screen.findByText('page:FailedJobsPage')).toBeInTheDocument();
+  });
+
+  it('opens Automatic checks, a page of the panel\'s own, beside Billing control', async () => {
+    renderAt('/test/platform-team/billing/automatic-checks');
+    expect(await screen.findByText('page:BillingAutomationPage')).toBeInTheDocument();
   });
 
   it('opens Deployments, a page of the panel\'s own', async () => {

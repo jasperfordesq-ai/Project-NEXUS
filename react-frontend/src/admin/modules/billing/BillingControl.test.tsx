@@ -297,7 +297,9 @@ const serveGets = (rows: unknown[]) => {
         },
       });
     }
-    if (url === '/v2/admin/super/billing/standing/preview') return Promise.resolve({ success: true, data: [] });
+    if (url === '/v2/admin/super/billing/standing/last-run') {
+      return Promise.resolve({ success: true, data: { at: null, result: null, actions: 0 } });
+    }
     if (url.startsWith('/v2/admin/super/billing/standing/payments')) return Promise.resolve({ success: true, data: [] });
     return Promise.resolve({ success: true, data: rows });
   });
@@ -561,7 +563,7 @@ describe('BillingControl', () => {
 
     await waitFor(() => expect(mockApi.post).toHaveBeenCalled());
     // It used to be replaced by a spinner on every action, which threw away
-    // unsaved edits on the Automatic checks card above the table.
+    // whatever was being typed on the page.
     expect(inList().getByText('Cork Timebank')).toBeInTheDocument();
   });
 
@@ -1168,11 +1170,24 @@ describe('BillingControl', () => {
     expect(more('Change how it pays')).toBeDefined();
   });
 
-  it('shows the automatic checks card above the table', async () => {
+  it('keeps one line about the automatic checks, and a link to their own page', async () => {
     await renderWith([makeSnapshot()]);
 
-    await waitFor(() => expect(screen.getByText('Automatic checks')).toBeInTheDocument());
-    expect(mockApi.get).toHaveBeenCalledWith('/v2/admin/super/billing/standing/preview');
+    const line = within(screen.getByTestId('automation-summary'));
+    expect(await line.findByText('Automatic checks are off. Nothing is sent and no community is paused.')).toBeInTheDocument();
+    expect(await line.findByText('The morning check has not run yet.')).toBeInTheDocument();
+    // Where it goes is pinned in BillingAutomationSummary.test.tsx, which
+    // draws the real button; the stand-in here does not make a link of it.
+    expect(line.getByText('Open automatic checks')).toBeInTheDocument();
+  });
+
+  it('no longer carries the settings or the list of what would happen today', async () => {
+    await renderWith([makeSnapshot()]);
+    await screen.findByText('The morning check has not run yet.');
+
+    expect(screen.queryByLabelText('Run the automatic checks every morning')).not.toBeInTheDocument();
+    expect(screen.queryByText('What would happen today')).not.toBeInTheDocument();
+    expect(mockApi.get).not.toHaveBeenCalledWith('/v2/admin/super/billing/standing/preview');
   });
 
   it('offers only active plans to assign', async () => {

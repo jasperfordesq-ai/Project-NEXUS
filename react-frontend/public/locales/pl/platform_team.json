@@ -17,6 +17,7 @@
   "nav": {
     "brand": "Zespół platformy",
     "back_to_admin": "Wróć do panelu administracyjnego",
+    "automatic_checks": "Automatyczne kontrole",
     "regional_analytics_subscriptions": "Klienci analiz regionalnych",
     "tests": "Testy"
   },

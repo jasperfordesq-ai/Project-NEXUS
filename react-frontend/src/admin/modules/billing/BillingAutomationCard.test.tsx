@@ -19,9 +19,10 @@ vi.mock('@/components/ui', async () => {
   const RadioContext = createContext<{ value: string; onValueChange: (v: string) => void }>({ value: '', onValueChange: () => {} });
 
   const overrides: Record<string, unknown> = {
-    RadioGroup: ({ value, onValueChange, children, label }: { value: string; onValueChange: (v: string) => void; children?: React.ReactNode; label?: React.ReactNode }) => (
+    RadioGroup: ({ value, onValueChange, children, label, description }: { value: string; onValueChange: (v: string) => void; children?: React.ReactNode; label?: React.ReactNode; description?: React.ReactNode }) => (
       <fieldset>
         {label ? <legend>{label}</legend> : null}
+        {description ? <p>{description}</p> : null}
         <RadioContext.Provider value={{ value, onValueChange }}>{children}</RadioContext.Provider>
       </fieldset>
     ),
@@ -362,6 +363,42 @@ describe('BillingAutomationCard', () => {
     await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('One of the settings is not valid, so nothing was saved.'));
     expect(mockToast.success).not.toHaveBeenCalled();
     expect((screen.getByLabelText('Pause: days late') as HTMLInputElement).value).toBe('2');
+  });
+
+  // ── A sentence under every setting (23 Nov 2026) ─────────────────────────
+
+  it('says under each setting what it does', async () => {
+    serve(makeSettings({ over_limit_action: 'pause' }), []);
+    await renderCard();
+
+    for (const sentence of [
+      'The last warning is emailed this many days after the paid-until date.',
+      'The community is paused this many days after the paid-until date. Its members see a paused page. Nothing is deleted.',
+      "A percentage. The community's admins are warned when its active members reach this share of the plan's member limit.",
+      'How many days in a row a community may be over its member limit before the rule above acts.',
+    ]) {
+      expect(screen.getByText(sentence)).toBeInTheDocument();
+    }
+  });
+
+  it('says once that the over-limit rule is the default, which a parent community or a community can override', async () => {
+    await renderCard();
+
+    expect(screen.getAllByText(
+      'This is the rule for every community, unless its parent community or the community itself has a rule of its own.',
+    )).toHaveLength(1);
+  });
+
+  it('carries its own title, except on the page that already has it as its heading', async () => {
+    const { BillingAutomationCard } = await import('./BillingAutomationCard');
+    const { unmount } = render(<BillingAutomationCard />);
+    await waitFor(() => expect(screen.getByLabelText('Run the automatic checks every morning')).toBeInTheDocument());
+    expect(screen.getByText('Automatic checks')).toBeInTheDocument();
+    unmount();
+
+    render(<BillingAutomationCard showTitle={false} />);
+    await waitFor(() => expect(screen.getByLabelText('Run the automatic checks every morning')).toBeInTheDocument());
+    expect(screen.queryByText('Automatic checks')).not.toBeInTheDocument();
   });
 
   it('says the morning check has not run yet', async () => {

@@ -14,7 +14,7 @@ import { useAuth, useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { formatCurrency, formatDate, formatNumber, getFormattingLocale } from '@/lib/helpers';
 import { PageHeader } from '../../components/PageHeader';
-import { BillingAutomationCard } from './BillingAutomationCard';
+import { BillingAutomationSummary } from './BillingAutomationSummary';
 import { assignablePlans } from './assignablePlans';
 import { planFactLines } from './planFactLines';
 import { RecordPaymentDialog, type PaymentMethod } from './RecordPaymentDialog';
@@ -681,7 +681,9 @@ export function BillingControl() {
         />
       ) : null}
 
-      <BillingAutomationCard onWarningPercent={setWarningPercent} />
+      {/* The settings have their own page in the Money menu. What stays here
+          is whether the checks are on and when they last ran. */}
+      <BillingAutomationSummary onWarningPercent={setWarningPercent} />
 
       <Card>
         <CardBody className="p-0">

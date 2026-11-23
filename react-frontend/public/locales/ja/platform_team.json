@@ -17,6 +17,7 @@
   "nav": {
     "brand": "プラットフォームチーム",
     "back_to_admin": "管理パネルに戻る",
+    "automatic_checks": "自動チェック",
     "regional_analytics_subscriptions": "地域分析の顧客",
     "tests": "テスト"
   },

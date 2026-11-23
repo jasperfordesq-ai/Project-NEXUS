@@ -17,6 +17,7 @@
   "nav": {
     "brand": "Plattform-Team",
     "back_to_admin": "Zurück zum Verwaltungsbereich",
+    "automatic_checks": "Automatische Prüfungen",
     "regional_analytics_subscriptions": "Kunden der Regionalanalyse",
     "tests": "Tests"
   },
