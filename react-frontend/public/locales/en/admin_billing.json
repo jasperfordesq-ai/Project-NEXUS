@@ -74,8 +74,6 @@
   },
   "billing": {
     "actions": "Actions",
-    "development_notice_title": "Billing tools are under development",
-    "development_notice_description": "This React replacement is still being validated. Some controls, totals, and Stripe-connected workflows may be incomplete or unreliable. Verify changes independently and do not use these figures as financial records.",
     "billing_interval": "Billing Interval",
     "interval_monthly": "Monthly",
     "interval_yearly": "Yearly",

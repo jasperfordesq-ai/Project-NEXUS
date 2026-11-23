@@ -1167,7 +1167,7 @@
     "plan_updated": "Plan actualizado",
     "plan_synced_to_stripe": "{{name}}sincronizado con Stripe",
     "plans_admin_desc": "Cree y administre planes de suscripción para su plataforma",
-    "plans_admin_title": "Planes",
+    "plans_admin_title": "Planes y precios",
     "preview": "Vista previa",
     "preview_draft": "Vista previa",
     "open_live_page": "Abrir la página publicada",

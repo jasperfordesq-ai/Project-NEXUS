@@ -74,8 +74,6 @@
   },
   "billing": {
     "actions": "Ações",
-    "development_notice_title": "As ferramentas de faturação estão em desenvolvimento",
-    "development_notice_description": "Esta substituição em React ainda está a ser validada. Alguns controlos, totais e fluxos ligados ao Stripe podem estar incompletos ou não ser fiáveis. Verifique as alterações de forma independente e não utilize estes valores como registros financeiros.",
     "billing_interval": "Intervalo de cobrança",
     "cancels_at_period_end": "Cancela no final do período",
     "change_plan": "Plano de mudança",

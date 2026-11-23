@@ -74,8 +74,6 @@
   },
   "billing": {
     "actions": "Gníomhartha",
-    "development_notice_title": "Tá na huirlisí billeála á bhforbairt",
-    "development_notice_description": "Tá an leagan React seo fós á bhailíochtú. D'fhéadfadh roinnt rialuithe, iomlán agus sreafaí atá ceangailte le Stripe a bheith neamhiomlán nó neamhiontaofa. Fíoraigh athruithe go neamhspleách agus ná húsáid na figiúirí seo mar thaifid airgeadais.",
     "billing_interval": "Eatramh Billeála",
     "cancels_at_period_end": "Cealaítear ag deireadh na tréimhse",
     "change_plan": "Plean Athraithe",

@@ -1168,7 +1168,7 @@
     "plan_updated": "Plan mis à jour",
     "plan_synced_to_stripe": "{{name}}synchronisé avec Stripe",
     "plans_admin_desc": "Créez et gérez des plans d'abonnement pour votre plateforme",
-    "plans_admin_title": "Forfaits",
+    "plans_admin_title": "Forfaits et tarifs",
     "preview": "Aperçu",
     "preview_draft": "Aperçu",
     "open_live_page": "Ouvrir la page en ligne",

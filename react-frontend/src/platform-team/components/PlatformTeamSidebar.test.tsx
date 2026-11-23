@@ -40,7 +40,7 @@ import { PlatformTeamSidebar } from './PlatformTeamSidebar';
 // inside a zone is free; these two lists must not trade entries.
 const PLATFORM_ZONE = [
   'enterprise/monitoring', 'cron-jobs', 'cron-jobs/logs', 'cron-jobs/setup', 'cron-jobs/settings',
-  'seo/prerender', 'failed-jobs', '404-errors', 'tests', 'plans', 'plans/subscriptions', 'integrations/webhooks',
+  'seo/prerender', 'failed-jobs', '404-errors', 'tests', 'plans', 'integrations/webhooks',
   'security', 'senior-accounts', 'accounts', 'access-review', 'enterprise', 'enterprise/permissions',
   // Moved in from the super admin panel's platform-wide half (phase 2).
   'billing', 'billing/revenue',
@@ -146,7 +146,7 @@ describe('PlatformTeamSidebar', () => {
     ['data', ['data-requests', 'legal-documents', 'clean-up-jobs', 'assurance']],
     [
       'money',
-      ['billing', 'billing/revenue', 'plans', 'plans/subscriptions', 'regional-analytics/subscriptions', 'agreements'],
+      ['billing', 'billing/revenue', 'plans', 'regional-analytics/subscriptions', 'agreements'],
     ],
     ['jobs', ['cron-jobs', 'cron-jobs/logs', 'cron-jobs/setup', 'cron-jobs/settings', 'search-rebuild', 'seo/prerender']],
     ['connections', ['connections', 'integrations/webhooks', 'platform/translation', 'translations']],

@@ -74,8 +74,6 @@
   },
   "billing": {
     "actions": "Azioni",
-    "development_notice_title": "Gli strumenti di fatturazione sono in fase di sviluppo",
-    "development_notice_description": "Questa sostituzione in React è ancora in fase di convalida. Alcuni controlli, totali e flussi collegati a Stripe potrebbero essere incompleti o inaffidabili. Verifica le modifiche in modo indipendente e non utilizzare queste cifre come registri finanziari.",
     "billing_interval": "Intervallo di fatturazione",
     "cancels_at_period_end": "Annulla a fine periodo",
     "change_plan": "Cambia piano",

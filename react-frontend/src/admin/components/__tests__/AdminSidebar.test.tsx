@@ -313,7 +313,7 @@ describe('AdminSidebar', () => {
   it('hides god-only Plans & Billing but shows Donations & Support to non-god super admins', () => {
     // Donations & Support (member_premium) is a tenant-level feature — its route
     // is only feature-gated, so a non-god super admin who has the feature must
-    // also see the sidebar links. Plans & Pricing / Billing stay god-only.
+    // also see the sidebar links. Plans and prices / Billing stay god-only.
     // Regression guard: an isGod gate on this block once hid the link entirely.
     mockHasFeature.mockImplementation((feature: string) =>
       feature === 'caring_community' || feature === 'member_premium',
@@ -325,13 +325,13 @@ describe('AdminSidebar', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Financial' }));
 
-    expect(screen.queryByRole('link', { name: 'Plans & Pricing' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Plans and prices' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Billing' })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Donations & Support' })).toHaveAttribute('href', '/test/admin/member-premium');
     expect(screen.getByRole('link', { name: 'Recurring Supporters' })).toHaveAttribute('href', '/test/admin/member-premium/subscribers');
   });
 
-  it('keeps Billing for god users; Plans & Pricing has moved to the Platform team panel', () => {
+  it('keeps Billing for god users; Plans and prices has moved to the Platform team panel', () => {
     Object.assign(mockUser, {
       role: 'admin',
       is_super_admin: false,
@@ -348,7 +348,7 @@ describe('AdminSidebar', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Financial' }));
 
-    expect(screen.queryByRole('link', { name: 'Plans & Pricing' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Plans and prices' })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Billing' })).toHaveAttribute('href', '/test/admin/billing');
     expect(screen.getByRole('link', { name: 'Donations & Support' })).toHaveAttribute('href', '/test/admin/member-premium');
     expect(screen.getByRole('link', { name: 'Recurring Supporters' })).toHaveAttribute('href', '/test/admin/member-premium/subscribers');

@@ -74,8 +74,6 @@
   },
   "billing": {
     "actions": "الإجراءات",
-    "development_notice_title": "أدوات الفوترة قيد التطوير",
-    "development_notice_description": "لا يزال بديل React هذا قيد التحقق. قد تكون بعض عناصر التحكم والإجماليات ومسارات العمل المتصلة بـ Stripe غير مكتملة أو غير موثوقة. تحقق من التغييرات بشكل مستقل ولا تستخدم هذه الأرقام كسجلات مالية.",
     "billing_interval": "الفاصل الزمني للفواتير",
     "cancels_at_period_end": "يلغي في نهاية الفترة",
     "change_plan": "تغيير الخطة",
@@ -182,7 +180,7 @@
     "recent_changes": "التغييرات الأخيرة",
     "request_upgrade": "مراسلة فريق المنصة",
     "resume_billing": "استئناف الفواتير",
-    "revenue_title": "ربح",
+    "revenue_title": "الإيرادات",
     "select_plan": "حدد الخطة",
     "send_request": "إرسال الرسالة",
     "set_grace_period": "تعيين فترة السماح",

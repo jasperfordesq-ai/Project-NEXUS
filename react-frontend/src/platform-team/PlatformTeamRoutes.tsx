@@ -75,7 +75,6 @@ const Error404Tracking = lazy(() => import('@/admin/modules/advanced/Error404Tra
 const SearchAnalytics = lazy(() => import('@/admin/modules/analytics/SearchAnalytics'));
 const PlansAdmin = lazy(() => import('@/admin/modules/content/PlansAdmin'));
 const PlanForm = lazy(() => import('@/admin/modules/content/PlanForm'));
-const SubscriptionsAdmin = lazy(() => import('@/admin/modules/content/Subscriptions'));
 const RegistrationPolicySettings = lazy(() => import('@/admin/modules/system/RegistrationPolicySettings'));
 const CronJobs = lazy(() => import('@/admin/modules/system/CronJobs'));
 const CronJobLogs = lazy(() => import('@/admin/modules/system/CronJobLogs'));
@@ -163,7 +162,10 @@ export function PlatformTeamRoutes() {
       <Route path="plans" element={<Lazy><PlansAdmin /></Lazy>} />
       <Route path="plans/create" element={<Lazy><PlanForm /></Lazy>} />
       <Route path="plans/edit/:id" element={<Lazy><PlanForm /></Lazy>} />
-      <Route path="plans/subscriptions" element={<Lazy><SubscriptionsAdmin /></Lazy>} />
+      {/* "Subscriptions" was a read-only copy of Billing control under another
+          name (it called the review date "Expires" and communities "members").
+          Retired 23 Nov 2026; the old address opens Billing control. */}
+      <Route path="plans/subscriptions" element={<Navigate to="../billing" replace />} />
       <Route path="settings/registration-policy" element={<Lazy><RegistrationPolicySettings /></Lazy>} />
       <Route path="cron-jobs" element={<Lazy><CronJobs /></Lazy>} />
       <Route path="cron-jobs/logs" element={<Lazy><CronJobLogs /></Lazy>} />

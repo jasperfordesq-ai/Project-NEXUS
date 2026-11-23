@@ -74,8 +74,6 @@
   },
   "billing": {
     "actions": "Acties",
-    "development_notice_title": "De factureringstools zijn in ontwikkeling",
-    "development_notice_description": "Deze React-vervanging wordt nog gevalideerd. Sommige bedieningselementen, totalen en aan Stripe gekoppelde processen kunnen onvolledig of onbetrouwbaar zijn. Controleer wijzigingen onafhankelijk en gebruik deze cijfers niet als financiële administratie.",
     "billing_interval": "Factureringsinterval",
     "cancels_at_period_end": "Annuleert aan het einde van de periode",
     "change_plan": "Plan wijzigen",

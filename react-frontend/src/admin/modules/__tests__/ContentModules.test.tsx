@@ -6,7 +6,7 @@
 /**
  * Batch render tests for Content admin modules:
  * - AttributesAdmin, MenuBuilder, MenusAdmin, PageBuilder,
- *   PagesAdmin, PlanForm, PlansAdmin, Subscriptions
+ *   PagesAdmin, PlanForm, PlansAdmin
  *
  * Smoke tests only — verify each component renders without crashing.
  */
@@ -221,13 +221,4 @@ describe('PlansAdmin', () => {
   });
 });
 
-// ─── Subscriptions ──────────────────────────────────────────────────────────
 
-import { Subscriptions } from '../content/Subscriptions';
-
-describe('Subscriptions', () => {
-  it('renders without crashing', () => {
-    const { container } = render(<W><Subscriptions /></W>);
-    expect(container.querySelector('div')).toBeTruthy();
-  });
-});

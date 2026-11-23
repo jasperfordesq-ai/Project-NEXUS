@@ -13,7 +13,6 @@ import { useAuth, useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { formatCurrency, formatDate, formatNumber, getFormattingLocale } from '@/lib/helpers';
 import { PageHeader } from '../../components/PageHeader';
-import { BillingDevelopmentNotice } from './BillingDevelopmentNotice';
 import { BillingAutomationCard } from './BillingAutomationCard';
 import { assignablePlans } from './assignablePlans';
 import { planFactLines } from './planFactLines';
@@ -561,7 +560,6 @@ export function BillingControl() {
           title={t('billing.control_title')}
           description={t('billing.control_desc')}
         />
-        <BillingDevelopmentNotice />
         <div role="status" aria-busy="true" aria-label={t('common.loading')} className="flex justify-center py-12">
           <Spinner size="lg" />
         </div>
@@ -612,8 +610,6 @@ export function BillingControl() {
           </Button>
         }
       />
-
-      <BillingDevelopmentNotice />
 
       <BillingAutomationCard onWarningPercent={setWarningPercent} />
 

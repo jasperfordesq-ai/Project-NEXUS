@@ -74,8 +74,6 @@
   },
   "billing": {
     "actions": "Aktionen",
-    "development_notice_title": "Die Abrechnungswerkzeuge befinden sich in Entwicklung",
-    "development_notice_description": "Dieser React-Ersatz wird noch validiert. Einige Steuerelemente, Summen und mit Stripe verbundene Abläufe können unvollständig oder unzuverlässig sein. Prüfen Sie Änderungen unabhängig und verwenden Sie diese Zahlen nicht als Finanzunterlagen.",
     "billing_interval": "Abrechnungsintervall",
     "cancels_at_period_end": "Storniert am Ende der Periode",
     "change_plan": "Plan ändern",

@@ -77,8 +77,8 @@ describe('SuperAdminSidebar', () => {
       // 🔴 The billing endpoints take the community they act on from the request
       // with no branch check, which is why a tenant super admin must never reach them.
       expect(screen.queryByText('Commercial')).toBeNull();
-      expect(screen.queryByRole('link', { name: 'Billing Control' })).toBeNull();
-      expect(screen.queryByRole('link', { name: 'Revenue Dashboard' })).toBeNull();
+      expect(screen.queryByRole('link', { name: 'Billing control' })).toBeNull();
+      expect(screen.queryByRole('link', { name: 'Revenue' })).toBeNull();
     });
 
     it('is not shown the cross-installation federation controls', () => {
@@ -169,8 +169,8 @@ describe('SuperAdminSidebar', () => {
     // literally "Dashboard"), so it would pass whatever the component did.
     expect(screen.queryByText('Federation')).toBeNull();
     expect(screen.queryByText('Commercial')).toBeNull();
-    expect(screen.queryByRole('link', { name: 'Billing Control' })).toBeNull();
-    expect(screen.queryByRole('link', { name: 'Revenue Dashboard' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Billing control' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Revenue' })).toBeNull();
     expect(screen.queryByRole('link', { name: 'Whitelist' })).toBeNull();
     expect(screen.queryByRole('link', { name: 'Partnerships' })).toBeNull();
     expect(screen.queryByRole('link', { name: 'Provisioning Queue' })).toBeNull();
@@ -195,7 +195,7 @@ describe('SuperAdminSidebar', () => {
 
     // An ordinary admin should never reach this component — the entry link is
     // hidden and the API refuses — but if they do, no platform controls appear.
-    expect(screen.queryByRole('link', { name: 'Billing Control' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Billing control' })).toBeNull();
     expect(screen.queryByText('Federation')).toBeNull();
     expect(screen.queryByText('Commercial')).toBeNull();
   });

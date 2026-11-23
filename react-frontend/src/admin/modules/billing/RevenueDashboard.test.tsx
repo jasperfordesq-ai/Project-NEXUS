@@ -84,11 +84,11 @@ describe('RevenueDashboard — platform team', () => {
     expect(document.querySelector('[role="status"][aria-busy="true"]')).toBeTruthy();
   });
 
-  it('shows the development notice on the revenue page', () => {
-    mockApi.get.mockReturnValue(new Promise(() => {}));
+  it('carries no "under development" warning: the owner had it removed on 23 Nov 2026', async () => {
     render(<RevenueDashboard />);
 
-    expect(screen.getByText('Billing tools are under development')).toBeInTheDocument();
+    await screen.findByRole('heading', { name: 'Expected income' });
+    expect(screen.queryByText((text) => text.toLowerCase().includes('under development'))).not.toBeInTheDocument();
   });
 
   it('shows error card when API returns failure', async () => {

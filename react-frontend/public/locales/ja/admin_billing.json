@@ -74,8 +74,6 @@
   },
   "billing": {
     "actions": "アクション",
-    "development_notice_title": "請求ツールは開発中です",
-    "development_notice_description": "このReact版は現在も検証中です。一部の操作、集計値、Stripe連携の処理は不完全または信頼できない可能性があります。変更内容は個別に確認し、これらの数値を財務記録として使用しないでください。",
     "billing_interval": "請求間隔",
     "cancels_at_period_end": "期間終了時のキャンセル",
     "change_plan": "計画の変更",

@@ -1168,7 +1168,7 @@
     "plan_updated": "تم تحديث الخطة",
     "plan_synced_to_stripe": "تمت مزامنة{{name}}مع Stripe",
     "plans_admin_desc": "إنشاء وإدارة خطط الاشتراك لمنصتك",
-    "plans_admin_title": "الخطط",
+    "plans_admin_title": "الخطط والتسعير",
     "preview": "معاينة",
     "preview_draft": "معاينة",
     "open_live_page": "فتح الصفحة المنشورة",

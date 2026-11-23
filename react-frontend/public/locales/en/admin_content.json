@@ -1169,7 +1169,7 @@
     "plan_updated": "Plan Updated",
     "plan_synced_to_stripe": "{{name}} synced to Stripe",
     "plans_admin_desc": "Create and manage subscription plans for your platform",
-    "plans_admin_title": "Plans",
+    "plans_admin_title": "Plans and prices",
     "preview": "Preview",
     "preview_draft": "Preview",
     "open_live_page": "Open live page",

@@ -74,8 +74,6 @@
   },
   "billing": {
     "actions": "Działania",
-    "development_notice_title": "Narzędzia rozliczeniowe są w trakcie tworzenia",
-    "development_notice_description": "Ten zamiennik oparty na React jest nadal sprawdzany. Niektóre elementy sterujące, sumy i procesy połączone ze Stripe mogą być niekompletne lub niewiarygodne. Niezależnie weryfikuj zmiany i nie używaj tych danych jako dokumentacji finansowej.",
     "billing_interval": "Interwał rozliczeniowy",
     "cancels_at_period_end": "Anuluje na koniec okresu",
     "change_plan": "Zmień plan",

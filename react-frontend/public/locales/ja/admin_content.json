@@ -1168,7 +1168,7 @@
     "plan_updated": "計画が更新されました",
     "plan_synced_to_stripe": "{{name}}が Stripe に同期されました",
     "plans_admin_desc": "プラットフォームのサブスクリプション プランを作成および管理する",
-    "plans_admin_title": "プラン",
+    "plans_admin_title": "プランと料金",
     "preview": "プレビュー",
     "preview_draft": "プレビュー",
     "open_live_page": "公開ページを開く",

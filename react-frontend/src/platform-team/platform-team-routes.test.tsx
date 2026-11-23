@@ -91,7 +91,6 @@ vi.mock('@/admin/modules/advanced/Error404Tracking', () => ({ default: () => <di
 vi.mock('@/admin/modules/analytics/SearchAnalytics', () => ({ default: () => <div>page:SearchAnalytics</div> }));
 vi.mock('@/admin/modules/content/PlansAdmin', () => ({ default: () => <div>page:PlansAdmin</div> }));
 vi.mock('@/admin/modules/content/PlanForm', () => ({ default: () => <div>page:PlanForm</div> }));
-vi.mock('@/admin/modules/content/Subscriptions', () => ({ default: () => <div>page:SubscriptionsAdmin</div> }));
 vi.mock('@/admin/modules/system/RegistrationPolicySettings', () => ({ default: () => <div>page:RegistrationPolicySettings</div> }));
 vi.mock('@/admin/modules/system/CronJobs', () => ({ default: () => <div>page:CronJobs</div> }));
 vi.mock('@/admin/modules/system/CronJobLogs', () => ({ default: () => <div>page:CronJobLogs</div> }));
@@ -187,7 +186,6 @@ const PAGES: Array<[string, string]> = [
   ['plans', 'page:PlansAdmin'],
   ['plans/create', 'page:PlanForm'],
   ['plans/edit/3', 'page:PlanForm'],
-  ['plans/subscriptions', 'page:SubscriptionsAdmin'],
   ['settings/registration-policy', 'page:RegistrationPolicySettings'],
   ['cron-jobs', 'page:CronJobs'],
   ['cron-jobs/logs', 'page:CronJobLogs'],
@@ -239,6 +237,12 @@ describe('the Platform team panel mounts every moved page', () => {
     renderAt(`/test/platform-team/${tail}`);
     expect(await screen.findByText(page)).toBeInTheDocument();
     expect(await address()).toBe(`/test/platform-team/${tail}`);
+  });
+
+  it('sends the retired Subscriptions address to Billing control', async () => {
+    renderAt('/test/platform-team/plans/subscriptions');
+    expect(await screen.findByText('page:BillingControl')).toBeInTheDocument();
+    expect(await address()).toBe('/test/platform-team/billing');
   });
 
   it('opens on the health page', async () => {

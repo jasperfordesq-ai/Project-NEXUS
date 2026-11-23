@@ -2504,7 +2504,7 @@ export const adminPlans = {
   delete: (id: number) => api.delete<{ success: boolean }>(`/v2/admin/plans/${id}`),
   syncStripe: (id: number) =>
     api.post<{ synced: boolean; stripe_product_id: string | null; stripe_price_id_monthly: string | null; stripe_price_id_yearly: string | null; stripe_price_id_monthly_gbp?: string | null; stripe_price_id_yearly_gbp?: string | null; price_changes?: PlanStripePriceChange[] }>(`/v2/admin/plans/${id}/sync-stripe`, {}),
-  getSubscriptions: () => api.get<Array<{ id: number; tenant_id: number; tenant_name: string; plan_id: number; plan_name: string; status: string; created_at: string }>>('/v2/admin/subscriptions'),
+
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

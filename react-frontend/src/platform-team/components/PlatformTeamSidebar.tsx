@@ -95,7 +95,6 @@ import Menu from 'lucide-react/icons/menu';
 import PanelLeft from 'lucide-react/icons/panel-left';
 import PanelLeftClose from 'lucide-react/icons/panel-left-close';
 import Plug from 'lucide-react/icons/plug';
-import Receipt from 'lucide-react/icons/receipt';
 import Rocket from 'lucide-react/icons/rocket';
 import RotateCcw from 'lucide-react/icons/rotate-ccw';
 import Scale from 'lucide-react/icons/scale';
@@ -259,7 +258,6 @@ export function PlatformTeamSidebar({ collapsed, onToggle }: PlatformTeamSidebar
             { label: tSuper('nav.billing_control'), icon: Wallet, path: `${P}/billing` },
             { label: tSuper('nav.revenue_dashboard'), icon: BarChart3, path: `${P}/billing/revenue` },
             { label: tNav('plans_pricing'), icon: CreditCard, path: `${P}/plans` },
-            { label: tNav('subscriptions'), icon: Receipt, path: `${P}/plans/subscriptions` },
             { label: t('nav.regional_analytics_subscriptions'), icon: BarChart3, path: `${P}/regional-analytics/subscriptions` },
             { label: t('agreements.title'), icon: FileSignature, path: `${P}/agreements` },
           ],

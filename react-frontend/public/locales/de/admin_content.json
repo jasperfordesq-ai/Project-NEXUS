@@ -1166,7 +1166,7 @@
     "plan_updated": "Plan aktualisiert",
     "plan_synced_to_stripe": "{{name}}mit Stripe synchronisiert",
     "plans_admin_desc": "Erstellen und verwalten Sie Abonnementpläne für Ihre Plattform",
-    "plans_admin_title": "Pläne",
+    "plans_admin_title": "Pläne und Preise",
     "preview": "Vorschau",
     "preview_draft": "Vorschau",
     "open_live_page": "Live-Seite öffnen",

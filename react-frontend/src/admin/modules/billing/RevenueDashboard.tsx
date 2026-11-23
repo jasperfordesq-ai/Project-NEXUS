@@ -38,7 +38,6 @@ import { useAuth, useTenant } from '@/contexts';
 import { api } from '@/lib/api';
 import { formatCurrency, formatDate, getFormattingLocale } from '@/lib/helpers';
 import { PageHeader } from '../../components/PageHeader';
-import { BillingDevelopmentNotice } from './BillingDevelopmentNotice';
 import { Glance } from './Glance';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -190,8 +189,6 @@ export function RevenueDashboard() {
           </Button>
         }
       />
-
-      <BillingDevelopmentNotice />
 
       {loading ? (
         <div role="status" aria-busy="true" aria-label={t('common.loading')} className="flex justify-center py-20">

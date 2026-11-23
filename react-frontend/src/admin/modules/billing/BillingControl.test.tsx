@@ -320,12 +320,11 @@ describe('BillingControl', () => {
     expect(busy).toBeDefined();
   });
 
-  it('shows the development notice while loading', async () => {
-    mockApi.get.mockImplementationOnce(() => new Promise(() => {}));
-    const { BillingControl } = await import('./BillingControl');
-    render(<BillingControl />);
+  it('carries no "under development" warning: the owner had it removed on 23 Nov 2026', async () => {
+    await renderWith([makeSnapshot()]);
 
-    expect(screen.getByTitle('Billing tools are under development')).toBeInTheDocument();
+    expect(screen.queryByText((text) => text.toLowerCase().includes('under development'))).not.toBeInTheDocument();
+    expect(screen.queryByTitle((title) => title.toLowerCase().includes('under development'))).not.toBeInTheDocument();
   });
 
   it('shows error toast when snapshot load fails', async () => {

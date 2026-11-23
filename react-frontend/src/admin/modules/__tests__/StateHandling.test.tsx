@@ -61,7 +61,6 @@ vi.mock('../../components/DataTable', () => ({
 }));
 
 import { PermissionBrowser } from '../enterprise/PermissionBrowser';
-import { Subscriptions } from '../content/Subscriptions';
 
 const backendDetail = 'SQLSTATE secret backend detail';
 
@@ -109,37 +108,6 @@ describe('PermissionBrowser load states', () => {
 
   it('renders a genuine success-empty permission map as empty', async () => {
     render(<PermissionBrowser />);
-    expect(await screen.findByText('No data available')).toBeInTheDocument();
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-  });
-});
-
-describe('Subscriptions load states', () => {
-  it('treats success:false as an error instead of no subscriptions', async () => {
-    apiMocks.getSubscriptions.mockResolvedValueOnce({ success: false, error: backendDetail });
-    render(<Subscriptions />);
-
-    expect(await screen.findByRole('alert')).toHaveTextContent('Failed to load subscriptions');
-    expect(screen.queryByText('No data available')).not.toBeInTheDocument();
-    expect(screen.queryByText(backendDetail)).not.toBeInTheDocument();
-  });
-
-  it('retries a rejection and keeps confirmed subscription data across a later failed refresh', async () => {
-    apiMocks.getSubscriptions
-      .mockRejectedValueOnce(new Error(backendDetail))
-      .mockResolvedValueOnce({ success: true, data: [{ id: 4, tenant_name: 'Hour Timebank', plan_name: 'Community' }] })
-      .mockResolvedValueOnce({ success: false, error: backendDetail });
-    render(<Subscriptions />);
-
-    fireEvent.click(await screen.findByRole('button', { name: 'Retry' }));
-    expect(await screen.findByText(/Hour Timebank/)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('Failed to load subscriptions');
-    expect(screen.getByText(/Hour Timebank/)).toBeInTheDocument();
-  });
-
-  it('renders a genuine success-empty subscription list as empty', async () => {
-    render(<Subscriptions />);
     expect(await screen.findByText('No data available')).toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });

@@ -112,9 +112,9 @@ describe('SuperAdminSidebar — expanded', () => {
     expect(links.map((l) => l.getAttribute('href'))).toEqual(['/test/super-admin']);
   });
 
-  it('no longer renders a Billing Control link', () => {
+  it('no longer renders a Billing control link', () => {
     render(<SuperAdminSidebar {...defaultProps} />);
-    expect(screen.queryByRole('link', { name: 'Billing Control' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Billing control' })).not.toBeInTheDocument();
   });
 
   it('no longer renders a Provisioning Queue link', () => {

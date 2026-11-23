@@ -4484,8 +4484,6 @@ export default interface Resources {
       "custom_price_monthly": "Custom Price Monthly",
       "custom_price_yearly": "Custom Price Yearly",
       "description": "Your community's plan, members and payments.",
-      "development_notice_description": "This React replacement is still being validated. Some controls, totals, and Stripe-connected workflows may be incomplete or unreliable. Verify changes independently and do not use these figures as financial records.",
-      "development_notice_title": "Billing tools are under development",
       "discount_pct": "Discount Pct",
       "discount_reason": "Discount Reason",
       "discount_reason_placeholder": "e.g. charity verified, early adopter",
@@ -11525,7 +11523,7 @@ export default interface Resources {
       "plan_updated": "Plan Updated",
       "plan_whole_number_min": "{{field}} must be a whole number of {{min}} or more",
       "plans_admin_desc": "Create and manage subscription plans for your platform",
-      "plans_admin_title": "Plans",
+      "plans_admin_title": "Plans and prices",
       "preview": "Preview",
       "preview_desktop": "Desktop",
       "preview_device_label": "Preview size",
@@ -23323,7 +23321,7 @@ export default interface Resources {
     "pending_approvals": "Pending Approvals",
     "performance": "Performance",
     "permissions_list": "Permissions list",
-    "plans_pricing": "Plans & Pricing",
+    "plans_pricing": "Plans and prices",
     "platform_capabilities": "Platform switches",
     "platform_notice": {
       "close": "Close this notice",
@@ -58488,7 +58486,7 @@ export default interface Resources {
     "nav": {
       "back_to_admin": "Back to the admin panel",
       "brand": "Platform team",
-      "regional_analytics_subscriptions": "Analytics subscriptions",
+      "regional_analytics_subscriptions": "Regional analytics customers",
       "tests": "Tests"
     },
     "notices": {
@@ -62949,7 +62947,7 @@ export default interface Resources {
     "nav": {
       "audit_log": "Audit Log",
       "back_to_platform_admin": "Back to Platform Admin",
-      "billing_control": "Billing Control",
+      "billing_control": "Billing control",
       "branch_payments": "Branch payments",
       "branch_plans": "Branch plans",
       "brand": "Super Admin",
@@ -62967,7 +62965,7 @@ export default interface Resources {
       "platform_translation": "Translation key",
       "provisioning_queue": "Provisioning Queue",
       "regional_analytics": "Regional Analytics",
-      "revenue_dashboard": "Revenue Dashboard",
+      "revenue_dashboard": "Revenue",
       "system_controls": "System Controls",
       "tenants": "Tenants",
       "users": "Users",
