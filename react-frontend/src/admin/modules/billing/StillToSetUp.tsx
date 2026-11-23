@@ -65,7 +65,7 @@ export function StillToSetUp({ items, onAssignPlan, onSetDate, isDisabled = fals
               : item.noPlan ? t('billing.status_no_plan') : t('control.filter_no_paid_until');
             // The plan first: saving it asks for the date straight after.
             const assign = item.noPlan && item.canAssignPlan !== false;
-            const action = assign ? t('billing.assign_plan') : item.noDate ? t('control.set_paid_until') : null;
+            const buttonLabel = assign ? t('billing.assign_plan') : item.noDate ? t('control.set_paid_until') : null;
 
             return (
               <li key={item.id} data-testid={`setup-item-${item.id}`} className="flex flex-wrap items-center justify-between gap-2 py-2">
@@ -73,16 +73,16 @@ export function StillToSetUp({ items, onAssignPlan, onSetDate, isDisabled = fals
                   <span className="block text-sm font-medium text-foreground">{item.name}</span>
                   <span className="block text-xs text-muted">{missing}</span>
                 </div>
-                {action !== null ? (
+                {buttonLabel !== null ? (
                   <Button
                     size="sm"
                     variant="secondary"
                     className="whitespace-nowrap"
                     isDisabled={isDisabled}
-                    aria-label={t('control.setup_action_for', { action, name: item.name })}
+                    aria-label={t('control.setup_action_for', { action: buttonLabel, name: item.name })}
                     onPress={() => (assign ? onAssignPlan(item.id) : onSetDate(item.id))}
                   >
-                    {action}
+                    {buttonLabel}
                   </Button>
                 ) : null}
               </li>
