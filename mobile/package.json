@@ -111,7 +111,7 @@
     "expo-updates": "~55.0.33",
     "expo-video": "~55.0.21",
     "heroui-native": "^1.0.4",
-    "i18next": "^25.8.17",
+    "i18next": "^27.2.7",
     "marked": "17.0.5",
     "pusher-js": "^8.4.0",
     "query-string": "7.1.3",
