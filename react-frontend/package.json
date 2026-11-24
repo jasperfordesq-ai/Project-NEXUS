@@ -99,7 +99,7 @@
     "grapesjs-preset-webpage": "^1.0.3",
     "grapesjs-tabs": "^1.0.6",
     "grapesjs-tooltip": "^0.1.8",
-    "i18next": "^25.8.13",
+    "i18next": "^27.2.7",
     "i18next-browser-languagedetector": "^8.2.1",
     "i18next-chained-backend": "^5.0.4",
     "i18next-http-backend": "^4.0.4",
